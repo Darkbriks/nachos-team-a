@@ -89,7 +89,7 @@ MIPS_LDLIBS +=
 # HOST = -DHOST_MIPS
 
 ifeq ($(NACHOS_SYS),LINUX_SYS)
-HOST = -DHOST_i386 -DLINUX
+HOST = -DHOST_i386 -DLINUX -I/usr/i686-linux-gnu/include
 endif # LINUX_SYS
 
 ifeq ($(NACHOS_SYS),SOLARIS_SYS)
