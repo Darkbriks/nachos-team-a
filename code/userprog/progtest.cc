@@ -9,7 +9,7 @@
 // of liability and disclaimer of warranty provisions.
 
 #include "addrspace.h"
-#include "console.h"
+#include "synchconsole.h"
 #include "copyright.h"
 #include "synch.h"
 #include "system.h"
@@ -46,6 +46,7 @@ void StartProcess(char *filename) {
 // I/O requests wait on a Semaphore to delay until the I/O completes.
 
 static Console *console;
+static SynchConsole *synch_console;
 static Semaphore *readAvail;
 static Semaphore *writeDone;
 
@@ -76,16 +77,27 @@ void ConsoleTest(char *in, char *out) {
         ch = console->GetChar();
         if (ch == 'q' || ch == EOF)
             return; // if q, quit
-        if (ch == 'c'){
-            console->PutChar('<'); // echo it!
-            writeDone->P();       // wait for write to finish
-            console->PutChar(ch); // echo it!
-            writeDone->P();       // wait for write to finish
-            console->PutChar('>'); // echo it!
-            writeDone->P();       // wait for write to finish
-        } else {
-            console->PutChar(ch); // echo it!
-            writeDone->P();       // wait for write to finish
-        }
+        // if (ch == 'c'){
+        //     console->PutChar('<'); // echo it!
+        //     writeDone->P();       // wait for write to finish
+        //     console->PutChar(ch); // echo it!
+        //     writeDone->P();       // wait for write to finish
+        //     console->PutChar('>'); // echo it!
+        //     writeDone->P();       // wait for write to finish
+        // } else {
+        console->PutChar(ch); // echo it!
+        writeDone->P();       // wait for write to finish
+        // }
     }
+}
+
+void SynchConsoleTest(char *in, char *out) {
+    char ch;
+
+    synch_console = new SynchConsole(in, out);
+
+    while( (ch = synch_console->SynchGetChar()) != EOF){
+        synch_console->SynchPutChar(ch); // echo it!
+    }
+    fprintf(stderr, "Solaris: EOF detected in SynchConsole!\n");
 }
