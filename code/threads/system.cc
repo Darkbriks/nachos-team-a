@@ -29,6 +29,7 @@ SynchDisk *synchDisk;
 
 #ifdef USER_PROGRAM // requires either FILESYS or FILESYS_STUB
 Machine *machine;   // user program memory and registers
+SynchConsole *synchConsole;  // The console ... no really, you think it's a good name for a Console ? 
 #endif
 
 #ifdef NETWORK
@@ -143,6 +144,7 @@ void Initialize(int argc, char **argv) {
 
 #ifdef USER_PROGRAM
     machine = new Machine(debugUserProg); // this must come first
+    synchConsole = new SynchConsole(NULL, NULL); // this must come first
 #endif
 
 #ifdef FILESYS
@@ -170,6 +172,7 @@ void Cleanup() {
 
 #ifdef USER_PROGRAM
     delete machine;
+    delete synchConsole;
 #endif
 
 #ifdef FILESYS_NEEDED
