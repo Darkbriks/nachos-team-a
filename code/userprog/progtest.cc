@@ -76,7 +76,16 @@ void ConsoleTest(char *in, char *out) {
         ch = console->GetChar();
         if (ch == 'q' || ch == EOF)
             return; // if q, quit
-        console->PutChar(ch); // echo it!
-        writeDone->P();       // wait for write to finish
+        if (ch == 'c'){
+            console->PutChar('<'); // echo it!
+            writeDone->P();       // wait for write to finish
+            console->PutChar(ch); // echo it!
+            writeDone->P();       // wait for write to finish
+            console->PutChar('>'); // echo it!
+            writeDone->P();       // wait for write to finish
+        } else {
+            console->PutChar(ch); // echo it!
+            writeDone->P();       // wait for write to finish
+        }
     }
 }
