@@ -129,11 +129,11 @@ else
 	install_package build-essential "Installing basic development tools (make, gcc, g++, etc.)"
 	NO_UPDATE=--no-update
 	echo "MIPS cross compiler seems available in your distrib. Trying to use it"
-	if ! dpkg --print-foreign-architectures | grep -sq mipsel ; then
-		echo "Adding mipsel as a foreign architecture on your system"
-		$ROOT dpkg --add-architecture mipsel
-		NO_UPDATE=
-	fi
+	#if ! dpkg --print-foreign-architectures | grep -sq mipsel ; then
+	#	echo "Adding mipsel as a foreign architecture on your system"
+	#	$ROOT dpkg --add-architecture mipsel
+	#	NO_UPDATE=
+	#fi
 	if test "$ARCH" = amd64 ; then
 		GCC_VER=$(gcc --version | head -1 | \
 			sed -e 's/.* \([0-9]\+\.[0-9]\+\)\.[0-9]\+\( .*\)\?$/\1/p;d')
@@ -142,11 +142,11 @@ else
 			exit 1
 		fi
 		GCC_VER_MAJ="$(echo $GCC_VER | cut -d . -f 1)"
-		if ! dpkg --print-foreign-architectures | grep -sq i386 ; then
-			echo "Adding i386 as a foreign architecture on your system"
-			$ROOT dpkg --add-architecture i386
-			NO_UPDATE=
-		fi
+		#if ! dpkg --print-foreign-architectures | grep -sq i386 ; then
+		#	echo "Adding i386 as a foreign architecture on your system"
+		#	$ROOT dpkg --add-architecture i386
+		#	NO_UPDATE=
+		#fi
 	fi
 	install_package $NO_UPDATE gcc-mipsel-linux-gnu "Installing the cross-compiler of your distrib. gcc-multiarch and g++-multiarch might be asked to be removed"
 	if test "$ARCH" = amd64 ; then
