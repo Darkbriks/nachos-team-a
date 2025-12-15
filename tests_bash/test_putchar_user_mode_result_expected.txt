@@ -1,0 +1,10 @@
+abcd
+Machine halting!
+
+Ticks: total 707, idle 500, system 60, user 147
+Disk I/O: reads 0, writes 0
+Console I/O: reads 0, writes 5
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

@@ -29,6 +29,7 @@
 #define SC_Close 8
 #define SC_Fork 9
 #define SC_Yield 10
+#define SC_PutChar 11
 
 #ifdef IN_USER_MODE
 
@@ -122,6 +123,13 @@ void Fork(void (*func)());
  * or not.
  */
 void Yield();
+
+/**
+ * @brief Notre super fonction qui va faire PutChar
+ *
+ * @param c  The character to print on the console
+ */
+void PutChar(char c);
 
 #endif // IN_USER_MODE
 

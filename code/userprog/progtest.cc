@@ -46,7 +46,6 @@ void StartProcess(char *filename) {
 // I/O requests wait on a Semaphore to delay until the I/O completes.
 
 static Console *console;
-static SynchConsole *synch_console;
 static Semaphore *readAvail;
 static Semaphore *writeDone;
 
@@ -94,10 +93,9 @@ void ConsoleTest(char *in, char *out) {
 void SynchConsoleTest(char *in, char *out) {
     char ch;
 
-    synch_console = new SynchConsole(in, out);
 
-    while( (ch = synch_console->SynchGetChar()) != EOF){
-        synch_console->SynchPutChar(ch); // echo it!
+    while( (ch = synchConsole->SynchGetChar()) != EOF){
+        synchConsole->SynchPutChar(ch); // echo it!
     }
     fprintf(stderr, "Solaris: EOF detected in SynchConsole!\n");
 }
