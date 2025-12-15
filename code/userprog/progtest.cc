@@ -74,9 +74,9 @@ void ConsoleTest(char *in, char *out) {
     for (;;) {
         readAvail->P(); // wait for character to arrive
         ch = console->GetChar();
+        if (ch == 'q' || ch == EOF)
+            return; // if q, quit
         console->PutChar(ch); // echo it!
         writeDone->P();       // wait for write to finish
-        if (ch == 'q')
-            return; // if q, quit
     }
 }
