@@ -87,6 +87,27 @@ void ExceptionHandler(ExceptionType which) {
                 synchConsole->SynchPutString(buffer);
             }
             break;
+        case SC_GetChar:
+            DEBUG('a', "GetChar exception.cc\n");
+            {
+                char ch = synchConsole->SynchGetChar();
+                machine->WriteRegister(2, (int) ch);
+            }
+            break;
+        case SC_GetString:
+            DEBUG('a', "GetString exception.cc\n");
+            {
+                char buffer[MAX_STRING_SIZE];
+                int addr = machine->ReadRegister(4);
+                int n = machine->ReadRegister(5);
+
+                if (n > MAX_STRING_SIZE)
+                    n = MAX_STRING_SIZE;
+
+                synchConsole->SynchGetString(buffer, n);
+                copyStringToMachine(buffer, addr, n);
+            }
+            break;
         default:
             printf("Unknow syscall :%d\n", type);
             ASSERT(FALSE);

@@ -204,4 +204,17 @@ void copyStringFromMachine(int from, char *to, unsigned size) {
     }
     to[i] = '\0';
 }
+
+//----------------------------------------------------------------------
+// CopyStringToMachine
+//      Copy a string from Linux memory to MIPS memory
+//----------------------------------------------------------------------
+void copyStringToMachine(char *from, int to, unsigned size) {
+    unsigned int i;
+
+    for (i = 0; i < size && from[i] != '\0'; i++) {
+        machine->WriteMem(to + i, 1, (int) from[i]);
+    }
+    machine->WriteMem(to + i, 1, 0);
+}
 #endif
