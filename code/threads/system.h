@@ -16,6 +16,8 @@
 #include "timer.h"
 #include "utility.h"
 
+typedef int ptr_32;
+
 // Initialization and cleanup routines
 extern void Initialize(int argc, char **argv); // Initialization,
                                                // called before anything else

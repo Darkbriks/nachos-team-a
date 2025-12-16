@@ -89,6 +89,27 @@ void handler_SC_getString(){
     }
 }
 
+void handler_SC_PutInt(){
+    int value = machine->ReadRegister(4);
+    char value_str[12]; // An integer is never bigger than 12 character.
+    snprintf(value_str, 12, "%d", value);
+    synchConsole->SynchPutString(value_str, 12); // TODO handle future errno exception
+}
+
+void handler_SC_GetInt(){
+    ptr_32 addr = (ptr_32) machine->ReadRegister(4);
+    char value[12]; // An integer is never bigger than 12 character.
+    synchConsole->SynchGetString(value, 12); // TODO handle future errno exception
+    int * new_val = new int;
+    if (sscanf(value, "%d", new_val) !=1){
+        // handle error don't find integer
+        // TODO wait for errno
+        ASSERT(FALSE);
+    }
+    machine->WriteMem(addr, 4, *new_val);
+    delete new_val;
+}
+
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2);
 
@@ -121,6 +142,17 @@ void ExceptionHandler(ExceptionType which) {
             DEBUG('a', "GetString exception.cc\n");
             handler_SC_getString();
             break;
+
+        case SC_PutInt:
+            DEBUG('a', "PutInt exception.cc\n");
+            handler_SC_PutInt();
+            break;
+
+        case SC_GetInt:
+            DEBUG('a', "GetInt exception.cc\n");
+            handler_SC_GetInt();
+            break;
+
         default:
             printf("Unknow syscall :%d\n", type);
             ASSERT(FALSE);

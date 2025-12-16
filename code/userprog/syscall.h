@@ -33,6 +33,9 @@
 #define SC_PutString 12
 #define SC_GetChar 13
 #define SC_GetString 14
+#define SC_PutInt 15
+#define SC_GetInt 16
+
 
 #ifdef IN_USER_MODE
 
@@ -161,6 +164,21 @@ char GetChar();
  */
 void GetString(char *s, int n);
 
+/**
+ * @brief Read an integer from a console 
+ *
+ * @param n A pointer on an integer. This is where the result will be put
+ * @warning If the string provided can't be cast in integer we exit the programm
+ */
+void GetInt(int *n);
+
+
+/**
+ * @brief Write an integer on a console
+ *
+ * @param n The integer to write
+ */
+void PutInt(int n);
 #endif // IN_USER_MODE
 
 #endif /* SYSCALL_H */
