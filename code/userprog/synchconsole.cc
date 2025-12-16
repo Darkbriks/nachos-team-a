@@ -55,5 +55,5 @@ int SynchConsole::SynchGetString(char *s, int n)
         }
     }
     s[i] = '\0';
-    return i;
+    return i-1;
 }

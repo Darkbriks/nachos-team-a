@@ -71,20 +71,21 @@ void handler_SC_putString(){
     while (offset < n) {
         copyStringFromMachine(addr + offset, buffer, MAX_STRING_SIZE);
         DEBUG('a', "PutString got string: %s\n", buffer);
-		if (int res = synchConsole->SynchPutString(buffer, MAX_STRING_SIZE); res < 0) { n = -1; break; }
+		if (int res = synchConsole->SynchPutString(buffer, MAX_STRING_SIZE); res <= 0) { n = -1; break; }
 		else { offset += res; }
     }
 	machine->WriteRegister(2, n);
 }
 
 void handler_SC_getString(){
-    int addr = machine->ReadRegister(4);
-    int n = machine->ReadRegister(5); 
-    ASSERT(n < MAX_STRING_SIZE); // TODO add errno when we have a library for user
-    char buffer[n];
+	int addr = machine->ReadRegister(4);
+    int n = machine->ReadRegister(5);
+	if (n > MAX_STRING_SIZE) { n = MAX_STRING_SIZE; } // TODO Set errno when we have a library for user
     {
-        synchConsole->SynchGetString(buffer, n);
+		char buffer[n];
+        int res = synchConsole->SynchGetString(buffer, n);
         copyStringToMachine(buffer, addr, n);
+		machine->WriteRegister(2, res);
     }
 }
 

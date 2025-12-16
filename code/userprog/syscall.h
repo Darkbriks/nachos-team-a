@@ -161,9 +161,10 @@ char GetChar();
  *
  * @param s  Buffer to store the string
  * @param n  Maximum number of characters to read
+ * @return The number of bytes effectively read
  * @warning Ensure s size is greater or equals than n
  */
-void GetString(char *s, int n);
+int GetString(char *s, int n);
 
 /**
  * @brief Read an integer from a console 
