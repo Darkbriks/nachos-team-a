@@ -35,12 +35,13 @@ char SynchConsole::SynchGetChar()
     return console->GetChar();
 }
 
-void SynchConsole::SynchPutString(const char s[])
+int SynchConsole::SynchPutString(const char s[], unsigned int n)
 {
-    for (unsigned i = 0; ; i++) {
-        if (s[i] == '\0') { break; }
+    for (unsigned i = 0; i < n ; i++) {
+        if (s[i] == '\0') { return i; }
         SynchPutChar(s[i]);
     }
+    return n;
 }
 
 void SynchConsole::SynchGetString(char *s, int n)
