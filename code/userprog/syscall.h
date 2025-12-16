@@ -126,18 +126,22 @@ void Fork(void (*func)());
 void Yield();
 
 /**
- * @brief Notre super fonction qui va faire PutChar
+ * @brief Write a char in the console 
  *
  * @param c  The character to print on the console
  */
 void PutChar(char c);
 
 /**
- * @brief Notre super fonction qui va faire PutString
+ * @brief Write a String on the console
+ *        Don't count \0 in n. It's implicit
  *
+ * @code PutString("aze", 3)
  * @param s  The string to print on the console
+ * @param n  Number of bytes to write. We will write min(n, first \0 in s).
+ *
  */
-void PutString(char *s);
+void PutString(char *s, int n);
 
 #endif // IN_USER_MODE
 

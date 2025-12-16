@@ -60,6 +60,24 @@ static void UpdatePC() {
 //      "which" is the kind of exception.  The list of possible exceptions
 //      are in machine.h.
 //----------------------------------------------------------------------
+    
+
+void handler_SC_putString(){
+    int addr = machine->ReadRegister(4);
+    int n = machine->ReadRegister(5); //don't understand why but it seems to be incremental
+                                      // Work on my computer  
+    int offset = 0;
+    char buffer[MAX_STRING_SIZE];
+
+    while (offset < n){
+        copyStringFromMachine(addr + offset, buffer, MAX_STRING_SIZE);
+        DEBUG('a', "PutString got string: %s\n", buffer);
+        if ( synchConsole->SynchPutString(buffer, MAX_STRING_SIZE - 2) != MAX_STRING_SIZE - 2){
+            return;
+        }
+        offset += MAX_STRING_SIZE-2; 
+    }
+}
 
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2);
@@ -77,16 +95,12 @@ void ExceptionHandler(ExceptionType which) {
             DEBUG('a', "PutChar exception.cc\n");
             synchConsole->SynchPutChar(machine->ReadRegister(4));
             break;
+
         case SC_PutString:
             DEBUG('a', "PutString exception.cc\n");
-            {
-                char buffer[MAX_STRING_SIZE];
-                int addr = machine->ReadRegister(4);
-                copyStringFromMachine(addr, buffer, MAX_STRING_SIZE);
-                DEBUG('a', "PutString got string: %s\n", buffer);
-                synchConsole->SynchPutString(buffer);
-            }
+            handler_SC_putString();
             break;
+
         default:
             printf("Unknow syscall :%d\n", type);
             ASSERT(FALSE);
