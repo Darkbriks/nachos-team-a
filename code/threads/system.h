@@ -39,6 +39,7 @@ extern Machine *machine; // user program memory and registers
 extern SynchConsole *synchConsole; // The only Console
 
 void copyStringFromMachine(int from, char *to, unsigned size);
+void copyStringToMachine(char *from, int to, unsigned size);
 #endif
 
 #ifdef FILESYS_NEEDED // FILESYS or FILESYS_STUB
