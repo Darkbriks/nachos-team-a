@@ -77,6 +77,16 @@ void ExceptionHandler(ExceptionType which) {
             DEBUG('a', "PutChar exception.cc\n");
             synchConsole->SynchPutChar(machine->ReadRegister(4));
             break;
+        case SC_PutString:
+            DEBUG('a', "PutString exception.cc\n");
+            {
+                char buffer[MAX_STRING_SIZE];
+                int addr = machine->ReadRegister(4);
+                copyStringFromMachine(addr, buffer, MAX_STRING_SIZE);
+                DEBUG('a', "PutString got string: %s\n", buffer);
+                synchConsole->SynchPutString(buffer);
+            }
+            break;
         default:
             printf("Unknow syscall :%d\n", type);
             ASSERT(FALSE);

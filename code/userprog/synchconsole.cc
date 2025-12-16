@@ -37,10 +37,10 @@ char SynchConsole::SynchGetChar()
 
 void SynchConsole::SynchPutString(const char s[])
 {
-    // for elem in s{
-    //     SynchPutChar(elem);
-    // }
-    // // ...
+    for (unsigned i = 0; ; i++) {
+        if (s[i] == '\0') { break; }
+        SynchPutChar(s[i]);
+    }
 }
 
 void SynchConsole::SynchGetString(char *s, int n)

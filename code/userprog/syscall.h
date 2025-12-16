@@ -30,6 +30,7 @@
 #define SC_Fork 9
 #define SC_Yield 10
 #define SC_PutChar 11
+#define SC_PutString 12
 
 #ifdef IN_USER_MODE
 
@@ -130,6 +131,13 @@ void Yield();
  * @param c  The character to print on the console
  */
 void PutChar(char c);
+
+/**
+ * @brief Notre super fonction qui va faire PutString
+ *
+ * @param s  The string to print on the console
+ */
+void PutString(char *s);
 
 #endif // IN_USER_MODE
 

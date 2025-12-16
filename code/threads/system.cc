@@ -189,3 +189,19 @@ void Cleanup() {
 
     Exit(0);
 }
+
+#ifdef USER_PROGRAM
+//----------------------------------------------------------------------
+// CopyStringFromMachine
+//      Copy a mips string from the user memory to the system memory.
+//----------------------------------------------------------------------
+void copyStringFromMachine(int from, char *to, unsigned size) {
+    to = new char[size];
+    unsigned i = 0; int ch;
+    while (machine->ReadMem(from + i, 1, &ch) && i < size - 1) {
+        to[i] = (char)ch; i++;
+        if (to[i] == '\0') { return; }
+    }
+    to[i] = '\0';
+}
+#endif

@@ -90,10 +90,13 @@ void ConsoleTest(char *in, char *out) {
     }
 }
 
+//----------------------------------------------------------------------
+// SynchConsoleTest
+//      Test the SynchConsole by echoing characters typed at the input onto
+//      the output.  Stop when the user types an EOF.
+//----------------------------------------------------------------------
 void SynchConsoleTest(char *in, char *out) {
     char ch;
-
-
     while( (ch = synchConsole->SynchGetChar()) != EOF){
         synchConsole->SynchPutChar(ch); // echo it!
     }
