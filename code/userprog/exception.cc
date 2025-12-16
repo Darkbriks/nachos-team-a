@@ -68,14 +68,13 @@ void handler_SC_putString(){
     int offset = 0;
     char buffer[MAX_STRING_SIZE];
 
-    while (offset < n){
+    while (offset < n) {
         copyStringFromMachine(addr + offset, buffer, MAX_STRING_SIZE);
         DEBUG('a', "PutString got string: %s\n", buffer);
-        if ( synchConsole->SynchPutString(buffer, MAX_STRING_SIZE - 2) != MAX_STRING_SIZE - 2){
-            return;
-        }
-        offset += MAX_STRING_SIZE-2; 
+		if (int res = synchConsole->SynchPutString(buffer, MAX_STRING_SIZE); res < 0) { n = -1; break; }
+		else { offset += res; }
     }
+	machine->WriteRegister(2, n);
 }
 
 void handler_SC_getString(){

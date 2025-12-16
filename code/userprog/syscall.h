@@ -139,14 +139,15 @@ void PutChar(char c);
 
 /**
  * @brief Write a String on the console
- *        Don't count \0 in n. It's implicit
+ * @note '\0' is implicitly added at the end of the string,
+ *		so you don't need to count it in n
  *
- * @code PutString("aze", 3)
+ * @code int n = PutString("Hello World\n", 12);
  * @param s  The string to print on the console
  * @param n  Number of bytes to write. We will write min(n, first \0 in s).
- *
+ * @return The number of bytes effectively written, or -1 on error
  */
-void PutString(char *s, int n);
+int PutString(char *s, int n);
 
 /**
  * @brief Read a character from console
