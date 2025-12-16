@@ -1,9 +1,11 @@
 Hello, World! This is a test of PutString.
+PutString executed successfully.
+
 Machine halting!
 
-Ticks: total 4758, idle 4300, system 440, user 18
+Ticks: total 8521, idle 7700, system 780, user 41
 Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 43
+Console I/O: reads 0, writes 77
 Paging: faults 0
 Network I/O: packets received 0, sent 0
 
