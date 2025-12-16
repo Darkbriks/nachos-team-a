@@ -4,12 +4,12 @@ int main()
 {
     char buffer[100];
 
-    PutString("Enter your name: ");
+    PutString("Enter your name: ", 17);
     GetString(buffer, 100);
 
-    PutString("Hello, ");
-    PutString(buffer);
-    PutString("!\n");
+    PutString("Hello, ", 7);
+    PutString(buffer, 100);
+    PutString("!\n", 2);
 
     Halt();
 }
