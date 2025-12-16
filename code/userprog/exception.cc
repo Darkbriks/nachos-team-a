@@ -60,11 +60,23 @@ static void UpdatePC() {
 //      "which" is the kind of exception.  The list of possible exceptions
 //      are in machine.h.
 //----------------------------------------------------------------------
+
+#define RETURN(value) \
+        machine->WriteRegister(2, (int)(value)); \
+        return;
+
+#define INT32_MAX 2147483647
     
 
 void handler_SC_putString(){
     int addr = machine->ReadRegister(4);
     int n = machine->ReadRegister(5);
+
+    if (addr < 0) { RETURN(-E_FAULT); } // TODO Add more checks (addr is in valid user space, for example)
+    if (n < 0) { RETURN(-E_INVAL); }
+    if (n == 0) { RETURN(0); }
+    if (n > INT32_MAX - addr) { RETURN(-E_OVERFLOW); } // Prevent overflow
+
     int offset = 0;
     char buffer[MAX_STRING_SIZE];
 
@@ -74,18 +86,23 @@ void handler_SC_putString(){
 		if (int res = synchConsole->SynchPutString(buffer, MAX_STRING_SIZE); res <= 0) { n = -1; break; }
 		else { offset += res; }
     }
-	machine->WriteRegister(2, n);
+	RETURN(n);
 }
 
 void handler_SC_getString(){
 	int addr = machine->ReadRegister(4);
     int n = machine->ReadRegister(5);
+
+    if (addr < 0) { RETURN(-E_FAULT); } // TODO Add more checks (addr is in valid user space, for example)
+    if (n < 0) { RETURN(-E_INVAL); }
+    if (n == 0) { RETURN(0); }
+
 	if (n > MAX_STRING_SIZE) { n = MAX_STRING_SIZE; } // TODO Set errno when we have a library for user
     {
 		char buffer[n];
         int res = synchConsole->SynchGetString(buffer, n);
         copyStringToMachine(buffer, addr, n);
-		machine->WriteRegister(2, res);
+		RETURN(res);
     }
 }
 

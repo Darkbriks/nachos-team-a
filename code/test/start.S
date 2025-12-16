@@ -40,7 +40,51 @@ __start:
  * 	convention on the MIPS.
  * -------------------------------------------------------------
  */
+ 
+/* -------------------------------------------------------------
+ * ERRNO CONVENTION (as per NachOS documentation : https://im2ag-moodle.univ-grenoble-alpes.fr/pluginfile.php/5510/mod_resource/content/0/nachos-syscall.pdf):
+ *   - If syscall returns negative value in $v0 (r2), it indicates an error
+ *   - The stub saves abs(return value) in errno and returns -1
+ *   - If syscall returns non-negative value, errno is set to 0
+ * -------------------------------------------------------------
+ */
 
+/* -------------------------------------------------------------
+ * Syscalls with errno handling (syscalls that can fail)
+ *
+ * Pattern:
+ *   1. Execute syscall
+ *   2. Check if $v0 (r2) >= 0
+ *   3. If negative: errno = abs($v0), return -1
+ *   4. If non-negative: errno = 0, return $v0
+ * -------------------------------------------------------------
+ */
+ 
+/* -------------------------------------------------------------
+ * Example syscall with error handling:
+ *      .globl SYSCALL
+ *      .ent	SYSCALL
+ *  SYSCALL:
+ *      addiu $2,$0,SC_SYSCALL
+ *      syscall
+ *
+ *      bgez  $2,SYSCALL_ok   # Jump if no error
+ *      nop                   # In MIPS, instruction after branch is always executed, so we put a NOP here
+ *
+ *      # Error handling
+ *      subu   $3,$0,$2       # $3 = -$2 (abs value of error)
+ *      sw     $3,errno       # errno = abs(return value)
+ *      addiu  $2,$0,-1       # return -1
+ *      j      $31            # Return
+ *      nop                   # NOP after jump
+ *  SYSCALL_ok:
+ *      sw     $0,errno       # errno = 0
+ *      j      $31            # Return
+ *      .end SYSCALL
+ * -------------------------------------------------------------
+ */
+
+/* Halt : No error handling */
 	.globl Halt
 	.ent	Halt
 Halt:
@@ -49,38 +93,7 @@ Halt:
 	j	$31
 	.end Halt
 
-	.globl PutChar
-	.ent	PutChar
-PutChar:
-	addiu $2,$0,SC_PutChar
-	syscall
-	j	$31
-	.end PutChar
-	
-	.globl PutString
-	.ent	PutString
-PutString:
-	addiu $2,$0,SC_PutString
-	syscall
-	j	$31
-	.end PutString
-
-	.globl GetChar
-	.ent	GetChar
-GetChar:
-	addiu $2,$0,SC_GetChar
-	syscall
-	j	$31
-	.end GetChar
-
-	.globl GetString
-	.ent	GetString
-GetString:
-	addiu $2,$0,SC_GetString
-	syscall
-	j	$31
-	.end GetString
-
+/* Exit : No error handling */
 	.globl Exit
 	.ent	Exit
 Exit:
@@ -89,6 +102,7 @@ Exit:
 	j	$31
 	.end Exit
 
+/* Exec : No error handling */
 	.globl Exec
 	.ent	Exec
 Exec:
@@ -97,6 +111,7 @@ Exec:
 	j	$31
 	.end Exec
 
+/* Join : No error handling */
 	.globl Join
 	.ent	Join
 Join:
@@ -105,6 +120,7 @@ Join:
 	j	$31
 	.end Join
 
+/* Create : No error handling */
 	.globl Create
 	.ent	Create
 Create:
@@ -113,6 +129,7 @@ Create:
 	j	$31
 	.end Create
 
+/* Open : No error handling */
 	.globl Open
 	.ent	Open
 Open:
@@ -121,6 +138,7 @@ Open:
 	j	$31
 	.end Open
 
+/* Read : No error handling */
 	.globl Read
 	.ent	Read
 Read:
@@ -129,6 +147,7 @@ Read:
 	j	$31
 	.end Read
 
+/* Write : No error handling */
 	.globl Write
 	.ent	Write
 Write:
@@ -137,6 +156,7 @@ Write:
 	j	$31
 	.end Write
 
+/* Close : No error handling */
 	.globl Close
 	.ent	Close
 Close:
@@ -145,6 +165,7 @@ Close:
 	j	$31
 	.end Close
 
+/* Fork : No error handling */
 	.globl Fork
 	.ent	Fork
 Fork:
@@ -153,6 +174,7 @@ Fork:
 	j	$31
 	.end Fork
 
+/* Yield : No error handling */
 	.globl Yield
 	.ent	Yield
 Yield:
@@ -161,21 +183,118 @@ Yield:
 	j	$31
 	.end Yield
 
-	.globl PutInt
-	.ent	PutInt
-PutInt:
-	addiu $2,$0,SC_PutInt
-	syscall
-	j	$31
-	.end PutInt
+/* PutChar : no error handling */
+	.globl PutChar
+    .ent	PutChar
+PutChar:
+    addiu $2,$0,SC_PutChar
+    syscall
+    j      $31
+    .end PutChar
 
-	.globl GetInt
-	.ent	GetInt
+/* PutString : no error handling */
+    .globl PutString
+    .ent	PutString
+PutString:
+    addiu $2,$0,SC_PutString
+    syscall
+    j      $31
+    .end PutString
+
+/* GetChar : with error handling */
+    .globl GetChar
+    .ent	GetChar
+GetChar:
+    addiu $2,$0,SC_GetChar
+    syscall
+    bgez  $2,GetChar_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+GetChar_ok:
+    sw     $0,errno
+    j      $31
+    .end GetChar
+
+/* GetString : with error handling */
+    .globl GetString
+    .ent	GetString
+GetString:
+    addiu $2,$0,SC_GetString
+    syscall
+    bgez  $2,GetString_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+GetString_ok:
+    sw     $0,errno
+    j      $31
+    .end GetString
+
+/* PutInt : with error handling */
+    .globl PutInt
+    .ent	PutInt
+PutInt:
+    addiu $2,$0,SC_PutInt
+    syscall
+    bgez  $2,PutInt_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+PutInt_ok:
+    sw     $0,errno
+    j      $31
+    .end PutInt
+
+/* GetInt : with error handling */
+    .globl GetInt
+    .ent	GetInt
 GetInt:
-	addiu $2,$0,SC_GetInt
-	syscall
-	j	$31
-	.end GetInt
+    addiu $2,$0,SC_GetInt
+    syscall
+    bgez  $2,GetInt_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+GetInt_ok:
+    sw     $0,errno
+    j      $31
+    .end GetInt
+
+/* -------------------------------------------------------------
+ * Errno utility functions
+ * -------------------------------------------------------------
+ */
+
+	.globl GetLastError
+	.ent	GetLastError
+GetLastError:
+	lw    $2,errno		# Load errno into $v0
+	j     $31		# Return
+	.end GetLastError
+
+	.globl ClearError
+	.ent	ClearError
+ClearError:
+	sw    $0,errno		# errno = 0
+	j     $31		# Return
+	.end ClearError
 
 /* dummy function to keep gcc happy */
         .globl  __main
@@ -184,3 +303,12 @@ __main:
         j       $31
         .end    __main
 
+/* -------------------------------------------------------------
+ * Data section - errno global variable
+ * -------------------------------------------------------------
+ */
+	.data
+	.align  2
+	.globl  errno
+errno:
+	.word   0		/* errno initialized to 0 */

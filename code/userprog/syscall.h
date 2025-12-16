@@ -36,6 +36,16 @@
 #define SC_PutInt 15
 #define SC_GetInt 16
 
+/* Error codes - returned as negative values by syscalls, stored as positive in errno */
+#define E_SUCCESS       0   /* No error */
+#define E_INVAL         1   /* Invalid argument */
+#define E_FAULT         2   /* Bad address / memory access error */
+#define E_OVERFLOW      3   /* Arithmetic overflow */
+#define E_IO            4   /* I/O error */
+#define E_FORMAT        5   /* Invalid format */
+#define E_EOF           6   /* End of file */
+#define E_NOMEM         7   /* Out of memory */
+#define E_RANGE         8   /* Result out of range */
 
 #ifdef IN_USER_MODE
 
@@ -52,10 +62,43 @@
  * from the system call entry point in exception.cc.
  */
 
+
+/* -------------------------------------------------------------
+ * ERROR HANDLING
+ * -------------------------------------------------------------
+ */
+
+/**
+ * @brief Global error variable (defined in start.S)
+ * Set to 0 on successful syscall, or error code (E_xxx) on failure
+ */
+extern int errno;
+
+/**
+ * @brief Get the last error code
+ * @return Current value of errno
+ */
+int GetLastError(void);
+
+/**
+ * @brief Clear the error code (set errno to 0)
+ */
+void ClearError(void);
+
+
+/* -------------------------------------------------------------
+ * SYSTEM CONTROL OPERATIONS: Halt
+ * -------------------------------------------------------------
+ */
+
 /* Stop Nachos, and print out performance stats */
 void Halt() __attribute__((noreturn));
 
-/* Address space control operations: Exit, Exec, and Join */
+
+/* -------------------------------------------------------------
+ * ADDRESS SPACE CONTROL OPERATIONS: Exit, Exec, Join
+ * -------------------------------------------------------------
+ */
 
 /* This user program is done (status = 0 means exited normally). */
 void Exit(int status) __attribute__((noreturn));
@@ -73,13 +116,17 @@ SpaceId Exec(char *name);
  */
 int Join(SpaceId id);
 
-/* File system operations: Create, Open, Read, Write, Close
+
+/* -------------------------------------------------------------
+ * FILE SYSTEM OPERATIONS : Create, Open, Read, Write, Close
+ *
  * These functions are patterned after UNIX -- files represent
  * both files *and* hardware I/O devices.
  *
  * If this assignment is done before doing the file system assignment,
  * note that the Nachos file system has a stub implementation, which
  * will work for the purposes of testing out these routines.
+ * -------------------------------------------------------------
  */
 
 /* A unique identifier for an open Nachos file. */
@@ -116,8 +163,10 @@ int Read(char *buffer, int size, OpenFileId id);
 /* Close the file, we're done reading and writing to it. */
 void Close(OpenFileId id);
 
-/* User-level thread operations: Fork and Yield.  To allow multiple
- * threads to run within a user program.
+
+/* -------------------------------------------------------------
+ * USER-LEVEL THREAD OPERATIONS : Fork, Yield
+ * -------------------------------------------------------------
  */
 
 /* Fork a thread to run a procedure ("func") in the *same* address space
@@ -129,6 +178,12 @@ void Fork(void (*func)());
  * or not.
  */
 void Yield();
+
+
+/* -------------------------------------------------------------
+ * CONSOLE I/O OPERATIONS : PutChar, PutString, PutInt, GetChar, GetString, GetInt
+ * -------------------------------------------------------------
+ */
 
 /**
  * @brief Write a char in the console 
@@ -144,10 +199,17 @@ void PutChar(char c);
  *
  * @code int n = PutString("Hello World\n", 12);
  * @param s  The string to print on the console
- * @param n  Number of bytes to write. We will write min(n, first \0 in s).
- * @return The number of bytes effectively written, or -1 on error
+ * @param n Maximum number of bytes to write (stops at '\0' or after n bytes)
+ * @return The number of bytes effectively written, or -1 on error (check errno)
  */
 int PutString(char *s, int n);
+
+/**
+ * @brief Write an integer on a console
+ *
+ * @param n The integer to write
+ */
+void PutInt(int n);
 
 /**
  * @brief Read a character from console
@@ -159,28 +221,24 @@ char GetChar();
 /**
  * @brief Read a string from console
  *
- * @param s  Buffer to store the string
- * @param n  Maximum number of characters to read
- * @return The number of bytes effectively read
- * @warning Ensure s size is greater or equals than n
+ * @param s Buffer to store string (must be allocated by caller)
+ * @param n Maximum number of characters to read (including '\0')
+ * @return Number of bytes read (excluding '\0'), or -1 on error (check errno)
+ *
+ * @note Stops at newline ('\n') or after n-1 characters
+ * @note Always null-terminates the string
+ * @warning Buffer must be at least n bytes large
  */
 int GetString(char *s, int n);
 
 /**
- * @brief Read an integer from a console 
+ * @brief Read an integer from a console
  *
  * @param n A pointer on an integer. This is where the result will be put
  * @warning If the string provided can't be cast in integer we exit the programm
  */
 void GetInt(int *n);
 
-
-/**
- * @brief Write an integer on a console
- *
- * @param n The integer to write
- */
-void PutInt(int n);
 #endif // IN_USER_MODE
 
 #endif /* SYSCALL_H */
