@@ -4,4 +4,6 @@ code/bin/*.o
 code/bin/.*.d
 code/bin/.sources-checked
 code/.clangd
+code/Makefile
+code/sources.md5sum
 .DS_Store
