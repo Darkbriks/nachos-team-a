@@ -22,7 +22,15 @@ class SynchConsole {
          * @return The number of bytes effectively write on the console. We don't count \0
          */
         int SynchPutString(const char s[], unsigned int n); //Unix put
-        void SynchGetString(char *s, int n); // Unix fgets(3S)
+                                                            
+        /**
+         * @brief  Read a String from this synchronized console
+         *
+         * @param s The buffer to put the string previously allocated by caller
+         * @param n The number of bytes we want to read
+         * @return The real number of bytes read
+         */
+        int SynchGetString(char *s, int n); // Unix fgets(3S)
     private:
         Console *console;
 };

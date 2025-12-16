@@ -64,8 +64,7 @@ static void UpdatePC() {
 
 void handler_SC_putString(){
     int addr = machine->ReadRegister(4);
-    int n = machine->ReadRegister(5); //don't understand why but it seems to be incremental
-                                      // Work on my computer  
+    int n = machine->ReadRegister(5);
     int offset = 0;
     char buffer[MAX_STRING_SIZE];
 
@@ -76,6 +75,17 @@ void handler_SC_putString(){
             return;
         }
         offset += MAX_STRING_SIZE-2; 
+    }
+}
+
+void handler_SC_getString(){
+    int addr = machine->ReadRegister(4);
+    int n = machine->ReadRegister(5); 
+    ASSERT(n < MAX_STRING_SIZE); // TODO add errno when we have a library for user
+    char buffer[n];
+    {
+        synchConsole->SynchGetString(buffer, n);
+        copyStringToMachine(buffer, addr, n);
     }
 }
 
@@ -109,17 +119,7 @@ void ExceptionHandler(ExceptionType which) {
             break;
         case SC_GetString:
             DEBUG('a', "GetString exception.cc\n");
-            {
-                char buffer[MAX_STRING_SIZE];
-                int addr = machine->ReadRegister(4);
-                int n = machine->ReadRegister(5);
-
-                if (n > MAX_STRING_SIZE)
-                    n = MAX_STRING_SIZE;
-
-                synchConsole->SynchGetString(buffer, n);
-                copyStringToMachine(buffer, addr, n);
-            }
+            handler_SC_getString();
             break;
         default:
             printf("Unknow syscall :%d\n", type);

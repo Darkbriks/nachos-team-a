@@ -9,7 +9,6 @@ int main()
 
     PutString("Hello, ", 7);
     PutString(buffer, 100);
-    PutString("!\n", 2);
 
     Halt();
 }

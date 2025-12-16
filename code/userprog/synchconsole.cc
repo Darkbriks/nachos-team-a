@@ -44,21 +44,16 @@ int SynchConsole::SynchPutString(const char s[], unsigned int n)
     return n;
 }
 
-void SynchConsole::SynchGetString(char *s, int n)
+int SynchConsole::SynchGetString(char *s, int n)
 {
     int i = 0;
     char ch;
-
-    while (i < n - 1) {
-        ch = SynchGetChar();
-
-        if (ch == EOF || ch == '\n') {
+    while (i < n - 1 && ( (ch = SynchGetChar()) != EOF ) ) {
+        s[i++] = ch;
+        if (ch == '\n'){
             break;
         }
-
-        s[i] = ch;
-        i++;
     }
-
     s[i] = '\0';
+    return i;
 }

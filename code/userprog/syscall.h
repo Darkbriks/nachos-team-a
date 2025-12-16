@@ -157,6 +157,7 @@ char GetChar();
  *
  * @param s  Buffer to store the string
  * @param n  Maximum number of characters to read
+ * @warning Ensure s size is greater or equals than n
  */
 void GetString(char *s, int n);
 
