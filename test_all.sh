@@ -2,7 +2,7 @@
 
 PROJECT_ROOT=$(git rev-parse --show-toplevel)
 test_directory="$PROJECT_ROOT/tests_bash"
-base_test="$test_directory/test_base.sh"
+base_test="$test_directory/test_base.py"
 
 cd $PROJECT_ROOT
 total=0

@@ -8,6 +8,7 @@ function echo_in_red(){
 
 function exec_nachos(){
     cd $PROJECT_ROOT/code/build
+    echo $(pwd)
     $1 > $tmp_file
 }
 
