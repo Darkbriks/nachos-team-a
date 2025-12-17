@@ -11,3 +11,10 @@ unsigned int my_strlen(char *str){
     while(str[result] != '\0'){result++;}
     return result;
 }
+
+void print_error(const char *msg) {
+    my_printf((char *) msg);
+    my_printf(" (errno=");
+    PutInt(GetLastError());
+    my_printf(")\n");
+}

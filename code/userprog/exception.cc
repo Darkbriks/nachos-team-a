@@ -132,6 +132,24 @@ void handler_SC_GetInt(){
     delete new_val;
 }
 
+void handle_SC_CreateThread(){
+    VoidFunctionPtr function = (VoidFunctionPtr) machine->ReadRegister(4);
+    ptr_32 args = (ptr_32) machine->ReadRegister(5);
+    if ((int) function < 0) { RETURN(-E_INVAL); } // TODO Add more checks (addr is in valid user space, for example)
+    if (args < 0) { RETURN(-E_INVAL); }
+    Thread *thread = new Thread("coucou");
+    if (!thread){
+        RETURN(-E_NOMEM); // TODO verify there's no more reasons new failed
+    }
+    thread->Fork(function, args);
+    RETURN(thread->getTID());
+}
+    
+void handle_SC_ExitThread(){
+    currentThread->Finish();
+}
+
+    
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2);
 
@@ -177,6 +195,16 @@ void ExceptionHandler(ExceptionType which) {
         case SC_GetInt:
             DEBUG('a', "GetInt exception.cc\n");
             handler_SC_GetInt();
+            break;
+
+        case SC_CreateThread:
+            DEBUG('a', "CreateThread exception.cc\n");
+            handle_SC_CreateThread();
+            break;
+
+        case SC_ExitThread:
+            DEBUG('a', "CreateThread exception.cc\n");
+            handle_SC_ExitThread();
             break;
 
         default:

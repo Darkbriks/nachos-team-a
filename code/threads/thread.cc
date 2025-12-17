@@ -24,7 +24,7 @@
     0xdeadbeef // this is put at the top of the
                // execution stack, for detecting
                // stack overflows
-
+unsigned int currentThreadId = 0;
 //----------------------------------------------------------------------
 // Thread::Thread
 //      Initialize a thread control block, so that we can then call
@@ -34,7 +34,10 @@
 //----------------------------------------------------------------------
 
 Thread::Thread(const char *threadName) {
-    name = threadName;
+    char tmp[MAX_STRING_SIZE]; 
+    snprintf((char *) tmp,  strlen(threadName + 100), "%s_%d",threadName, currentThreadId);
+    name = tmp;
+    currentThreadId++;
     stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;

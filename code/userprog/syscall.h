@@ -35,6 +35,8 @@
 #define SC_GetString 14
 #define SC_PutInt 15
 #define SC_GetInt 16
+#define SC_CreateThread 17
+#define SC_ExitThread 18
 
 /* Error codes - returned as negative values by syscalls, stored as positive in errno */
 #define E_SUCCESS       0   /* No error */
@@ -238,6 +240,21 @@ int GetString(char *s, int n);
  * @warning If the string provided can't be cast in integer we exit the programm
  */
 void GetInt(int *n);
+
+/**
+ * @brief Create a thread at the user level
+ *
+ * @param f Function to execute
+ * @param arg Argument for the function
+ * @param arg Argument for the function
+ * @return  the tid of the thread newly created
+ */
+int UserThreadCreate(void f(void *arg), void *arg);
+
+/**
+ * @brief The caller will be kill if this function works
+ */
+void UserThreadExit();
 
 #endif // IN_USER_MODE
 

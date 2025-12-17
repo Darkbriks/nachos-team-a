@@ -277,6 +277,45 @@ GetInt_ok:
     j      $31
     .end GetInt
 
+/* CreateThread: with error handling */
+    .globl CreateThread
+    .ent	CreateThread
+CreateThread:
+    addiu $2,$0,SC_CreateThread
+    syscall
+    bgez  $2,CreateThread_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+CreateThread_ok:
+    sw     $0,errno
+    j      $31
+    .end CreateThread
+
+/* ExitThread : with error handling */
+    .globl ExitThread
+    .ent	ExitThread
+ExitThread:
+    addiu $2,$0,SC_ExitThread
+    syscall
+    bgez  $2,ExitThread_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+ExitThread_ok:
+    sw     $0,errno
+    j      $31
+    .end ExitThread
+
+
 /* -------------------------------------------------------------
  * Errno utility functions
  * -------------------------------------------------------------

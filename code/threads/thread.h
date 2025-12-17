@@ -77,6 +77,7 @@ class Thread {
     // THEY MUST be in this position for SWITCH to work.
     int *stackTop;                      // the current stack pointer
     int machineState[MachineStateSize]; // all registers except for stackTop
+    unsigned int TID; // The TID for this thread
 
   public:
     Thread(const char *debugName); // initialize a Thread
@@ -98,6 +99,7 @@ class Thread {
     // overflowed its stack
     void setStatus(ThreadStatus st) { status = st; }
     const char *getName() { return (name); }
+    unsigned int getTID() { return (TID); }
     void Print() { printf("%s, ", name); }
 
   private:
