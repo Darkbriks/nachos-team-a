@@ -18,6 +18,7 @@
 #include "addrspace.h"
 #include "copyright.h"
 #include "noff.h"
+#include "synch.h"
 #include "system.h"
 
 #include <strings.h> /* for bzero */
@@ -111,6 +112,10 @@ AddrSpace::AddrSpace(OpenFile *executable) {
         executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]),
                            noffH.initData.size, noffH.initData.inFileAddr);
     }
+
+    threadNumber = 1; // The main thread
+    threadNumberLock = new Lock("thread number lock");
+    threadExitSemaphore = new Semaphore("thread exit semaphore", 0);
 }
 
 //----------------------------------------------------------------------
@@ -123,6 +128,9 @@ AddrSpace::~AddrSpace() {
     // delete pageTable;
     delete[] pageTable;
     // End of modification
+
+    delete threadNumberLock;
+    delete threadExitSemaphore;
 }
 
 //----------------------------------------------------------------------
@@ -176,4 +184,44 @@ void AddrSpace::SaveState() {}
 void AddrSpace::RestoreState() {
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
+}
+
+void AddrSpace::AddThread() {
+    threadNumberLock->Acquire();
+    threadNumber++;
+    threadNumberLock->Release();
+    DEBUG('t', "AddrSpace: Added thread, now %d threads\n", threadNumber);
+}
+
+void AddrSpace::RemoveThread() {
+    threadNumberLock->Acquire();
+    const unsigned int remainingThreads = --threadNumber;
+    threadNumberLock->Release();
+
+    DEBUG('t', "AddrSpace: Removed thread, now %d threads\n", remainingThreads);
+
+    threadExitSemaphore->V();
+
+    if (remainingThreads == 0) {
+        DEBUG('t', "AddrSpace: Last thread terminated, deleting AddrSpace\n");
+        currentThread->space = nullptr;
+        delete this; // Sorry, not very elegant, and a bit risky. Make it better later
+    }
+}
+
+void AddrSpace::WaitForAllThreadsTerminate() {
+    while (true) {
+        threadNumberLock->Acquire();
+        const unsigned int remainingThreads = threadNumber - 1; // Exclude the main thread
+        threadNumberLock->Release();
+
+        if (remainingThreads == 0) {
+            break;
+        }
+
+        DEBUG('t', "AddrSpace: Main thread waiting, %d child threads remaining\n", remainingThreads);
+        threadExitSemaphore->P();
+    }
+
+    DEBUG('t', "AddrSpace: All child threads finished\n");
 }

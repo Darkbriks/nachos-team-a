@@ -1,15 +1,16 @@
 #include "syscall.h"
 
-void super_fun(void *arg){
-    PutChar('1');
-    PutInt(*(int *)arg);
+void super_fun_2(void *arg){
     ExitThread();
-    PutChar('2');
+}
+
+void super_fun_1(void *arg){
+    for (int i = 0; i < *(int *)arg; i++) { CreateThread(super_fun_2, arg); }
+    ExitThread();
 }
 
 int main(){
-    int x = 8;
-    CreateThread(super_fun, &x);
-    ExitThread();
+    int x = 3;
+    for (int i = 0; i < x; i++) { CreateThread(super_fun_1, &x); }
     return 0;
 }

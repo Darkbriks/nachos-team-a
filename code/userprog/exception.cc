@@ -70,8 +70,12 @@ static void UpdatePC() {
 #define INT32_MAX 2147483647
     
 void handler_SC_exit() {
-    int return_code = machine->ReadRegister(4);
+    const int return_code = machine->ReadRegister(4);
 	machine->WriteRegister(2, return_code);
+
+    // Wait the termination of all threads in the address space before halting the machine
+    if (currentThread->space != nullptr) { currentThread->space->WaitForAllThreadsTerminate(); }
+
     interrupt->Halt();
 }    
 

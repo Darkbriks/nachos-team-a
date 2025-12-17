@@ -19,7 +19,7 @@ static void StartUserThread(const int f){
 
     // Initialize the stack pointer to 3 pages before the end of the address space
     // Probably needs to be adjusted later
-    const int stackAddr = static_cast<int>(currentThread->space->getNumPages() * PageSize - 3 * PageSize);
+    const int stackAddr = static_cast<int>(currentThread->space->GetNumPages() * PageSize - 3 * PageSize);
 
     const int prevPC = machine->ReadRegister(PCReg);
 
@@ -39,18 +39,17 @@ static void StartUserThread(const int f){
 
 int do_UserThreadCreate(const int function, const int arg){
     Thread *thread = new Thread("user_thread");
-    if (!thread){
-        return -E_NOMEM;
-    }
+    if (!thread){ return -E_NOMEM; }
 
     Param *param = new Param(function, arg);
     thread->Fork(StartUserThread, reinterpret_cast<int>(param));
+
+    currentThread->space->AddThread();
+
     return static_cast<int>(thread->getTID());
 }
 
 void do_UserThreadExit(){
-    // interrupt->SetLevel(IntOff);
-    Thread *oldThread = currentThread;
-    oldThread->Yield();
-    oldThread->Finish();
+    currentThread->space->RemoveThread();
+    currentThread->Finish();
 }
