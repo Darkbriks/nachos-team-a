@@ -46,11 +46,18 @@ def test(args : list[str]) -> int:
     exec_nachos(arguments, tmp_file)
     return verify_exec(TEST_DIR + "/" +  file_expect, tmp_file, name_of_test)
 
+def generate(args : list[str]) -> int:
+    file_expect = args[0]
+    arguments = args[1]
+    os.remove(file_expect)
+    exec_nachos(arguments, file_expect)
+
 def compile() -> None:
     s = subprocess.check_output(f"make -C {PROJECT_ROOT}/code &>/dev/null", shell=True).decode("utf-8")
     
 
 if __name__ == "__main__":
+
 
 
 
@@ -62,7 +69,8 @@ if __name__ == "__main__":
                    "test_getInt_positive_integer_expected.txt",
                    "test_getInt_negative_integer_expected.txt",
                    "test_getInt_positive_integer_overflow_expected.txt",
-                   "test_getInt_negative_integer_overflow_expected.txt"
+                   "test_getInt_negative_integer_overflow_expected.txt",
+                   "test_getString_erno_negative_size.txt"
                    ]
 
 # la ligne de commande pour nachos
@@ -73,7 +81,8 @@ if __name__ == "__main__":
                'echo "5" | ./nachos-step2 -x ./getInt',
                'echo "-5" | ./nachos-step2 -x ./getInt',
                'echo "9999999999" | ./nachos-step2 -x ./getInt',
-               'echo "-9999999999" | ./nachos-step2 -x ./getInt'
+               'echo "-9999999999" | ./nachos-step2 -x ./getInt',
+               "./nachos-step2 -x ./getErrno",
                ]
 
 
@@ -86,8 +95,14 @@ if __name__ == "__main__":
                   "Test getInt avec un integer négatif (-5)",
                   "Test getInt avec un integer positif dépasssant la valeur maximale de l'integer (9999999999)",
                   "Test getInt avec un integer négatif dépasssant la valeur minimale de l'integer (-9999999999)",
+                  "Test getString avec taille négative, renvoie un -1 donc aller voir E_INVAL (1)"
                 ]
     total : int = 0
+
+    if len(sys.argv) != 1 and sys.argv[1] == "generate_test":
+        for i in range(len(file_to_check)):
+            generate( [TEST_DIR+"/"+file_to_check[i], arguments[i] ])
+        exit(1)
 
     for i in range(len(file_to_check)):
         total += test( [file_to_check[i], arguments[i], name_of_test[i] ])
