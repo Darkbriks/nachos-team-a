@@ -1,14 +1,17 @@
-image:
-  dockerfile: docker/Dockerfile
-  cache:
-     - $CI_REGISTRY:latest
-
-stages: 
+stages:
+  - build
   - test
 
+build-image:
+  stage: build
+  script:
+    - yes | sudo apt install gcc-mipsel-linux-gnu || true
+    - yes | sudo apt install g++-multilib || true
+    - yes | sudo apt install build-essential || true
 
 unit-test-job:
   stage: test
   script:
-    ./test_all.py
+    - mkdir -p ~/tmp
+    - ./test_all.py 3
 
