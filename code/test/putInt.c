@@ -16,5 +16,4 @@ void print(int n)
 int main()
 {
     print(4);
-    Halt();
 }

@@ -10,6 +10,4 @@ int main()
     PutString("You typed: ", 11);
     PutChar(ch);
     PutChar('\n');
-
-    Halt();
 }

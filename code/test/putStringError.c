@@ -8,5 +8,4 @@ int main() {
         PutString("PutString executed successfully.\n", 33);
     }
     PutString("\n", 1);
-    Halt();
 }
