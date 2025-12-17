@@ -54,6 +54,8 @@
 // WATCH OUT IF THIS ISN'T BIG ENOUGH!!!!!
 #define StackSize (4 * 1024) // in words
 
+class Lock;
+
 // Thread state
 enum ThreadStatus { JUST_CREATED, RUNNING, READY, BLOCKED };
 
@@ -78,6 +80,9 @@ class Thread {
     int *stackTop;                      // the current stack pointer
     int machineState[MachineStateSize]; // all registers except for stackTop
     unsigned int TID; // The TID for this thread
+
+    static unsigned int currentThreadId;
+    static Lock *threadIdLock;
 
   public:
     Thread(const char *debugName); // initialize a Thread
@@ -114,6 +119,8 @@ class Thread {
     void StackAllocate(VoidFunctionPtr func, int arg);
     // Allocate a stack for thread.
     // Used internally by Fork()
+
+    static unsigned int GetAndIncrementThreadId();
 
 #ifdef USER_PROGRAM
     // A thread running a user program actually has *two* sets of CPU registers

@@ -24,7 +24,7 @@
     0xdeadbeef // this is put at the top of the
                // execution stack, for detecting
                // stack overflows
-unsigned int currentThreadId = 0;
+
 //----------------------------------------------------------------------
 // Thread::Thread
 //      Initialize a thread control block, so that we can then call
@@ -33,11 +33,14 @@ unsigned int currentThreadId = 0;
 //      "threadName" is an arbitrary string, useful for debugging.
 //----------------------------------------------------------------------
 
+unsigned int Thread::currentThreadId = 0;
+Lock *Thread::threadIdLock = new Lock("threadIdLock");
+
 Thread::Thread(const char *threadName) {
-    char *tmp = new char[MAX_STRING_SIZE]; 
-    snprintf((char *) tmp,  MAX_STRING_SIZE - 1, "%s_%d",threadName, currentThreadId);
-    name = tmp;
-    currentThreadId++;
+    TID = GetAndIncrementThreadId();
+    name = new char[MAX_STRING_SIZE];
+    snprintf(const_cast<char *>(name), MAX_STRING_SIZE - 1, "%s_%d", threadName, TID);
+
     stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
@@ -348,6 +351,14 @@ void Thread::StackAllocate(VoidFunctionPtr func, int arg) {
     machineState[InitialPCState] = (int)func;
     machineState[InitialArgState] = arg;
     machineState[WhenDonePCState] = (int)ThreadFinish;
+}
+
+unsigned int Thread::GetAndIncrementThreadId(){
+    threadIdLock->Acquire();
+    const unsigned int id = currentThreadId;
+    currentThreadId++;
+    threadIdLock->Release();
+    return id;
 }
 
 #ifdef USER_PROGRAM

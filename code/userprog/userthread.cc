@@ -14,33 +14,43 @@ Notez que vous aurez à initialiser le pointeur de pile. Il vous est suggéré d
 dessous du pointeur du programme principal. Ceci est une évaluation empirique, bien sûr ! Il faudra
 probablement faire mieux dans un deuxième temps...
 */
-static void StartUserThread(int f){
-    printf("coucou\n");
-    Param *param = (Param *) f;
+static void StartUserThread(const int f){
+    const Param *param = reinterpret_cast<Param *>(f);
+
+    // Initialize the stack pointer to 3 pages before the end of the address space
+    // Probably needs to be adjusted later
+    const int stackAddr = static_cast<int>(currentThread->space->getNumPages() * PageSize - 3 * PageSize);
+
+    const int prevPC = machine->ReadRegister(PCReg);
+
     currentThread->space->InitRegisters();
     currentThread->space->RestoreState();
+
     machine->WriteRegister(PCReg, param->get_function());
-    machine->WriteMem(machine->ReadRegister(StackReg) + 4, 4, param->get_arg());
-    printf("coucou\n");
-    machine->Run();
-    printf("coucou\n");
+    machine->WriteRegister(NextPCReg, param->get_function() + 4);
+    machine->WriteRegister(PrevPCReg, prevPC);
+    machine->WriteRegister(StackReg, stackAddr);
+
+    machine->WriteRegister(4, param->get_arg());
+
     delete param;
+    machine->Run();
 }
 
-int do_UserThreadCreate(int function, int arg){
-    Thread *thread = new Thread("coucou");
+int do_UserThreadCreate(const int function, const int arg){
+    Thread *thread = new Thread("user_thread");
     if (!thread){
         return -E_NOMEM;
     }
 
     Param *param = new Param(function, arg);
-    thread->Fork(StartUserThread, (int) param);
-    return thread->getTID();
+    thread->Fork(StartUserThread, reinterpret_cast<int>(param));
+    return static_cast<int>(thread->getTID());
 }
 
 void do_UserThreadExit(){
     // interrupt->SetLevel(IntOff);
     Thread *oldThread = currentThread;
     oldThread->Yield();
-    oldThread->Finish(); 
+    oldThread->Finish();
 }

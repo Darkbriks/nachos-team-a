@@ -7,11 +7,11 @@
 /**
  * @brief Create a thread
  *
- * @param f  the funtion to executes
+ * @param function  the funtion to executes
  * @param arg  a pointer for the argument of the function
  * @return the TID of the new thread. Return -1 if something bad happens
  */
-extern int do_UserThreadCreate(int f, int arg);
+extern int do_UserThreadCreate(int function, int arg);
 
 /**
  * @brief Destruct the caller thread 
@@ -25,9 +25,9 @@ class Param{
         ptr_32 function ;
         ptr_32 arg;
     public:
-        ptr_32 get_function(){return function;}
-        ptr_32 get_arg(){return arg;}
-        Param(ptr_32 f, ptr_32 a){function=f; arg =a;}
+        ptr_32 get_function() const{return function;}
+        ptr_32 get_arg() const{return arg;}
+        Param(const ptr_32 f, const ptr_32 a){function=f; arg =a;}
 };
 
 #endif //USERTHREAD__H
