@@ -1,12 +1,11 @@
-stages: 
-  - build
-  - test
-  - deploy
+image:
+  dockerfile: docker/Dockerfile
+  cache:
+     - $CI_REGISTRY:latest
 
-build-job: 
-  stage: build
-  script:
-    make -C code
+stages: 
+  - test
+
 
 unit-test-job:
   stage: test
