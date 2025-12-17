@@ -11,6 +11,4 @@ int main()
     PutString(buffer, 100);
     PutString("\nYou typed: ", 11); PutInt(res); PutString(" characters.\n", 13);
     PutString("\n", 1);
-
-    Halt();
 }
