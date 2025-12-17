@@ -5,9 +5,9 @@ stages:
 build-image:
   stage: build
   script:
-    - yes | sudo apt install gcc-mipsel-linux-gnu || true
-    - yes | sudo apt install g++-multilib || true
-    - yes | sudo apt install build-essential || true
+    - yes |  apt install gcc-mipsel-linux-gnu || true
+    - yes |  apt install g++-multilib || true
+    - yes |  apt install build-essential || true
 
 unit-test-job:
   stage: test
