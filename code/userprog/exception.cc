@@ -60,7 +60,12 @@ static void UpdatePC() {
 //      "which" is the kind of exception.  The list of possible exceptions
 //      are in machine.h.
 //----------------------------------------------------------------------
-    
+
+void handler_SC_exit() {
+    int return_code = machine->ReadRegister(4);
+	machine->WriteRegister(2, return_code);
+    interrupt->Halt();
+}    
 
 void handler_SC_putString(){
     int addr = machine->ReadRegister(4);
@@ -121,6 +126,10 @@ void ExceptionHandler(ExceptionType which) {
         case SC_Halt:
             DEBUG('a', "Shutdown, initiated by user program.\n");
             interrupt->Halt();
+            break;
+        case SC_Exit:
+            DEBUG('a', "Exit, initiated by user program.\n");
+            handler_SC_exit();
             break;
         case SC_PutChar:
             DEBUG('a', "PutChar exception.cc\n");

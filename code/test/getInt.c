@@ -11,5 +11,4 @@ void get(int n)
 int main()
 {
     get(4);
-    Halt();
 }
