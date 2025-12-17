@@ -192,22 +192,13 @@ PutChar:
     j      $31
     .end PutChar
 
-/* PutString : no error handling */
+/* PutString : with error handling */
     .globl PutString
     .ent	PutString
 PutString:
     addiu $2,$0,SC_PutString
     syscall
-    j      $31
-    .end PutString
-
-/* GetChar : with error handling */
-    .globl GetChar
-    .ent	GetChar
-GetChar:
-    addiu $2,$0,SC_GetChar
-    syscall
-    bgez  $2,GetChar_ok
+    bgez  $2,PutString_ok
     nop
     # Error handling
     subu   $3,$0,$2
@@ -215,8 +206,17 @@ GetChar:
     addiu  $2,$0,-1
     j      $31
     nop
-GetChar_ok:
+PutString_ok:
     sw     $0,errno
+    j      $31
+    .end PutString
+
+/* GetChar : no error handling */
+	.globl GetChar
+    .ent	GetChar
+GetChar:
+    addiu $2,$0,SC_GetChar
+    syscall
     j      $31
     .end GetChar
 
