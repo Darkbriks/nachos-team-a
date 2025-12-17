@@ -4,13 +4,14 @@ stages:
 
 build-image:
   stage: build
+  image: debian:latest
   script:
-    - yes |  apt install gcc-mipsel-linux-gnu || true
-    - yes |  apt install g++-multilib || true
-    - yes |  apt install build-essential || true
+    - apt update
+    - apt install -y build-essential gcc-mipsel-linux-gnu g++-multilib
 
 unit-test-job:
   stage: test
+  image: debian:latest
   script:
     - mkdir -p ~/tmp
     - ./test_all.py 3
