@@ -21,6 +21,4 @@ int main() {
         PutString(buffer, result);
     }
     PutString("\n", 1);
-
-    Halt();
 }
