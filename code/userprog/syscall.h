@@ -48,6 +48,7 @@
 #define E_EOF           6   /* End of file */
 #define E_NOMEM         7   /* Out of memory */
 #define E_RANGE         8   /* Result out of range */
+#define E_RANGE         8   /* Result out of range */
 
 #ifdef IN_USER_MODE
 
@@ -203,6 +204,7 @@ void PutChar(char c);
  * @param s  The string to print on the console
  * @param n Maximum number of bytes to write (stops at '\0' or after n bytes)
  * @return The number of bytes effectively written, or -1 on error (check errno)
+ * @warning if n > MAX_PUT_STRING then we only display the MAX_PUT_STRING first characters
  */
 int PutString(char *s, int n);
 
@@ -249,12 +251,12 @@ void GetInt(int *n);
  * @param arg Argument for the function
  * @return  the tid of the thread newly created
  */
-int UserThreadCreate(void f(void *arg), void *arg);
+int CreateThread(void f(void *arg), void *arg);
 
 /**
  * @brief The caller will be kill if this function works
  */
-void UserThreadExit();
+void ExitThread();
 
 #endif // IN_USER_MODE
 

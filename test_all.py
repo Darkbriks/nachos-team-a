@@ -56,12 +56,17 @@ def compile() -> None:
     s = subprocess.check_output(f"make -C {PROJECT_ROOT}/code &>/dev/null", shell=True).decode("utf-8")
     
 
+def usage():
+    print(f"{sys.argv[0]} <the step to execute> <optionnal generate-tests>")
+
+
 if __name__ == "__main__":
 
-
-
-
     compile()
+    if len(sys.argv) == 1:
+        usage()
+        exit(1)
+    CURRENT_STEP = sys.argv[1]
     file_to_check=["test_putchar_user_mode_result_expected.txt",
                    "test_putString_user_mode_expect.txt",
                    "test_putStringError_user_mode_expect.txt",
@@ -74,15 +79,15 @@ if __name__ == "__main__":
                    ]
 
 # la ligne de commande pour nachos
-    arguments=["./nachos-step2 -x ./putchar",
-               "./nachos-step2 -x ./putString",
-               "./nachos-step2 -x ./putStringError",
-               'echo "Bob" | ./nachos-step2 -x ./getString',
-               'echo "5" | ./nachos-step2 -x ./getInt',
-               'echo "-5" | ./nachos-step2 -x ./getInt',
-               'echo "9999999999" | ./nachos-step2 -x ./getInt',
-               'echo "-9999999999" | ./nachos-step2 -x ./getInt',
-               "./nachos-step2 -x ./getErrno",
+    arguments=[f"./nachos-step{CURRENT_STEP} -x ./putchar",
+               f"./nachos-step{CURRENT_STEP} -x ./putString",
+               f"./nachos-step{CURRENT_STEP} -x ./putStringError",
+               f'echo "Bob" | ./nachos-step{CURRENT_STEP} -x ./getString',
+               f'echo "5" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+               f'echo "-5" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+               f'echo "9999999999" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+               f'echo "-9999999999" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+               f"./nachos-step{CURRENT_STEP} -x ./getErrno",
                ]
 
 
@@ -99,7 +104,7 @@ if __name__ == "__main__":
                 ]
     total : int = 0
 
-    if len(sys.argv) != 1 and sys.argv[1] == "generate_test":
+    if len(sys.argv) >= 3 and sys.argv[2] == "generate_test":
         for i in range(len(file_to_check)):
             generate( [TEST_DIR+"/"+file_to_check[i], arguments[i] ])
         exit(1)

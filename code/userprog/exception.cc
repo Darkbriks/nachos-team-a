@@ -24,7 +24,9 @@
 #include "copyright.h"
 #include "syscall.h"
 #include "system.h"
+#include "userthread.h"
 
+#define MAX_PUT_STRING 8192
 //----------------------------------------------------------------------
 // UpdatePC : Increments the Program Counter register in order to resume
 // the user program immediately after the "syscall" instruction.
@@ -76,6 +78,10 @@ void handler_SC_exit() {
 void handler_SC_putString(){
     int addr = machine->ReadRegister(4);
     int n = machine->ReadRegister(5);
+
+    if (n > MAX_PUT_STRING) {
+        n = MAX_PUT_STRING;
+    }
 
     if (addr < 0) { RETURN(-E_FAULT); } // TODO Add more checks (addr is in valid user space, for example)
     if (n < 0) { RETURN(-E_INVAL); }
@@ -137,16 +143,7 @@ void handle_SC_CreateThread(){
     ptr_32 args = (ptr_32) machine->ReadRegister(5);
     if ((int) function < 0) { RETURN(-E_INVAL); } // TODO Add more checks (addr is in valid user space, for example)
     if (args < 0) { RETURN(-E_INVAL); }
-    Thread *thread = new Thread("coucou");
-    if (!thread){
-        RETURN(-E_NOMEM); // TODO verify there's no more reasons new failed
-    }
-    thread->Fork(function, args);
-    RETURN(thread->getTID());
-}
-    
-void handle_SC_ExitThread(){
-    currentThread->Finish();
+    RETURN(do_UserThreadCreate((int) function, args) );
 }
 
     
@@ -204,7 +201,7 @@ void ExceptionHandler(ExceptionType which) {
 
         case SC_ExitThread:
             DEBUG('a', "CreateThread exception.cc\n");
-            handle_SC_ExitThread();
+            do_UserThreadExit();
             break;
 
         default:

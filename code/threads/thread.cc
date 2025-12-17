@@ -34,8 +34,8 @@ unsigned int currentThreadId = 0;
 //----------------------------------------------------------------------
 
 Thread::Thread(const char *threadName) {
-    char tmp[MAX_STRING_SIZE]; 
-    snprintf((char *) tmp,  strlen(threadName + 100), "%s_%d",threadName, currentThreadId);
+    char *tmp = new char[MAX_STRING_SIZE]; 
+    snprintf((char *) tmp,  MAX_STRING_SIZE - 1, "%s_%d",threadName, currentThreadId);
     name = tmp;
     currentThreadId++;
     stackTop = NULL;
@@ -66,6 +66,7 @@ Thread::Thread(const char *threadName) {
 Thread::~Thread() {
     DEBUG('t', "Deleting thread \"%s\"\n", name);
 
+    delete name;
     ASSERT(this != currentThread);
     if (stack != NULL)
         DeallocBoundedArray((char *)stack, StackSize * sizeof(int));
