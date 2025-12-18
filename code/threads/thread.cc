@@ -40,6 +40,8 @@ Thread::Thread(const char *threadName) {
     TID = GetAndIncrementThreadId();
     name = new char[MAX_STRING_SIZE];
     snprintf(const_cast<char *>(name), MAX_STRING_SIZE - 1, "%s_%d", threadName, TID);
+    joiner = nullptr;
+    join = nullptr;
 
     stackTop = NULL;
     stack = NULL;
@@ -73,6 +75,18 @@ Thread::~Thread() {
     ASSERT(this != currentThread);
     if (stack != NULL)
         DeallocBoundedArray((char *)stack, StackSize * sizeof(int));
+}
+
+void Thread::Joiner(){
+    if (joiner == nullptr){
+        return;
+    }
+    joiner->join_semaphore->Signal(joiner->join_lock);
+}
+
+void Thread::Join(){
+    join_semaphore->Wait(join_lock);
+
 }
 
 //----------------------------------------------------------------------

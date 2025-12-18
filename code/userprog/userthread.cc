@@ -51,5 +51,16 @@ int do_UserThreadCreate(const int function, const int arg){
 
 void do_UserThreadExit(){
     currentThread->space->RemoveThread();
+    currentThread->Joiner();
     currentThread->Finish();
+}
+
+Thread *get_thread_by_TID(int TID){
+    return nullptr;
+}
+
+int do_UserThreadJoin(int TID){
+    currentThread->setJoin(get_thread_by_TID(TID));
+    currentThread->Join();
+    return 0;
 }

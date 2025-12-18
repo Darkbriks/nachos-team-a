@@ -37,6 +37,7 @@
 #define SC_GetInt 16
 #define SC_CreateThread 17
 #define SC_ExitThread 18
+#define SC_JoinThread 19
 
 /* Error codes - returned as negative values by syscalls, stored as positive in errno */
 #define E_SUCCESS       0   /* No error */
@@ -257,6 +258,13 @@ int CreateThread(void f(void *arg), void *arg);
  * @brief The caller will be kill if this function works
  */
 void ExitThread();
+
+/**
+ * @brief The caller wait for the thread finish
+ *
+ * @param TID The thread to wait
+ */
+void JoinThread(int TID);
 
 #endif // IN_USER_MODE
 
