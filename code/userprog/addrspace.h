@@ -19,11 +19,11 @@
 
 #define UserStackSize 1024 // increase this as necessary!
 
-class Semaphore;class Lock;
+class Process;
 
 class AddrSpace {
   public:
-    AddrSpace(OpenFile *executable); // Create an address space,
+    AddrSpace(OpenFile *executable, Process * process); // Create an address space,
     // initializing it with the program
     // stored in the file "executable"
     ~AddrSpace(); // De-allocate an address space
@@ -34,33 +34,16 @@ class AddrSpace {
     void SaveState();    // Save/restore address space-specific
     void RestoreState(); // info on a context switch
 
-    /**
-     * @brief Add a thread for this address space
-     */
-    void AddThread();
-
-    /**
-     * @brief Remove a thread from this address space
-     */
-    void RemoveThread();
-
-    /**
-     * @brief Wait for all threads of this address space to terminate
-     */
-    void WaitForAllThreadsTerminate();
-
     unsigned int GetNumPages() const { return numPages; }
-    unsigned int GetThreadNumber() const { return threadNumber; }
+    Process *getProcess(){return process;}
 
   private:
+    Process * process;
     TranslationEntry *pageTable; // Assume linear page table translation
     // for now!
     unsigned int numPages; // Number of pages in the virtual
     // address space
 
-    unsigned int threadNumber;
-    Lock *threadNumberLock;
-    Semaphore *threadExitSemaphore;
 };
 
 #endif // ADDRSPACE_H

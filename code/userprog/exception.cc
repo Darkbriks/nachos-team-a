@@ -25,6 +25,7 @@
 #include "syscall.h"
 #include "system.h"
 #include "userthread.h"
+#include "process.h"
 
 #define MAX_PUT_STRING 8192
 //----------------------------------------------------------------------
@@ -74,7 +75,7 @@ void handler_SC_exit() {
 	machine->WriteRegister(2, return_code);
 
     // Wait the termination of all threads in the address space before halting the machine
-    if (currentThread->space != nullptr) { currentThread->space->WaitForAllThreadsTerminate(); }
+    if (currentThread->space != nullptr) { currentThread->space->getProcess()->WaitForAllThreadsTerminate(); }
 
     interrupt->Halt();
 }    

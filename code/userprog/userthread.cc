@@ -1,5 +1,6 @@
 #include "userthread.h"
 #include "syscall.h"
+#include "process.h"
 
 /**
  * @brief appelée par le nouveau thread Nachos créé par la fonction do_UserThreadCreate
@@ -44,13 +45,13 @@ int do_UserThreadCreate(const int function, const int arg){
     Param *param = new Param(function, arg);
     thread->Fork(StartUserThread, reinterpret_cast<int>(param));
 
-    currentThread->space->AddThread();
+    currentThread->space->getProcess()->AddThread();
 
     return static_cast<int>(thread->getTID());
 }
 
 void do_UserThreadExit(){
-    currentThread->space->RemoveThread();
+    currentThread->space->getProcess()->RemoveThread();
     currentThread->Joiner();
     currentThread->Finish();
 }

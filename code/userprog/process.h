@@ -18,6 +18,9 @@ class Process{
         AddrSpace *space;
         unsigned int PID;
         Thread * mainThread;
+        unsigned int threadNumber;
+        Lock *threadNumberLock;
+        Semaphore *threadExitSemaphore;
 
         //User owner; // TODO create User class for multiUser OS 
 
@@ -29,6 +32,21 @@ class Process{
         unsigned int getPId(){return PID;}
         AddrSpace * getSpace() const {return space;}
         Thread * getMainThread(){return mainThread;};
+        unsigned int GetThreadNumber() const { return threadNumber; }
+        /**
+         * @brief Add a thread for this address space
+         */
+        void AddThread();
+
+        /**
+         * @brief Remove a thread from this address space
+         */
+        void RemoveThread();
+
+        /**
+         * @brief Wait for all threads of this address space to terminate
+         */
+        void WaitForAllThreadsTerminate();
 };
 
 #endif // PROCESS_H

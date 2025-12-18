@@ -31,7 +31,7 @@ Process::Process(OpenFile * executable, char * status_code){
 
     Thread * firstThread = new Thread("main");
     if (executable != nullptr){
-        this->space = new AddrSpace(executable);
+        this->space = new AddrSpace(executable, this);
 
         space->InitRegisters(); // set the initial register values
         space->RestoreState();  // load page table register
@@ -40,10 +40,53 @@ Process::Process(OpenFile * executable, char * status_code){
         scheduler->ReadyToRun(firstThread);
     }
     mainThread = firstThread;
+    threadNumber = 1; // The main thread
+    threadNumberLock = new Lock("thread number lock");
+    threadExitSemaphore = new Semaphore("thread exit semaphore", 0);
 }
 
 Process::~Process(){
     delete all_threads;
+    delete threadNumberLock;
+    delete threadExitSemaphore;
 }
 
+void Process::AddThread() {
+    threadNumberLock->Acquire();
+    threadNumber++;
+    threadNumberLock->Release();
+    DEBUG('t', "AddrSpace: Added thread, now %d threads\n", threadNumber);
+}
 
+void Process::RemoveThread() {
+    threadNumberLock->Acquire();
+    const unsigned int remainingThreads = --threadNumber;
+    threadNumberLock->Release();
+
+    DEBUG('t', "AddrSpace: Removed thread, now %d threads\n", remainingThreads);
+
+    threadExitSemaphore->V();
+
+    if (remainingThreads == 0) {
+        DEBUG('t', "AddrSpace: Last thread terminated, deleting AddrSpace\n");
+        currentThread->space = nullptr;
+        delete this; // Sorry, not very elegant, and a bit risky. Make it better later
+    }
+}
+
+void Process::WaitForAllThreadsTerminate() {
+    while (true) {
+        threadNumberLock->Acquire();
+        const unsigned int remainingThreads = threadNumber - 1; // Exclude the main thread
+        threadNumberLock->Release();
+
+        if (remainingThreads == 0) {
+            break;
+        }
+
+        DEBUG('t', "AddrSpace: Main thread waiting, %d child threads remaining\n", remainingThreads);
+        threadExitSemaphore->P();
+    }
+
+    DEBUG('t', "AddrSpace: All child threads finished\n");
+}
