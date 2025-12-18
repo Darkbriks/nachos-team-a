@@ -1,0 +1,96 @@
+#ifndef LINKED_LIST_H
+#define LINKED_LIST_H
+#include "copyright.h"
+
+
+template<typename T>
+
+class LinkedList{
+    
+
+
+    class Node{
+        public:
+            T *value;
+            Node * next;
+
+            Node(T* v){this->value = v;}
+
+            static void FreeNode(Node *elem){
+                if (elem == nullptr){
+                    return;
+                }
+                FreeNode(elem->next);
+                delete elem;
+            }
+    };
+
+    Node * head;
+    Node * end;
+
+    public:
+        LinkedList(){head = end = nullptr;}
+        ~LinkedList(){Node::FreeNode(head);}
+
+        template<typename X>
+        T* FindInList(bool fun(T * elem, X value), X value){
+            for (Node *elem; elem != nullptr; elem = elem->next){
+                if (fun(elem, value)){
+                    return elem;
+                }
+            }
+            return nullptr;
+        }
+
+        T* FindInList(T * toFind){
+            for (Node *elem; elem != nullptr; elem = elem->next){
+                if (elem->value == toFind){
+                    return toFind;
+                }
+            }
+            return nullptr;
+        }
+
+        bool AddInList(T * elem){
+            if (end != nullptr){
+                end->next = new Node(elem);
+                end = end->next;
+                return true;
+            } else {
+                head = end = new Node(elem);
+                return true;
+            }
+        }
+
+        bool OnlyOneElement(){
+            return head != nullptr && head == end;
+        }
+
+        bool RemoveInList(T *elem){
+            if (head == nullptr){
+                return false;
+            }
+            if (head->next == nullptr){
+                if (head->value == elem){
+                    delete head;
+                    head = end = nullptr;
+                    return true;
+                } else { return false;}
+            }
+            for (Node * current = head; current != nullptr; current = current->next){
+                if (current->next->value == elem){
+                    Node * tmp = current->next->next;
+                    if (end == current->next){
+                        end = current;
+                    }
+                    delete current->next;
+                    current->next = tmp;
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+};
+
+#endif // LINKED_LIST_H

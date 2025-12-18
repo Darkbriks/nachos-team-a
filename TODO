@@ -11,3 +11,5 @@ Maintenir liste Thread vivant sur le système ailleurs que dans le scheduler ?
 
 Si un thread non originel appelle exit alors boucle infinie  car les deux s'attendent mutuellement -> hiérarchie donc pas bon!!!
 Voir qu'un thread est sortie de sa fonction originel opour ne pas faire d'ExitThread forcément ?
+
+Reussir à compiler plusieurs répertoires

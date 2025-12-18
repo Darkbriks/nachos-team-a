@@ -2,6 +2,7 @@
 #define PROCESS_H
 
 #include "copyright.h"
+#include "linked_list.h"
 #include "system.h"
 
 #define MAX_THREAD 10 // TODO check for user's max process
@@ -9,18 +10,23 @@
 
 
 class Process{
+    friend class Thread;
     private:
         Process(OpenFile * executable, char * return_code);
 
         static class BitMapThreadSafe *all_process; // TODO put it in USer one day ... I hope but I really don't know
                                                     
-        class BitMap *all_threads;
+        /*
+         * @deprecated Too much memory for each process, use it if you want to bench
+         */
+        // class BitMap *all_threads;
         AddrSpace *space;
         unsigned int PID;
         Thread * mainThread;
         unsigned int threadNumber;
         Lock *threadNumberLock;
         Semaphore *threadExitSemaphore;
+        LinkedList<Thread> * all_threads_addr;
 
         //User owner; // TODO create User class for multiUser OS 
 
@@ -36,12 +42,12 @@ class Process{
         /**
          * @brief Add a thread for this address space
          */
-        void AddThread();
+        Thread* CreateThread(char * name);
 
         /**
          * @brief Remove a thread from this address space
          */
-        void RemoveThread();
+        void RemoveThread(Thread * thread);
 
         /**
          * @brief Wait for all threads of this address space to terminate

@@ -75,6 +75,9 @@ extern void ThreadPrint(int arg);
 //  that only run in the kernel have a NULL address space.
 
 class Thread {
+
+    friend Process;
+
   private:
     // NOTE: DO NOT CHANGE the order of these first two members.
     // THEY MUST be in this position for SWITCH to work.
@@ -88,9 +91,10 @@ class Thread {
 
     static unsigned int currentThreadId;
     static Lock *threadIdLock;
+    Thread(const char *debugName); // initialize a Thread
 
   public:
-    Thread(const char *debugName); // initialize a Thread
+
     ~Thread();                     // deallocate a Thread
     // NOTE -- thread being deleted
     // must not be running when delete

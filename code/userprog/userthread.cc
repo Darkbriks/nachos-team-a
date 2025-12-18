@@ -40,19 +40,19 @@ static void StartUserThread(const int f){
 }
 
 int do_UserThreadCreate(const int function, const int arg){
-    Thread *thread = new Thread("user_thread");
+     
+    Thread *thread = currentThread->space->getProcess()->CreateThread( (char *)("user_thread"));
     if (!thread){ return -E_NOMEM; }
 
     Param *param = new Param(function, arg);
     thread->Fork(StartUserThread, reinterpret_cast<int>(param));
 
-    currentThread->space->getProcess()->AddThread();
 
     return static_cast<int>(thread->getTID());
 }
 
 void do_UserThreadExit(){
-    currentThread->space->getProcess()->RemoveThread();
+    currentThread->space->getProcess()->RemoveThread(currentThread);
     currentThread->Joiner();
     currentThread->Finish();
 }

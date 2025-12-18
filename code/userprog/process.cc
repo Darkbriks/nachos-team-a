@@ -19,7 +19,7 @@ Process * Process::createProcess(OpenFile * executable){
 
 Process::Process(OpenFile * executable, char * status_code){
     *status_code=0;
-    all_threads = new BitMap(MAX_THREAD);
+    // all_threads = new BitMap(MAX_THREAD);
 
     const int tmp = all_process->Find();
     if (tmp == -1){
@@ -37,30 +37,26 @@ Process::Process(OpenFile * executable, char * status_code){
         space->RestoreState();  // load page table register
         firstThread->space = space;
         delete executable; // close file
-        scheduler->ReadyToRun(firstThread);
+scheduler->ReadyToRun(firstThread);
     }
     mainThread = firstThread;
     threadNumber = 1; // The main thread
     threadNumberLock = new Lock("thread number lock");
     threadExitSemaphore = new Semaphore("thread exit semaphore", 0);
+    all_threads_addr = new LinkedList<Thread>();
 }
 
 Process::~Process(){
-    delete all_threads;
+    // delete all_threads;
     delete threadNumberLock;
     delete threadExitSemaphore;
+    delete all_threads_addr;
 }
 
-void Process::AddThread() {
-    threadNumberLock->Acquire();
-    threadNumber++;
-    threadNumberLock->Release();
-    DEBUG('t', "AddrSpace: Added thread, now %d threads\n", threadNumber);
-}
-
-void Process::RemoveThread() {
+void Process::RemoveThread(Thread * thread) {
     threadNumberLock->Acquire();
     const unsigned int remainingThreads = --threadNumber;
+    all_threads_addr->RemoveInList(thread);
     threadNumberLock->Release();
 
     DEBUG('t', "AddrSpace: Removed thread, now %d threads\n", remainingThreads);
@@ -69,24 +65,38 @@ void Process::RemoveThread() {
 
     if (remainingThreads == 0) {
         DEBUG('t', "AddrSpace: Last thread terminated, deleting AddrSpace\n");
-        currentThread->space = nullptr;
+        thread->space = nullptr;
         delete this; // Sorry, not very elegant, and a bit risky. Make it better later
     }
 }
 
 void Process::WaitForAllThreadsTerminate() {
-    while (true) {
-        threadNumberLock->Acquire();
+    threadNumberLock->Acquire();
+    while ( ! all_threads_addr->OnlyOneElement()) {
         const unsigned int remainingThreads = threadNumber - 1; // Exclude the main thread
-        threadNumberLock->Release();
 
         if (remainingThreads == 0) {
             break;
         }
+        threadNumberLock->Release();
 
         DEBUG('t', "AddrSpace: Main thread waiting, %d child threads remaining\n", remainingThreads);
         threadExitSemaphore->P();
+        threadNumberLock->Acquire();
     }
+    threadNumberLock->Release();
 
     DEBUG('t', "AddrSpace: All child threads finished\n");
 }
+
+
+Thread* Process::CreateThread(char * name){
+    Thread * newThread = new Thread(name);
+    threadNumberLock->Acquire();
+    threadNumber++;
+    all_threads_addr->AddInList(newThread);
+    threadNumberLock->Release();
+    DEBUG('t', "AddrSpace: Added thread, now %d threads\n", threadNumber);
+    return newThread;
+}
+
