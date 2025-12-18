@@ -78,7 +78,7 @@ class LinkedList{
                     return true;
                 } else { return false;}
             }
-            for (Node * current = head; current != nullptr; current = current->next){
+            for (Node * current = head; current->next != nullptr; current = current->next){
                 if (current->next->value == elem){
                     Node * tmp = current->next->next;
                     if (end == current->next){
