@@ -7,6 +7,7 @@
 
 #include "system.h"
 #include "copyright.h"
+#include "process.h"
 
 // This defines *all* of the global data structures used by Nachos.
 // These are all initialized and de-allocated by this file.
@@ -136,7 +137,13 @@ void Initialize(int argc, char **argv) {
     // We didn't explicitly allocate the current thread we are running in.
     // But if it ever tries to give up the CPU, we better have a Thread
     // object to save its state.
-    currentThread = new Thread("main");
+
+    Process * process = Process::createProcess(nullptr);
+    if (process == nullptr){
+        // real kernel panick
+        ASSERT(FALSE);
+    }
+    currentThread = process->getMainThread();
     currentThread->setStatus(RUNNING);
 
     interrupt->Enable();

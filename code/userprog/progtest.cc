@@ -13,6 +13,7 @@
 #include "copyright.h"
 #include "synch.h"
 #include "system.h"
+#include "process.h"
 
 //----------------------------------------------------------------------
 // StartProcess
@@ -22,20 +23,16 @@
 
 void StartProcess(char *filename) {
     OpenFile *executable = fileSystem->Open(filename);
-    AddrSpace *space;
 
     if (executable == NULL) {
         printf("Unable to open file %s\n", filename);
         return;
     }
-    space = new AddrSpace(executable);
-    currentThread->space = space;
-
-    delete executable; // close file
-
-    space->InitRegisters(); // set the initial register values
-    space->RestoreState();  // load page table register
-
+    Process * newProcess = Process::createProcess(executable);
+    if (newProcess == nullptr){
+        ASSERT(FALSE);  // machine->Run never returns;
+    }
+    currentThread = newProcess->getMainThread();
     machine->Run(); // jump to the user progam
     ASSERT(FALSE);  // machine->Run never returns;
     // the address space exits
