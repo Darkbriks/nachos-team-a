@@ -238,11 +238,11 @@ int GetString(char *s, int n);
 
 /**
  * @brief Read an integer from a console
- *
+ *                                                                                                                                                                              
  * @param n A pointer on an integer. This is where the result will be put
  * @warning If the string provided can't be cast in integer we exit the programm
  */
-void GetInt(int *n);
+int GetInt(int *n);
 
 /**
  * @brief Create a thread at the user level

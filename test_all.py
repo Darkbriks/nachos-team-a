@@ -75,6 +75,7 @@ if __name__ == "__main__":
                    "test_getInt_negative_integer_expected.txt",
                    "test_getInt_positive_integer_overflow_expected.txt",
                    "test_getInt_negative_integer_overflow_expected.txt",
+                   "test_getInt_erno_not_integer_value_expected.txt",
                    "test_getString_erno_negative_size.txt"
 #                   "test_lot_of_thread_from_different_functions.txt"
                    ]
@@ -88,6 +89,7 @@ if __name__ == "__main__":
                f'echo "-5" | ./nachos-step{CURRENT_STEP} -x ./getInt',
                f'echo "9999999999" | ./nachos-step{CURRENT_STEP} -x ./getInt',
                f'echo "-9999999999" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+               f'echo "ab1c" | ./nachos-step{CURRENT_STEP} -x ./getInt',
                f"./nachos-step{CURRENT_STEP} -x ./getErrno"
 #               f"./nachos-step{CURRENT_STEP} -rs 5 -x ./makethreads"
                ]
@@ -96,12 +98,13 @@ if __name__ == "__main__":
 #le nom du test a affiché en cas d'échec
     name_of_test=["Test putchar en user mode", 
                   "Test putString en user mode",
-                  "Test putString avec plus de charactére que taille buffer en user mode",
+                  "Test putString avec plus de caractères que taille buffer en user mode",
                   "Test getString normal avec EOF  et putString fais min de taille buffer et quantité demandée",
                   "Test getInt avec un integer positif (5)",
                   "Test getInt avec un integer négatif (-5)",
                   "Test getInt avec un integer positif dépasssant la valeur maximale de l'integer (9999999999)",
                   "Test getInt avec un integer négatif dépasssant la valeur minimale de l'integer (-9999999999)",
+                  "Test getInt avec une chaîne de caractères qui n'est pas un nombre",
                   "Test getString avec taille négative, renvoie un -1 donc aller voir E_INVAL (1)"
 #                  "Test le lancement de plusieurs threads. Certains lancés depuis le main et d'autre depuis d'autres threads"
                 ]

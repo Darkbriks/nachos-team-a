@@ -130,16 +130,17 @@ void handler_SC_PutInt(){
 
 void handler_SC_GetInt(){
     ptr_32 addr = (ptr_32) machine->ReadRegister(4);
+    if (addr < 0) { RETURN(-E_FAULT); }
     char value[12]; // An integer is never bigger than 12 character.
     synchConsole->SynchGetString(value, 12); // TODO handle future errno exception
     int * new_val = new int;
     if (sscanf(value, "%d", new_val) !=1){
-        // handle error don't find integer
-        // TODO wait for errno
-        ASSERT(FALSE);
+        RETURN(-E_INVAL);
     }
     machine->WriteMem(addr, 4, *new_val);
     delete new_val;
+
+    RETURN(0);
 }
 
 void handle_SC_CreateThread(){
