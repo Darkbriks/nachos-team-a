@@ -24,6 +24,7 @@
 #include "synch.h"
 #include "copyright.h"
 #include "system.h"
+#include <vector>
 
 //----------------------------------------------------------------------
 // Semaphore::Semaphore
@@ -92,19 +93,33 @@ void Semaphore::V() {
 // Dummy functions -- so we can compile our later assignments
 // Note -- without a correct implementation of Condition::Wait(),
 // the test case in the network assignment won't work!
-Lock::Lock(const char *debugName) {}
+Lock::Lock(const char *debugName) {
+    sem = new Semaphore(debugName, 1);  
+}
 
-Lock::~Lock() {}
+Lock::~Lock() {
+    delete sem;
+}
 
-void Lock::Acquire() {}
+void Lock::Acquire() {
+    sem->P();
+}
 
-void Lock::Release() {}
+void Lock::Release() {
+    sem->V();
+}
 
-Condition::Condition(const char *debugName) {}
+Condition::Condition(const char *debugName) {
+    std::vector<int> v = {8, 4, 5, 9};
+}
 
-Condition::~Condition() {}
+Condition::~Condition() {
 
-void Condition::Wait(Lock *conditionLock) { ASSERT(FALSE); }
+}
+
+void Condition::Wait(Lock *conditionLock) { 
+    ASSERT(FALSE);
+}
 
 void Condition::Signal(Lock *conditionLock) {}
 

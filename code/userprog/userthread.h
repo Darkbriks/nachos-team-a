@@ -15,7 +15,6 @@ extern int do_UserThreadCreate(int function, int arg);
 
 /**
  * @brief Destruct the caller thread 
- * TODO make it better for space. Only the last thead in the process need to free 
  */
 void do_UserThreadExit();
 

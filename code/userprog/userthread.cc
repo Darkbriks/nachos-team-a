@@ -31,6 +31,7 @@ static void StartUserThread(const int f){
     machine->WriteRegister(NextPCReg, param->get_function() + 4);
     machine->WriteRegister(PrevPCReg, prevPC);
     machine->WriteRegister(StackReg, stackAddr);
+    // TODO Stackreg can be usefull to know when a thread lezve i's original function
 
     machine->WriteRegister(4, param->get_arg());
 

@@ -113,7 +113,7 @@ void handler_SC_getString(){
     if (n < 0) { RETURN(-E_INVAL); }
     if (n == 0) { RETURN(0); }
 
-	if (n > MAX_STRING_SIZE) { n = MAX_STRING_SIZE; } // TODO Set errno when we have a library for user
+	if (n > MAX_STRING_SIZE) { n = MAX_STRING_SIZE; } 
     {
 		char buffer[n];
         int res = synchConsole->SynchGetString(buffer, n);
