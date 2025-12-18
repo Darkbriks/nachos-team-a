@@ -38,6 +38,7 @@
 #define THREAD_H
 
 #include "copyright.h"
+#include "synch.h"
 #include "utility.h"
 
 #ifdef USER_PROGRAM
@@ -79,6 +80,10 @@ class Thread {
     // THEY MUST be in this position for SWITCH to work.
     int *stackTop;                      // the current stack pointer
     int machineState[MachineStateSize]; // all registers except for stackTop
+    Thread *joiner;
+    Thread *join;
+    Condition *join_semaphore;
+    Lock *join_lock;
     unsigned int TID; // The TID for this thread
 
     static unsigned int currentThreadId;
@@ -93,6 +98,10 @@ class Thread {
 
     // basic thread operations
 
+    void setJoiner(Thread *thread){joiner = thread;}
+    void setJoin(Thread *thread){joiner = thread;}
+    void Joiner();
+    void Join();
     void Fork(VoidFunctionPtr func, int arg); // Make thread run (*func)(arg)
     void Yield();                             // Relinquish the CPU if any
     // other thread is runnable

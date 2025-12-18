@@ -150,6 +150,11 @@ void handle_SC_CreateThread(){
     RETURN(do_UserThreadCreate((int) function, args) );
 }
 
+void handle_SC_JoinThread(){
+    int TID = (int) machine->ReadRegister(4);
+    if ((int) TID < 0) { RETURN(-E_INVAL); } // TODO Add more checks (addr is in valid user space, for example)
+    do_UserThreadJoin(TID);
+}
     
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2);
@@ -207,6 +212,12 @@ void ExceptionHandler(ExceptionType which) {
             DEBUG('a', "CreateThread exception.cc\n");
             do_UserThreadExit();
             break;
+
+        case SC_JoinThread:
+            DEBUG('a', "JoinThread exception.cc\n");
+            handle_SC_JoinThread();
+            break;
+
 
         default:
             printf("Unknow syscall :%d\n", type);

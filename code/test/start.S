@@ -315,6 +315,24 @@ ExitThread_ok:
     j      $31
     .end ExitThread
 
+/* JoinThread : with error handling */
+    .globl JoinThread
+    .ent	JoinThread
+JoinThread:
+    addiu $2,$0,SC_JoinThread
+    syscall
+    bgez  $2,JoinThread_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+JoinThread_ok:
+    sw     $0,errno
+    j      $31
+    .end JoinThread
 
 /* -------------------------------------------------------------
  * Errno utility functions
