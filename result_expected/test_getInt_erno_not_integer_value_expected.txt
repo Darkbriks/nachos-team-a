@@ -3,7 +3,7 @@ Machine halting!
 
 Ticks: total 6028, idle 4331, system 990, user 707
 Disk I/O: reads 0, writes 0
-Console I/O: reads 60, writes 40
+Console I/O: reads 5, writes 40
 Paging: faults 0
 Network I/O: packets received 0, sent 0
 

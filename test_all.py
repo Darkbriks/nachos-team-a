@@ -57,12 +57,14 @@ def compile() -> None:
     
 
 def usage():
-    print(f"{sys.argv[0]} <the step to execute> <optionnal generate-tests>")
+    print(f"{sys.argv[0]} <the step to execute> <optionnal generate-tests> <optionnal skip-compile>")
 
 
 if __name__ == "__main__":
 
-    compile()
+    if not ("skip-compile" in sys.argv):
+        compile()
+
     if len(sys.argv) == 1:
         usage()
         exit(1)
@@ -82,7 +84,7 @@ if __name__ == "__main__":
                    ]
 
 # la ligne de commande pour nachos
-    arguments=[f"./nachos-step{CURRENT_STEP} -x ./putchar",
+    arguments=[f"./nachos-step{CURRENT_STEP} -x ./putChar",
                f"./nachos-step{CURRENT_STEP} -x ./putString",
                f"./nachos-step{CURRENT_STEP} -x ./putStringError",
                f'echo "Bob" | ./nachos-step{CURRENT_STEP} -x ./getString',
@@ -113,7 +115,7 @@ if __name__ == "__main__":
                 ]
     total : int = 0
 
-    if len(sys.argv) >= 3 and sys.argv[2] == "generate_test":
+    if "generate-tests" in sys.argv:
         for i in range(len(file_to_check)):
             generate( [TEST_DIR+"/"+file_to_check[i], arguments[i] ])
         exit(1)

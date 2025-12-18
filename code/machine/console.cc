@@ -89,20 +89,19 @@ Console::~Console() {
 
 void Console::CheckCharAvail() {
     char c;
-    int n;
 
     // schedule the next time to poll for a packet
-    interrupt->Schedule(ConsoleReadPoll, (int)this, ConsoleTime,
-                        ConsoleReadInt);
+    interrupt->Schedule(ConsoleReadPoll, reinterpret_cast<int>(this), ConsoleTime, ConsoleReadInt);
 
     // do nothing if character is already buffered, or none to be read
-    if ((incoming != EOF) || !PollFile(readFileNo))
-        return;
+    if (incoming != EOF || !PollFile(readFileNo)) { return; }
 
     // otherwise, read character and tell user about it
-    n = ReadPartial(readFileNo, &c, sizeof(char));
-    incoming = (n == 1 ? c : EOF);
-    stats->numConsoleCharsRead++;
+    if (const int n = ReadPartial(readFileNo, &c, sizeof(char)); n == 1) {
+        incoming = c; stats->numConsoleCharsRead++;
+    } else {
+        incoming = EOF;
+    }
     (*readHandler)(handlerArg);
 }
 
