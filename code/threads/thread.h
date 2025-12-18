@@ -85,8 +85,7 @@ class Thread {
     int machineState[MachineStateSize]; // all registers except for stackTop
     Thread *joiner;
     Thread *join;
-    Condition *join_semaphore;
-    Lock *join_lock;
+    Semaphore *sem;
     unsigned int TID; // The TID for this thread
 
     static unsigned int currentThreadId;
@@ -103,7 +102,7 @@ class Thread {
     // basic thread operations
 
     void setJoiner(Thread *thread){joiner = thread;}
-    void setJoin(Thread *thread){joiner = thread;}
+    void setJoin(Thread *thread){join = thread;}
     void Joiner();
     void Join();
     void Fork(VoidFunctionPtr func, int arg); // Make thread run (*func)(arg)

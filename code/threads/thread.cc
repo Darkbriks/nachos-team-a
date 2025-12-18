@@ -43,6 +43,7 @@ Thread::Thread(const char *threadName) {
     joiner = nullptr;
     join = nullptr;
 
+    sem = new Semaphore(name, 0);
     stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
@@ -72,6 +73,7 @@ Thread::~Thread() {
     DEBUG('t', "Deleting thread \"%s\"\n", name);
 
     delete name;
+    delete sem;
     ASSERT(this != currentThread);
     if (stack != NULL)
         DeallocBoundedArray((char *)stack, StackSize * sizeof(int));
@@ -81,11 +83,11 @@ void Thread::Joiner(){
     if (joiner == nullptr){
         return;
     }
-    joiner->join_semaphore->Signal(joiner->join_lock);
+    joiner->sem->V();
 }
 
 void Thread::Join(){
-    join_semaphore->Wait(join_lock);
+    sem->P();
 
 }
 

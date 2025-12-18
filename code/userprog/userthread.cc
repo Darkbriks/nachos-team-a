@@ -57,12 +57,14 @@ void do_UserThreadExit(){
     currentThread->Finish();
 }
 
-Thread *get_thread_by_TID(int TID){
-    return nullptr;
-}
-
 int do_UserThreadJoin(int TID){
-    currentThread->setJoin(currentThread->space->getProcess()->FindThread(TID));
+    Thread * other_thread = currentThread->space->getProcess()->FindThread(TID);
+    if (other_thread == nullptr){
+        // TODO use errno
+        return -1;
+    }
+    currentThread->setJoin(other_thread);
+    other_thread->setJoiner(currentThread);
     currentThread->Join();
     return 0;
 }

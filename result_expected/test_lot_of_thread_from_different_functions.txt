@@ -1,0 +1,21 @@
+33360
+23368
+3
+2
+634
+2
+33372
+3380
+3368
+376
+3376
+372
+Machine halting!
+
+Ticks: total 9066, idle 4199, system 2650, user 2217
+Disk I/O: reads 0, writes 0
+Console I/O: reads 0, writes 51
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

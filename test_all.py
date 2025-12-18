@@ -76,8 +76,9 @@ if __name__ == "__main__":
                    "test_getInt_positive_integer_overflow_expected.txt",
                    "test_getInt_negative_integer_overflow_expected.txt",
                    "test_getInt_erno_not_integer_value_expected.txt",
-                   "test_getString_erno_negative_size.txt"
-#                   "test_lot_of_thread_from_different_functions.txt"
+                   "test_getString_erno_negative_size.txt",
+                   "test_lot_of_thread_from_different_functions.txt",
+                   "test_one_thread_join_an_other_without_corner_case.txt"
                    ]
 
 # la ligne de commande pour nachos
@@ -90,8 +91,9 @@ if __name__ == "__main__":
                f'echo "9999999999" | ./nachos-step{CURRENT_STEP} -x ./getInt',
                f'echo "-9999999999" | ./nachos-step{CURRENT_STEP} -x ./getInt',
                f'echo "ab1c" | ./nachos-step{CURRENT_STEP} -x ./getInt',
-               f"./nachos-step{CURRENT_STEP} -x ./getErrno"
-#               f"./nachos-step{CURRENT_STEP} -rs 5 -x ./makethreads"
+               f"./nachos-step{CURRENT_STEP} -x ./getErrno",
+               f"./nachos-step{CURRENT_STEP} -rs 5 -x ./makethreads",
+               f"./nachos-step3 -x ./testJoin"
                ]
 
 
@@ -105,8 +107,9 @@ if __name__ == "__main__":
                   "Test getInt avec un integer positif dépasssant la valeur maximale de l'integer (9999999999)",
                   "Test getInt avec un integer négatif dépasssant la valeur minimale de l'integer (-9999999999)",
                   "Test getInt avec une chaîne de caractères qui n'est pas un nombre",
-                  "Test getString avec taille négative, renvoie un -1 donc aller voir E_INVAL (1)"
-#                  "Test le lancement de plusieurs threads. Certains lancés depuis le main et d'autre depuis d'autres threads"
+                  "Test getString avec taille négative, renvoie un -1 donc aller voir E_INVAL (1)",
+                  "Test le lancement de plusieurs threads. Certains lancés depuis le main et d'autre depuis d'autres threads",
+                  "Test vérification de threadJoin dans le cas classsique sans erreur ( thread existant )"
                 ]
     total : int = 0
 

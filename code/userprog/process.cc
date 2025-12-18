@@ -28,8 +28,12 @@ Process::Process(OpenFile * executable, char * status_code){
     }
 
     PID = static_cast<unsigned int>(tmp);
+    threadNumberLock = new Lock("thread number lock");
+    threadExitSemaphore = new Semaphore("thread exit semaphore", 0);
+    all_threads_addr = new LinkedList<Thread>();
 
-    Thread * firstThread = new Thread("main");
+    threadNumber = 0; // The main thread
+    Thread * firstThread = CreateThread((char *) "main");
     if (executable != nullptr){
         this->space = new AddrSpace(executable, this);
 
@@ -40,10 +44,6 @@ Process::Process(OpenFile * executable, char * status_code){
 scheduler->ReadyToRun(firstThread);
     }
     mainThread = firstThread;
-    threadNumber = 1; // The main thread
-    threadNumberLock = new Lock("thread number lock");
-    threadExitSemaphore = new Semaphore("thread exit semaphore", 0);
-    all_threads_addr = new LinkedList<Thread>();
 }
 
 Process::~Process(){
