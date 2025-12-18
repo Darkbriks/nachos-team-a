@@ -53,6 +53,15 @@ class Process{
          * @brief Wait for all threads of this address space to terminate
          */
         void WaitForAllThreadsTerminate();
+
+        /**
+         * @brief Find the thread in process runinng thread
+         *
+         * @param TID the tid of the thread we search
+         *
+         * @result nullptr if the thread isn't find else a pointer on the thread
+         */
+        Thread * FindThread(unsigned int TID);
 };
 
 #endif // PROCESS_H

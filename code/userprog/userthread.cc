@@ -62,7 +62,7 @@ Thread *get_thread_by_TID(int TID){
 }
 
 int do_UserThreadJoin(int TID){
-    currentThread->setJoin(get_thread_by_TID(TID));
+    currentThread->setJoin(currentThread->space->getProcess()->FindThread(TID));
     currentThread->Join();
     return 0;
 }

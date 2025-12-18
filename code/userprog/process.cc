@@ -89,6 +89,13 @@ void Process::WaitForAllThreadsTerminate() {
     DEBUG('t', "AddrSpace: All child threads finished\n");
 }
 
+bool search(Thread * T, unsigned int value){
+    return T->getTID() == value;
+}
+
+Thread * Process::FindThread(unsigned int TID){
+    return all_threads_addr->FindInList( std::function<bool (Thread *, unsigned int)> (search), TID );
+}
 
 Thread* Process::CreateThread(char * name){
     Thread * newThread = new Thread(name);

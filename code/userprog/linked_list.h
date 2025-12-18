@@ -1,6 +1,7 @@
 #ifndef LINKED_LIST_H
 #define LINKED_LIST_H
 #include "copyright.h"
+#include <functional>
 
 
 template<typename T>
@@ -33,17 +34,17 @@ class LinkedList{
         ~LinkedList(){Node::FreeNode(head);}
 
         template<typename X>
-        T* FindInList(bool fun(T * elem, X value), X value){
-            for (Node *elem; elem != nullptr; elem = elem->next){
-                if (fun(elem, value)){
-                    return elem;
+        T* FindInList(std::function<bool (T* , X)> fun, X value){
+            for (Node *elem = head; elem != nullptr; elem = elem->next){
+                if (fun(elem->value, value)){
+                    return elem->value;
                 }
             }
             return nullptr;
         }
 
         T* FindInList(T * toFind){
-            for (Node *elem; elem != nullptr; elem = elem->next){
+            for (Node *elem = head; elem != nullptr; elem = elem->next){
                 if (elem->value == toFind){
                     return toFind;
                 }
