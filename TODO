@@ -7,3 +7,7 @@ https://man.archlinux.org/man/pthread_join.3.fr  on fait quoi nous si plusieurs 
                                                  trop de threads crées -> ne peut pas rester allumer longtemps car integer overflow fait que deux threads avec même TID 
                                                  -> un thread garde un attribut pour son éventuel joiner ? ( ressemble à l'idée des processus avec parent )
 Maintenir liste Thread vivant sur le système ailleurs que dans le scheduler ?
+
+
+Si un thread non originel appelle exit alors boucle infinie  car les deux s'attendent mutuellement -> hiérarchie donc pas bon!!!
+Voir qu'un thread est sortie de sa fonction originel opour ne pas faire d'ExitThread forcément ?
