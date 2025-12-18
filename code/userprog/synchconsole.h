@@ -1,12 +1,14 @@
 #ifndef SYNCHCONSOLE_H
 #define SYNCHCONSOLE_H
 
+#include "addrspace.h"
 #include "copyright.h"
 #include "utility.h"
 #include "console.h"
 
 class SynchConsole {
     public:
+        static Semaphore* IO_Lock;
         SynchConsole(char *readFile, char *writeFile);
         // initialize the hardware console device
         ~SynchConsole(); // clean up console emulation

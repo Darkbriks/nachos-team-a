@@ -6,8 +6,18 @@
 static Semaphore *readAvail;
 static Semaphore *writeDone;
 
-static void ReadAvail(int arg) { readAvail->V(); }
-static void WriteDone(int arg) { writeDone->V(); }
+Semaphore *SynchConsole::IO_Lock = new Semaphore("a", 1);
+
+static void ReadAvail(int arg) { 
+    readAvail->V();
+    SynchConsole::IO_Lock->V();
+}
+
+static void WriteDone(int arg) { 
+    writeDone->V();
+    SynchConsole::IO_Lock->V();
+}
+
 
 SynchConsole::SynchConsole(char *readFile, char *writeFile)
 {
@@ -25,14 +35,18 @@ SynchConsole::~SynchConsole()
 
 void SynchConsole::SynchPutChar(const char ch)
 {
+
+    IO_Lock->P();
     console->PutChar(ch);
     writeDone->P(); 
 }
 
 char SynchConsole::SynchGetChar()
 {
+    IO_Lock->P();
     readAvail->P();
-    return console->GetChar();
+    char result = console->GetChar();
+    return result;
 }
 
 int SynchConsole::SynchPutString(const char s[], unsigned int n)

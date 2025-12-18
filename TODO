@@ -1,4 +1,9 @@
 
 
 Action VIII.1 https://im2ag-moodle.univ-grenoble-alpes.fr/pluginfile.php/5335/mod_resource/content/0/etape2.pdf // because we don't understand why 
-Create test for getInt and putInt when Python is done
+Comment marche vraiment les Sémaphores de sync.cc  (ie sont elles safe) ?
+https://man.archlinux.org/man/pthread_join.3.fr  on fait quoi nous si plusieurs appelle thread_join, quelle structure utilisé, incrément relié à space
+                                                 il faudrait un icrément par space et pas un global 
+                                                 trop de threads crées -> ne peut pas rester allumer longtemps car integer overflow fait que deux threads avec même TID 
+                                                 -> un thread garde un attribut pour son éventuel joiner ? ( ressemble à l'idée des processus avec parent )
+Maintenir liste Thread vivant sur le système ailleurs que dans le scheduler ?
