@@ -43,7 +43,6 @@ Process::Process(OpenFile * executable, char * status_code){
         space->RestoreState();  // load page table register
         firstThread->space = space;
         delete executable; // close file
-        scheduler->ReadyToRun(firstThread);
     }
     mainThread = firstThread;
 }
