@@ -155,9 +155,10 @@ void handler_SC_GetInt(){
 void handle_SC_CreateThread(){
     VoidFunctionPtr function = (VoidFunctionPtr) machine->ReadRegister(4);
     ptr_32 args = (ptr_32) machine->ReadRegister(5);
+    ptr_32 exit_addr = (ptr_32) machine->ReadRegister(6);
     if ((int) function < 0) { RETURN(-E_INVAL); } // TODO Add more checks (addr is in valid user space, for example)
     if (args < 0) { RETURN(-E_INVAL); }
-    RETURN(do_UserThreadCreate((int) function, args) );
+    RETURN(do_UserThreadCreate((int) function, args, exit_addr) );
 }
 
 void handle_SC_JoinThread(){
@@ -247,9 +248,9 @@ void ExceptionHandler(ExceptionType which) {
             break;
 
         case SC_ExitThread:
-            DEBUG('a', "CreateThread exception.cc\n");
+            DEBUG('a', "ExitThread exception.cc\n");
             do_UserThreadExit();
-            break;
+            return;
 
         case SC_JoinThread:
             DEBUG('a', "JoinThread exception.cc\n");

@@ -13,6 +13,11 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+LINE_LENGTH=200
+SEPARATOR_CHAR='-'
+
+TIMEOUT=5  # secondes
+
 PROJECT_ROOT= subprocess.check_output("git rev-parse --show-toplevel", shell=True).decode("utf-8")
 PROJECT_ROOT = PROJECT_ROOT[:-1]
 BUILD_DIR=PROJECT_ROOT + "/code/build"
@@ -21,20 +26,41 @@ TEST_DIR=PROJECT_ROOT + "/result_expected"
 tmp_null = PROJECT_ROOT.split("/")
 HOME_USER = f"/{tmp_null[1]}/{tmp_null[2]}/{tmp_null[3]}/tmp"
 
+def print_line(text : str, color : str, desc : str) -> None:
+    name_length = len(text)
+    sep_length = (LINE_LENGTH - name_length - 12) // 2
+    sep1 = SEPARATOR_CHAR * sep_length
+    sep2 = SEPARATOR_CHAR * (LINE_LENGTH - name_length - 12 - sep_length)
+    print(f"{color} {sep1}{text}{sep2} {bcolors.ENDC}")
+    if desc != "":
+        print(f"{bcolors.OKCYAN} Description : {desc} {bcolors.ENDC}")
 
-def exec_nachos(prog : str, tmp_file : str) -> None:
-    s = subprocess.check_output(f"cd {BUILD_DIR} ; {prog}", shell=True).decode("utf-8")
+
+def exec_nachos(prog : str, tmp_file : str) -> bool:
+    # Si le test prend plus de 5 secondes, on le tue
     with open(tmp_file, "w+") as f:
-        f.write(s)
+        try:
+            s = subprocess.check_output(f"cd {BUILD_DIR} ; timeout {TIMEOUT}s {prog}", shell=True, stderr=subprocess.STDOUT).decode("utf-8")
+            f.write(s)
+            if "Machine halting!" in s: # En cas d'arrêt brutal de la machine, par exemple un SEGV, la chaine "Machine halting!" n'est pas présente
+                return False
+        except subprocess.CalledProcessError as e:
+            if e.returncode == 124:
+                f.write("TIMEOUT\n")
+            else:
+                f.write(e.output.decode("utf-8"))
+        return True
 
-def verify_exec(file_expect : str, tmp_file : str, name_of_test : str) -> int:
-    p = subprocess.run(["diff", file_expect, tmp_file], capture_output=True)
-    if p.returncode == 0:
-        print(f"{bcolors.OKBLUE} ---------------------------------------------------- Test {name_of_test} réussi------------------------------------------------{bcolors.ENDC}")
+def verify_exec(file_expect : str, tmp_file : str, name_of_test : str, desc : str, has_failed : bool = True) -> int:
+    p = subprocess.run(["diff", "-u", file_expect,  tmp_file], capture_output=True)
+
+    # Si les fichiers sont identiques ou qu'on a un random seed et pas d'erreur fatale
+    if p.returncode == 0 or (RS != "" and not has_failed):
+        print_line(f" Test {name_of_test} réussi ", bcolors.OKBLUE, "")
         return 0
-    print(f"{bcolors.FAIL} ---------------------------------------------------- Test {name_of_test} échoué ------------------------------------------------{bcolors.ENDC}")
+    print_line(f" Test {name_of_test} échoué ", bcolors.FAIL, desc)
     print(p.stdout.decode("utf-8"))
-    print(f"{bcolors.FAIL} ---------------------------------------------------- Test {name_of_test} échoué ------------------------------------------------{bcolors.ENDC}")
+    print_line("", bcolors.FAIL, "")
     return 1
 
 
@@ -42,9 +68,10 @@ def test(args : list[str]) -> int:
     file_expect = args[0]
     arguments = args[1]
     name_of_test = args[2]
+    desc = args[3]
     tmp_file= HOME_USER + "/" + file_expect
-    exec_nachos(arguments, tmp_file)
-    return verify_exec(TEST_DIR + "/" +  file_expect, tmp_file, name_of_test)
+    failed = exec_nachos(arguments, tmp_file)
+    return verify_exec(TEST_DIR + "/" +  file_expect, tmp_file, name_of_test, desc, failed)
 
 def generate(args : list[str]) -> int:
     file_expect = args[0]
@@ -68,7 +95,16 @@ if __name__ == "__main__":
     if len(sys.argv) == 1:
         usage()
         exit(1)
+
     CURRENT_STEP = sys.argv[1]
+
+    for arg in sys.argv:
+        if "--rs" in arg:
+            RS = "-rs "+arg.split("=")[1]
+            break
+    else:
+        RS = ""
+
     file_to_check=["test_putchar_user_mode_result_expected.txt",
                    "test_putString_user_mode_expect.txt",
                    "test_putStringError_user_mode_expect.txt",
@@ -82,10 +118,13 @@ if __name__ == "__main__":
                    "test_lot_of_thread_from_different_functions.txt",
                    "test_one_thread_join_an_other_without_corner_case.txt",
                    "simple_sleep.txt",
-                   "simple_sleep_until.txt"
-                   ]
+                   "simple_sleep_until.txt",
+                   "test_multiplethread_use_putString.txt",
+                   "test_autoexit.txt",
+                   "test_autoexit2.txt"
+                ]
 
-# la ligne de commande pour nachos
+    # la ligne de commande pour nachos
     arguments=[f"./nachos-step{CURRENT_STEP} -x ./putChar",
                f"./nachos-step{CURRENT_STEP} -x ./putString",
                f"./nachos-step{CURRENT_STEP} -x ./putStringError",
@@ -100,25 +139,51 @@ if __name__ == "__main__":
                f"./nachos-step{CURRENT_STEP} -x ./testJoin",
                f"./nachos-step{CURRENT_STEP} -x ./simpleSleep",
                f"./nachos-step{CURRENT_STEP} -x ./simpleSleepUntil",
-               ]
+               f"./nachos-step{CURRENT_STEP} {RS} -x ./multi_thread_putString",
+               f"./nachos-step{CURRENT_STEP} {RS} -x ./testAutoExit",
+               f"./nachos-step{CURRENT_STEP} {RS} -x ./testAutoExit2"
+            ]
 
-
-#le nom du test a affiché en cas d'échec
-    name_of_test=["Test putchar en user mode", 
-                  "Test putString en user mode",
-                  "Test putString avec plus de caractères que taille buffer en user mode",
-                  "Test getString normal avec EOF  et putString fais min de taille buffer et quantité demandée",
-                  "Test getInt avec un integer positif (5)",
-                  "Test getInt avec un integer négatif (-5)",
-                  "Test getInt avec un integer positif dépasssant la valeur maximale de l'integer (9999999999)",
-                  "Test getInt avec un integer négatif dépasssant la valeur minimale de l'integer (-9999999999)",
-                  "Test getInt avec une chaîne de caractères qui n'est pas un nombre",
-                  "Test getString avec taille négative, renvoie un -1 donc aller voir E_INVAL (1)",
-                  "Test le lancement de plusieurs threads. Certains lancés depuis le main et d'autre depuis d'autres threads",
-                  "Test vérification de threadJoin dans le cas classsique sans erreur ( thread existant )",
+    #le nom du test a affiché en cas d'échec
+    name_of_test=["Test PutChar" ,
+                  "Test PutString normal",
+                  "Test PutString overflow buffer",
+                  "Test GetString avec EOF",
+                  "Test GetInt entier positif",
+                  "Test GetInt entier négatif",
+                  "Test GetInt entier positif overflow",
+                  "Test GetInt entier négatif overflow",
+                  "Test GetInt valeur non numérique",
+                  "Test GetString taille négative",
+                  "Test création de plusieurs threads",
+                  "Test ThreadJoin classique",
                   "Plusieurs tests du syscall sleep en monothread",
-                  "Plusieurs tests du syscall sleepUntil en monothread"
+                  "Plusieurs tests du syscall sleepUntil en monothread",
+                  "Test PutString concurrent",
+                  "Test terminaison automatique des threads 1",
+                  "Test terminaison automatique des threads 2"
                 ]
+
+    test_desc=[
+        "Test du syscall PutChar depuis un programme utilisateur dans un cas normal.",
+        "Test du syscall PutString depuis un programme utilisateur dans un cas normal.",
+        "Test du syscall PutString depuis un programme utilisateur avec en entrée une chaîne de caractères plus longue que la taille du buffer.",
+        "Test du syscall GetString depuis un programme utilisateur dans un cas normal avec EOF.",
+        "Test du syscall GetInt depuis un programme utilisateur avec un entier positif.",
+        "Test du syscall GetInt depuis un programme utilisateur avec un entier négatif.",
+        "Test du syscall GetInt depuis un programme utilisateur avec un entier positif dépassant la valeur maximale.",
+        "Test du syscall GetInt depuis un programme utilisateur avec un entier négatif dépassant la valeur minimale.",
+        "Test du syscall GetInt depuis un programme utilisateur avec une chaîne de caractères non numérique.",
+        "Test du syscall GetString depuis un programme utilisateur avec en paramètre une taille de chaîne négative. Doit échouer, et errno doit être mis à E_INVAL (1).",
+        "Test du lancement de plusieurs threads depuis un programme utilisateur, avec plusieurs niveaux de threads.",
+        "Test du syscall ThreadJoin dans un cas classique sans erreur depuis un programme utilisateur.",
+        "Quelques tests du syscall Sleep dans un contexte mono thread",
+        "Quelques tests du syscall SleepUntil dans un contexte mono thread",
+        "Test de la gestion concurrente des appels PutString depuis plusieurs threads dans un programme utilisateur.",
+        "Test de la terminaison automatique des threads (pas d'appel explicite à ThreadExit) depuis un programme utilisateur.",
+        "Test de la terminaison automatique des threads (pas d'appel explicite à ThreadExit) depuis un programme utilisateur."
+    ]
+
     total : int = 0
 
     if "generate-tests" in sys.argv:
@@ -126,13 +191,12 @@ if __name__ == "__main__":
             generate( [TEST_DIR+"/"+file_to_check[i], arguments[i] ])
         exit(1)
 
+    color = bcolors.FAIL
+    exit_code = 1
     for i in range(len(file_to_check)):
-        total += test( [file_to_check[i], arguments[i], name_of_test[i] ])
+        total += test([file_to_check[i], arguments[i], name_of_test[i], test_desc[i]])
     if total == 0:
-        print(f"{bcolors.OKCYAN} ---------------------------------------------------- Tout marche ------------------------------------------------{bcolors.ENDC}")
-
-
-
-
-
-
+        color = bcolors.OKGREEN
+        exit_code = 0
+    print_line(f" {total} test(s) échoué(s) sur {len(file_to_check)} test(s) ", color, "")
+    exit(exit_code)

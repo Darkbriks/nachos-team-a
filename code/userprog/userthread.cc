@@ -32,19 +32,18 @@ static void StartUserThread(const int f){
     machine->WriteRegister(NextPCReg, param->get_function() + 4);
     machine->WriteRegister(PrevPCReg, prevPC);
     machine->WriteRegister(StackReg, stackAddr);
-    // TODO Stackreg can be usefull to know when a thread lezve i's original function
-
+    machine->WriteRegister(RetAddrReg, param->get_exit_addr());
     machine->WriteRegister(4, param->get_arg());
 
     delete param;
     machine->Run();
 }
 
-int do_UserThreadCreate(const int function, const int arg){
+int do_UserThreadCreate(const int function, const int arg, const int exit_addr){
     Thread *thread = currentThread->space->getProcess()->CreateThread( (char *)("user_thread"));
     if (!thread){ return -E_NOMEM; }
 
-    Param *param = new Param(function, arg);
+    Param *param = new Param(function, arg, exit_addr);
     thread->Fork(StartUserThread, reinterpret_cast<int>(param));
 
     return static_cast<int>(thread->getTID());
