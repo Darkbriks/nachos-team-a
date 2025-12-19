@@ -1,4 +1,6 @@
 #include "process.h"
+
+#include "addrspace.h"
 #include "bitmap_thread_safe.h"
 #include "bitmap.h"
 
@@ -102,7 +104,7 @@ Thread* Process::CreateThread(char * name){
     threadNumber++;
     all_threads_addr->AddInList(newThread);
     threadNumberLock->Release();
-    DEBUG('t', "AddrSpace: Added thread, now %d threads\n", threadNumber);
+    DEBUG('t', "Process: Added thread, now %d threads\n", threadNumber);
     return newThread;
 }
 

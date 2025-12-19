@@ -22,7 +22,6 @@ extern void do_UserThreadExit();
  * @brief Caller will wait other thread to finish
  * @param TID The TID of the thread to wait
  */
-int do_UserThreadJoin(int TID);
 extern int do_UserThreadJoin(int TID);
 
 class Param{

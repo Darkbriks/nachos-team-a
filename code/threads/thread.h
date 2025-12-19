@@ -98,6 +98,7 @@ class Thread {
     // NOTE -- thread being deleted
     // must not be running when delete
     // is called
+    bool hasJoiner() { return joiner != nullptr; }
 
     // basic thread operations
 
