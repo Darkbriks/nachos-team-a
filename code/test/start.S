@@ -277,12 +277,16 @@ GetInt_ok:
     j      $31
     .end GetInt
 
-/* CreateThread: with error handling */
+/* CreateThread: with error handling and automatic ExitThread */
     .globl CreateThread
     .ent	CreateThread
 CreateThread:
+    # Load ExitThread address into $6 
+    la     $6,ExitThread
+
     addiu $2,$0,SC_CreateThread
     syscall
+
     bgez  $2,CreateThread_ok
     nop
     # Error handling
