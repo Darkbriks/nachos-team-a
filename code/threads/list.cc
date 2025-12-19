@@ -216,3 +216,16 @@ void *List::SortedRemove(long long *keyPtr) {
     delete element;
     return thing;
 }
+
+//----------------------------------------------------------------------
+// List::GetFirst
+//      Return the first "item" from the front of the list
+//      without removing it from the list.
+//      If the list is sorted, the first item is the one with the
+//      smallest sort key.
+//----------------------------------------------------------------------
+
+void *List::GetFirst() {
+    if (IsEmpty()) { return NULL; }
+    return first->item;
+}

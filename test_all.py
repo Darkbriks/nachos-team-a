@@ -117,31 +117,34 @@ if __name__ == "__main__":
                    "test_getString_erno_negative_size.txt",
                    "test_lot_of_thread_from_different_functions.txt",
                    "test_one_thread_join_an_other_without_corner_case.txt",
+                   "simple_sleep.txt",
+                   "simple_sleep_until.txt",
                    "test_multiplethread_use_putString.txt",
                    "test_autoexit.txt",
                    "test_autoexit2.txt"
-                   ]
+                ]
 
-# la ligne de commande pour nachos
-    arguments=[f"./nachos-step{CURRENT_STEP} {RS} -x ./putChar",
-               f"./nachos-step{CURRENT_STEP} {RS} -x ./putString",
-               f"./nachos-step{CURRENT_STEP} {RS} -x ./putStringError",
-               f'echo "Bob" | ./nachos-step{CURRENT_STEP} {RS} -x ./getString',
-               f'echo "5" | ./nachos-step{CURRENT_STEP} {RS} -x ./getInt',
-               f'echo "-5" | ./nachos-step{CURRENT_STEP} {RS} -x ./getInt',
-               f'echo "9999999999" | ./nachos-step{CURRENT_STEP} {RS} -x ./getInt',
-               f'echo "-9999999999" | ./nachos-step{CURRENT_STEP} {RS} -x ./getInt',
-               f'echo "ab1c" | ./nachos-step{CURRENT_STEP} {RS} -x ./getInt',
-               f"./nachos-step{CURRENT_STEP} {RS} -x ./getErrno",
-               f"./nachos-step{CURRENT_STEP} {RS} -x ./makethreads",
-               f"./nachos-step{CURRENT_STEP} {RS} -x ./testJoin",
+    # la ligne de commande pour nachos
+    arguments=[f"./nachos-step{CURRENT_STEP} -x ./putChar",
+               f"./nachos-step{CURRENT_STEP} -x ./putString",
+               f"./nachos-step{CURRENT_STEP} -x ./putStringError",
+               f'echo "Bob" | ./nachos-step{CURRENT_STEP} -x ./getString',
+               f'echo "5" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+               f'echo "-5" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+               f'echo "9999999999" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+               f'echo "-9999999999" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+               f'echo "ab1c" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+               f"./nachos-step{CURRENT_STEP} -x ./getErrno",
+               f"./nachos-step{CURRENT_STEP} -rs 5 -x ./makethreads",
+               f"./nachos-step{CURRENT_STEP} -x ./testJoin",
+               f"./nachos-step{CURRENT_STEP} -x ./simpleSleep",
+               f"./nachos-step{CURRENT_STEP} -x ./simpleSleepUntil",
                f"./nachos-step{CURRENT_STEP} {RS} -x ./multi_thread_putString",
                f"./nachos-step{CURRENT_STEP} {RS} -x ./testAutoExit",
                f"./nachos-step{CURRENT_STEP} {RS} -x ./testAutoExit2"
-               ]
+            ]
 
-
-#le nom du test a affiché en cas d'échec
+    #le nom du test a affiché en cas d'échec
     name_of_test=["Test PutChar" ,
                   "Test PutString normal",
                   "Test PutString overflow buffer",
@@ -154,6 +157,8 @@ if __name__ == "__main__":
                   "Test GetString taille négative",
                   "Test création de plusieurs threads",
                   "Test ThreadJoin classique",
+                  "Plusieurs tests du syscall sleep en monothread",
+                  "Plusieurs tests du syscall sleepUntil en monothread",
                   "Test PutString concurrent",
                   "Test terminaison automatique des threads 1",
                   "Test terminaison automatique des threads 2"
@@ -172,6 +177,8 @@ if __name__ == "__main__":
         "Test du syscall GetString depuis un programme utilisateur avec en paramètre une taille de chaîne négative. Doit échouer, et errno doit être mis à E_INVAL (1).",
         "Test du lancement de plusieurs threads depuis un programme utilisateur, avec plusieurs niveaux de threads.",
         "Test du syscall ThreadJoin dans un cas classique sans erreur depuis un programme utilisateur.",
+        "Quelques tests du syscall Sleep dans un contexte mono thread",
+        "Quelques tests du syscall SleepUntil dans un contexte mono thread",
         "Test de la gestion concurrente des appels PutString depuis plusieurs threads dans un programme utilisateur.",
         "Test de la terminaison automatique des threads (pas d'appel explicite à ThreadExit) depuis un programme utilisateur.",
         "Test de la terminaison automatique des threads (pas d'appel explicite à ThreadExit) depuis un programme utilisateur."

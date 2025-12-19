@@ -88,6 +88,8 @@ class Thread {
     Semaphore *sem;
     unsigned int TID; // The TID for this thread
 
+    long long waitTime; // Used to wake up sleeping threads
+
     static unsigned int currentThreadId;
     static Lock *threadIdLock;
     Thread(const char *debugName); // initialize a Thread
@@ -98,26 +100,27 @@ class Thread {
     // NOTE -- thread being deleted
     // must not be running when delete
     // is called
-    bool hasJoiner() { return joiner != nullptr; }
 
-    // basic thread operations
+    const char *getName() { return (name); }
+    unsigned int getTID() { return (TID); }
+    long long getWaitTime() { return waitTime; }
+
+    bool hasJoiner() { return joiner != nullptr; }
 
     void setJoiner(Thread *thread){joiner = thread;}
     void setJoin(Thread *thread){join = thread;}
+    void setStatus(ThreadStatus st) { status = st; }
+
+    // basic thread operations
     void Joiner();
     void Join();
     void Fork(VoidFunctionPtr func, int arg); // Make thread run (*func)(arg)
-    void Yield();                             // Relinquish the CPU if any
-    // other thread is runnable
-    void Sleep(); // Put the thread to sleep and
-    // relinquish the processor
-    void Finish(); // The thread is done executing
+    void Yield();                             // Relinquish the CPU if any other thread is runnable
+    void Sleep();                             // Put the thread to sleep and relinquish the processor
+    void SleepUntil(long long tick);          // Sleep until specified tick
+    void Finish();                            // The thread is done executing
+    void CheckOverflow();                     // Check if thread has overflowed its stack
 
-    void CheckOverflow(); // Check if thread has
-    // overflowed its stack
-    void setStatus(ThreadStatus st) { status = st; }
-    const char *getName() { return (name); }
-    unsigned int getTID() { return (TID); }
     void Print() { printf("%s, ", name); }
 
   private:

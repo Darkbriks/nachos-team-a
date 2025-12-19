@@ -67,3 +67,32 @@ int do_UserThreadJoin(int TID){
     currentThread->Join();
     return 0;
 }
+
+int do_UserSleep(const int numTicks) {
+    if (numTicks < 0) { return -E_INVAL; }
+    if (numTicks == 0) { return 0; } // Sleep(0) is a no-op
+
+    const IntStatus oldLevel = interrupt->SetLevel(IntOff);
+    long long wakeTime = stats->totalTicks + numTicks;
+
+    //Check for overflow
+    if (wakeTime < stats->totalTicks) { interrupt->SetLevel(oldLevel); return -E_OVERFLOW; }
+
+    currentThread->SleepUntil(wakeTime);
+    interrupt->SetLevel(oldLevel);
+
+    return 0;
+}
+
+int do_UserSleepUntil(long long tick) {
+    if (tick < 0) { return -E_INVAL; }
+
+    const IntStatus oldLevel = interrupt->SetLevel(IntOff);
+
+    if (tick <= stats->totalTicks) { interrupt->SetLevel(oldLevel); return 0; }
+
+    currentThread->SleepUntil(tick);
+    interrupt->SetLevel(oldLevel);
+
+    return 0;
+}

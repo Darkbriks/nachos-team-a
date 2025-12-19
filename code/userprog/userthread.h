@@ -25,6 +25,10 @@ extern void do_UserThreadExit();
  */
 extern int do_UserThreadJoin(int TID);
 
+extern int do_UserSleep(int numTicks);
+
+extern int do_UserSleepUntil(long long tick);
+
 class Param{
     private:
         ptr_32 function ;
