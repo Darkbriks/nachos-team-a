@@ -9,7 +9,7 @@ void my_scanf(char *format, ...);
 
 unsigned int my_strlen(char *str);
 
-void print_error(const char *msg); 
+void print_error(const char *msg);
 
 
 #endif //MY_STD_LIB_C
