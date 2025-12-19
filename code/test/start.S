@@ -338,6 +338,82 @@ JoinThread_ok:
     j      $31
     .end JoinThread
 
+/* SemInit : with error handling */
+    .globl SemInit
+    .ent	SemInit
+SemInit:
+    addiu $2,$0,SC_SemInit
+    syscall
+    bgez  $2,SemInit_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+SemInit_ok:
+    sw     $0,errno
+    j      $31
+    .end SemInit
+
+/* SemP : with error handling */
+    .globl SemP
+    .ent	SemP
+SemP:
+    addiu $2,$0,SC_SemP
+    syscall
+    bgez  $2,SemP_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+SemP_ok:
+    sw     $0,errno
+    j      $31
+    .end SemP
+
+/* SemV : with error handling */
+    .globl SemV
+    .ent	SemV
+SemV:
+    addiu $2,$0,SC_SemV
+    syscall
+    bgez  $2,SemV_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+SemV_ok:
+    sw     $0,errno
+    j      $31
+    .end SemV
+
+/* SemDestroy : with error handling */
+    .globl SemDestroy
+    .ent	SemDestroy
+SemDestroy:
+    addiu $2,$0,SC_SemDestroy
+    syscall
+    bgez  $2,SemDestroy_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+SemDestroy_ok:
+    sw     $0,errno
+    j      $31
+    .end SemDestroy
+
 /* -------------------------------------------------------------
  * Errno utility functions
  * -------------------------------------------------------------

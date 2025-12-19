@@ -20,24 +20,34 @@
  */
 #define SC_Halt 0
 #define SC_Exit 1
+
 #define SC_Exec 2
 #define SC_Join 3
+
 #define SC_Create 4
 #define SC_Open 5
 #define SC_Read 6
 #define SC_Write 7
 #define SC_Close 8
+
 #define SC_Fork 9
 #define SC_Yield 10
+
 #define SC_PutChar 11
 #define SC_PutString 12
 #define SC_GetChar 13
 #define SC_GetString 14
 #define SC_PutInt 15
 #define SC_GetInt 16
+
 #define SC_CreateThread 17
 #define SC_ExitThread 18
 #define SC_JoinThread 19
+
+#define SC_SemInit 20
+#define SC_SemP 21
+#define SC_SemV 22
+#define SC_SemDestroy 23
 
 /* Error codes - returned as negative values by syscalls, stored as positive in errno */
 #define E_SUCCESS       0   /* No error */
@@ -265,6 +275,39 @@ void ExitThread();
  * @param TID The thread to wait
  */
 void JoinThread(int TID);
+
+/**
+ * @brief Init a Semaphore with original value of value 
+ *
+ * @param sem  The adress of a semaphore sem_t not initialized before
+ * @param value  The original number of thread can P this semaphore 
+ * @return 0 if everything is fine, or -1 on error (check errno)
+ */
+int  SemInit(int sem, int value);
+
+/**
+ * @brief Semaphore must be init before call this, try to take one of the sem token, wait while value <= 0 
+ *
+ * @param sem  A pointer on a semaphore previously init
+ * @return 0 if everything is fine, or -1 on error (check errno)
+ */
+int  SemP(int sem);
+
+/**
+ * @brief Semaphore must be init before call this, post one of the sem token if the caller has one ;
+ *
+ * @param sem  A pointer on a semaphore previously init
+ * @return 0 if everything is fine, or -1 on error (check errno)
+ */
+int  SemV(int sem);
+
+/**
+ * @brief destroy a sem previously init 
+ *
+ * @param sem  A pointer on a semaphore previously init
+ * @return 0 if everything is fine, or -1 on error (check errno)
+ */
+int  SemDestroy(int sem);
 
 #endif // IN_USER_MODE
 

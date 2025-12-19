@@ -49,12 +49,19 @@ int do_UserThreadCreate(const int function, const int arg, const int exit_addr){
     return static_cast<int>(thread->getTID());
 }
 
+/**
+ * @brief Destruct the caller thread 
+ */
 void do_UserThreadExit(){
     currentThread->space->getProcess()->RemoveThread(currentThread);
     currentThread->Joiner();
     currentThread->Finish();
 }
 
+/**
+ * @brief Caller will wait other thread to finish
+ * @param TID The TID of the thread to wait
+ */
 int do_UserThreadJoin(int TID){
     Thread * other_thread = currentThread->space->getProcess()->FindThread(TID);
 
@@ -66,4 +73,19 @@ int do_UserThreadJoin(int TID){
     other_thread->setJoiner(currentThread);
     currentThread->Join();
     return 0;
+}
+
+void handle_SC_CreateThread(){
+    VoidFunctionPtr function = (VoidFunctionPtr) machine->ReadRegister(4);
+    ptr_32 args = (ptr_32) machine->ReadRegister(5);
+    ptr_32 exit_addr = (ptr_32) machine->ReadRegister(6);
+    if ((int) function < 0) { RETURN(-E_INVAL); } // TODO Add more checks (addr is in valid user space, for example)
+    if (args < 0) { RETURN(-E_INVAL); }
+    RETURN(do_UserThreadCreate((int) function, args, exit_addr) );
+}
+
+void handle_SC_JoinThread(){
+    int TID = (int) machine->ReadRegister(4);
+    if ((int) TID < 0) { RETURN(-E_INVAL); } // TODO Add more checks (addr is in valid user space, for example)
+    RETURN(do_UserThreadJoin(TID));
 }

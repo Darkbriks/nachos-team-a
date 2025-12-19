@@ -3,6 +3,7 @@
 
 #include "thread.h"
 #include "system.h"
+#include "exception.h"
 
 /**
  * @brief Create a thread
@@ -14,16 +15,14 @@
  */
 extern int do_UserThreadCreate(int function, int arg, int exit_addr = 0);
 
+
+void handle_SC_CreateThread();
+void handle_SC_JoinThread();
+
 /**
  * @brief Destruct the caller thread 
  */
-extern void do_UserThreadExit();
-
-/**
- * @brief Caller will wait other thread to finish
- * @param TID The TID of the thread to wait
- */
-extern int do_UserThreadJoin(int TID);
+void do_UserThreadExit();
 
 class Param{
     private:
