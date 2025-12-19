@@ -165,7 +165,34 @@ void handle_SC_JoinThread(){
     if ((int) TID < 0) { RETURN(-E_INVAL); } // TODO Add more checks (addr is in valid user space, for example)
     RETURN(do_UserThreadJoin(TID));
 }
-    
+
+void handle_SC_Sleep() {
+    int num_ticks = machine->ReadRegister(4);
+    RETURN(do_UserSleep(num_ticks));
+}
+
+void handle_SC_SleepUntil() {
+    const int tick = machine->ReadRegister(4);
+    RETURN(do_UserSleepUntil(tick));
+}
+
+void handle_SC_GetCurrentTick() {
+    const ptr_32 addr = machine->ReadRegister(4);
+
+    if (addr < 0) { RETURN(-E_FAULT); } // TODO Add more checks (addr is in valid user space, for example)
+
+    const long long current_tick = stats->totalTicks;
+    const auto high = static_cast<int>(current_tick >> 32);
+    const auto low = static_cast<int>(current_tick & 0xFFFFFFFF);
+
+    DEBUG('a', "GetCurrentTick: current_tick=%lld, high=0x%x, low=0x%x\n", current_tick, high, low);
+
+    if (!machine->WriteMem(addr, 4, low) || !machine->WriteMem(addr + 4, 4, high)) {
+        RETURN(-E_FAULT);
+    }
+    RETURN(0);
+}
+
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2);
 
@@ -229,6 +256,20 @@ void ExceptionHandler(ExceptionType which) {
             handle_SC_JoinThread();
             break;
 
+        case SC_Sleep:
+            DEBUG('a', "Sleep exception.cc\n");
+            handle_SC_Sleep();
+            break;
+
+        case SC_SleepUntil:
+            DEBUG('a', "SleepUntil exception.cc\n");
+            handle_SC_SleepUntil();
+            break;
+
+        case SC_GetCurrentTick:
+            DEBUG('a', "GetCurrentTick exception.cc\n");
+            handle_SC_GetCurrentTick();
+            break;
 
         default:
             printf("Unknow syscall :%d\n", type);

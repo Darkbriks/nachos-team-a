@@ -42,6 +42,7 @@ Thread::Thread(const char *threadName) {
     snprintf(const_cast<char *>(name), MAX_STRING_SIZE - 1, "%s_%d", threadName, TID);
     joiner = nullptr;
     join = nullptr;
+    waitTime = 0;
 
     sem = new Semaphore(name, 0);
     stackTop = NULL;
@@ -253,10 +254,35 @@ void Thread::Sleep() {
     DEBUG('t', "Sleeping thread \"%s\"\n", getName());
 
     status = BLOCKED;
-    while ((nextThread = scheduler->FindNextToRun()) == NULL)
+    while ((nextThread = scheduler->FindNextToRun()) == NULL) {
         interrupt->Idle(); // no one to run, wait for an interrupt
+        scheduler->WakeUpThreads();
+    }
 
     scheduler->Run(nextThread); // returns when we've been signalled
+}
+
+//----------------------------------------------------------------------
+// Thread::SleepUntil
+//      Put the thread to sleep until the specified tick
+//----------------------------------------------------------------------
+
+void Thread::SleepUntil(long long tick) {
+    ASSERT(this == currentThread);
+    ASSERT(interrupt->getLevel() == IntOff);
+
+    DEBUG('t', "Sleeping thread \"%s\" until tick %lld\n", getName(), tick);
+
+    waitTime = tick;
+    scheduler->AddToSleepList(this);
+
+    Thread *nextThread;
+    while ((nextThread = scheduler->FindNextToRun()) == nullptr) {
+        interrupt->Idle();
+        scheduler->WakeUpThreads();
+    }
+
+    scheduler->Run(nextThread);
 }
 
 //----------------------------------------------------------------------

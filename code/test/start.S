@@ -333,6 +333,63 @@ JoinThread_ok:
     sw     $0,errno
     j      $31
     .end JoinThread
+    
+/* Sleep : with error handling */
+    .globl Sleep
+    .ent	Sleep
+Sleep:
+    addiu $2,$0,SC_Sleep
+    syscall
+    bgez  $2,Sleep_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+Sleep_ok:
+    sw     $0,errno
+    j      $31
+    .end Sleep
+    
+/* SleepUntil : with error handling */
+    .globl SleepUntil
+    .ent	SleepUntil
+SleepUntil:
+    addiu $2,$0,SC_SleepUntil
+    syscall
+    bgez  $2,SleepUntil_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+SleepUntil_ok:
+    sw     $0,errno
+    j      $31
+    .end SleepUntil
+    
+/* GetCurrentTick : with error handling */
+    .globl GetCurrentTick
+    .ent	GetCurrentTick
+GetCurrentTick:
+    addiu $2,$0,SC_GetCurrentTick
+    syscall
+    bgez  $2,GetCurrentTick_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+GetCurrentTick_ok:
+    sw     $0,errno
+    j      $31
+    .end GetCurrentTick
 
 /* -------------------------------------------------------------
  * Errno utility functions

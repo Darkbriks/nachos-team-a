@@ -58,6 +58,7 @@ extern void Cleanup();
 //              whether it needs it or not.
 //----------------------------------------------------------------------
 static void TimerInterruptHandler(int dummy) {
+    scheduler->WakeUpThreads();
     if (interrupt->getStatus() != IdleMode)
         interrupt->YieldOnReturn();
 }
