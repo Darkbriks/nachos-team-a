@@ -80,7 +80,9 @@ if __name__ == "__main__":
                    "test_getInt_erno_not_integer_value_expected.txt",
                    "test_getString_erno_negative_size.txt",
                    "test_lot_of_thread_from_different_functions.txt",
-                   "test_one_thread_join_an_other_without_corner_case.txt"
+                   "test_one_thread_join_an_other_without_corner_case.txt",
+                   "simple_sleep.txt",
+                   "simple_sleep_until.txt"
                    ]
 
 # la ligne de commande pour nachos
@@ -95,7 +97,9 @@ if __name__ == "__main__":
                f'echo "ab1c" | ./nachos-step{CURRENT_STEP} -x ./getInt',
                f"./nachos-step{CURRENT_STEP} -x ./getErrno",
                f"./nachos-step{CURRENT_STEP} -rs 5 -x ./makethreads",
-               f"./nachos-step3 -x ./testJoin"
+               f"./nachos-step{CURRENT_STEP} -x ./testJoin",
+               f"./nachos-step{CURRENT_STEP} -x ./simpleSleep",
+               f"./nachos-step{CURRENT_STEP} -x ./simpleSleepUntil",
                ]
 
 
@@ -111,7 +115,9 @@ if __name__ == "__main__":
                   "Test getInt avec une chaîne de caractères qui n'est pas un nombre",
                   "Test getString avec taille négative, renvoie un -1 donc aller voir E_INVAL (1)",
                   "Test le lancement de plusieurs threads. Certains lancés depuis le main et d'autre depuis d'autres threads",
-                  "Test vérification de threadJoin dans le cas classsique sans erreur ( thread existant )"
+                  "Test vérification de threadJoin dans le cas classsique sans erreur ( thread existant )",
+                  "Plusieurs tests du syscall sleep en monothread",
+                  "Plusieurs tests du syscall sleepUntil en monothread"
                 ]
     total : int = 0
 
