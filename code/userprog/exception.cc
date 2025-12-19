@@ -69,16 +69,20 @@ static void UpdatePC() {
         return;
 
 #define INT32_MAX 2147483647
-    
+
 void handler_SC_exit() {
     const int return_code = machine->ReadRegister(4);
-	machine->WriteRegister(2, return_code);
+    machine->WriteRegister(2, return_code);
 
     // Wait the termination of all threads in the address space before halting the machine
     if (currentThread->space != nullptr) { currentThread->space->getProcess()->WaitForAllThreadsTerminate(); }
 
     interrupt->Halt();
-}    
+}
+
+void handler_SC_putChar(){
+    synchConsole->SynchPutChar(static_cast<char>(machine->ReadRegister(4)));
+}
 
 void handler_SC_putString(){
     int addr = machine->ReadRegister(4);
@@ -99,26 +103,30 @@ void handler_SC_putString(){
     while (offset < n) {
         copyStringFromMachine(addr + offset, buffer, MAX_STRING_SIZE);
         DEBUG('a', "PutString got string: %s\n", buffer);
-		if (int res = synchConsole->SynchPutString(buffer, MAX_STRING_SIZE); res <= 0) { n = -1; break; }
-		else { offset += res; }
+        if (int res = synchConsole->SynchPutString(buffer, MAX_STRING_SIZE); res <= 0) { n = -1; break; }
+        else { offset += res; }
     }
-	RETURN(n);
+    RETURN(n);
+}
+
+void handler_SC_getChar(){
+    machine->WriteRegister(2, synchConsole->SynchGetChar());
 }
 
 void handler_SC_getString(){
-	int addr = machine->ReadRegister(4);
+    int addr = machine->ReadRegister(4);
     int n = machine->ReadRegister(5);
 
     if (addr < 0) { RETURN(-E_FAULT); } // TODO Add more checks (addr is in valid user space, for example)
     if (n < 0) { RETURN(-E_INVAL); }
     if (n == 0) { RETURN(0); }
 
-	if (n > MAX_STRING_SIZE) { n = MAX_STRING_SIZE; } 
+    if (n > MAX_STRING_SIZE) { n = MAX_STRING_SIZE; }
     {
-		char buffer[n];
+        char buffer[n];
         int res = synchConsole->SynchGetString(buffer, n);
         copyStringToMachine(buffer, addr, n);
-		RETURN(res);
+        RETURN(res);
     }
 }
 
@@ -155,40 +163,41 @@ void handle_SC_CreateThread(){
 void handle_SC_JoinThread(){
     int TID = (int) machine->ReadRegister(4);
     if ((int) TID < 0) { RETURN(-E_INVAL); } // TODO Add more checks (addr is in valid user space, for example)
-    do_UserThreadJoin(TID);
+    RETURN(do_UserThreadJoin(TID));
 }
     
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2);
 
-    if (which != SyscallException){ 
+    if (which != SyscallException){
         printf("Unexpected user mode exception %d %d\n", which, type);
         ASSERT(FALSE);
     }
+
     switch (type){
         case SC_Halt:
             DEBUG('a', "Shutdown, initiated by user program.\n");
             interrupt->Halt();
-            break;
+            return; // HALT does not return, so we do not need to UpdatePC
+
         case SC_Exit:
             DEBUG('a', "Exit, initiated by user program.\n");
             handler_SC_exit();
-            break;
+            return; // EXIT does not return, so we do not need to UpdatePC
+
         case SC_PutChar:
             DEBUG('a', "PutChar exception.cc\n");
-            synchConsole->SynchPutChar(machine->ReadRegister(4));
+            handler_SC_putChar();
             break;
 
         case SC_PutString:
             DEBUG('a', "PutString exception.cc\n");
             handler_SC_putString();
             break;
+
         case SC_GetChar:
             DEBUG('a', "GetChar exception.cc\n");
-            {
-                char ch = synchConsole->SynchGetChar();
-                machine->WriteRegister(2, (int) ch);
-            }
+            handler_SC_getChar();
             break;
         case SC_GetString:
             DEBUG('a', "GetString exception.cc\n");
@@ -225,7 +234,6 @@ void ExceptionHandler(ExceptionType which) {
             printf("Unknow syscall :%d\n", type);
             ASSERT(FALSE);
             break;
-
     }
 
     // LB: Do not forget to increment the pc before returning!

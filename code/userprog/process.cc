@@ -41,7 +41,7 @@ Process::Process(OpenFile * executable, char * status_code){
         space->RestoreState();  // load page table register
         firstThread->space = space;
         delete executable; // close file
-scheduler->ReadyToRun(firstThread);
+        scheduler->ReadyToRun(firstThread);
     }
     mainThread = firstThread;
 }
@@ -65,22 +65,21 @@ void Process::RemoveThread(Thread * thread) {
 
     if (remainingThreads == 0) {
         DEBUG('t', "AddrSpace: Last thread terminated, deleting AddrSpace\n");
+        AddrSpace * spaceToDelete = thread->space;
         thread->space = nullptr;
-        delete this; // Sorry, not very elegant, and a bit risky. Make it better later
+        delete spaceToDelete;
+        all_process->Clear(PID);
+        // TODO: Scheduler should delete the process when the last thread exit
     }
 }
 
 void Process::WaitForAllThreadsTerminate() {
     threadNumberLock->Acquire();
-    while ( ! all_threads_addr->OnlyOneElement()) {
-        const unsigned int remainingThreads = threadNumber - 1; // Exclude the main thread
-
-        if (remainingThreads == 0) {
-            break;
-        }
+    while (threadNumber > 1) { // Exclude the main thread
         threadNumberLock->Release();
 
-        DEBUG('t', "AddrSpace: Main thread waiting, %d child threads remaining\n", remainingThreads);
+        DEBUG('t', "AddrSpace: Main thread waiting, %d child threads remaining\n", threadNumber - 1);
+
         threadExitSemaphore->P();
         threadNumberLock->Acquire();
     }

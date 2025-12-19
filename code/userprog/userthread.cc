@@ -20,6 +20,7 @@ static void StartUserThread(const int f){
 
     // Initialize the stack pointer to 3 pages before the end of the address space
     // Probably needs to be adjusted later
+    // TODO: Fix this when step 4 is done
     const int stackAddr = static_cast<int>(currentThread->space->GetNumPages() * PageSize - 3 * PageSize);
 
     const int prevPC = machine->ReadRegister(PCReg);
@@ -40,13 +41,11 @@ static void StartUserThread(const int f){
 }
 
 int do_UserThreadCreate(const int function, const int arg){
-     
     Thread *thread = currentThread->space->getProcess()->CreateThread( (char *)("user_thread"));
     if (!thread){ return -E_NOMEM; }
 
     Param *param = new Param(function, arg);
     thread->Fork(StartUserThread, reinterpret_cast<int>(param));
-
 
     return static_cast<int>(thread->getTID());
 }
@@ -59,10 +58,11 @@ void do_UserThreadExit(){
 
 int do_UserThreadJoin(int TID){
     Thread * other_thread = currentThread->space->getProcess()->FindThread(TID);
-    if (other_thread == nullptr){
-        // TODO use errno
-        return -1;
-    }
+
+    if (other_thread == nullptr){ return -E_NOSPC; }
+    if (other_thread == currentThread){ return -E_INVAL; }
+    if (other_thread->hasJoiner()){ return -E_INVAL; } // TODO: For now, only one joiner is allowed, discuss on what comportement we want
+
     currentThread->setJoin(other_thread);
     other_thread->setJoiner(currentThread);
     currentThread->Join();

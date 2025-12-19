@@ -49,7 +49,7 @@
 #define E_EOF           6   /* End of file */
 #define E_NOMEM         7   /* Out of memory */
 #define E_RANGE         8   /* Result out of range */
-#define E_RANGE         8   /* Result out of range */
+#define E_NOSPC         9   /* No such process */
 
 #ifdef IN_USER_MODE
 

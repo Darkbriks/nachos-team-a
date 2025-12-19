@@ -16,13 +16,14 @@ extern int do_UserThreadCreate(int function, int arg);
 /**
  * @brief Destruct the caller thread 
  */
-void do_UserThreadExit();
+extern void do_UserThreadExit();
 
 /**
  * @brief Caller will wait other thread to finish
  * @param TID The TID of the thread to wait
  */
 int do_UserThreadJoin(int TID);
+extern int do_UserThreadJoin(int TID);
 
 class Param{
     private:
