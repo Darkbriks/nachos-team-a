@@ -3,6 +3,7 @@
 
 
 
+// TODO verify in P, V destroy Semaphore is a good pointer and user don't break kernel !
 
 void handle_SC_SemInit(){
     ASSERT(sizeof(int) == 4 && 4 == sizeof(Semaphore *));
