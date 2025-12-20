@@ -5,32 +5,40 @@
 
 
 void handle_SC_SemInit(){
-    int sem = machine->ReadRegister(4);
-    int n = machine->ReadRegister(5);
-    Semaphore *newSem = new Semaphore("sem_thread", n);
-    printf("ici %d, %d\n", sem, (int) newSem);
-    machine->WriteMem(sem, sizeof(Semaphore *), (int) newSem);
-
+    ASSERT(sizeof(int) == 4 && 4 == sizeof(Semaphore *));
+    int semUserAddr = machine->ReadRegister(4);
+    int originalValue = machine->ReadRegister(5);
+    Semaphore *newSem = new Semaphore("sem_thread", originalValue);
+    printf("ici %d, %d\n", semUserAddr, (int) newSem);
+    machine->WriteMem(semUserAddr, sizeof(Semaphore *), (int) newSem);
 }
 
-void handle_SC_SemP(){
+void handle_common(int curCase){
+    ASSERT(sizeof(int) == 4 && 4 == sizeof(Semaphore *));
     int addr = machine->ReadRegister(4);
-    Semaphore * sem  = (Semaphore *)  malloc(sizeof( Semaphore *));
-    machine->ReadMem(addr , sizeof(Semaphore *), (int *) sem);
-    printf("ici %d\n", addr);
-    printf("ici %d\n", (int) sem);
-    sem->P();
-    printf("ici\n");
+    int x;
+
+    machine->ReadMem(addr , sizeof(Semaphore *), &x);
+    Semaphore * sem = (Semaphore *) x;
+
+    if (curCase == 0){
+        sem->P();
+    } else if (curCase == 1){
+        sem->V();
+    } else if (curCase == 2){
+        delete sem;
+    }
+}
+
+
+void handle_SC_SemP(){
+    handle_common(0);
 }
 
 void handle_SC_SemV(){
-    int addr = machine->ReadRegister(4);
-    Semaphore * sem = (Semaphore *) addr;
-    sem->V();
+    handle_common(1);
 }
 
 void handle_SC_SemDestroy(){
-    int addr = machine->ReadRegister(4);
-    Semaphore * sem = (Semaphore *) addr;
-    delete sem;
+    handle_common(2);
 }

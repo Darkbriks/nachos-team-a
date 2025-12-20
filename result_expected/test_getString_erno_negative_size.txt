@@ -3,7 +3,7 @@ GetString failed (errno=0)
 
 Machine halting!
 
-Ticks: total 6068, idle 4500, system 990, user 578
+Ticks: total 6080, idle 4500, system 990, user 590
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 45
 Paging: faults 0
