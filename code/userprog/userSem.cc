@@ -9,7 +9,6 @@ void handle_SC_SemInit(){
     int semUserAddr = machine->ReadRegister(4);
     int originalValue = machine->ReadRegister(5);
     Semaphore *newSem = new Semaphore("sem_thread", originalValue);
-    printf("ici %d, %d\n", semUserAddr, (int) newSem);
     machine->WriteMem(semUserAddr, sizeof(Semaphore *), (int) newSem);
 }
 

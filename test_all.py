@@ -121,7 +121,8 @@ if __name__ == "__main__":
                    "simple_sleep_until.txt",
                    "test_multiplethread_use_putString.txt",
                    "test_autoexit.txt",
-                   "test_autoexit2.txt"
+                   "test_autoexit2.txt",
+                   "test_Semaphore_value_1_user.txt"
                 ]
 
     # la ligne de commande pour nachos
@@ -141,7 +142,8 @@ if __name__ == "__main__":
                f"./nachos-step{CURRENT_STEP} -x ./simpleSleepUntil",
                f"./nachos-step{CURRENT_STEP} {RS} -x ./multi_thread_putString",
                f"./nachos-step{CURRENT_STEP} {RS} -x ./testAutoExit",
-               f"./nachos-step{CURRENT_STEP} {RS} -x ./testAutoExit2"
+               f"./nachos-step{CURRENT_STEP} {RS} -x ./testAutoExit2",
+               f"./nachos-step{CURRENT_STEP} {RS} -x ./testThreadSemaphore"
             ]
 
     #le nom du test a affiché en cas d'échec
@@ -161,7 +163,8 @@ if __name__ == "__main__":
                   "Plusieurs tests du syscall sleepUntil en monothread",
                   "Test PutString concurrent",
                   "Test terminaison automatique des threads 1",
-                  "Test terminaison automatique des threads 2"
+                  "Test terminaison automatique des threads 2",
+                  "Test Sémaphore initialisée à 1 en mode user"
                 ]
 
     test_desc=[
@@ -181,7 +184,8 @@ if __name__ == "__main__":
         "Quelques tests du syscall SleepUntil dans un contexte mono thread",
         "Test de la gestion concurrente des appels PutString depuis plusieurs threads dans un programme utilisateur.",
         "Test de la terminaison automatique des threads (pas d'appel explicite à ThreadExit) depuis un programme utilisateur.",
-        "Test de la terminaison automatique des threads (pas d'appel explicite à ThreadExit) depuis un programme utilisateur."
+        "Test de la terminaison automatique des threads (pas d'appel explicite à ThreadExit) depuis un programme utilisateur.",
+        "Test pour les sémaphores au niveau utilisateur. Vérifie que les sémaphores permettent à un thread d'en attendre un autre si la sémaphore est initialisée à 1" 
     ]
 
     total : int = 0
