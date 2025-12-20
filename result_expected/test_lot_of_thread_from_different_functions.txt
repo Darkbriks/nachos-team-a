@@ -1,18 +1,18 @@
-3360
+3616
+23620
 2
-3364
+3
+3624
+3628
+624
 2
-3368
+33632633636
+3628
 2
-3372
-3380
-3376
-3372
-3376
-3368
+
 Machine halting!
 
-Ticks: total 9111, idle 4686, system 2190, user 2235
+Ticks: total 8994, idle 3999, system 2760, user 2235
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 51
 Paging: faults 0

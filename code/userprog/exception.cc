@@ -103,7 +103,7 @@ void handler_SC_putString(){
     while (offset < n) {
         copyStringFromMachine(addr + offset, buffer, MAX_STRING_SIZE);
         DEBUG('a', "PutString got string: %s\n", buffer);
-        if (int res = synchConsole->SynchPutString(buffer, MAX_STRING_SIZE); res <= 0) { n = -1; break; }
+        if (int res = synchConsole->SynchPutString(buffer, MAX_STRING_SIZE); res <= 0) { break; }
         else { offset += res; }
     }
     RETURN(n);
@@ -134,7 +134,7 @@ void handler_SC_PutInt(){
     int value = machine->ReadRegister(4);
     char value_str[12]; // An integer is never bigger than 12 character.
     snprintf(value_str, 12, "%d", value);
-    synchConsole->SynchPutString(value_str, 12); // TODO handle future errno exception
+    RETURN(synchConsole->SynchPutString(value_str, 12)); // TODO handle future errno exception
 }
 
 void handler_SC_GetInt(){
@@ -142,12 +142,11 @@ void handler_SC_GetInt(){
     if (addr < 0) { RETURN(-E_FAULT); }
     char value[12]; // An integer is never bigger than 12 character.
     synchConsole->SynchGetString(value, 12); // TODO handle future errno exception
-    int * new_val = new int;
-    if (sscanf(value, "%d", new_val) !=1){
+    int new_val;
+    if (sscanf(value, "%d", &new_val) !=1){
         RETURN(-E_INVAL);
     }
-    machine->WriteMem(addr, 4, *new_val);
-    delete new_val;
+    machine->WriteMem(addr, 4, new_val);
 
     RETURN(0);
 }

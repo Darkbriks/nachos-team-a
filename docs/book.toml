@@ -1,0 +1,25 @@
+[book]
+title = "NachOS Manual"
+authors = ["alioune", "antoine", "noa", "tommy", "victor"]
+language = "fr"
+src = "src"
+
+[build]
+build-dir = "book"
+create-missing = true
+
+[output.html]
+default-theme = "rust"
+preferred-dark-theme = "navy"
+git-repository-url = "https://gricad-gitlab.univ-grenoble-alpes.fr/systeme/nachos-etu/2025-2026/team-a"
+additional-css = ["theme/custom.css"]
+additional-js = ["theme/custom.js"]
+
+[output.html.search]
+enable = true
+use-boolean-and = true
+limit-results = 30
+
+[output.html.fold]
+enable = true
+level = 0
