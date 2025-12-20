@@ -276,6 +276,7 @@ void ExitThread();
  */
 void JoinThread(int TID);
 
+typedef int sem_t;
 /**
  * @brief Init a Semaphore with original value of value 
  *
@@ -283,7 +284,7 @@ void JoinThread(int TID);
  * @param value  The original number of thread can P this semaphore 
  * @return 0 if everything is fine, or -1 on error (check errno)
  */
-int  SemInit(int sem, int value);
+int  SemInit(sem_t *sem, int value);
 
 /**
  * @brief Semaphore must be init before call this, try to take one of the sem token, wait while value <= 0 
@@ -291,7 +292,7 @@ int  SemInit(int sem, int value);
  * @param sem  A pointer on a semaphore previously init
  * @return 0 if everything is fine, or -1 on error (check errno)
  */
-int  SemP(int sem);
+int  SemP(sem_t *sem);
 
 /**
  * @brief Semaphore must be init before call this, post one of the sem token if the caller has one ;
@@ -299,7 +300,7 @@ int  SemP(int sem);
  * @param sem  A pointer on a semaphore previously init
  * @return 0 if everything is fine, or -1 on error (check errno)
  */
-int  SemV(int sem);
+int  SemV(sem_t *sem);
 
 /**
  * @brief destroy a sem previously init 
@@ -307,7 +308,8 @@ int  SemV(int sem);
  * @param sem  A pointer on a semaphore previously init
  * @return 0 if everything is fine, or -1 on error (check errno)
  */
-int  SemDestroy(int sem);
+int  SemDestroy(sem_t *sem);
+
 
 #endif // IN_USER_MODE
 
