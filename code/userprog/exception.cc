@@ -28,6 +28,7 @@
 #include "process.h"
 #include "exception.h"
 #include "userIO.h"
+#include "userSleep.h"
 #include "userSem.h"
 
 //----------------------------------------------------------------------
@@ -76,7 +77,7 @@ void handler_SC_exit() {
 
     interrupt->Halt();
 }
-    
+
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2);
 
@@ -161,6 +162,20 @@ void ExceptionHandler(ExceptionType which) {
             break;
 
 
+        case SC_Sleep:
+            DEBUG('a', "Sleep exception.cc\n");
+            handle_SC_Sleep();
+            break;
+
+        case SC_SleepUntil:
+            DEBUG('a', "SleepUntil exception.cc\n");
+            handle_SC_SleepUntil();
+            break;
+
+        case SC_GetCurrentTick:
+            DEBUG('a', "GetCurrentTick exception.cc\n");
+            handle_SC_GetCurrentTick();
+            break;
 
         default:
             printf("Unknow syscall :%d\n", type);

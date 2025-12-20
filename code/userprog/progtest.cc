@@ -33,6 +33,7 @@ void StartProcess(char *filename) {
         ASSERT(FALSE);  // machine->Run never returns;
     }
     currentThread = newProcess->getMainThread();
+    currentThread->setStatus(RUNNING);
     machine->Run(); // jump to the user progam
     ASSERT(FALSE);  // machine->Run never returns;
     // the address space exits

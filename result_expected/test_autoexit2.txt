@@ -1,6 +1,7 @@
-adebcMachine halting!
+SABD
+Machine halting!
 
-Ticks: total 501063, idle 500, system 450, user 500113
+Ticks: total 1009, idle 453, system 410, user 146
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 5
 Paging: faults 0

@@ -4,7 +4,7 @@ You typed: 3 characters.
 
 Machine halting!
 
-Ticks: total 7100, idle 5707, system 1270, user 123
+Ticks: total 7097, idle 5707, system 1270, user 120
 Disk I/O: reads 0, writes 0
 Console I/O: reads 4, writes 55
 Paging: faults 0

@@ -1,0 +1,11 @@
+cbThread woke up from very long sleep!
+Main thread finished.
+Machine halting!
+
+Ticks: total 8511, idle 6100, system 1420, user 991
+Disk I/O: reads 0, writes 0
+Console I/O: reads 0, writes 61
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

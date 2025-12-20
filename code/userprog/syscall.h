@@ -44,10 +44,14 @@
 #define SC_ExitThread 18
 #define SC_JoinThread 19
 
-#define SC_SemInit 20
-#define SC_SemP 21
-#define SC_SemV 22
-#define SC_SemDestroy 23
+#define SC_Sleep 20
+#define SC_SleepUntil 21
+#define SC_GetCurrentTick 23
+
+#define SC_SemInit 24
+#define SC_SemP 25
+#define SC_SemV 26
+#define SC_SemDestroy 27
 
 /* Error codes - returned as negative values by syscalls, stored as positive in errno */
 #define E_SUCCESS       0   /* No error */
@@ -310,7 +314,30 @@ int  SemV(sem_t *sem);
  */
 int  SemDestroy(sem_t *sem);
 
+/**
+ * @brief Put the calling thread to sleep for a number of ticks
+ *
+ * @param sleep_time Number of ticks to sleep
+ * @return 0 on success, -1 on error (check errno)
+ */
+int Sleep(int sleep_time);
+
+/**
+ * @brief Put the calling thread to sleep until a specific time
+ *
+ * @param wake_time The time (in ticks) to wake up
+ * @return 0 on success, -1 on error (check errno)
+ */
+int SleepUntil(long long wake_time);
+
+/**
+ * @brief Get the current tick count
+ *
+ * @param tick A pointer to store the current tick count
+ * @return 0 on success, -1 on error (check errno)
+ */
+int GetCurrentTick(long long *tick);
 
 #endif // IN_USER_MODE
 
-#endif /* SYSCALL_H */
+#endif /* SYSCALLS_H */

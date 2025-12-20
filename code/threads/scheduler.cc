@@ -27,14 +27,14 @@
 //      Initialize the list of ready but not running threads to empty.
 //----------------------------------------------------------------------
 
-Scheduler::Scheduler() { readyList = new List; }
+Scheduler::Scheduler() { readyList = new List; sleepList = new List; }
 
 //----------------------------------------------------------------------
 // Scheduler::~Scheduler
 //      De-allocate the list of ready threads.
 //----------------------------------------------------------------------
 
-Scheduler::~Scheduler() { delete readyList; }
+Scheduler::~Scheduler() { delete readyList; delete sleepList; }
 
 //----------------------------------------------------------------------
 // Scheduler::ReadyToRun
@@ -122,6 +122,37 @@ void Scheduler::Run(Thread *nextThread) {
         currentThread->space->RestoreState();
     }
 #endif
+}
+
+//----------------------------------------------------------------------
+// Scheduler::AddToSleepList
+//      Add a thread to the sleep list
+//----------------------------------------------------------------------
+
+void Scheduler::AddToSleepList(Thread *thread) {
+    DEBUG('t', "Adding thread %s to sleep list (wake time: %lld)\n", thread->getName(), thread->getWaitTime());
+    thread->setStatus(BLOCKED);
+    sleepList->SortedInsert(thread, thread->getWaitTime());
+}
+
+//----------------------------------------------------------------------
+// Scheduler::WakeUpThreads
+//      Wake up threads whose sleep time has expired
+//----------------------------------------------------------------------
+
+void Scheduler::WakeUpThreads() {
+    const long long currentTick = stats->totalTicks;
+    while (!sleepList->IsEmpty()) {
+        auto *thread = static_cast<Thread *>(sleepList->GetFirst());
+
+        if (thread->getWaitTime() > currentTick) { break; } // No more threads to wake up
+
+        long long key;
+        sleepList->SortedRemove(&key);
+
+        DEBUG('t', "Waking up thread %s (wake time: %lld, current tick: %lld)\n", thread->getName(), thread->getWaitTime(), currentTick);
+        ReadyToRun(thread);
+    }
 }
 
 //----------------------------------------------------------------------
