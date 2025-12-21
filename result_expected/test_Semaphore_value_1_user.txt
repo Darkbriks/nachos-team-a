@@ -5,7 +5,7 @@ la vie est belle sans bug je suis le thread appelé et donc on m'attend
 on est dans le main après attente
 Machine halting!
 
-Ticks: total 21662, idle 17835, system 3670, user 157
+Ticks: total 21663, idle 17848, system 3670, user 145
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 173
 Paging: faults 0
