@@ -126,20 +126,28 @@ void ExceptionHandler(ExceptionType which) {
             handler_SC_GetInt();
             break;
 
-        case SC_CreateThread:
-            DEBUG('a', "CreateThread exception.cc\n");
-            handle_SC_CreateThread();
+        case SC_Pthread_create:
+            DEBUG('a', "PthreadCreate exception.cc\n");
+            handle_SC_PthreadCreate();
             break;
 
-        case SC_ExitThread:
-            DEBUG('a', "ExitThread exception.cc\n");
-            do_UserThreadExit();
-            return;
+        case SC_Pthread_exit:
+            DEBUG('a', "PthreadExit exception.cc\n");
+            handle_SC_PthreadExit();
+            return; // PthreadExit does not return, so we do not need to UpdatePC
 
-        case SC_JoinThread:
-            DEBUG('a', "JoinThread exception.cc\n");
-            handle_SC_JoinThread();
+        case SC_Pthread_join:
+            DEBUG('a', "PthreadJoin exception.cc\n");
+            handle_SC_PthreadJoin();
             break;
+
+        case SC_Pthread_detach:
+            DEBUG('a', "PthreadDetach exception.cc\n");
+            handle_SC_PthreadDetach();
+            break;
+
+        // TODO : SC_Pthread_attr_init, SC_Pthread_attr_destroy,
+        // SC_Pthread_attr_setdetachstate, SC_Pthread_attr_getdetachstate
 
         case SC_Sleep:
             DEBUG('a', "Sleep exception.cc\n");

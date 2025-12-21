@@ -6,23 +6,45 @@
 #include "exception.h"
 
 /**
- * @brief Create a thread
+ * @brief Create a Nachos user thread
  *
- * @param function  the funtion to executes
- * @param arg  a pointer for the argument of the function
- * @param exit_addr  address of ExitThread function (for automatic termination)
- * @return the TID of the new thread. Return -1 if something bad happens
+ * @param thread A pointer to store the created thread id
+ * @param attr Thread attributes (can be nullptr for default attributes)
+ * @param start_routine The function to be executed by the thread
+ * @param arg The argument to be passed to the function
+ * @param wrapper_addr The address of the thread exit wrapper function
+ * @return 0 on success, -1 on error (check errno)
  */
-extern int do_UserThreadCreate(int function, int arg, int exit_addr = 0);
-
-
-void handle_SC_CreateThread();
-void handle_SC_JoinThread();
+extern int do_PthreadCreate(posix_thread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg, int wrapper_addr);
 
 /**
- * @brief Destruct the caller thread 
+ * @brief Destruct the caller thread
+ *
+ * @param retval The return value of the thread
  */
-void do_UserThreadExit();
+extern void do_PthreadExit(void *retval);
+
+/**
+ * @brief Caller will wait other thread to finish
+ *
+ * @param thread The thread to wait
+ * @param thread_return A pointer to store the return value of the joined thread (can be nullptr)
+ * @return 0 on success, -1 on error (check errno)
+ */
+extern int do_PthreadJoin(posix_thread_t thread, void **thread_return);
+
+/**
+ * @brief Detach a thread
+ *
+ * @param thread The thread to detach
+ * @return 0 on success, -1 on error (check errno)
+ */
+extern int do_PthreadDetach(posix_thread_t thread);
+
+void handle_SC_PthreadCreate();
+void handle_SC_PthreadExit();
+void handle_SC_PthreadJoin();
+void handle_SC_PthreadDetach();
 
 class Param{
     private:

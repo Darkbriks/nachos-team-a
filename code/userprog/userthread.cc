@@ -1,6 +1,7 @@
 #include "userthread.h"
 #include "syscall.h"
 #include "process.h"
+#include "thread.h"
 
 /**
  * @brief appelée par le nouveau thread Nachos créé par la fonction do_UserThreadCreate
@@ -39,54 +40,115 @@ static void StartUserThread(const int f){
     machine->Run();
 }
 
-int do_UserThreadCreate(const int function, const int arg, const int exit_addr){
-    Thread *thread = currentThread->getProcess()->CreateThread((char *)("user_thread"));
-    if (!thread){ return -E_NOMEM; }
+int do_PthreadCreate(const int thread_ptr, const int attr_ptr, int start_routine, int arg, int wrapper_addr) {
+    if (start_routine <= 0) { return -E_INVAL; }
+    // TODO : Add more checks (addr is in valid user space, for example)
 
-    Param *param = new Param(function, arg, exit_addr);
+    posix_thread_attr_t attr;
+    if (attr_ptr != 0) {
+        for (unsigned int i = 0; i < sizeof(posix_thread_attr_t); i++) {
+            if (machine->ReadMem(attr_ptr + i, 1, reinterpret_cast<int *>(&reinterpret_cast<char *>(&attr)[i])) == FALSE) {
+                return -E_INVAL;
+            }
+        }
+    } else {
+        posix_thread_attr_init(&attr);
+    }
+
+    Thread *thread = currentThread->getProcess()->CreateThread((char *)"user_thread");
+    if (!thread) { return -E_NOMEM; }
+
+    thread->setDetached(attr.detachstate == DETACHED);
+
+    if (thread_ptr > 0) {
+        posix_thread_t tid = thread->getTID();
+        if (machine->WriteMem(thread_ptr, sizeof(posix_thread_t), static_cast<int>(tid)) == FALSE) {
+            currentThread->getProcess()->RemoveThread(thread);
+            return -E_INVAL;
+        }
+    }
+
+    Param *param = new Param(start_routine, arg, wrapper_addr);
     thread->Fork(StartUserThread, reinterpret_cast<int>(param));
 
-    return static_cast<int>(thread->getTID());
-}
-
-/**
- * @brief Destruct the caller thread 
- */
-void do_UserThreadExit(){
-    currentThread->getProcess()->RemoveThread(currentThread);
-    currentThread->Joiner();
-    currentThread->Finish();
-}
-
-/**
- * @brief Caller will wait other thread to finish
- * @param TID The TID of the thread to wait
- */
-int do_UserThreadJoin(int TID){
-    Thread * other_thread = currentThread->getProcess()->FindThread(TID);
-
-    if (other_thread == nullptr){ return -E_NOSPC; }
-    if (other_thread == currentThread){ return -E_INVAL; }
-    if (other_thread->hasJoiner()){ return -E_INVAL; } // TODO: For now, only one joiner is allowed, discuss on what comportement we want
-    if (other_thread == currentThread->getProcess()->getMainThread()){ return -E_INVAL; } // The main thread cannot be joined for now
-
-    currentThread->setJoin(other_thread);
-    other_thread->setJoiner(currentThread);
-    currentThread->Join();
     return 0;
 }
 
-void handle_SC_CreateThread(){
-    VoidFunctionPtr function = (VoidFunctionPtr) machine->ReadRegister(4);
-    ptr_32 args = (ptr_32) machine->ReadRegister(5);
-    ptr_32 exit_addr = (ptr_32) machine->ReadRegister(6);
-    if ((int) function < 0) { RETURN(-E_INVAL); } // TODO Add more checks (addr is in valid user space, for example)
-    if (args < 0) { RETURN(-E_INVAL); }
-    RETURN(do_UserThreadCreate((int) function, args, exit_addr) );
+void do_PthreadExit(void *retval) {
+    Thread* thread = currentThread;
+
+    thread->setReturnValue(retval);
+    thread->setStatus(TERMINATED);
+
+    if (thread->isDetached()) {
+        thread->getProcess()->RemoveThread(thread);
+    }
+
+    thread->Joiner();
 }
 
-void handle_SC_JoinThread(){
-    int TID = (int) machine->ReadRegister(4);
-    if ((int) TID < 0) { RETURN(-E_INVAL); } // TODO Add more checks (addr is in valid user space, for example)
-    RETURN(do_UserThreadJoin(TID));
+int do_PthreadJoin(posix_thread_t tid, int retval_ptr) {
+    Thread* other_thread = currentThread->getProcess()->FindThread(tid);
+
+    if (!other_thread) { return -E_NOSPC; }
+    if (other_thread == currentThread) { return -E_INVAL; }
+    if (other_thread->isDetached()) { return -E_INVAL; }
+    if (other_thread->hasJoiner()) { return -E_INVAL; }
+
+    currentThread->setJoin(other_thread);
+    other_thread->setJoiner(currentThread);
+
+    currentThread->Join();
+
+    if (retval_ptr >= 0) {
+        void* retval = other_thread->getReturnValue();
+        if (machine->WriteMem(retval_ptr, sizeof(void*), reinterpret_cast<int>(retval)) == FALSE) {
+            return -E_INVAL;
+        }
+    }
+
+    currentThread->getProcess()->RemoveThread(other_thread);
+
+    return 0;
+}
+
+int do_PthreadDetach(posix_thread_t tid) {
+    Thread* thread = currentThread->getProcess()->FindThread(tid);
+
+    if (!thread) { return -E_NOSPC; }
+    if (thread->isDetached()) { return -E_INVAL; }
+    if (thread->hasJoiner()) { return -E_INVAL; }
+
+    thread->setDetached(true);
+
+    if (thread->isTerminated()) {
+        thread->getProcess()->RemoveThread(thread);
+    }
+
+    return 0;
+}
+
+void handle_SC_PthreadCreate(){
+    const int thread_ptr = machine->ReadRegister(4);
+    const int attr_ptr = machine->ReadRegister(5);
+    const int start_routine = machine->ReadRegister(6);
+    const int arg = machine->ReadRegister(7);
+    const int wrapper_addr = machine->ReadRegister(8);
+    RETURN(do_PthreadCreate(thread_ptr, attr_ptr, start_routine, arg, wrapper_addr) );
+}
+
+void handle_SC_PthreadExit(){
+    const int retval = machine->ReadRegister(4);
+    do_PthreadExit( reinterpret_cast<void *>(retval) );
+}
+
+void handle_SC_PthreadJoin(){
+    const int tid = machine->ReadRegister(4);
+    const int retval_ptr = machine->ReadRegister(5);
+    RETURN(do_PthreadJoin(tid, retval_ptr) );
+}
+
+void handle_SC_PthreadDetach(){
+    const int tid = machine->ReadRegister(4);
+    RETURN(do_PthreadDetach(tid) );
 }

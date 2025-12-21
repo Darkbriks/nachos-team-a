@@ -277,17 +277,15 @@ GetInt_ok:
     j      $31
     .end GetInt
 
-/* CreateThread: with error handling and automatic ExitThread */
-    .globl CreateThread
-    .ent	CreateThread
-CreateThread:
-    # Load ExitThread address into $6 
-    la     $6,ExitThread
+/* Pthread_create: with error handling*/
+    .globl Pthread_create
+    .ent	Pthread_create
+Pthread_create:
+    la $8, pthread_exit_wrapper  # Load address of wrapper
 
-    addiu $2,$0,SC_CreateThread
+    addiu $2,$0,SC_Pthread_create
     syscall
-
-    bgez  $2,CreateThread_ok
+    bgez  $2,Pthread_create_ok
     nop
     # Error handling
     subu   $3,$0,$2
@@ -295,18 +293,27 @@ CreateThread:
     addiu  $2,$0,-1
     j      $31
     nop
-CreateThread_ok:
+Pthread_create_ok:
     sw     $0,errno
     j      $31
-    .end CreateThread
+    .end Pthread_create
 
-/* ExitThread : with error handling */
-    .globl ExitThread
-    .ent	ExitThread
-ExitThread:
-    addiu $2,$0,SC_ExitThread
+/* Pthread_exit : no error handling */
+    .globl Pthread_exit
+    .ent	Pthread_exit
+Pthread_exit:
+    addiu $2,$0,SC_Pthread_exit
     syscall
-    bgez  $2,ExitThread_ok
+    j      $31
+    .end Pthread_exit
+
+/* Pthread_join : with error handling */
+    .globl Pthread_join
+    .ent	Pthread_join
+Pthread_join:
+    addiu $2,$0,SC_Pthread_join
+    syscall
+    bgez  $2,Pthread_join_ok
     nop
     # Error handling
     subu   $3,$0,$2
@@ -314,18 +321,18 @@ ExitThread:
     addiu  $2,$0,-1
     j      $31
     nop
-ExitThread_ok:
+Pthread_join_ok:
     sw     $0,errno
     j      $31
-    .end ExitThread
+    .end Pthread_join
 
-/* JoinThread : with error handling */
-    .globl JoinThread
-    .ent	JoinThread
-JoinThread:
-    addiu $2,$0,SC_JoinThread
+/* Pthread_detach : with error handling */
+    .globl Pthread_detach
+    .ent	Pthread_detach
+Pthread_detach:
+    addiu $2,$0,SC_Pthread_detach
     syscall
-    bgez  $2,JoinThread_ok
+    bgez  $2,Pthread_detach_ok
     nop
     # Error handling
     subu   $3,$0,$2
@@ -333,10 +340,86 @@ JoinThread:
     addiu  $2,$0,-1
     j      $31
     nop
-JoinThread_ok:
+Pthread_detach_ok:
     sw     $0,errno
     j      $31
-    .end JoinThread
+    .end Pthread_detach
+
+/* Pthread_attr_init : with error handling */
+    .globl Pthread_attr_init
+    .ent	Pthread_attr_init
+Pthread_attr_init:
+    addiu $2,$0,SC_Pthread_attr_init
+    syscall
+    bgez  $2,Pthread_attr_init_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+Pthread_attr_init_ok:
+    sw     $0,errno
+    j      $31
+    .end Pthread_attr_init
+
+/* Pthread_attr_destroy : with error handling */
+    .globl Pthread_attr_destroy
+    .ent	Pthread_attr_destroy
+Pthread_attr_destroy:
+    addiu $2,$0,SC_Pthread_attr_destroy
+    syscall
+    bgez  $2,Pthread_attr_destroy_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+Pthread_attr_destroy_ok:
+    sw     $0,errno
+    j      $31
+    .end Pthread_attr_destroy
+
+/* Pthread_attr_setdetachstate : with error handling */
+    .globl Pthread_attr_setdetachstate
+    .ent	Pthread_attr_setdetachstate
+Pthread_attr_setdetachstate:
+    addiu $2,$0,SC_Pthread_attr_setdetachstate
+    syscall
+    bgez  $2,Pthread_attr_setdetachstate_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+Pthread_attr_setdetachstate_ok:
+    sw     $0,errno
+    j      $31
+    .end Pthread_attr_setdetachstate
+
+/* Pthread_attr_getdetachstate : with error handling */
+    .globl Pthread_attr_getdetachstate
+    .ent	Pthread_attr_getdetachstate
+Pthread_attr_getdetachstate:
+    addiu $2,$0,SC_Pthread_attr_getdetachstate
+    syscall
+    bgez  $2,Pthread_attr_getdetachstate_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+Pthread_attr_getdetachstate_ok:
+    sw     $0,errno
+    j      $31
+    .end Pthread_attr_getdetachstate
     
 /* Sleep : with error handling */
     .globl Sleep
@@ -489,6 +572,18 @@ SetMaxSemForProcess_ok:
     sw     $0,errno
     j      $31
     .end SetMaxSemForProcess
+
+/* -------------------------------------------------------------
+ * Posix thread exit wrapper
+ * -------------------------------------------------------------
+ */
+    .globl  pthread_exit_wrapper
+    .ent    pthread_exit_wrapper
+pthread_exit_wrapper:
+    move   $4,$2
+    j     Pthread_exit
+    nop
+    .end    pthread_exit_wrapper
 
 /* -------------------------------------------------------------
  * Errno utility functions

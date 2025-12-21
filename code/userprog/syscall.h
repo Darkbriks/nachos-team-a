@@ -40,19 +40,25 @@
 #define SC_PutInt 15
 #define SC_GetInt 16
 
-#define SC_CreateThread 17
-#define SC_ExitThread 18
-#define SC_JoinThread 19
+#define SC_Pthread_create 17
+#define SC_Pthread_exit 18
+#define SC_Pthread_join 19
+#define SC_Pthread_detach 20
 
-#define SC_Sleep 20
-#define SC_SleepUntil 21
-#define SC_GetCurrentTick 23
+#define SC_Pthread_attr_init 21
+#define SC_Pthread_attr_destroy 22
+#define SC_Pthread_attr_setdetachstate 23
+#define SC_Pthread_attr_getdetachstate 24
 
-#define SC_SemInit 24
-#define SC_SemP 25
-#define SC_SemV 26
-#define SC_SemDestroy 27
-#define SC_SetMaxSemForProcess 28
+#define SC_Sleep 25
+#define SC_SleepUntil 26
+#define SC_GetCurrentTick 27
+
+#define SC_SemInit 28
+#define SC_SemP 29
+#define SC_SemV 30
+#define SC_SemDestroy 31
+#define SC_SetMaxSemForProcess 32
 
 /* Error codes - returned as negative values by syscalls, stored as positive in errno */
 #define E_SUCCESS       0   /* No error */
@@ -261,27 +267,92 @@ int GetString(char *s, int n);
  */
 int GetInt(int *n);
 
-/**
- * @brief Create a thread at the user level
- *
- * @param f Function to execute
- * @param arg Argument for the function
- * @param arg Argument for the function
- * @return  the tid of the thread newly created
+/* -------------------------------------------------------------
+ * POSIX THREAD OPERATIONS : Pthread_create, ExitThread, JoinThread
+ * -------------------------------------------------------------
  */
-int CreateThread(void f(void *arg), void *arg);
+
+typedef unsigned int posix_thread_t;
+typedef struct {} pthread_attr_t;
 
 /**
- * @brief The caller will be kill if this function works
+ * @brief Create a new thread
+ *
+ * @param thread A pointer to store the created thread id
+ * @param attr Thread attributes (can be nullptr for default attributes)
+ * @param start_routine The function to be executed by the thread
+ * @param arg The argument to be passed to the function
+ * @return 0 on success, -1 on error (check errno)
  */
-void ExitThread();
+int Pthread_create(posix_thread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg);
 
 /**
- * @brief The caller wait for the thread finish
+ * @brief Destruct the caller thread
  *
- * @param TID The thread to wait
+ * @param retval The return value of the thread
+ * @return This function does not return
  */
-void JoinThread(int TID);
+void Pthread_exit(void *retval);
+
+/**
+ * @brief Caller will wait other thread to finish
+ *
+ * @param thread The thread to wait
+ * @param retval A pointer to store the return value of the joined thread (can be nullptr)
+ * @return 0 on success, -1 on error (check errno)
+ */
+int Pthread_join(posix_thread_t thread, void **retval);
+
+/**
+ * @brief Detach a thread
+ *
+ * @param thread The thread to detach
+ * @return 0 on success, -1 on error (check errno)
+ */
+int Pthread_detach(posix_thread_t thread);
+
+/* -------------------------------------------------------------
+ * POSIX THREAD ATTRIBUTES OPERATIONS : Attr_init, Attr_destroy, Attr_setdetachstate, Attr_getdetachstate
+ * -------------------------------------------------------------
+ */
+/**
+ * @brief Initialize thread attributes object.
+ *
+ * @param attr Pointer to the thread attributes object to initialize.
+ * @return 0 on success, -1 on error (check errno)
+ */
+int Pthread_attr_init(pthread_attr_t *attr);
+
+/**
+ * @brief Destroy thread attributes object.
+ *
+ * @param attr Pointer to the thread attributes object to destroy.
+ * @return 0 on success, -1 on error (check errno)
+ */
+int Pthread_attr_destroy(pthread_attr_t *attr);
+
+/**
+ * @brief Set the detach state attribute in the thread attributes object.
+ *
+ * @param attr Pointer to the thread attributes object.
+ * @param detachstate Desired detach state (JOINABLE or DETACHED).
+ * @return 0 on success, -1 on error (check errno)
+ */
+int Pthread_attr_setdetachstate(pthread_attr_t *attr, int detachstate);
+
+/**
+ * @brief Get the detach state attribute from the thread attributes object.
+ *
+ * @param attr Pointer to the thread attributes object.
+ * @param detachstate Pointer to store the retrieved detach state.
+ * @return 0 on success, -1 on error (check errno)
+ */
+int Pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate);
+
+/* -------------------------------------------------------------
+ * SLEEP AND TIME OPERATIONS : Sleep, SleepUntil, GetCurrentTick
+ * -------------------------------------------------------------
+ */
 
 /**
  * @brief Put the calling thread to sleep for a number of ticks

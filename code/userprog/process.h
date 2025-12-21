@@ -16,16 +16,14 @@ class Process{
 
         static class BitMapThreadSafe *all_process; // TODO put it in USer one day ... I hope but I really don't know
 
-        /*
-         * @deprecated Too much memory for each process, use it if you want to bench
-         */
-        // class BitMap *all_threads;
         AddrSpace *space;
         unsigned int PID;
         Thread * mainThread;
         unsigned int threadNumber;
         Lock *threadNumberLock;
         Semaphore *threadExitSemaphore;
+
+        class BitMap *threads_bitmap;
         LinkedList<Thread> * all_threads_addr;
 
         //User owner; // TODO create User class for multiUser OS 
