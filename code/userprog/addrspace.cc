@@ -16,6 +16,8 @@
 // of liability and disclaimer of warranty provisions.
 
 #include "addrspace.h"
+
+#include "bitmap_thread_safe.h"
 #include "copyright.h"
 #include "noff.h"
 #include "synch.h"
@@ -113,6 +115,12 @@ AddrSpace::AddrSpace(OpenFile *executable) {
                            noffH.initData.size, noffH.initData.inFileAddr);
     }
 
+    semaphoreBitmap = new BitMapThreadSafe(MAX_SEMAPHORES_PER_PROCESS);
+    for (i = 0; i < MAX_SEMAPHORES_PER_PROCESS; i++) {
+        semaphoreTable[i].semaphore = nullptr;
+        semaphoreTable[i].valid = false;
+    }
+
 }
 
 //----------------------------------------------------------------------
@@ -125,6 +133,13 @@ AddrSpace::~AddrSpace() {
     // delete pageTable;
     delete[] pageTable;
     // End of modification
+
+    delete semaphoreBitmap;
+    for (auto &[semaphore, is_valid] : semaphoreTable) {
+        if (is_valid) {
+            delete semaphore;
+        }
+    }
 }
 
 //----------------------------------------------------------------------
@@ -178,4 +193,55 @@ void AddrSpace::SaveState() {}
 void AddrSpace::RestoreState() {
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
+}
+
+int AddrSpace::SemaphoreCreate(const int initialValue){
+    int semId = semaphoreBitmap->Find();
+    if (semId == -1) {
+        return -1; // No more semaphore available
+    }
+    semaphoreTable[semId].semaphore = new Semaphore("UserSemaphore", initialValue);
+    semaphoreTable[semId].valid = true;
+    DEBUG('s', "AddrSpace::SemaphoreCreate: Created semaphore with id %d and initial value %d\n", semId, initialValue);
+    return semId;
+}
+
+int AddrSpace::SemaphoreWait(const int semId) {
+    Semaphore* sem = GetSemaphore(semId);
+    if (sem == nullptr) {
+        return -1;
+    }
+    sem->P();
+    DEBUG('s', "AddrSpace::SemaphoreWait: Semaphore with id %d waited (P operation)\n", semId);
+    return 0;
+}
+
+int AddrSpace::SemaphorePost(const int semId) {
+    Semaphore* sem = GetSemaphore(semId);
+    if (sem == nullptr) {
+        return -1;
+    }
+    sem->V();
+    DEBUG('s', "AddrSpace::SemaphorePost: Semaphore with id %d posted (V operation)\n", semId);
+    return 0;
+}
+
+int AddrSpace::SemaphoreDestroy(const int semId) {
+    Semaphore* sem = GetSemaphore(semId);
+    if (sem == nullptr) {
+        return -1;
+    }
+    delete sem;
+    semaphoreTable[semId].semaphore = nullptr;
+    semaphoreTable[semId].valid = false;
+    semaphoreBitmap->Clear(semId);
+    DEBUG('s', "AddrSpace::SemaphoreDestroy: Semaphore with id %d destroyed\n", semId);
+    return 0;
+}
+
+Semaphore* AddrSpace::GetSemaphore(int semId) {
+    if (semId < 0 || semId >= MAX_SEMAPHORES_PER_PROCESS || !semaphoreTable[semId].valid) {
+        return nullptr;
+    }
+    return semaphoreTable[semId].semaphore;
 }

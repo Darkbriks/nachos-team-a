@@ -1,44 +1,29 @@
 #include "userSem.h"
+
+#include "syscall.h"
 #include "system.h"
 
-
-
-// TODO verify in P, V destroy Semaphore is a good pointer and user don't break kernel !
-
-void handle_SC_SemInit(){
-    ASSERT(sizeof(int) == 4 && 4 == sizeof(Semaphore *));
-    int semUserAddr = machine->ReadRegister(4);
-    int originalValue = machine->ReadRegister(5);
-    Semaphore *newSem = new Semaphore("sem_thread", originalValue);
-    machine->WriteMem(semUserAddr, sizeof(Semaphore *), (int) newSem);
+void handle_SC_SemInit() {
+    int initialValue = machine->ReadRegister(4);
+    if (initialValue < 0) { RETURN(-E_INVAL); }
+    int handle = currentThread->getAddrSpace()->SemaphoreCreate(initialValue);
+    RETURN(handle == -1 ? -E_FTABLE : handle);
 }
 
-void handle_common(int curCase){
-    ASSERT(sizeof(int) == 4 && 4 == sizeof(Semaphore *));
-    int addr = machine->ReadRegister(4);
-    int x;
-
-    machine->ReadMem(addr , sizeof(Semaphore *), &x);
-    Semaphore * sem = (Semaphore *) x;
-
-    if (curCase == 0){
-        sem->P();
-    } else if (curCase == 1){
-        sem->V();
-    } else if (curCase == 2){
-        delete sem;
-    }
+void handle_SC_SemP() {
+    int handle = machine->ReadRegister(4);
+    bool success = currentThread->getAddrSpace()->SemaphoreWait(handle);
+    RETURN(success ? 0 : -E_NOENT);
 }
 
-
-void handle_SC_SemP(){
-    handle_common(0);
+void handle_SC_SemV() {
+    int handle = machine->ReadRegister(4);
+    bool success = currentThread->getAddrSpace()->SemaphorePost(handle);
+    RETURN(success ? 0 : -E_NOENT);
 }
 
-void handle_SC_SemV(){
-    handle_common(1);
-}
-
-void handle_SC_SemDestroy(){
-    handle_common(2);
+void handle_SC_SemDestroy() {
+    int handle = machine->ReadRegister(4);
+    bool success = currentThread->getAddrSpace()->SemaphoreDestroy(handle);
+    RETURN(success ? 0 : -E_NOENT);
 }

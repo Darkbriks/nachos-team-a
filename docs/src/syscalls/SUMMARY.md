@@ -16,3 +16,11 @@
     - [GetString](./console/GetString.md)
     - [PutInt](./console/PutInt.md)
     - [GetInt](./console/GetInt.md)
+    
+# Sémaphores
+
+- [Sémaphores](./sync/SUMMARY.md)
+    - [SemInit](./sync/SemInit.md)
+    - [SemP](./sync/SemP.md)
+    - [SemV](./sync/SemV.md)
+    - [SemDestroy](./sync/SemDestroy.md)

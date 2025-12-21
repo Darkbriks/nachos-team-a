@@ -64,6 +64,8 @@
 #define E_NOMEM         7   /* Out of memory */
 #define E_RANGE         8   /* Result out of range */
 #define E_NOSPC         9   /* No such process */
+#define E_FTABLE        10  /* Allocation table full (file table, semaphore table, etc.) */
+#define E_NOENT         11  /* No such file or directory or table entry */
 
 #ifdef IN_USER_MODE
 
@@ -280,39 +282,37 @@ void ExitThread();
  */
 void JoinThread(int TID);
 
-typedef int sem_t;
 /**
  * @brief Init a Semaphore with original value of value 
  *
- * @param sem  The adress of a semaphore sem_t not initialized before
- * @param value  The original number of thread can P this semaphore 
+ * @param value  The original number of thread can P this semaphore
  * @return 0 if everything is fine, or -1 on error (check errno)
  */
-int  SemInit(sem_t *sem, int value);
+int SemInit(int value);
 
 /**
  * @brief Semaphore must be init before call this, try to take one of the sem token, wait while value <= 0 
  *
- * @param sem  A pointer on a semaphore previously init
+ * @param sem_id Id of a semaphore previously init
  * @return 0 if everything is fine, or -1 on error (check errno)
  */
-int  SemP(sem_t *sem);
+int SemP(int sem_id);
 
 /**
  * @brief Semaphore must be init before call this, post one of the sem token if the caller has one ;
  *
- * @param sem  A pointer on a semaphore previously init
+ * @param sem_id Id of a semaphore previously init
  * @return 0 if everything is fine, or -1 on error (check errno)
  */
-int  SemV(sem_t *sem);
+int SemV(int sem_id);
 
 /**
  * @brief destroy a sem previously init 
  *
- * @param sem  A pointer on a semaphore previously init
+ * @param sem_id Id of a semaphore previously init
  * @return 0 if everything is fine, or -1 on error (check errno)
  */
-int  SemDestroy(sem_t *sem);
+int SemDestroy(int sem_id);
 
 /**
  * @brief Put the calling thread to sleep for a number of ticks

@@ -7,7 +7,8 @@ code/.clangd
 code/Makefile
 code/sources.md5sum
 .DS_Store
-code/userprog/.my_stdlib.d
-code/userprog/my_stdlib.o
+code/my_stdlib/.my_stdlib.d
+code/my_stdlib/my_stdlib.o
 code/.clang-tidy
 code/.gdb_history
+*/.idea

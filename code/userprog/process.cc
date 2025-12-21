@@ -3,6 +3,7 @@
 #include "addrspace.h"
 #include "bitmap_thread_safe.h"
 #include "bitmap.h"
+#include "thread.h"
 
 
 BitMapThreadSafe* Process::all_process = new BitMapThreadSafe(MAX_PROCESS);
@@ -59,12 +60,12 @@ void Process::RemoveThread(Thread * thread) {
     all_threads_addr->RemoveInList(thread);
     threadNumberLock->Release();
 
-    DEBUG('t', "AddrSpace: Removed thread, now %d threads\n", remainingThreads);
+    DEBUG('t', "Process: Removed thread %d, now %d threads\n", thread->getTID(), remainingThreads);
 
     threadExitSemaphore->V();
 
     if (remainingThreads == 0) {
-        DEBUG('t', "AddrSpace: Last thread terminated, deleting AddrSpace\n");
+        DEBUG('t', "Process: Last thread terminated, deleting AddrSpace\n");
         AddrSpace *spaceToDelete = this->space;
         this->space = nullptr;
         delete spaceToDelete;
@@ -78,14 +79,14 @@ void Process::WaitForAllThreadsTerminate() {
     while (threadNumber > 1) { // Exclude the main thread
         threadNumberLock->Release();
 
-        DEBUG('t', "AddrSpace: Main thread waiting, %d child threads remaining\n", threadNumber - 1);
+        DEBUG('t', "Process: Main thread waiting, %d child threads remaining\n", threadNumber - 1);
 
         threadExitSemaphore->P();
         threadNumberLock->Acquire();
     }
     threadNumberLock->Release();
 
-    DEBUG('t', "AddrSpace: All child threads finished\n");
+    DEBUG('t', "Process: All child threads finished\n");
 }
 
 bool search(Thread * T, unsigned int value){
