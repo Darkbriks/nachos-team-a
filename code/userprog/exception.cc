@@ -73,7 +73,7 @@ void handler_SC_exit() {
     machine->WriteRegister(2, return_code);
 
     // Wait the termination of all threads in the address space before halting the machine
-    if (currentThread->space != nullptr) { currentThread->space->getProcess()->WaitForAllThreadsTerminate(); }
+    if (Process* process = currentThread->getProcess(); process != nullptr) { process->WaitForAllThreadsTerminate(); }
 
     interrupt->Halt();
 }

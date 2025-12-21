@@ -83,9 +83,9 @@ void Scheduler::Run(Thread *nextThread) {
     // End of addition
 
 #ifdef USER_PROGRAM                     // ignore until running user programs
-    if (currentThread->space != NULL) { // if this thread is a user program,
+    if (currentThread->getAddrSpace() != NULL) { // if this thread is a user program,
         currentThread->SaveUserState(); // save the user's CPU registers
-        currentThread->space->SaveState();
+        currentThread->getAddrSpace()->SaveState();
     }
 #endif
 
@@ -117,9 +117,9 @@ void Scheduler::Run(Thread *nextThread) {
     }
 
 #ifdef USER_PROGRAM
-    if (currentThread->space != NULL) {    // if there is an address space
+    if (currentThread->getAddrSpace() != NULL) {    // if there is an address space
         currentThread->RestoreUserState(); // to restore, do it.
-        currentThread->space->RestoreState();
+        currentThread->getAddrSpace()->RestoreState();
     }
 #endif
 }

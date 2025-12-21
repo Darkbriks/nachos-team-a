@@ -16,6 +16,7 @@
 
 #include "thread.h"
 #include "copyright.h"
+#include "process.h"
 #include "switch.h"
 #include "synch.h"
 #include "system.h"
@@ -36,20 +37,23 @@
 unsigned int Thread::currentThreadId = 0;
 Lock *Thread::threadIdLock = new Lock("threadIdLock");
 
-Thread::Thread(const char *threadName) {
+Thread::Thread(const char *threadName, Process *p) {
     TID = GetAndIncrementThreadId();
     name = new char[MAX_STRING_SIZE];
     snprintf(const_cast<char *>(name), MAX_STRING_SIZE - 1, "%s_%d", threadName, TID);
+
+    this->process = p;
+
     joiner = nullptr;
     join = nullptr;
+    sem = new Semaphore(name, 0);
+
     waitTime = 0;
 
-    sem = new Semaphore(name, 0);
     stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
 #ifdef USER_PROGRAM
-    space = NULL;
     // FBT: Need to initialize special registers of simulator to 0
     // in particular LoadReg or it could crash when switching
     // user threads.
@@ -78,6 +82,13 @@ Thread::~Thread() {
     ASSERT(this != currentThread);
     if (stack != NULL)
         DeallocBoundedArray((char *)stack, StackSize * sizeof(int));
+}
+
+AddrSpace * Thread::getAddrSpace(){
+    if (process != nullptr){
+        return process->getSpace();
+    }
+    return nullptr;
 }
 
 void Thread::Joiner(){
@@ -126,7 +137,7 @@ void Thread::Fork(VoidFunctionPtr func, int arg) {
     // an already running program, as in the "fork" Unix system call.
 
     // LB: Observe that currentThread->space may be NULL at that time.
-    this->space = currentThread->space;
+    // this->space = currentThread->space; // No more necessary, since the space is accessible from the process
 
 #endif // USER_PROGRAM
 
@@ -325,11 +336,18 @@ void SetupThreadState() {
     // This is definitely the case as soon as several *processes* are
     // running together.
 
-    if (currentThread->space != NULL) { // if there is an address space
+    /*if (currentThread->space != NULL) { // if there is an address space
         // LB: Actually, the user state is void at that time. Keep this
         // action for consistency with the Scheduler::Run function
         currentThread->RestoreUserState(); // to restore, do it.
         currentThread->space->RestoreState();
+    }*/
+
+    if (currentThread->getProcess() != nullptr) {
+        if (AddrSpace *space = currentThread->getProcess()->getSpace(); space != nullptr) {
+            currentThread->RestoreUserState();
+            space->RestoreState();
+        }
     }
 
 #endif // USER_PROGRAM

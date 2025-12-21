@@ -21,12 +21,12 @@ static void StartUserThread(const int f){
     // Initialize the stack pointer to 3 pages before the end of the address space
     // Probably needs to be adjusted later
     // TODO: Fix this when step 4 is done
-    const int stackAddr = static_cast<int>(currentThread->space->GetNumPages() * PageSize - 3 * PageSize);
+    const int stackAddr = static_cast<int>(currentThread->getAddrSpace()->GetNumPages() * PageSize - 3 * PageSize);
 
     const int prevPC = machine->ReadRegister(PCReg);
 
-    currentThread->space->InitRegisters();
-    currentThread->space->RestoreState();
+    currentThread->getAddrSpace()->InitRegisters();
+    currentThread->getAddrSpace()->RestoreState();
 
     machine->WriteRegister(PCReg, param->get_function());
     machine->WriteRegister(NextPCReg, param->get_function() + 4);
@@ -40,7 +40,7 @@ static void StartUserThread(const int f){
 }
 
 int do_UserThreadCreate(const int function, const int arg, const int exit_addr){
-    Thread *thread = currentThread->space->getProcess()->CreateThread( (char *)("user_thread"));
+    Thread *thread = currentThread->getProcess()->CreateThread((char *)("user_thread"));
     if (!thread){ return -E_NOMEM; }
 
     Param *param = new Param(function, arg, exit_addr);
@@ -53,7 +53,7 @@ int do_UserThreadCreate(const int function, const int arg, const int exit_addr){
  * @brief Destruct the caller thread 
  */
 void do_UserThreadExit(){
-    currentThread->space->getProcess()->RemoveThread(currentThread);
+    currentThread->getProcess()->RemoveThread(currentThread);
     currentThread->Joiner();
     currentThread->Finish();
 }
@@ -63,11 +63,12 @@ void do_UserThreadExit(){
  * @param TID The TID of the thread to wait
  */
 int do_UserThreadJoin(int TID){
-    Thread * other_thread = currentThread->space->getProcess()->FindThread(TID);
+    Thread * other_thread = currentThread->getProcess()->FindThread(TID);
 
     if (other_thread == nullptr){ return -E_NOSPC; }
     if (other_thread == currentThread){ return -E_INVAL; }
     if (other_thread->hasJoiner()){ return -E_INVAL; } // TODO: For now, only one joiner is allowed, discuss on what comportement we want
+    if (other_thread == currentThread->getProcess()->getMainThread()){ return -E_INVAL; } // The main thread cannot be joined for now
 
     currentThread->setJoin(other_thread);
     other_thread->setJoiner(currentThread);

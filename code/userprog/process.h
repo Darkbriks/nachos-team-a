@@ -15,7 +15,7 @@ class Process{
         Process(OpenFile * executable, char * return_code);
 
         static class BitMapThreadSafe *all_process; // TODO put it in USer one day ... I hope but I really don't know
-                                                    
+
         /*
          * @deprecated Too much memory for each process, use it if you want to bench
          */

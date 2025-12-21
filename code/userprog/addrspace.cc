@@ -58,10 +58,9 @@ static void SwapHeader(NoffHeader *noffH) {
 //      "executable" is the file containing the object code to load into memory
 //----------------------------------------------------------------------
 
-AddrSpace::AddrSpace(OpenFile *executable, Process *proc) {
+AddrSpace::AddrSpace(OpenFile *executable) {
     NoffHeader noffH;
     unsigned int i, size;
-    this->process = proc;
 
     executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
     if ((noffH.noffMagic != NOFFMAGIC) &&

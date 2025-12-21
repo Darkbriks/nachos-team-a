@@ -37,11 +37,10 @@ Process::Process(OpenFile * executable, char * status_code){
     threadNumber = 0; // The main thread
     Thread * firstThread = CreateThread((char *) "main");
     if (executable != nullptr){
-        this->space = new AddrSpace(executable, this);
+        this->space = new AddrSpace(executable);
 
         space->InitRegisters(); // set the initial register values
         space->RestoreState();  // load page table register
-        firstThread->space = space;
         delete executable; // close file
     }
     mainThread = firstThread;
@@ -66,8 +65,8 @@ void Process::RemoveThread(Thread * thread) {
 
     if (remainingThreads == 0) {
         DEBUG('t', "AddrSpace: Last thread terminated, deleting AddrSpace\n");
-        AddrSpace * spaceToDelete = thread->space;
-        thread->space = nullptr;
+        AddrSpace *spaceToDelete = this->space;
+        this->space = nullptr;
         delete spaceToDelete;
         all_process->Clear(PID);
         // TODO: Scheduler should delete the process when the last thread exit
@@ -98,7 +97,7 @@ Thread * Process::FindThread(unsigned int TID){
 }
 
 Thread* Process::CreateThread(char * name){
-    Thread * newThread = new Thread(name);
+    Thread * newThread = new Thread(name, this);
     threadNumberLock->Acquire();
     threadNumber++;
     all_threads_addr->AddInList(newThread);
