@@ -141,6 +141,21 @@ void ExceptionHandler(ExceptionType which) {
             handle_SC_JoinThread();
             break;
 
+        case SC_Sleep:
+            DEBUG('a', "Sleep exception.cc\n");
+            handle_SC_Sleep();
+            break;
+
+        case SC_SleepUntil:
+            DEBUG('a', "SleepUntil exception.cc\n");
+            handle_SC_SleepUntil();
+            break;
+
+        case SC_GetCurrentTick:
+            DEBUG('a', "GetCurrentTick exception.cc\n");
+            handle_SC_GetCurrentTick();
+            break;
+
         case SC_SemInit:
             DEBUG('a', "SemInit  exception.cc\n");
             handle_SC_SemInit();
@@ -161,20 +176,9 @@ void ExceptionHandler(ExceptionType which) {
             handle_SC_SemDestroy();
             break;
 
-
-        case SC_Sleep:
-            DEBUG('a', "Sleep exception.cc\n");
-            handle_SC_Sleep();
-            break;
-
-        case SC_SleepUntil:
-            DEBUG('a', "SleepUntil exception.cc\n");
-            handle_SC_SleepUntil();
-            break;
-
-        case SC_GetCurrentTick:
-            DEBUG('a', "GetCurrentTick exception.cc\n");
-            handle_SC_GetCurrentTick();
+        case SC_SetMaxSemForProcess:
+            DEBUG('a', "SetMaxSemForProcess  exception.cc\n");
+            handle_SC_SetMaxSemForProcess();
             break;
 
         default:

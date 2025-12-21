@@ -3,18 +3,14 @@
 
 #include "bitmap.h"
 
-
-
 class BitMapThreadSafe : public BitMap{
-
     public:
-        BitMapThreadSafe(int nitems); // Initialize a bitmap, with "nitems" bits
-                            // initially, all bits are cleared.
-        ~BitMapThreadSafe() override;          // De-allocate bitmap
+        BitMapThreadSafe(int nitems);   // Initialize a bitmap, with "nitems" bits initially, all bits are cleared.
+        ~BitMapThreadSafe() override;   // De-allocate bitmap
 
         void Mark(int which)override ;  // Set the "nth" bit
-        void Clear(int which)override ; // Clear the "nth" bit
-        bool TestThreadSafe(int which);  // Is the "nth" bit set?
+        void ClearThreadSafe(int which) ; // Clear the "nth" bit
+        bool TestThreadSafe(int which); // Is the "nth" bit set?
         int Find()override ;            // Return the # of a clear bit, and as a side
         // effect, set the bit.
         // If no bits are clear, return -1.
@@ -26,12 +22,11 @@ class BitMapThreadSafe : public BitMap{
         // TODO when FILESYS
         // void FetchFrom(OpenFile *file)override ; // fetch contents from disk
         // void WriteBack(OpenFile *file) override; // write contents to disk
-    
+
+        void UpdateSize(int newSize) override; // change the size of the bitmap
 
     private:
-
         class Semaphore *semaphore;
-
 };
 
 #endif // BITMAP_THREAD_SAFE_H

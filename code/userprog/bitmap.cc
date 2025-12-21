@@ -8,6 +8,7 @@
 
 #include "bitmap.h"
 #include "copyright.h"
+#include "utility.h"
 
 //----------------------------------------------------------------------
 // BitMap::BitMap
@@ -148,4 +149,29 @@ void BitMap::FetchFrom(OpenFile *file) {
 
 void BitMap::WriteBack(OpenFile *file) {
     file->WriteAt((char *)map, numWords * sizeof(unsigned), 0);
+}
+
+//----------------------------------------------------------------------
+// BitMap::UpdateSize
+//      Change the size of the bitmap and preserve its contents
+//      Cost is O(min(oldSize, newSize))
+//----------------------------------------------------------------------
+
+void BitMap::UpdateSize(const int newSize) {
+    const int oldNumBits = numBits;
+    const int oldNumWords = numWords;
+    const unsigned int *oldMap = map;
+
+    numBits = newSize;
+    numWords = divRoundUp(numBits, BitsInWord);
+    map = new unsigned int[numWords];
+
+    const int minWords = (oldNumWords < numWords) ? oldNumWords : numWords;
+    for (int i = 0; i < minWords; i++) { map[i] = oldMap[i]; }
+
+    for (int i = oldNumBits; i < numBits; i++) { Clear(i); }
+
+    delete[] oldMap;
+
+    DEBUG('f', "BitMap::UpdateSize: Update complete\n");
 }

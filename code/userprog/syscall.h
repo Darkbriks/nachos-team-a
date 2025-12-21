@@ -52,6 +52,7 @@
 #define SC_SemP 25
 #define SC_SemV 26
 #define SC_SemDestroy 27
+#define SC_SetMaxSemForProcess 28
 
 /* Error codes - returned as negative values by syscalls, stored as positive in errno */
 #define E_SUCCESS       0   /* No error */
@@ -283,38 +284,6 @@ void ExitThread();
 void JoinThread(int TID);
 
 /**
- * @brief Init a Semaphore with original value of value 
- *
- * @param value  The original number of thread can P this semaphore
- * @return 0 if everything is fine, or -1 on error (check errno)
- */
-int SemInit(int value);
-
-/**
- * @brief Semaphore must be init before call this, try to take one of the sem token, wait while value <= 0 
- *
- * @param sem_id Id of a semaphore previously init
- * @return 0 if everything is fine, or -1 on error (check errno)
- */
-int SemP(int sem_id);
-
-/**
- * @brief Semaphore must be init before call this, post one of the sem token if the caller has one ;
- *
- * @param sem_id Id of a semaphore previously init
- * @return 0 if everything is fine, or -1 on error (check errno)
- */
-int SemV(int sem_id);
-
-/**
- * @brief destroy a sem previously init 
- *
- * @param sem_id Id of a semaphore previously init
- * @return 0 if everything is fine, or -1 on error (check errno)
- */
-int SemDestroy(int sem_id);
-
-/**
  * @brief Put the calling thread to sleep for a number of ticks
  *
  * @param sleep_time Number of ticks to sleep
@@ -337,6 +306,49 @@ int SleepUntil(long long wake_time);
  * @return 0 on success, -1 on error (check errno)
  */
 int GetCurrentTick(long long *tick);
+
+/**
+ * @brief Init a Semaphore with original value of value
+ *
+ * @param value  The original number of thread can P this semaphore
+ * @return 0 if everything is fine, or -1 on error (check errno)
+ */
+int SemInit(int value);
+
+/**
+ * @brief Semaphore must be init before call this, try to take one of the sem token, wait while value <= 0
+ *
+ * @param sem_id Id of a semaphore previously init
+ * @return 0 if everything is fine, or -1 on error (check errno)
+ */
+int SemP(int sem_id);
+
+/**
+ * @brief Semaphore must be init before call this, post one of the sem token if the caller has one ;
+ *
+ * @param sem_id Id of a semaphore previously init
+ * @return 0 if everything is fine, or -1 on error (check errno)
+ */
+int SemV(int sem_id);
+
+/**
+ * @brief destroy a sem previously init
+ *
+ * @param sem_id Id of a semaphore previously init
+ * @return 0 if everything is fine, or -1 on error (check errno)
+ */
+int SemDestroy(int sem_id);
+
+/**
+ * @brief Set the maximum number of semaphores for the current process
+ * @warning It's absolutely not recommended to use this function to reduce
+ * the size of the semaphore table if it has already been allocated, as
+ * all entries beyond the new size will be lost.
+ *
+ * @param maxSemaphores Maximum number of semaphores
+ * @return 0 if everything is fine, or -1 on error (check errno)
+ */
+int SetMaxSemForProcess(unsigned int maxSemaphores);
 
 #endif // IN_USER_MODE
 

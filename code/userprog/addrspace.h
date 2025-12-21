@@ -18,8 +18,8 @@
 #include "translate.h"
 
 #define UserStackSize 1024 // increase this as necessary!
-#define MAX_SEMAPHORES_PER_PROCESS 16 // TODO : Pass this value as a parameter ? If 0, no init of semaphores => no overhead if user don't need semaphores
-
+#define INITIAL_SEMAPHORE_TABLE_SIZE 16
+#define MAX_SEMAPHORES_PER_PROCESS 512 // Arbitrary limit, can be adjusted as needed
 
 class BitMapThreadSafe;
 class Process;
@@ -48,12 +48,15 @@ class AddrSpace {
         int SemaphorePost(int semId);
         int SemaphoreDestroy(int semId);
 
+        int AllocateSemaphoreTable(unsigned int maxSem);
+
     private:
         TranslationEntry *pageTable; // Assume linear page table translation for now!
         unsigned int numPages; // Number of pages in the virtual address space
 
-        semaphore_descriptor semaphoreTable[MAX_SEMAPHORES_PER_PROCESS];
+        unsigned int maxSemaphores;
         BitMapThreadSafe* semaphoreBitmap;
+        semaphore_descriptor* semaphoreTable;
 
         class Semaphore* GetSemaphore(int semId);
 };

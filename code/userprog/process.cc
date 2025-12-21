@@ -69,7 +69,7 @@ void Process::RemoveThread(Thread * thread) {
         AddrSpace *spaceToDelete = this->space;
         this->space = nullptr;
         delete spaceToDelete;
-        all_process->Clear(PID);
+        all_process->ClearThreadSafe(PID);
         // TODO: Scheduler should delete the process when the last thread exit
     }
 }

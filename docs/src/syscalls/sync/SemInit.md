@@ -2,6 +2,8 @@
 
 `SemInit` - Crée et initialise un nouveau sémaphore
 
+> Mettre a jour la doc
+
 ## SYNOPSIS
 ```c
 #include "syscall.h"

@@ -1,5 +1,7 @@
 # Vue d'ensemble - Synchronisation par sémaphores
 
+> Mettre a jour la doc
+
 Les appels système de sémaphores permettent la synchronisation entre threads utilisateur au sein d'un même processus. NachOS fournit une implémentation sécurisée basée sur des descripteurs.
 
 ## Opérations disponibles

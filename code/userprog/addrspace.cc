@@ -115,12 +115,7 @@ AddrSpace::AddrSpace(OpenFile *executable) {
                            noffH.initData.size, noffH.initData.inFileAddr);
     }
 
-    semaphoreBitmap = new BitMapThreadSafe(MAX_SEMAPHORES_PER_PROCESS);
-    for (i = 0; i < MAX_SEMAPHORES_PER_PROCESS; i++) {
-        semaphoreTable[i].semaphore = nullptr;
-        semaphoreTable[i].valid = false;
-    }
-
+    AllocateSemaphoreTable(INITIAL_SEMAPHORE_TABLE_SIZE);
 }
 
 //----------------------------------------------------------------------
@@ -135,11 +130,12 @@ AddrSpace::~AddrSpace() {
     // End of modification
 
     delete semaphoreBitmap;
-    for (auto &[semaphore, is_valid] : semaphoreTable) {
-        if (is_valid) {
-            delete semaphore;
+    for (unsigned int i = 0; i < maxSemaphores; i++) {
+        if (semaphoreTable[i].valid) {
+            delete semaphoreTable[i].semaphore;
         }
     }
+    delete[] semaphoreTable;
 }
 
 //----------------------------------------------------------------------
@@ -198,7 +194,13 @@ void AddrSpace::RestoreState() {
 int AddrSpace::SemaphoreCreate(const int initialValue){
     int semId = semaphoreBitmap->Find();
     if (semId == -1) {
-        return -1; // No more semaphore available
+        DEBUG('s', "AddrSpace::SemaphoreCreate: Failed to create semaphore, table full\n");
+        AllocateSemaphoreTable(maxSemaphores * 2); // Double the size of the semaphore table
+        semId = semaphoreBitmap->Find();
+        if (semId == -1) {
+            DEBUG('s', "AddrSpace::SemaphoreCreate: Failed to create semaphore even after resizing table\n");
+            return -1;
+        }
     }
     semaphoreTable[semId].semaphore = new Semaphore("UserSemaphore", initialValue);
     semaphoreTable[semId].valid = true;
@@ -234,7 +236,7 @@ int AddrSpace::SemaphoreDestroy(const int semId) {
     delete sem;
     semaphoreTable[semId].semaphore = nullptr;
     semaphoreTable[semId].valid = false;
-    semaphoreBitmap->Clear(semId);
+    semaphoreBitmap->ClearThreadSafe(semId);
     DEBUG('s', "AddrSpace::SemaphoreDestroy: Semaphore with id %d destroyed\n", semId);
     return 0;
 }
@@ -244,4 +246,47 @@ Semaphore* AddrSpace::GetSemaphore(int semId) {
         return nullptr;
     }
     return semaphoreTable[semId].semaphore;
+}
+
+/*----------------------------------------------------------------------
+ * AddrSpace::AllocateSemaphoreTable
+ *      Allocate or reallocate the semaphore table to hold up to maxSem semaphores.
+ *      If the table already exists, don't clear its contents.
+ *      If the new size is lower than the old size, all entries beyond the new size are lost,
+ *      so it is not recommended to reduce the size of the semaphore table.
+ *----------------------------------------------------------------------*/
+int AddrSpace::AllocateSemaphoreTable(const unsigned int maxSem) {
+    DEBUG('s', "AddrSpace::AllocateSemaphoreTable: Allocating semaphore table with size %u\n", maxSem);
+    if (maxSem < 0 || maxSem > MAX_SEMAPHORES_PER_PROCESS) { return -1; }
+    if (maxSem == this->maxSemaphores) { return 0; } // No change needed
+
+    if (this->semaphoreBitmap != nullptr) { this->semaphoreBitmap->UpdateSize(maxSem); }
+    else { this->semaphoreBitmap = new BitMapThreadSafe(maxSem); }
+
+    semaphore_descriptor* oldTable = this->semaphoreTable;
+    this->semaphoreTable = new semaphore_descriptor[maxSem];
+
+    if (oldTable != nullptr) {
+        // Copy old entries to the new table
+        for (unsigned int i = 0; i < this->maxSemaphores && i < maxSem; i++) {
+            this->semaphoreTable[i] = oldTable[i];
+        }
+        // Initialize new entries
+        for (unsigned int i = this->maxSemaphores; i < maxSem; i++) {
+            this->semaphoreTable[i].semaphore = nullptr;
+            this->semaphoreTable[i].valid = false;
+        }
+        delete[] oldTable;
+    } else {
+        // Initialize all entries
+        for (unsigned int i = 0; i < maxSem; i++) {
+            this->semaphoreTable[i].semaphore = nullptr;
+            this->semaphoreTable[i].valid = false;
+        }
+    }
+
+    DEBUG('s', "AddrSpace::AllocateSemaphoreTable: Successfully allocated semaphore table with size %u\n", maxSem);
+
+    this->maxSemaphores = maxSem;
+    return 0;
 }
