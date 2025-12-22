@@ -2,13 +2,13 @@
 
 
 
-int close(int){Halt();}
-int open(char *, int){Halt();}
+int close(int fd){Halt();}
+int open(char * name, int mode){Halt();}
 int write(int fd, char *buf, size_t size){Halt();}
 ssize_t read(int fd, char *buf, size_t size){Halt();}
 
-void * malloc(unsigned int){Halt();}
-int free(void *){Halt();}
+void * malloc(unsigned int size){Halt();}
+int free(void * ptr){Halt();}
 
 void my_printf(char *buf){
     if (buf){
