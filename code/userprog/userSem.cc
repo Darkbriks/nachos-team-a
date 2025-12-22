@@ -15,20 +15,20 @@ void handle_SC_SemInit() {
 
 void handle_SC_SemP() {
     int handle = machine->ReadRegister(4);
-    bool success = currentThread->getAddrSpace()->SemaphoreWait(handle);
-    RETURN(success ? 0 : -E_NOENT);
+    int success = currentThread->getAddrSpace()->SemaphoreWait(handle);
+    RETURN(success == 0 ? 0 : -E_NOENT);
 }
 
 void handle_SC_SemV() {
     int handle = machine->ReadRegister(4);
-    bool success = currentThread->getAddrSpace()->SemaphorePost(handle);
-    RETURN(success ? 0 : -E_NOENT);
+    int success = currentThread->getAddrSpace()->SemaphorePost(handle);
+    RETURN(success == 0 ? 0 : -E_NOENT);
 }
 
 void handle_SC_SemDestroy() {
     int handle = machine->ReadRegister(4);
-    bool success = currentThread->getAddrSpace()->SemaphoreDestroy(handle);
-    RETURN(success ? 0 : -E_NOENT);
+    int success = currentThread->getAddrSpace()->SemaphoreDestroy(handle);
+    RETURN(success == 0 ? 0 : -E_NOENT);
 }
 
 void handle_SC_SetMaxSemForProcess(){
