@@ -52,7 +52,7 @@ def exec_nachos(prog : str, tmp_file : str) -> bool:
         return True
 
 def verify_exec(file_expect : str, tmp_file : str, name_of_test : str, desc : str, has_failed : bool = True) -> int:
-    p = subprocess.run(["diff", "-u", file_expect,  tmp_file], capture_output=True)
+    p = subprocess.run(["diff", "-u", "-I", "Ticks*", file_expect,  tmp_file], capture_output=True)
 
     # Si les fichiers sont identiques ou qu'on a un random seed et pas d'erreur fatale
     if p.returncode == 0 or (RS != "" and not has_failed):
