@@ -69,6 +69,8 @@ int do_PthreadCreate(const int thread_ptr, const int attr_ptr, int start_routine
     }
 
     Param *param = new Param(start_routine, arg, wrapper_addr);
+    DEBUG('t', "Creating user thread TID=%d, start_routine=0x%x, arg=0x%x, wrapper_addr=0x%x\n",
+          thread->getTID(), param->get_function(), param->get_arg(), param->get_exit_addr());
     thread->Fork(StartUserThread, reinterpret_cast<int>(param));
 
     return 0;
@@ -80,11 +82,18 @@ void do_PthreadExit(void *retval) {
     thread->setReturnValue(retval);
     thread->setStatus(TERMINATED);
 
+    thread->Joiner();
+    thread->getProcess()->ThreadTerminated(thread);
+
     if (thread->isDetached()) {
         thread->getProcess()->RemoveThread(thread);
     }
 
-    thread->Joiner();
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+    thread->Sleep();
+
+    (void)interrupt->SetLevel(oldLevel);
+    ASSERT(FALSE);
 }
 
 int do_PthreadJoin(posix_thread_t tid, int retval_ptr) {
@@ -98,7 +107,9 @@ int do_PthreadJoin(posix_thread_t tid, int retval_ptr) {
     currentThread->setJoin(other_thread);
     other_thread->setJoiner(currentThread);
 
-    currentThread->Join();
+    //if (!other_thread->isTerminated()) {
+        other_thread->Join();
+    //}
 
     if (retval_ptr >= 0) {
         void* retval = other_thread->getReturnValue();
@@ -134,6 +145,8 @@ void handle_SC_PthreadCreate(){
     const int start_routine = machine->ReadRegister(6);
     const int arg = machine->ReadRegister(7);
     const int wrapper_addr = machine->ReadRegister(8);
+    DEBUG('t', "SC_PthreadCreate called with thread_ptr=%d, attr_ptr=%d, start_routine=0x%x, arg=0x%x, wrapper_addr=0x%x\n",
+          thread_ptr, attr_ptr, start_routine, arg, wrapper_addr);
     RETURN(do_PthreadCreate(thread_ptr, attr_ptr, start_routine, arg, wrapper_addr) );
 }
 

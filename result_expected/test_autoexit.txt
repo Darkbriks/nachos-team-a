@@ -1,21 +1,21 @@
 === Test Automatic Thread Termination ===
-Main: Created threads 2 and 3
+Main: Created threads 1 and 2
+Main: Waiting for thread 1...
+Thread 2 starting
+  Thread 2 iteration 0
+  Thread 2 iteration 1
+  Thread 2 iteration 2
+Thread 2 done - returning (should auto-exit)
+Thread 2 starting
+  Thread 2 iteration 0
+  Thread 2 iteration 1
+  Thread 2 iteration 2
+Thread 2 done - returning (should auto-exit)
 Main: Waiting for thread 2...
-Thread 2 starting
-  Thread 2 iteration 0
-  Thread 2 iteration 1
-  Thread 2 iteration 2
-Thread 2 done - returning (should auto-exit)
-Thread 2 starting
-  Thread 2 iteration 0
-  Thread 2 iteration 1
-  Thread 2 iteration 2
-Thread 2 done - returning (should auto-exit)
-Main: Waiting for thread 3...
 Main: All threads finished successfully!
 Machine halting!
 
-Ticks: total 53491, idle 43652, system 9030, user 809
+Ticks: total 53530, idle 43652, system 9050, user 828
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 437
 Paging: faults 0

@@ -144,15 +144,11 @@ void Thread::setDetached(const bool d){
 }
 
 void Thread::Joiner(){
-    if (joiner == nullptr){
-        return;
-    }
-    joiner->sem->V();
+    sem->V();
 }
 
 void Thread::Join(){
     sem->P();
-
 }
 
 //----------------------------------------------------------------------

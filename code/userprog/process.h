@@ -43,6 +43,12 @@ class Process{
         Thread* CreateThread(char * name);
 
         /**
+         * @brief Mark a thread as terminated and decrease the thread count
+         * The thread isn't deleted here, because it can be joined later
+         */
+        void ThreadTerminated(Thread * thread);
+
+        /**
          * @brief Remove a thread from this address space
          */
         void RemoveThread(Thread * thread);

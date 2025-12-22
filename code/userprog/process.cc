@@ -57,15 +57,24 @@ Process::~Process(){
     delete threads_bitmap;
 }
 
-void Process::RemoveThread(Thread * thread) {
+void Process::ThreadTerminated(Thread* thread){
     threadNumberLock->Acquire();
     const unsigned int remainingThreads = --threadNumber;
+    threadNumberLock->Release();
+
+    DEBUG('t', "Process: Thread %d terminated, now %d threads still running\n", thread->getTID(), remainingThreads);
+
+    threadExitSemaphore->V();
+}
+
+void Process::RemoveThread(Thread * thread) {
+    // ThreadTerminated must be called before, so threadNumber is already decreased
+    threadNumberLock->Acquire();
     all_threads_addr->RemoveInList(thread);
+    const unsigned int remainingThreads = threadNumber;
     threadNumberLock->Release();
 
     DEBUG('t', "Process: Removed thread %d, now %d threads\n", thread->getTID(), remainingThreads);
-
-    threadExitSemaphore->V();
 
     if (thread != currentThread) {
         delete thread;
@@ -92,6 +101,17 @@ void Process::WaitForAllThreadsTerminate() {
 
         threadExitSemaphore->P();
         threadNumberLock->Acquire();
+    }
+    threadNumberLock->Release();
+
+    // Now, all child threads are finished,
+    // we can clear the thread list except the main thread
+    threadNumberLock->Acquire();
+    while (!all_threads_addr->IsEmpty()) {
+        Thread* thread = all_threads_addr->RemoveFront();
+        if (thread != mainThread) {
+            delete thread;
+        }
     }
     threadNumberLock->Release();
 

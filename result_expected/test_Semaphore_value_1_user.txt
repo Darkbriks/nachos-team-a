@@ -1,7 +1,7 @@
 Counter final: 2000
 Machine halting!
 
-Ticks: total 140906, idle 2000, system 40730, user 98176
+Ticks: total 140933, idle 2000, system 40750, user 98183
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 20
 Paging: faults 0

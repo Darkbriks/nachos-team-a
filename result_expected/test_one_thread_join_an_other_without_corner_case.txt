@@ -1,8 +1,9 @@
-adebcMachine halting!
+Test passed: correct return value from joined thread: 42
+Machine halting!
 
-Ticks: total 501063, idle 500, system 450, user 500113
+Ticks: total 7140, idle 5700, system 1340, user 100
 Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 5
+Console I/O: reads 0, writes 57
 Paging: faults 0
 Network I/O: packets received 0, sent 0
 

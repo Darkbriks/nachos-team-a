@@ -1,7 +1,7 @@
 Value given was not a number. (errno=0)
 Machine halting!
 
-Ticks: total 6040, idle 4331, system 990, user 719
+Ticks: total 6060, idle 4351, system 990, user 719
 Disk I/O: reads 0, writes 0
 Console I/O: reads 5, writes 40
 Paging: faults 0

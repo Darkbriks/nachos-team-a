@@ -1,18 +1,18 @@
-7968
-27972
+8224
+28228
 2
-7
-7976
-7980
-976
+8
+8232
+8240
+232
 2
-77984987988
-7980
-4
+88236248236
+8244
+0
 
 Machine halting!
 
-Ticks: total 8994, idle 3999, system 2760, user 2235
+Ticks: total 9020, idle 4098, system 2660, user 2262
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 51
 Paging: faults 0
