@@ -1,18 +1,12 @@
 stages:
-  - build
   - test
-
-build-image:
-  stage: build
-  image: debian:latest
-  script:
-    - apt update
-    - apt install -y build-essential gcc-mipsel-linux-gnu g++-multilib
 
 unit-test-job:
   stage: test
-  image: debian:latest
+  image: vdanjean/nachos  
   script:
     - mkdir -p ~/tmp
-    - ./test_all.py 3
-
+    - apt install -y python3
+    - mkdir /builds/systeme/nachos-etu/tmp/
+    - export CXXFLAGS="-std=c++17"
+    - python3 ./test_all.py 3
