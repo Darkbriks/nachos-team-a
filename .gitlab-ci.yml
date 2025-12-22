@@ -7,6 +7,6 @@ unit-test-job:
   script:
     - mkdir -p ~/tmp
     - apt install -y python3
-    - mkdir /builds/systeme/nachos-etu/tmp/
+    - mkdir -p /builds/systeme/nachos-etu/tmp/
     - export CXXFLAGS="-std=c++17"
     - python3 ./test_all.py 3
