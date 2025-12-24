@@ -4,25 +4,27 @@
 #include "thread.h"
 
 /**
- * @brief appelée par le nouveau thread Nachos créé par la fonction do_UserThreadCreate
+ * @brief Start function for Nachos user thread.
+ * This function initializes the user thread's registers and stack,
+ * then starts executing the user program.
  *
- * @param f 
+ * @param f A pointer to a Param object containing thread parameters
  */
-/*
- * Cette fonction initialise les sauvegardes des registres d’une nouvelle copie de
-l’interprète MIPS à la manière de l’interprète primitif (fonctions Machine::InitRegisters et
-Machine::RestoreState) et lance l’interprète (Machine::Run).
-Notez que vous aurez à initialiser le pointeur de pile. Il vous est suggéré de le placer 2 ou 3 pages en
-dessous du pointeur du programme principal. Ceci est une évaluation empirique, bien sûr ! Il faudra
-probablement faire mieux dans un deuxième temps...
-*/
-static void StartUserThread(const int f){
+static void StartUserThread(const int f) {
     const Param *param = reinterpret_cast<Param *>(f);
 
-    // Initialize the stack pointer to 3 pages before the end of the address space
-    // Probably needs to be adjusted later
+    // Initialize the stack pointer with 2 pages below the main thread stack
     // TODO: Fix this when step 4 is done
-    const int stackAddr = static_cast<int>(currentThread->getAddrSpace()->GetNumPages() * PageSize - 3 * PageSize);
+    const unsigned int numPages = currentThread->getAddrSpace()->GetNumPages();
+    const unsigned int stackSize = 2 * PageSize; // User Thread or AddrSpace defined stack size ?
+    const int stackAddr = static_cast<int>(numPages * PageSize - (currentThread->getTID() + 1) * stackSize);
+
+    if (stackAddr < 0) {
+        DEBUG('t', "StartUserThread: Invalid stack address 0x%x for thread TID=%d\n", stackAddr, currentThread->getTID());
+        delete param;
+        currentThread->Finish();
+        return;
+    }
 
     const int prevPC = machine->ReadRegister(PCReg);
 
