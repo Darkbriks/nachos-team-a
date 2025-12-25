@@ -12,7 +12,7 @@ void BitMapThreadSafe::Mark(int which){
     semaphore->V();
 }
 
-void BitMapThreadSafe::Clear(int which){
+void BitMapThreadSafe::ClearThreadSafe(int which){
     semaphore->P();
     BitMap::Clear(which);
     semaphore->V();
@@ -47,4 +47,10 @@ int BitMapThreadSafe::NumClearThreadSafe(){
 BitMapThreadSafe::~BitMapThreadSafe(){
     BitMap::~BitMap();
     delete semaphore;
+}
+
+void BitMapThreadSafe::UpdateSize(int newSize) {
+    semaphore->P();
+    BitMap::UpdateSize(newSize);
+    semaphore->V();
 }

@@ -6,5 +6,6 @@ void handle_SC_SemInit();
 void handle_SC_SemP();
 void handle_SC_SemV();
 void handle_SC_SemDestroy();
+void handle_SC_SetMaxSemForProcess();
 
 #endif // USER_SEM_H

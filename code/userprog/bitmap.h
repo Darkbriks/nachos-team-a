@@ -52,6 +52,8 @@ class BitMap {
     virtual void FetchFrom(OpenFile *file); // fetch contents from disk
     virtual void WriteBack(OpenFile *file); // write contents to disk
 
+    virtual void UpdateSize(int newSize); // change the size of the bitmap
+
   protected:
     int numBits;  // number of bits in the bitmap
     int numWords; // number of words of bitmap storage

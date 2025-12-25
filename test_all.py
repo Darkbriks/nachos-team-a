@@ -263,6 +263,22 @@ if __name__ == "__main__":
                          )
                    )
 
+    all_test.append(Test(
+                        file_expect = "test_Semaphore_2.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./testThreadSemaphore2",
+                        name = "Test Augmentation automatique de la taille de la table des sémaphores",
+                        description = "Test pour vérifier que la table des sémaphores s'agrandit automatiquement lorsque le nombre de sémaphores créés dépasse la taille initiale."
+                        )
+                    )
+
+    all_test.append(Test(
+                        file_expect = "sem_validation.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./testSemValidation",
+                        name = "Vérification du comportement nominal des sémaphores dans un contexte d'utilisation normal",
+                        description = "Test pour vérifier le comportement nominal des sémaphores dans un contexte d'utilisation normal."
+                    )
+                )
+
 
     total : int = 0
 

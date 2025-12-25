@@ -470,6 +470,25 @@ SemDestroy_ok:
     sw     $0,errno
     j      $31
     .end SemDestroy
+    
+/* SetMaxSemForProcess : no error handling */
+    .globl SetMaxSemForProcess
+    .ent	SetMaxSemForProcess
+SetMaxSemForProcess:
+    addiu $2,$0,SC_SetMaxSemForProcess
+    syscall
+    bgez  $2,SetMaxSemForProcess_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+SetMaxSemForProcess_ok:
+    sw     $0,errno
+    j      $31
+    .end SetMaxSemForProcess
 
 /* -------------------------------------------------------------
  * Errno utility functions
