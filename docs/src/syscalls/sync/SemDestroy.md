@@ -11,7 +11,7 @@ int SemDestroy(int sem_id);
 
 ## DESCRIPTION
 
-`SemDestroy` détruit le sémaphore identifié par `sem_id`, libère ses ressources kernel et invalide le déscripteur.
+`SemDestroy` détruit le sémaphore identifié par `sem_id`, libère ses ressources kernel et invalide le descripteur.
 
 Numéro d'appel système : `27`
 
@@ -25,7 +25,7 @@ Numéro d'appel système : `27`
 
 ### Cas particuliers
 
-- **Déscripteur invalide** : Retourne -1
+- **Descripteur invalide** : Retourne -1
 - **Double-free** : Retourne -1
 - **Threads bloqués** : **UNDEFINED BEHAVIOR** - Ne pas détruire un sémaphore avec threads en attente
 - **Nettoyage automatique** : Si non détruit explicitement, libération automatique à la terminaison du processus
@@ -33,14 +33,14 @@ Numéro d'appel système : `27`
 ## PARAMÈTRES
 
 ### `sem_id`
-Déscripteur du sémaphore à détruire.
+Descripteur du sémaphore à détruire.
 
 **Type** : `int`
 **Direction** : IN
 **Registre** : `$4`
 **Contraintes** :
 - Doit être un handle valide retourné par `SemInit()`
-- Doit être dans l'intervalle [0, 15]
+- Doit être dans l'intervalle [0, maxSemaphores-1] (max 511)
 - Le sémaphore ne doit pas déjà être détruit
 - **IMPORTANT** : Aucun thread ne doit être bloqué sur ce sémaphore
 
@@ -57,7 +57,7 @@ Déscripteur du sémaphore à détruire.
 ### Localisation du code
 
 - **Stub utilisateur** : `code/test/start.S`
-- **Handler noyau** : `code/userprog/exception.cc:handle_SC_SemDestroy()`
+- **Handler noyau** : `code/userprog/userSem.cc:handle_SC_SemDestroy()`
 - **Implémentation** : `code/userprog/addrspace.cc:AddrSpace::SemaphoreDestroy()`
 
 ### Thread-safety
@@ -227,7 +227,7 @@ int main() {
 
 ## FAILLES ET VULNÉRABILITÉS
 
-Auncune vulnérabilité connue a ce jour.
+Aucune vulnérabilité connue à ce jour.
 
 ## BUGS CONNUS
 
@@ -243,12 +243,13 @@ Aucun bug connu à ce jour.
 - [SemInit](./SemInit.md) - Création d'un sémaphore
 - [SemP](./SemP.md) - Opération P (wait) sur un sémaphore
 - [SemV](./SemV.md) - Opération V (signal) sur un sémaphore
+- [SetMaxSemForProcess](./SetMaxSemForProcess.md) - Redimensionnement de la table
 - [Vue d'ensemble](./README.md) - Guide complet des sémaphores
 
 ## AUTEURS
 
-Antoine, 21 Dec 2025
+Antoine, 25 Dec 2025
 
 ## DERNIÈRE RÉVISION
 
-21 Dec 2025 par Antoine
+25 Dec 2025 par Antoine

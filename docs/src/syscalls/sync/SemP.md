@@ -17,7 +17,7 @@ Numéro d'appel système : `25`
 
 ### Comportement nominal
 
-- Vérifie la validité du déscripteur `sem_id`
+- Vérifie la validité du descripteur `sem_id`
 - Si compteur > 0 : décrémente et retourne immédiatement
 - Si compteur = 0 : bloque le thread en attente d'un `SemV()`
 - L'opération est atomique et thread-safe
@@ -32,14 +32,14 @@ Numéro d'appel système : `25`
 ## PARAMÈTRES
 
 ### `sem_id`
-Déscripteur du sémaphore sur lequel effectuer l'opération P.
+Descripteur du sémaphore sur lequel effectuer l'opération P.
 
 **Type** : `int`
 **Direction** : IN
 **Registre** : `$4`
 **Contraintes** :
-- Doit être un déscripteur valide retourné par `SemInit()`
-- Doit être dans l'intervalle [0, 15]
+- Doit être un descripteur valide retourné par `SemInit()`
+- Doit être dans l'intervalle [0, maxSemaphores-1] (max 511)
 - Le sémaphore ne doit pas avoir été détruit
 
 ## VALEUR DE RETOUR
@@ -61,9 +61,9 @@ Déscripteur du sémaphore sur lequel effectuer l'opération P.
 ### Localisation du code
 
 - **Stub utilisateur** : `code/test/start.S`
-- **Handler noyau** : `code/userprog/exception.cc:handle_SC_SemP()`
-- **Implémentation** : 
-  - `code/userprog/addrspace.cc:AddrSpace::SemaphoreP()`
+- **Handler noyau** : `code/userprog/userSem.cc:handle_SC_SemP()`
+- **Implémentation** :
+  - `code/userprog/addrspace.cc:AddrSpace::SemaphoreWait()`
   - `code/threads/synch.cc:Semaphore::P()`
 
 ### Thread-safety
@@ -71,9 +71,12 @@ Déscripteur du sémaphore sur lequel effectuer l'opération P.
 **Sémaphore interne** : `Semaphore::P()` utilise son propre lock interne :
 - Lock sémaphore acquis
 - Si `value > 0` : décrémente et retourne
-- Si `value == 0` : thread ajouté à la queue FIFO, bloqué sur condition variable
+- Sinon : thread ajouté à la queue, mis en sommeil
+- Lock sémaphore libéré
 
 ## DÉCISIONS DE CONCEPTION
+
+*TODO*
 
 ## EXEMPLES
 
@@ -220,13 +223,13 @@ Erreur: handle invalide
 - Compteur sémaphore : valeur quelconque ≥ 0
 
 **Pendant l'appel (cas non-bloquant)** :
-- Validation du déscripteur
+- Validation du descripteur
 - Lock sémaphore acquis
 - Compteur décrémenté
 - Lock sémaphore libéré
 
 **Pendant l'appel (cas bloquant)** :
-- Validation du déscripteur
+- Validation du descripteur
 - Lock sémaphore acquis
 - Thread ajouté à la queue d'attente
 - Thread mis en état BLOCKED
@@ -242,7 +245,8 @@ Erreur: handle invalide
 - **Atomicité** : P() est atomique, pas de race condition possible
 
 ## FAILLES ET VULNÉRABILITÉS
-Aucune vulnérabilité connue a ce jour.
+
+Aucune vulnérabilité connue à ce jour.
 
 ## BUGS CONNUS
 
@@ -258,12 +262,13 @@ Aucun bug connu à ce jour.
 - [SemInit](./SemInit.md) - Création d'un sémaphore
 - [SemV](./SemV.md) - Opération V (signal) sur un sémaphore
 - [SemDestroy](./SemDestroy.md) - Destruction d'un sémaphore
+- [SetMaxSemForProcess](./SetMaxSemForProcess.md) - Redimensionnement de la table
 - [Vue d'ensemble](./README.md) - Guide complet des sémaphores
 
 ## AUTEURS
 
-Antoine, 21 Dec 2025
+Antoine, 25 Dec 2025
 
 ## DERNIÈRE RÉVISION
 
-21 Dec 2025 par Antoine
+25 Dec 2025 par Antoine

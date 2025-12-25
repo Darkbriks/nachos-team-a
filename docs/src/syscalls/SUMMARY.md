@@ -24,3 +24,4 @@
     - [SemP](./sync/SemP.md)
     - [SemV](./sync/SemV.md)
     - [SemDestroy](./sync/SemDestroy.md)
+    - [SetMaxSemForProcess](./sync/SetMaxSemForProcess.md)

@@ -16,5 +16,6 @@
     - [SemP](./syscalls/sync/SemP.md)
     - [SemV](./syscalls/sync/SemV.md)
     - [SemDestroy](./syscalls/sync/SemDestroy.md)
+    - [SetMaxSemForProcess](./syscalls/sync/SetMaxSemForProcess.md)
   - [Error Handling](./syscalls/errors.md)
   - [Errno Codes](./syscalls/errno.md)
