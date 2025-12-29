@@ -1,20 +1,26 @@
-8224
-28228
-2
-8
-8232
-8240
-232
-2
-88236248236
-8244
-0
-
+f1 : arg address = 10992
+f1 : arg value = 0
+f1 : arg address = 10480
+f1 : arg value = 2
+f2 : arg address = 11432
+f2 : arg value = 0
+f2 : arg address = 11448
+f2 : arg value = 8
+f2 : arg address = 11440
+f2 : arg value = 2
+f1 : arg address = 10736
+f1 : arg value = 1
+f2 : arg address = 11444
+f2 : arg value = 4
+f2 : arg address = 11440
+f2 : arg value = 2
+f2 : arg address = 11436
+f2 : arg value = 1
 Machine halting!
 
-Ticks: total 9020, idle 4098, system 2660, user 2262
+Ticks: total 50603, idle 39182, system 9000, user 2421
 Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 51
+Console I/O: reads 0, writes 396
 Paging: faults 0
 Network I/O: packets received 0, sent 0
 

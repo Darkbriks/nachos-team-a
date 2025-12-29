@@ -137,7 +137,7 @@ if __name__ == "__main__":
                f'echo "-9999999999" | ./nachos-step{CURRENT_STEP} -x ./getInt',
                f'echo "ab1c" | ./nachos-step{CURRENT_STEP} -x ./getInt',
                f"./nachos-step{CURRENT_STEP} -x ./getErrno",
-               f"./nachos-step{CURRENT_STEP} -rs 5 -x ./makethreads",
+               f"./nachos-step{CURRENT_STEP} {RS} -x ./makethreads",
                f"./nachos-step{CURRENT_STEP} -x ./testJoin",
                f"./nachos-step{CURRENT_STEP} -x ./simpleSleep",
                f"./nachos-step{CURRENT_STEP} -x ./simpleSleepUntil",

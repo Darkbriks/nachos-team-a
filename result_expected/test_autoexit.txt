@@ -6,11 +6,11 @@ Thread 2 starting
   Thread 2 iteration 1
   Thread 2 iteration 2
 Thread 2 done - returning (should auto-exit)
-Thread 2 starting
-  Thread 2 iteration 0
-  Thread 2 iteration 1
-  Thread 2 iteration 2
-Thread 2 done - returning (should auto-exit)
+Thread 1 starting
+  Thread 1 iteration 0
+  Thread 1 iteration 1
+  Thread 1 iteration 2
+Thread 1 done - returning (should auto-exit)
 Main: Waiting for thread 2...
 Main: All threads finished successfully!
 Machine halting!
