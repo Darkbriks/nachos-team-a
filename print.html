@@ -1,0 +1,3447 @@
+<!DOCTYPE HTML>
+<html lang="fr" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>NachOS Manual</title>
+        <meta name="robots" content="noindex">
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/custom-c9a1a890.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "rust";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-74874e8f.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-e7e8f752.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">NachOS Manual</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://gricad-gitlab.univ-grenoble-alpes.fr/systeme/nachos-etu/2025-2026/team-a" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="appels-système"><a class="header" href="#appels-système">Appels système</a></h1>
+<p><a href="syscalls/README.html">Vue d’ensemble</a></p>
+<h1 id="gestion-des-erreurs"><a class="header" href="#gestion-des-erreurs">Gestion des erreurs</a></h1>
+<ul>
+<li><a href="#gestion-des-erreurs-3">Gestion des erreurs</a></li>
+<li><a href="#liste-des-codes-errno">Liste des codes errno</a></li>
+</ul>
+<h1 id="console-io"><a class="header" href="#console-io">Console I/O</a></h1>
+<ul>
+<li><a href="#console">Console</a>
+<ul>
+<li><a href="#putchar">PutChar</a></li>
+<li><a href="#getchar">GetChar</a></li>
+<li><a href="#putstring">PutString</a></li>
+<li><a href="#getstring">GetString</a></li>
+<li><a href="#putint">PutInt</a></li>
+<li><a href="#getint">GetInt</a></li>
+</ul>
+</li>
+</ul>
+<h1 id="sémaphores"><a class="header" href="#sémaphores">Sémaphores</a></h1>
+<ul>
+<li><a href="#sémaphores-1">Sémaphores</a>
+<ul>
+<li><a href="#seminit">SemInit</a></li>
+<li><a href="#semp">SemP</a></li>
+<li><a href="#semv">SemV</a></li>
+<li><a href="#semdestroy">SemDestroy</a></li>
+<li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a></li>
+</ul>
+</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="vue-densemble-des-appels-système"><a class="header" href="#vue-densemble-des-appels-système">Vue d’ensemble des appels système</a></h1>
+<p>Cette page fournit une vue d’ensemble complète de tous les appels système disponibles dans NachOS.</p>
+<h2 id="introduction"><a class="header" href="#introduction">Introduction</a></h2>
+<p>NachOS implémente un ensemble simplifié d’appels système inspiré de UNIX/POSIX. Ces appels permettent aux programmes utilisateur d’interagir avec le noyau pour :</p>
+<ul>
+<li><strong>I/O Console</strong> : Lire et écrire sur la console</li>
+<li><strong>Gestion de processus</strong> : Créer et gérer des processus</li>
+<li><strong>Gestion de threads</strong> : Créer et synchroniser des threads utilisateur</li>
+<li><strong>Système de fichiers</strong> : Manipuler des fichiers (partiellement implémenté)</li>
+</ul>
+<h2 id="organisation-des-appels-système"><a class="header" href="#organisation-des-appels-système">Organisation des appels système</a></h2>
+<h3 id="par-numéro-sc_"><a class="header" href="#par-numéro-sc_">Par numéro (SC_*)</a></h3>
+<p>Les appels système sont identifiés par des numéros définis dans <code>syscall.h</code> :</p>
+<pre><code class="language-c">#define SC_Halt           0
+#define SC_Exit           1
+#define SC_Exec           2
+#define SC_Join           3
+#define SC_Create         4
+#define SC_Open           5
+#define SC_Read           6
+#define SC_Write          7
+#define SC_Close          8
+#define SC_Fork           9
+#define SC_Yield          10
+#define SC_PutChar        11
+#define SC_PutString      12
+#define SC_GetChar        13
+#define SC_GetString      14
+#define SC_PutInt         15
+#define SC_GetInt         16
+#define SC_CreateThread   17
+#define SC_ExitThread     18
+#define SC_JoinThread     19
+#define SC_Sleep          20
+#define SC_SleepUntil     21
+#define SC_GetCurrentTick 22
+</code></pre>
+<h2 id="limitations-connues"><a class="header" href="#limitations-connues">Limitations connues</a></h2>
+<h3 id="thread-safety-partielle"><a class="header" href="#thread-safety-partielle">Thread-safety partielle</a></h3>
+<p>⚠️ <strong>Console I/O</strong> : Thread-safe au niveau caractère mais pas au niveau message complet.</p>
+<p><strong>Exemple de problème</strong> :</p>
+<pre><code class="language-c">// Thread 1
+PutString("AAAA", 4);
+
+// Thread 2 (simultané)
+PutString("BBBB", 4);
+
+// Résultat possible: "AABBAABB" au lieu de "AAAABBBB"
+</code></pre>
+<p><strong>Solution</strong> : Protéger les séquences d’I/O avec des sémaphores si nécessaire.</p>
+<h3 id="errno-global"><a class="header" href="#errno-global">errno global</a></h3>
+<p>⚠️ <strong>Non thread-safe</strong> : <code>errno</code> est une variable globale partagée.</p>
+<p><strong>Problème</strong> : Plusieurs threads peuvent écraser mutuellement leur <code>errno</code>.</p>
+<p><strong>Correction prévue</strong> : Thread-local errno sera implémenté prochainement.</p>
+<p>Voir : <a href="#failles-et-vulnérabilités-11">Gestion des erreurs</a></p>
+<h2 id="architecture-dun-appel-système"><a class="header" href="#architecture-dun-appel-système">Architecture d’un appel système</a></h2>
+<h3 id="flux-dexécution"><a class="header" href="#flux-dexécution">Flux d’exécution</a></h3>
+<p>Le flux d’un appel système est complexe, et demande un changement de contexte du processeur. A ce titre, il est fortement conseillé de limiter le nombre d’appels système dans le code utilisateur pour minimiser la surcharge associée.</p>
+<pre><code>Programme utilisateur
+        ↓
+    Stub (start.S)
+        ↓  syscall
+    Exception
+        ↓
+ExceptionHandler (exception.cc)
+        ↓
+handler_SC_XXX()
+        ↓
+Implémentation (synchconsole.cc, userthread.cc, etc.)
+        ↓
+    Retour
+        ↓
+UpdatePC()
+        ↓
+Programme utilisateur
+</code></pre>
+<h3 id="exemple-détaillé--putchar"><a class="header" href="#exemple-détaillé--putchar">Exemple détaillé : PutChar</a></h3>
+<ol>
+<li><strong>Programme</strong> : <code>PutChar('A')</code></li>
+<li><strong>Stub</strong> : Charge SC_PutChar (11) dans $2, ‘A’ dans $4</li>
+<li><strong>syscall</strong> : Déclenche exception</li>
+<li><strong>ExceptionHandler</strong> : Détecte SC_PutChar</li>
+<li><strong>handler_SC_putChar</strong> : Lit $4, appelle SynchPutChar</li>
+<li><strong>SynchConsole</strong> : Acquiert lock, écrit caractère</li>
+<li><strong>UpdatePC</strong> : Incrémente PC</li>
+<li><strong>Retour</strong> : Programme continue</li>
+</ol>
+<h2 id="voir-aussi"><a class="header" href="#voir-aussi">Voir aussi</a></h2>
+<ul>
+<li><a href="syscalls/console/README.html">Console I/O Overview</a> - Détails des appels console</li>
+<li><a href="#gestion-des-erreurs-3">Gestion des erreurs</a> - Mécanisme errno</li>
+<li><a href="#liste-des-codes-errno">Liste des codes errno</a> - Tous les codes d’erreur</li>
+</ul>
+<h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
+<p>Antoine, 20 Dec 2025</p>
+<h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
+<p>20 Dec 2025 par Antoine</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="console"><a class="header" href="#console">Console</a></h1>
+<ul>
+<li><a href="syscalls/console/README.html">Vue d’ensemble</a></li>
+</ul>
+<h1 id="appels-système-de-console"><a class="header" href="#appels-système-de-console">Appels système de console</a></h1>
+<ul>
+<li><a href="#putchar">PutChar</a></li>
+<li><a href="#getchar">GetChar</a></li>
+<li><a href="#putstring">PutString</a></li>
+<li><a href="#getstring">GetString</a></li>
+<li><a href="#putint">PutInt</a></li>
+<li><a href="#getint">GetInt</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="vue-densemble---console-io"><a class="header" href="#vue-densemble---console-io">Vue d’ensemble - Console I/O</a></h1>
+<p>Les appels système de console permettent l’interaction entre les programmes utilisateur et le terminal. NachOS fournit deux catégories d’opérations :</p>
+<h2 id="opérations-de-base"><a class="header" href="#opérations-de-base">Opérations de base</a></h2>
+<h3 id="sortie"><a class="header" href="#sortie">Sortie</a></h3>
+<ul>
+<li><strong><a href="#putchar">PutChar</a></strong> : Affiche un caractère unique</li>
+<li><strong><a href="#putstring">PutString</a></strong> : Affiche une chaîne de caractères</li>
+<li><strong><a href="#putint">PutInt</a></strong> : Affiche un entier signé</li>
+</ul>
+<h3 id="entrée"><a class="header" href="#entrée">Entrée</a></h3>
+<ul>
+<li><strong><a href="#getchar">GetChar</a></strong> : Lit un caractère</li>
+<li><strong><a href="#getstring">GetString</a></strong> : Lit une chaîne de caractères</li>
+<li><strong><a href="#getint">GetInt</a></strong> : Lit un entier signé</li>
+</ul>
+<h2 id="architecture"><a class="header" href="#architecture">Architecture</a></h2>
+<p>Tous les appels système de console utilisent la classe <code>SynchConsole</code> qui fournit :</p>
+<ul>
+<li><strong>Synchronisation</strong> : Accès thread-safe via sémaphores</li>
+<li><strong>Blocking I/O</strong> : Les appels bloquent jusqu’à complétion</li>
+<li><strong>Pas de buffering</strong> : Communication directe avec le hardware</li>
+</ul>
+<h2 id="gestion-des-erreurs-1"><a class="header" href="#gestion-des-erreurs-1">Gestion des erreurs</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Appel</th><th>Gestion errno</th><th>Valeur de retour</th></tr>
+</thead>
+<tbody>
+<tr><td>PutChar</td><td>Non</td><td>void</td></tr>
+<tr><td>GetChar</td><td>Non</td><td>char</td></tr>
+<tr><td>PutString</td><td>Oui</td><td>int (bytes écrits ou -1)</td></tr>
+<tr><td>GetString</td><td>Oui</td><td>int (bytes lus ou -1)</td></tr>
+<tr><td>PutInt</td><td>Oui</td><td>int (0 ou -1)</td></tr>
+<tr><td>GetInt</td><td>Oui</td><td>int (0 ou -1)</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="synchronisation"><a class="header" href="#synchronisation">Synchronisation</a></h2>
+<p>Le sémaphore <code>IO_Lock</code> garantit qu’un seul thread accède à la console à la fois, évitant l’entrelacement des caractères.</p>
+<h2 id="voir-aussi-1"><a class="header" href="#voir-aussi-1">Voir aussi</a></h2>
+<ul>
+<li><a href="#gestion-des-erreurs-3">Gestion des erreurs</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="putchar"><a class="header" href="#putchar">PutChar</a></h1>
+<p><code>PutChar</code> - Écrit un caractère dans la console de sortie standard</p>
+<h2 id="synopsis"><a class="header" href="#synopsis">SYNOPSIS</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+void PutChar(char c);
+</code></pre>
+<h2 id="description"><a class="header" href="#description">DESCRIPTION</a></h2>
+<p><code>PutChar</code> écrit le caractère spécifié <code>c</code> dans la console de sortie standard. Cette opération est bloquante et attend que le caractère soit effectivement affiché avant de retourner le contrôle au programme appelant.</p>
+<p>Numéro d’appel système : <code>11</code></p>
+<h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
+<ul>
+<li>Le caractère <code>c</code> est immédiatement envoyé au périphérique de sortie.</li>
+<li>L’appel bloque jusqu’à ce que le périphérique confirme l’écriture.</li>
+<li>Aucun retour de valeur n’est fourni.</li>
+<li>Aucun buffer n’est utilisé, l’écriture est directe.</li>
+<li>L’appel est thread-safe, plusieurs threads peuvent appeler <code>PutChar</code> simultanément sans corruption de données.</li>
+<li>Aucun effet de bord n’est attendu autre que l’affichage du caractère.</li>
+<li>Les caractères spéciaux (comme <code>\n</code>, <code>\t</code>) sont traités comme des caractères ordinaires, et leur affichage dépend du comportement du terminal.</li>
+</ul>
+<h3 id="cas-particuliers"><a class="header" href="#cas-particuliers">Cas particuliers</a></h3>
+<ul>
+<li><strong>Caractères NULL (<code>\0</code>)</strong> : N’est pas visuellement représenté mais peut être envoyé.</li>
+<li><strong>Caractères de contrôle</strong> : Leur affichage dépend du terminal (ex. <code>\n</code> provoque un saut de ligne dans la plupart des terminaux).</li>
+<li><strong>Caractères non ASCII</strong> : Dépend du support du terminal.</li>
+</ul>
+<h2 id="paramètres"><a class="header" href="#paramètres">PARAMÈTRES</a></h2>
+<h3 id="c"><a class="header" href="#c"><code>c</code></a></h3>
+<p>Le caractère à écrire dans la console.</p>
+<p><strong>Type</strong> : <code>char</code><br><strong>Direction</strong> : IN
+<strong>Registre lu</strong> : <code>$4</code>
+<strong>Contraintes</strong> :</p>
+<ul>
+<li>Doit être sur 8 bits signé</li>
+</ul>
+<h2 id="valeur-de-retour"><a class="header" href="#valeur-de-retour">VALEUR DE RETOUR</a></h2>
+<p>Auncune valeur de retour (<code>void</code>). Cet appel ne produit pas de code d’erreur.</p>
+<h2 id="codes-derreur"><a class="header" href="#codes-derreur">CODES D’ERREUR</a></h2>
+<p>Aucun code d’erreur n’est défini pour cet appel système. En cas de problème matériel, le comportement est indéfini.</p>
+<h2 id="implémentation"><a class="header" href="#implémentation">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S:186-193</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handleSC_PutChar()</code></li>
+<li><strong>Implémentation</strong> : <code>code/userprog/synchconsole.cc:SynchConsole::SynchPutChar()</code></li>
+</ul>
+<h3 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h3>
+<p>L’implémentation utilise des sémaphores pour garantir que les appels concurrents à <code>PutChar</code> ne produisent pas d’erreurs, et que chaque caractère demandé soit affiché.</p>
+<h2 id="décisions-de-conception"><a class="header" href="#décisions-de-conception">DÉCISIONS DE CONCEPTION</a></h2>
+<p><em>TODO : A compléter (Pourquoi bloquant synchrone, pourquoi pas d’erreur)</em></p>
+<h2 id="exemples"><a class="header" href="#exemples">EXEMPLES</a></h2>
+<h3 id="exemple-1--utilisation-basique"><a class="header" href="#exemple-1--utilisation-basique">Exemple 1 : Utilisation basique</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    PutChar('H');
+    PutChar('i');
+    PutChar('\n');
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie attendue</strong> :</p>
+<pre><code>Hi
+</code></pre>
+<h3 id="exemple-2--affichage-dune-chaîne-manuellement"><a class="header" href="#exemple-2--affichage-dune-chaîne-manuellement">Exemple 2 : Affichage d’une chaîne manuellement</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    const char *msg = "Hello World\n";
+    int i = 0;
+    
+    while (msg[i] != '\0') {
+        PutChar(msg[i]);
+        i++;
+    }
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie attendue</strong> :</p>
+<pre><code>Hello World
+</code></pre>
+<h2 id="comportement-détaillé"><a class="header" href="#comportement-détaillé">COMPORTEMENT DÉTAILLÉ</a></h2>
+<h3 id="états-de-la-machine"><a class="header" href="#états-de-la-machine">États de la machine</a></h3>
+<p><strong>Avant l’appel</strong> :</p>
+<ul>
+<li><code>$4</code> : Contient le caractère à afficher</li>
+<li><code>IO_Lock</code> : Peut être libre ou occupé</li>
+</ul>
+<p><strong>Pendant l’appel</strong> :</p>
+<ul>
+<li>Thread bloqué sur <code>writeDone</code> si <code>IO_Lock</code> était libre</li>
+<li>Thread bloqué sur <code>IO_Lock</code> si un autre thread utilise la console</li>
+</ul>
+<p><strong>Après l’appel</strong> :</p>
+<ul>
+<li>Caractère affiché sur console</li>
+<li><code>IO_Lock</code> libéré</li>
+<li>Registres préservés</li>
+</ul>
+<h2 id="performances"><a class="header" href="#performances">PERFORMANCES</a></h2>
+<h3 id="complexité"><a class="header" href="#complexité">Complexité</a></h3>
+<ul>
+<li><strong>Temporelle</strong> : O(1) - temps constant + latence hardware</li>
+<li><strong>Spatiale</strong> : O(1) - pas d’allocation mémoire</li>
+</ul>
+<h3 id="cas-limites"><a class="header" href="#cas-limites">Cas limites</a></h3>
+<ul>
+<li><strong>Pire cas</strong> : Contention élevée avec beaucoup de threads écrivant simultanément</li>
+<li><strong>Meilleur cas</strong> : Aucune contention, <code>IO_Lock</code> immédiatement disponible</li>
+</ul>
+<h2 id="notes"><a class="header" href="#notes">NOTES</a></h2>
+<ul>
+<li><strong>Pas de buffering</strong> : Chaque appel à <code>PutChar</code> génère une interaction hardware.</li>
+<li><strong>Performance</strong> : Pour afficher des chaînes, préférez <code>PutString</code> pour réduire le nombre d’appels système.</li>
+<li><strong>Thread-safety</strong> : L’appel est conçu pour être sûr en environnement multi-thread.</li>
+<li><strong>Atomicité</strong> : Chaque appel est atomique vis-à-vis des autres appels à <code>PutChar</code>.</li>
+</ul>
+<h2 id="failles-et-vulnérabilités"><a class="header" href="#failles-et-vulnérabilités">FAILLES ET VULNÉRABILITÉS</a></h2>
+<p>Aucune faille de sécurité connue à ce jour.</p>
+<h2 id="bugs-connus"><a class="header" href="#bugs-connus">BUGS CONNUS</a></h2>
+<p>Aucun bug connu à ce jour.</p>
+<h2 id="historique-des-versions"><a class="header" href="#historique-des-versions">Historique des versions</a></h2>
+<ul>
+<li><strong>v1.0</strong> : Implémentation initiale sans synchronisation</li>
+<li><strong>v1.1</strong> : Ajout de <code>IO_Lock</code> pour thread-safety</li>
+</ul>
+<h2 id="voir-aussi-2"><a class="header" href="#voir-aussi-2">VOIR AUSSI</a></h2>
+<ul>
+<li><a href="#putstring">PutString</a> - Écrit une chaîne de caractères</li>
+<li><a href="#putint">PutInt</a> - Écrit un entier</li>
+<li><a href="#getchar">GetChar</a> - Lecture d’un caractère</li>
+</ul>
+<h2 id="auteurs-1"><a class="header" href="#auteurs-1">AUTEURS</a></h2>
+<p>Antoine, 20 Dec 2025</p>
+<h2 id="dernière-révision-1"><a class="header" href="#dernière-révision-1">DERNIÈRE RÉVISION</a></h2>
+<p>20 Dec 2025 par Antoine</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="getchar"><a class="header" href="#getchar">GetChar</a></h1>
+<p><code>GetChar</code> - Lit un caractère depuis la console d’entrée standard</p>
+<h2 id="synopsis-1"><a class="header" href="#synopsis-1">SYNOPSIS</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+char GetChar(void);
+</code></pre>
+<h2 id="description-1"><a class="header" href="#description-1">DESCRIPTION</a></h2>
+<p><code>GetChar</code> lit et retourne un seul caractère depuis la console d’entrée standard (clavier). L’appel bloque jusqu’à ce qu’un caractère soit disponible.</p>
+<p>Numéro d’appel système : <code>13</code></p>
+<h3 id="comportement-nominal-1"><a class="header" href="#comportement-nominal-1">Comportement nominal</a></h3>
+<ul>
+<li>L’appel bloque jusqu’à ce qu’un caractère soit tapé par l’utilisateur</li>
+<li>Le caractère est lu depuis le buffer interne de la console</li>
+<li>Les caractères de contrôle (Ctrl+C, etc.) sont passés tels quels</li>
+<li>L’appel est thread-safe</li>
+</ul>
+<h3 id="cas-particuliers-1"><a class="header" href="#cas-particuliers-1">Cas particuliers</a></h3>
+<ul>
+<li><strong>EOF</strong> : Retourné si le flux d’entrée est fermé (ex: redirection fichier terminée)</li>
+<li><strong>Interruption clavier</strong> : Les interruptions ne sont pas gérées au niveau syscall</li>
+<li><strong>Buffer vide</strong> : Thread bloqué sur sémaphore <code>readAvail</code> jusqu’à input</li>
+</ul>
+<h2 id="paramètres-1"><a class="header" href="#paramètres-1">PARAMÈTRES</a></h2>
+<p>Aucun paramètre.</p>
+<h2 id="valeur-de-retour-1"><a class="header" href="#valeur-de-retour-1">VALEUR DE RETOUR</a></h2>
+<p><strong>Type</strong> : <code>char</code> (registre <code>$2</code>)</p>
+<p><strong>Valeurs possibles</strong> :</p>
+<ul>
+<li>Caractère lu (0x00 à 0xFF, signé)</li>
+<li><code>EOF</code> (-1) si fin de flux</li>
+</ul>
+<h2 id="codes-derreur-1"><a class="header" href="#codes-derreur-1">CODES D’ERREUR</a></h2>
+<p>Aucun code d’erreur. La variable <code>errno</code> n’est jamais modifiée.</p>
+<h2 id="implémentation-1"><a class="header" href="#implémentation-1">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-1"><a class="header" href="#localisation-du-code-1">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S:214-221</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handler_SC_getChar()</code></li>
+<li><strong>Implémentation</strong> : <code>code/userprog/synchconsole.cc:SynchConsole::SynchGetChar()</code></li>
+</ul>
+<h3 id="thread-safety-1"><a class="header" href="#thread-safety-1">Thread-safety</a></h3>
+<p>L’implementation utilise des sémaphores pour garantir un accès exclusif au buffer de la console, évitant les conditions de course lors de lectures concurrentes.</p>
+<h2 id="décisions-de-conception-1"><a class="header" href="#décisions-de-conception-1">DÉCISIONS DE CONCEPTION</a></h2>
+<p><em>TODO : A compléter (Pourquoi bloquant synchrone, pourquoi pas d’erreur)</em></p>
+<h2 id="exemples-1"><a class="header" href="#exemples-1">EXEMPLES</a></h2>
+<h3 id="exemple-1--lecture-simple"><a class="header" href="#exemple-1--lecture-simple">Exemple 1 : Lecture simple</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    char c;
+    
+    PutString("Press any key: ", 15);
+    c = GetChar();
+    
+    PutString("\nYou pressed: ", 14);
+    PutChar(c);
+    PutChar('\n');
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Interaction</strong> :</p>
+<pre><code>Press any key: A
+You pressed: A
+</code></pre>
+<h3 id="exemple-2--lecture-jusquà-newline"><a class="header" href="#exemple-2--lecture-jusquà-newline">Exemple 2 : Lecture jusqu’à newline</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    char c;
+    int count = 0;
+    
+    PutString("Type and press Enter:\n", 22);
+    
+    do {
+        c = GetChar();
+        PutChar(c);
+        count++;
+    } while (c != '\n');
+    
+    PutString("Characters typed: ", 18);
+    PutInt(count - 1);  // -1 pour exclure '\n'
+    PutChar('\n');
+    
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-3--gestion-eof"><a class="header" href="#exemple-3--gestion-eof">Exemple 3 : Gestion EOF</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    char c;
+    
+    while ((c = GetChar()) != EOF) {
+        PutChar(c);
+    }
+    
+    PutString("\nEOF reached\n", 13);
+    return 0;
+}
+</code></pre>
+<h2 id="comportement-détaillé-1"><a class="header" href="#comportement-détaillé-1">COMPORTEMENT DÉTAILLÉ</a></h2>
+<h3 id="états-de-la-machine-1"><a class="header" href="#états-de-la-machine-1">États de la machine</a></h3>
+<p><strong>Avant l’appel</strong> :</p>
+<ul>
+<li>Thread peut être en READY ou RUNNING</li>
+<li><code>readAvail</code> : 0 ou plus (selon buffer)</li>
+<li><code>IO_Lock</code> : libre ou occupé</li>
+</ul>
+<p><strong>Pendant l’appel</strong> :</p>
+<ul>
+<li>Thread en état BLOCKED sur <code>readAvail</code></li>
+<li>Attend interruption clavier</li>
+<li>CPU libéré pour d’autres threads</li>
+</ul>
+<p><strong>Après l’appel</strong> :</p>
+<ul>
+<li><code>$2</code> : Contient le caractère lu</li>
+<li>Autres registres préservés</li>
+<li>Thread retourne en RUNNING</li>
+<li><code>IO_Lock</code> libéré</li>
+</ul>
+<h2 id="performances-1"><a class="header" href="#performances-1">PERFORMANCES</a></h2>
+<h3 id="complexité-1"><a class="header" href="#complexité-1">Complexité</a></h3>
+<ul>
+<li><strong>Temporelle</strong> : O(1) + temps d’attente utilisateur</li>
+<li><strong>Spatiale</strong> : O(1)</li>
+</ul>
+<h2 id="notes-1"><a class="header" href="#notes-1">NOTES</a></h2>
+<ul>
+<li><strong>Pas de buffering</strong> : Chaque caractère nécessite un appel système</li>
+<li><strong>Efficacité</strong> : Pour lire des chaînes, utilisez <code>GetString</code></li>
+<li><strong>Thread-safety</strong> : Sûr mais non recommendé, car il n’y a pas de garantie d’ordre entre threads</li>
+<li><strong>Atomicité</strong> : Chaque appel est atomique vis-à-vis des autres appels à <code>GetChar</code></li>
+</ul>
+<h2 id="failles-et-vulnérabilités-1"><a class="header" href="#failles-et-vulnérabilités-1">FAILLES ET VULNÉRABILITÉS</a></h2>
+<div class="vulnerability-section severity-info">
+<h4 id="pas-de-timeout"><a class="header" href="#pas-de-timeout">Pas de timeout</a></h4>
+<p><strong>Description</strong> : <code>GetChar</code> peut bloquer indéfiniment.</p>
+<p><strong>Impact</strong> : Programmes ne peuvent pas implémenter de timeout sur la lecture</p>
+</div>
+
+<h2 id="bugs-connus-1"><a class="header" href="#bugs-connus-1">BUGS CONNUS</a></h2>
+<p>Aucun bug connu à ce jour.</p>
+<h2 id="historique-des-versions-1"><a class="header" href="#historique-des-versions-1">Historique des versions</a></h2>
+<ul>
+<li><strong>v1.0</strong> : Implémentation initiale sans synchronisation</li>
+<li><strong>v1.1</strong> : Ajout de <code>IO_Lock</code> pour thread-safety</li>
+</ul>
+<h2 id="voir-aussi-3"><a class="header" href="#voir-aussi-3">VOIR AUSSI</a></h2>
+<ul>
+<li><a href="#getstring">GetString</a> - Lecture de chaîne</li>
+<li><a href="#getint">GetInt</a> - Lecture d’un entier</li>
+<li><a href="#putchar">PutChar</a> - Affiche un caractère</li>
+</ul>
+<h2 id="auteurs-2"><a class="header" href="#auteurs-2">AUTEURS</a></h2>
+<p>Antoine, 20 Dec 2025</p>
+<h2 id="dernière-révision-2"><a class="header" href="#dernière-révision-2">DERNIÈRE RÉVISION</a></h2>
+<p>20 Dec 2025 par Antoine</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="putstring"><a class="header" href="#putstring">PutString</a></h1>
+<p><code>PutString</code> - Écrit une chaîne de caractères dans la console de sortie standard</p>
+<h2 id="synopsis-2"><a class="header" href="#synopsis-2">SYNOPSIS</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+int PutString(char *s, int n);
+</code></pre>
+<h2 id="description-2"><a class="header" href="#description-2">DESCRIPTION</a></h2>
+<p><code>PutString</code> écrit jusqu’à <code>n</code> octets de la chaîne pointée par <code>s</code> vers la console de sortie standard. L’écriture s’arrête au premier caractère null (<code>\0</code>) rencontré ou après <code>n</code> octets, selon ce qui arrive en premier.</p>
+<p>Numéro d’appel système : <code>12</code></p>
+<h3 id="comportement-nominal-2"><a class="header" href="#comportement-nominal-2">Comportement nominal</a></h3>
+<ul>
+<li>Écrit jusqu’à <code>n</code> octets depuis <code>s</code></li>
+<li>S’arrête au premier <code>\0</code> (non compté dans le retour)</li>
+<li>Retourne le nombre d’octets effectivement écrits</li>
+<li>Bloque jusqu’à ce que tous les caractères soient affichés</li>
+<li>Thread-safe via <code>IO_Lock</code></li>
+<li>Limite maximale : <code>MAX_PUT_STRING</code> (8192 octets)</li>
+</ul>
+<h3 id="cas-particuliers-2"><a class="header" href="#cas-particuliers-2">Cas particuliers</a></h3>
+<ul>
+<li><strong>n = 0</strong> : Retourne immédiatement 0</li>
+<li><strong>n &lt; 0</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
+<li><strong>n &gt; MAX_PUT_STRING</strong> : Tronqué à <code>MAX_PUT_STRING</code></li>
+<li><strong>Pointeur NULL</strong> : Comportement indéfini</li>
+<li><strong>Overflow arithmétique</strong> : Retourne -1, <code>errno = E_OVERFLOW</code></li>
+</ul>
+<h2 id="paramètres-2"><a class="header" href="#paramètres-2">PARAMÈTRES</a></h2>
+<h3 id="s"><a class="header" href="#s"><code>s</code></a></h3>
+<p>Pointeur vers la chaîne de caractères à écrire.</p>
+<p><strong>Type</strong> : <code>char *</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code> (adresse virtuelle)<br><strong>Contraintes</strong> :</p>
+<ul>
+<li>Doit pointer vers mémoire accessible en lecture</li>
+<li><strong>NON VÉRIFIÉ</strong> : Peut être dans l’espace noyau</li>
+<li><strong>NON VÉRIFIÉ</strong> : Peut être NULL</li>
+</ul>
+<h3 id="n"><a class="header" href="#n"><code>n</code></a></h3>
+<p>Nombre maximum d’octets à écrire (<code>\0</code> est exclu).</p>
+<p><strong>Type</strong> : <code>int</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$5</code><br><strong>Contraintes</strong> :</p>
+<ul>
+<li>Doit être ≥ 0</li>
+<li>Si &gt; <code>MAX_PUT_STRING</code>, tronqué automatiquement</li>
+<li>Ne compte pas le <code>\0</code> terminal</li>
+</ul>
+<h2 id="valeur-de-retour-2"><a class="header" href="#valeur-de-retour-2">VALEUR DE RETOUR</a></h2>
+<p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
+<p><strong>En cas de succès</strong> : Nombre d’octets écrits (0 à n), hors <code>\0</code></p>
+<p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
+<h2 id="codes-derreur-2"><a class="header" href="#codes-derreur-2">CODES D’ERREUR</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td><code>E_INVAL</code></td><td><code>n &lt; 0</code></td></tr>
+<tr><td>2</td><td><code>E_FAULT</code></td><td><code>addr &lt; 0</code></td></tr>
+<tr><td>3</td><td><code>E_OVERFLOW</code></td><td><code>n &gt; INT32_MAX - addr</code></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="implémentation-2"><a class="header" href="#implémentation-2">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-2"><a class="header" href="#localisation-du-code-2">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handler_SC_putString()</code></li>
+<li><strong>Implémentation</strong> : <code>code/userprog/synchconsole.cc:SynchConsole::SynchPutString()</code></li>
+</ul>
+<h3 id="synchronisation-1"><a class="header" href="#synchronisation-1">Synchronisation</a></h3>
+<p><strong>Sémaphore <code>IO_Lock</code></strong></p>
+<ul>
+<li>Acquis par chaque appel à <code>SynchPutChar</code> dans <code>SynchPutString</code></li>
+<li>Libéré après chaque caractère affiché</li>
+<li>Pas de garantie d’atomicité pour la chaîne complète</li>
+</ul>
+<h3 id="thread-safety-2"><a class="header" href="#thread-safety-2">Thread-safety</a></h3>
+<p><strong>Garanti au niveau caractère</strong> : Pas d’entrelacement de caractères individuels</p>
+<p><strong>NON garanti au niveau chaîne</strong> : Deux threads peuvent entrelacer leurs chaînes :</p>
+<pre><code>Thread 1: PutString("AAAA", 4)
+Thread 2: PutString("BBBB", 4)
+Résultat possible: "AABBAABB"
+</code></pre>
+<h2 id="décisions-de-conception-2"><a class="header" href="#décisions-de-conception-2">DÉCISIONS DE CONCEPTION</a></h2>
+<p><em>TODO : A compléter (MAX_PUT_STRING, Taille de buffer intermédiaire, Arrêt au \0)</em></p>
+<h2 id="exemples-2"><a class="header" href="#exemples-2">EXEMPLES</a></h2>
+<h3 id="exemple-1--utilisation-basique-1"><a class="header" href="#exemple-1--utilisation-basique-1">Exemple 1 : Utilisation basique</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int n = PutString("Hello, World!\n", 14);
+    // n = 14 (tous les caractères écrits)
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-2--arrêt-au-0"><a class="header" href="#exemple-2--arrêt-au-0">Exemple 2 : Arrêt au <code>\0</code></a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    char msg[] = "Hello\0 World";
+    int n = PutString(msg, 100);
+    // n = 5 (s'arrête au \0)
+    // Affiche: "Hello"
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-3--gestion-derreur"><a class="header" href="#exemple-3--gestion-derreur">Exemple 3 : Gestion d’erreur</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+#include "my_stdlib.h"
+
+int main() {
+    char msg[] = "Test";
+    int n = PutString(msg, -10);  // Taille négative
+    // n = -1
+    
+    if (n == -1) {
+        // errno contient E_INVAL
+    }
+    
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-4--chaîne-longue"><a class="header" href="#exemple-4--chaîne-longue">Exemple 4 : Chaîne longue</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    char long_msg[10000];
+    // Remplir long_msg...
+    
+    // Sera tronqué à MAX_PUT_STRING (8192)
+    int n = PutString(long_msg, 10000);
+    // n = 8192
+    
+    return 0;
+}
+</code></pre>
+<h2 id="comportement-détaillé-2"><a class="header" href="#comportement-détaillé-2">COMPORTEMENT DÉTAILLÉ</a></h2>
+<h3 id="états-de-la-machine-2"><a class="header" href="#états-de-la-machine-2">États de la machine</a></h3>
+<p><strong>Avant l’appel</strong> :</p>
+<ul>
+<li><code>$4</code> : Adresse de la chaîne en mémoire utilisateur</li>
+<li><code>$5</code> : Nombre d’octets maximum</li>
+<li>Mémoire utilisateur : Contient la chaîne</li>
+</ul>
+<p><strong>Pendant l’appel</strong> :</p>
+<ul>
+<li>Buffer noyau alloué sur stack (256 octets)</li>
+<li>Boucle de copie + affichage</li>
+<li>Thread peut être bloqué sur <code>IO_Lock</code></li>
+</ul>
+<p><strong>Après l’appel</strong> :</p>
+<ul>
+<li><code>$v0</code> : Nombre d’octets écrits ou -1</li>
+<li><code>errno</code> : Code d’erreur ou 0</li>
+</ul>
+<h2 id="performances-2"><a class="header" href="#performances-2">PERFORMANCES</a></h2>
+<h3 id="complexité-2"><a class="header" href="#complexité-2">Complexité</a></h3>
+<ul>
+<li><strong>Temporelle</strong> : O(n) où n = min(longueur_chaîne, n_param, MAX_PUT_STRING)</li>
+<li><strong>Spatiale</strong> : O(1) - buffer fixe de 256 octets</li>
+</ul>
+<h2 id="notes-2"><a class="header" href="#notes-2">NOTES</a></h2>
+<ul>
+<li><strong>Buffer par blocs</strong> : Réduit les appels à <code>copyStringFromMachine</code></li>
+<li><strong>Limite de 8KB</strong> : Applications doivent gérer les chaînes plus longues</li>
+<li><strong>Thread-safety partielle</strong> : Caractères atomiques mais pas les chaînes complètes</li>
+</ul>
+<h2 id="failles-et-vulnérabilités-2"><a class="header" href="#failles-et-vulnérabilités-2">FAILLES ET VULNÉRABILITÉS</a></h2>
+<div class="vulnerability-section severity-critical">
+<h4 id="aucune-validation-de-lespace-dadressage"><a class="header" href="#aucune-validation-de-lespace-dadressage">Aucune validation de l’espace d’adressage</a></h4>
+<p><strong>Description</strong> : Le handler vérifie seulement <code>addr &lt; 0</code> mais pas si l’adresse est dans l’espace utilisateur valide.</p>
+<p><strong>Impact</strong> :</p>
+<ul>
+<li><strong>Lecture arbitraire de mémoire noyau</strong> : Un programme malveillant peut lire la mémoire du noyau</li>
+</ul>
+<p><strong>Exploitation</strong> :</p>
+<pre><code class="language-c">// Lire 100 octets de mémoire noyau
+char *kernel_addr = (char *)0x00000000;  // Trouver une adresse noyau valide
+PutString(kernel_addr, 100);
+// Affiche le contenu de la mémoire noyau !
+</code></pre>
+</div>
+
+<div class="vulnerability-section severity-info">
+<p><strong>Description</strong> : Un programme peut monopoliser la console indéfiniment.</p>
+<p><strong>Impact</strong> : DoS par spam de PutString en boucle</p>
+<p><strong>Exploitation</strong> :</p>
+<pre><code class="language-c">while (1) {
+    PutString("SPAM", 4);
+}
+</code></pre>
+</div>
+
+<h2 id="bugs-connus-2"><a class="header" href="#bugs-connus-2">BUGS CONNUS</a></h2>
+<p>Aucun bug connu à ce jour.</p>
+<h2 id="historique-des-versions-2"><a class="header" href="#historique-des-versions-2">Historique des versions</a></h2>
+<ul>
+<li><strong>v1.0</strong> : Implémentation initiale</li>
+<li><strong>v2.0</strong> : Ajout du paramètre <code>n</code>, déplacement vers un handler dédié</li>
+<li><strong>v3.0</strong> : Ajout de la valeur de retour</li>
+<li><strong>v3.1</strong> : Ajout de la gestion des quelques erreurs avec <code>errno</code></li>
+<li><strong>v3.2</strong> : Correction du retour en cas d’erreur partielle (retourne le nombre d’octets écrits avant que l’erreur ne survienne)</li>
+</ul>
+<h2 id="voir-aussi-4"><a class="header" href="#voir-aussi-4">VOIR AUSSI</a></h2>
+<ul>
+<li><a href="#putchar">PutChar</a> - Affichage d’un caractère</li>
+<li><a href="#putint">PutInt</a> - Affichage d’un entier</li>
+<li><a href="#getstring">GetString</a> - Lecture de chaîne</li>
+</ul>
+<h2 id="auteurs-3"><a class="header" href="#auteurs-3">AUTEURS</a></h2>
+<p>Antoine, 20 Dec 2025</p>
+<h2 id="dernière-révision-3"><a class="header" href="#dernière-révision-3">DERNIÈRE RÉVISION</a></h2>
+<p>20 Dec 2025 par Antoine</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="getstring"><a class="header" href="#getstring">GetString</a></h1>
+<p><code>GetString</code> - Lit une chaîne de caractères depuis la console d’entrée standard</p>
+<h2 id="synopsis-3"><a class="header" href="#synopsis-3">SYNOPSIS</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+int GetString(char *s, int n);
+</code></pre>
+<h2 id="description-3"><a class="header" href="#description-3">DESCRIPTION</a></h2>
+<p><code>GetString</code> lit jusqu’à <code>n-1</code> caractères depuis la console d’entrée et les stocke dans le buffer pointé par <code>s</code>. La lecture s’arrête lorsqu’un caractère newline (<code>\n</code>) est rencontré ou après <code>n-1</code> caractères. Un caractère null (<code>\0</code>) est toujours ajouté à la fin, ce qui justifie la lecture de <code>n-1</code> caractères maximum.</p>
+<p>Numéro d’appel système : <code>14</code></p>
+<h3 id="comportement-nominal-3"><a class="header" href="#comportement-nominal-3">Comportement nominal</a></h3>
+<ul>
+<li>Lit jusqu’à <code>n-1</code> caractères (réserve 1 octet pour <code>\0</code>)</li>
+<li>S’arrête au premier <code>\n</code> (inclus dans la chaîne)</li>
+<li>Ajoute automatiquement <code>\0</code> terminal</li>
+<li>Retourne le nombre de caractères lus (hors <code>\0</code>)</li>
+<li>Bloque jusqu’à ce que <code>\n</code> soit tapé ou <code>n-1</code> caractères lus</li>
+<li>Thread-safe via <code>IO_Lock</code></li>
+</ul>
+<h3 id="cas-particuliers-3"><a class="header" href="#cas-particuliers-3">Cas particuliers</a></h3>
+<ul>
+<li><strong>n = 0</strong> : Retourne 0, aucune lecture effectuée</li>
+<li><strong>n &lt; 0</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
+<li><strong>n = 1</strong> : Lit 0 caractère, écrit seulement <code>\0</code></li>
+<li><strong>n &gt; MAX_STRING_SIZE</strong> : Tronqué à <code>MAX_STRING_SIZE</code> (256)</li>
+<li><strong>EOF</strong> : Retourne nombre de caractères lus jusqu’à EOF</li>
+<li><strong>Pointeur NULL</strong> : Comportement indéfini (pas de vérification)</li>
+</ul>
+<h2 id="paramètres-3"><a class="header" href="#paramètres-3">PARAMÈTRES</a></h2>
+<h3 id="s-1"><a class="header" href="#s-1"><code>s</code></a></h3>
+<p>Pointeur vers le buffer où stocker la chaîne lue.</p>
+<p><strong>Type</strong> : <code>char *</code><br><strong>Direction</strong> : OUT<br><strong>Registre</strong> : <code>$4</code> (adresse virtuelle)<br><strong>Contraintes</strong> :</p>
+<ul>
+<li>Doit pointer vers mémoire accessible en écriture</li>
+<li>Doit être alloué par l’appelant</li>
+<li>Doit avoir au moins <code>n</code> octets d’espace</li>
+<li><strong>NON VÉRIFIÉ</strong> : Peut être dans l’espace noyau</li>
+<li><strong>NON VÉRIFIÉ</strong> : Peut être NULL</li>
+</ul>
+<p><strong>Résponsabilité de l’appelant</strong> : S’assurer que <code>s</code> est valide et suffisamment grand, sinon, des données adjacentes peuvent être corrompues.</p>
+<h3 id="n-1"><a class="header" href="#n-1"><code>n</code></a></h3>
+<p>Taille du buffer (incluant l’espace pour <code>\0</code>).</p>
+<p><strong>Type</strong> : <code>int</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$5</code><br><strong>Contraintes</strong> :</p>
+<ul>
+<li>Doit être ≥ 0</li>
+<li>Si &gt; <code>MAX_STRING_SIZE</code>, tronqué automatiquement</li>
+<li>Au plus n-1 caractères lus</li>
+</ul>
+<h2 id="valeur-de-retour-3"><a class="header" href="#valeur-de-retour-3">VALEUR DE RETOUR</a></h2>
+<p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
+<p><strong>En cas de succès</strong> : Nombre de caractères lus (hors <code>\0</code>), peut être 0</p>
+<p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
+<h2 id="codes-derreur-3"><a class="header" href="#codes-derreur-3">CODES D’ERREUR</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td><code>E_INVAL</code></td><td><code>n &lt; 0</code></td></tr>
+<tr><td>2</td><td><code>E_FAULT</code></td><td><code>addr &lt; 0</code></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="implémentation-3"><a class="header" href="#implémentation-3">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-3"><a class="header" href="#localisation-du-code-3">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handler_SC_getString()</code></li>
+<li><strong>Implémentation</strong> : <code>code/userprog/synchconsole.cc:SynchConsole::SynchGetString()</code></li>
+</ul>
+<h3 id="synchronisation-2"><a class="header" href="#synchronisation-2">Synchronisation</a></h3>
+<p><strong>Sémaphore <code>IO_Lock</code></strong></p>
+<ul>
+<li>Acquis par <code>SynchGetChar</code> pour chaque caractère</li>
+<li>Libéré après chaque lecture</li>
+<li>Garantit atomicité de la lecture de chaque caractère, mais pas de la chaîne complète</li>
+</ul>
+<p><strong>Sémaphore <code>readAvail</code></strong></p>
+<ul>
+<li>P() pour chaque caractère attendu</li>
+<li>V() lorsqu’un caractère est disponible</li>
+</ul>
+<h3 id="thread-safety-3"><a class="header" href="#thread-safety-3">Thread-safety</a></h3>
+<p><strong>Caractères</strong> : Pas de corruption de caractères individuels</p>
+<p><strong>Chaînes</strong> : Deux threads peuvent recevoir des caractères entrelacés :</p>
+<pre><code>User types: "ABCD\n"
+Thread 1: GetString(buf1, 10)
+Thread 2: GetString(buf2, 10)
+
+Résultat possible:
+buf1 = "AC\n"
+buf2 = "BD\n"
+</code></pre>
+<h2 id="décisions-de-conception-3"><a class="header" href="#décisions-de-conception-3">DÉCISIONS DE CONCEPTION</a></h2>
+<p><em>TODO : A compléter (Inclure <code>\n</code>, taille max, arrêt au <code>\n</code>)</em></p>
+<h2 id="exemples-3"><a class="header" href="#exemples-3">EXEMPLES</a></h2>
+<h3 id="exemple-1--utilisation-basique-2"><a class="header" href="#exemple-1--utilisation-basique-2">Exemple 1 : Utilisation basique</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    char buffer[100];
+    
+    PutString("Enter your name: ", 17);
+    int n = GetString(buffer, 100);
+    
+    PutString("Hello, ", 7);
+    PutString(buffer, n);
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Interaction</strong> :</p>
+<pre><code>Enter your name: Bjarn Stroustrup
+Hello, Bjarn Stroustrup
+</code></pre>
+<h3 id="exemple-2--buffer-petit"><a class="header" href="#exemple-2--buffer-petit">Exemple 2 : Buffer petit</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    char buffer[5];  // Seulement 4 chars + \0
+    
+    PutString("Type: ", 6);
+    int n = GetString(buffer, 5);
+    
+    // Si l'utilisateur tape "Hello\n":
+    // buffer = "Hell" (tronqué, pas de \n)
+    // n = 4
+    
+    PutString("Got: ", 5);
+    PutString(buffer, n);
+    
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-3--gestion-derreur-1"><a class="header" href="#exemple-3--gestion-derreur-1">Exemple 3 : Gestion d’erreur</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+#include "my_stdlib.h"
+
+int main() {
+    char buffer[64];
+    
+    int n = GetString(buffer, -10);  // Taille négative
+    // n = -1
+    
+    if (n == -1) {
+        // errno contient E_INVAL
+    }
+    
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-4--retirer-le-newline"><a class="header" href="#exemple-4--retirer-le-newline">Exemple 4 : Retirer le newline</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    char buffer[100];
+    
+    int n = GetString(buffer, 100);
+    
+    // Retirer le \n si présent
+    if (n &gt; 0 &amp;&amp; buffer[n-1] == '\n') {
+        buffer[n-1] = '\0';
+        n--;
+    }
+    
+    PutString("Without newline: ", 17);
+    PutString(buffer, n);
+    
+    return 0;
+}
+</code></pre>
+<h2 id="comportement-détaillé-3"><a class="header" href="#comportement-détaillé-3">COMPORTEMENT DÉTAILLÉ</a></h2>
+<h3 id="états-de-la-machine-3"><a class="header" href="#états-de-la-machine-3">États de la machine</a></h3>
+<p><strong>Avant l’appel</strong> :</p>
+<ul>
+<li><code>$4</code> : Adresse buffer utilisateur</li>
+<li><code>$5</code> : Taille du buffer</li>
+<li>Buffer peut contenir n’importe quoi</li>
+</ul>
+<p><strong>Pendant l’appel</strong> :</p>
+<ul>
+<li>Buffer noyau alloué sur stack (max 256 octets)</li>
+<li>Boucle de lecture caractère par caractère</li>
+<li>Thread bloqué sur chaque <code>SynchGetChar</code></li>
+</ul>
+<p><strong>Après l’appel</strong> :</p>
+<ul>
+<li><code>$2</code> : Nombre de caractères lus (ou -1)</li>
+<li>Buffer utilisateur : Contient la chaîne + <code>\0</code></li>
+<li><code>errno</code> : 0 ou code d’erreur</li>
+</ul>
+<h2 id="performances-3"><a class="header" href="#performances-3">PERFORMANCES</a></h2>
+<h3 id="complexité-3"><a class="header" href="#complexité-3">Complexité</a></h3>
+<ul>
+<li><strong>Temporelle</strong> : O(n) où n = nombre de caractères lus</li>
+<li><strong>Spatiale</strong> : O(min(n, MAX_STRING_SIZE)) - buffer sur stack</li>
+</ul>
+<h2 id="notes-3"><a class="header" href="#notes-3">NOTES</a></h2>
+<ul>
+<li><strong>Buffer stack</strong> : Limité à 256 octets</li>
+<li><strong>Newline inclus</strong> : L’appel retourne le <code>\n</code> dans la chaîne mais le charactère n’est pas compté dans le retour</li>
+<li><strong>EOF</strong> : En fin de fichier, retourne caractères lus</li>
+</ul>
+<h2 id="failles-et-vulnérabilités-3"><a class="header" href="#failles-et-vulnérabilités-3">FAILLES ET VULNÉRABILITÉS</a></h2>
+<div class="vulnerability-section severity-critical">
+<h4 id="aucune-validation-de-lespace-dadressage-1"><a class="header" href="#aucune-validation-de-lespace-dadressage-1">Aucune validation de l’espace d’adressage</a></h4>
+<p><strong>Description</strong> : Seul <code>addr &lt; 0</code> est vérifié, pas si l’adresse est dans l’espace utilisateur valide.</p>
+<p><strong>Impact</strong> :</p>
+<ul>
+<li><strong>Écriture arbitraire en mémoire noyau</strong> : Corruption mémoire noyau</li>
+<li><strong>Ascension de privilèges</strong> : Modification de structures sensibles</li>
+</ul>
+<p><strong>Exploitation</strong> :</p>
+<pre><code class="language-c">// Écrire dans la mémoire noyau
+char *kernel_addr = (char *)0x00000000;
+GetString(kernel_addr, 100);
+// L'utilisateur peut injecter du code/données en mémoire noyau
+</code></pre>
+</div>
+
+<div class="vulnerability-section severity-critical">
+<h4 id="copystringtomachine-ignore-les-erreurs-décriture-de-machine-writemem"><a class="header" href="#copystringtomachine-ignore-les-erreurs-décriture-de-machine-writemem">copyStringToMachine ignore les erreurs d’écriture de <code>machine-&gt;WriteMem</code></a></h4>
+<p><strong>Description</strong> : <code>copyStringToMachine</code> ne vérifie pas les erreurs lors de l’écriture en mémoire utilisateur.</p>
+<p><strong>Impact</strong> :</p>
+<ul>
+<li><strong>Corruption mémoire utilisateur</strong> : Données incomplètes ou corrompues</li>
+<li><strong>Comportement indéfini</strong> : Programme utilisateur peut planter</li>
+<li><strong>Vulnérabilité de sécurité</strong> : Potentielle exploitation via des pointeurs invalides</li>
+</ul>
+</div>
+
+<div class="vulnerability-section severity-info">
+<h4 id="limitation-max_string_size"><a class="header" href="#limitation-max_string_size">Limitation MAX_STRING_SIZE</a></h4>
+<p><strong>Description</strong> : Ajouter une constante MAX_GET_STRING sur le modèle de MAX_PUT_STRING, et remplir plusieurs fois le buffer si nécessaire.</p>
+<p><strong>Workaround</strong> :</p>
+<pre><code class="language-c">char big_buffer[1000];
+int offset = 0;
+while (offset &lt; 999) {
+    int n = GetString(big_buffer + offset, 256);
+    if (big_buffer[offset + n - 1] == '\n') break;
+    offset += n;
+}
+</code></pre>
+</div>
+
+<div class="vulnerability-section severity-info">
+<h4 id="pas-de-timeout-1"><a class="header" href="#pas-de-timeout-1">Pas de timeout</a></h4>
+<p><strong>Description</strong> : Peut bloquer indéfiniment en attendant l’utilisateur.</p>
+<p><strong>Impact</strong> : Pas de mécanisme pour timeout programmatique</p>
+</div>
+
+<h2 id="bugs-connus-3"><a class="header" href="#bugs-connus-3">BUGS CONNUS</a></h2>
+<p>Aucun bug connu à ce jour.</p>
+<h2 id="historique-des-versions-3"><a class="header" href="#historique-des-versions-3">Historique des versions</a></h2>
+<ul>
+<li><strong>v1.0</strong> : Implémentation initiale</li>
+<li><strong>v2.0</strong> : Ajout de la valeur de retour</li>
+</ul>
+<h2 id="voir-aussi-5"><a class="header" href="#voir-aussi-5">VOIR AUSSI</a></h2>
+<ul>
+<li><a href="#putstring">PutString</a> - Écriture de chaîne</li>
+<li><a href="#getchar">GetChar</a> - Lecture d’un caractère</li>
+<li><a href="#getint">GetInt</a> - Lecture d’un entier</li>
+</ul>
+<h2 id="auteurs-4"><a class="header" href="#auteurs-4">AUTEURS</a></h2>
+<p>Antoine, 20 Dec 2025</p>
+<h2 id="dernière-révision-4"><a class="header" href="#dernière-révision-4">DERNIÈRE RÉVISION</a></h2>
+<p>20 Dec 2025 par Antoine</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="putint"><a class="header" href="#putint">PutInt</a></h1>
+<p><code>PutInt</code> - Écrit un entier dans la console de sortie standard</p>
+<h2 id="synopsis-4"><a class="header" href="#synopsis-4">SYNOPSIS</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+int PutInt(int n);
+</code></pre>
+<h2 id="description-4"><a class="header" href="#description-4">DESCRIPTION</a></h2>
+<p><code>PutInt</code> convertit l’entier <code>n</code> en représentation décimale ASCII et l’affiche sur la console de sortie standard.</p>
+<p>Numéro d’appel système : <code>15</code></p>
+<h3 id="comportement-nominal-4"><a class="header" href="#comportement-nominal-4">Comportement nominal</a></h3>
+<ul>
+<li>Convertit l’entier en chaîne décimale</li>
+<li>Affiche le signe <code>-</code> pour les nombres négatifs</li>
+<li>Pas de formatage spécial (pas de padding, pas de séparateurs)</li>
+<li>Utilise <code>snprintf</code> puis <code>SynchPutString</code> en interne</li>
+<li>Thread-safe via <code>IO_Lock</code></li>
+<li>Retourne 0 en cas de succès, -1 en cas d’erreur</li>
+</ul>
+<h3 id="cas-particuliers-4"><a class="header" href="#cas-particuliers-4">Cas particuliers</a></h3>
+<ul>
+<li><strong>Nombres négatifs</strong> : Préfixés par <code>-</code></li>
+</ul>
+<h2 id="paramètres-4"><a class="header" href="#paramètres-4">PARAMÈTRES</a></h2>
+<h3 id="n-2"><a class="header" href="#n-2"><code>n</code></a></h3>
+<p>L’entier à afficher.</p>
+<p><strong>Type</strong> : <code>int</code> (32-bit signé)<br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> :</p>
+<ul>
+<li>Aucune contrainte sur la valeur</li>
+<li>Plage : -2147483648 à 2147483647</li>
+</ul>
+<h2 id="valeur-de-retour-4"><a class="header" href="#valeur-de-retour-4">VALEUR DE RETOUR</a></h2>
+<p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
+<p><strong>En cas de succès</strong> : <code>0</code></p>
+<p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
+<h2 id="codes-derreur-4"><a class="header" href="#codes-derreur-4">CODES D’ERREUR</a></h2>
+<p>Auncun code d’erreur spécifique défini. Hérite des erreurs de <code>SynchPutString</code> qui est utilisé en interne.</p>
+<h2 id="implémentation-4"><a class="header" href="#implémentation-4">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-4"><a class="header" href="#localisation-du-code-4">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handler_SC_PutInt()</code></li>
+<li><strong>Implémentation</strong> : Utilise <code>snprintf</code> + <code>SynchConsole::SynchPutString()</code></li>
+</ul>
+<h3 id="synchronisation-3"><a class="header" href="#synchronisation-3">Synchronisation</a></h3>
+<p>Hérite de la synchronisation de <code>SynchPutString</code> :</p>
+<ul>
+<li><code>IO_Lock</code> pour exclusivité</li>
+<li>Bloquant jusqu’à affichage complet</li>
+</ul>
+<h3 id="thread-safety-4"><a class="header" href="#thread-safety-4">Thread-safety</a></h3>
+<p><strong>Garanti au niveau caractère</strong> via <code>SynchPutString</code></p>
+<p><strong>Pas garanti au niveau nombre</strong> : Deux threads peuvent entrelacer leurs chiffres</p>
+<h2 id="décisions-de-conception-4"><a class="header" href="#décisions-de-conception-4">DÉCISIONS DE CONCEPTION</a></h2>
+<h3 id="choix-1--buffer-de-12-octets"><a class="header" href="#choix-1--buffer-de-12-octets">Choix 1 : Buffer de 12 octets</a></h3>
+<p><strong>Problème</strong> : Quelle taille de buffer pour la conversion ?</p>
+<p><strong>Solution retenue</strong> : 12 octets</p>
+<p><strong>Justification</strong> :</p>
+<ul>
+<li>INT_MIN = -2147483648 : 11 caractères + <code>\0</code> = 12 octets</li>
+<li>Suffisant pour tous les int 32-bit signés</li>
+<li>Stack allocation (pas de malloc)</li>
+</ul>
+<h2 id="exemples-4"><a class="header" href="#exemples-4">EXEMPLES</a></h2>
+<h3 id="exemple-1--affichage-de-divers-entiers"><a class="header" href="#exemple-1--affichage-de-divers-entiers">Exemple 1 : Affichage de divers entiers</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    PutInt(42);
+    PutChar('\n');
+
+    PutInt(-12345);
+    PutChar('\n');
+    
+    PutInt(0);
+    PutChar('\n');
+    
+    PutInt(2147483647);  // INT_MAX
+    PutChar('\n');
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie</strong> :</p>
+<pre><code>42
+-12345
+0
+2147483647
+</code></pre>
+<h3 id="exemple-2--calcul-et-affichage"><a class="header" href="#exemple-2--calcul-et-affichage">Exemple 2 : Calcul et affichage</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int a = 10, b = 20;
+    int sum = a + b;
+    
+    PutInt(a);
+    PutString(" + ", 3);
+    PutInt(b);
+    PutString(" = ", 3);
+    PutInt(sum);
+    PutChar('\n');
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie</strong> :</p>
+<pre><code>10 + 20 = 30
+</code></pre>
+<h3 id="états-de-la-machine-4"><a class="header" href="#états-de-la-machine-4">États de la machine</a></h3>
+<p><strong>Avant l’appel</strong> :</p>
+<ul>
+<li><code>$4</code> : Valeur de l’entier à afficher</li>
+</ul>
+<p><strong>Pendant l’appel</strong> :</p>
+<ul>
+<li>Stack : buffer de 12 octets alloué</li>
+<li>Conversion int → string</li>
+<li>Affichage via console</li>
+</ul>
+<p><strong>Après l’appel</strong> :</p>
+<ul>
+<li><code>$2</code> : 0 (si succès) ou -1 (si erreur)</li>
+<li><code>errno</code> : défini si erreur (erreur de SynchPutString)</li>
+</ul>
+<h2 id="performances-4"><a class="header" href="#performances-4">PERFORMANCES</a></h2>
+<h3 id="complexité-4"><a class="header" href="#complexité-4">Complexité</a></h3>
+<ul>
+<li><strong>Temporelle</strong> : O(log₁₀(n)) pour conversion + O(d) pour affichage (d = nombre de chiffres)</li>
+<li><strong>Spatiale</strong> : O(1) - buffer fixe de 12 octets</li>
+</ul>
+<h2 id="notes-4"><a class="header" href="#notes-4">NOTES</a></h2>
+<ul>
+<li><strong>Décimal uniquement</strong> : Pas de support hexa/octal</li>
+<li><strong>Pas de padding</strong> : Pas d’espaces ou zéros de remplissage</li>
+<li><strong>Thread-safe partiel</strong> : Caractères atomiques mais pas les nombres</li>
+<li><strong>Dépend de snprintf</strong> : Assume que la libc est linkée au noyau</li>
+</ul>
+<h2 id="failles-et-vulnérabilités-4"><a class="header" href="#failles-et-vulnérabilités-4">FAILLES ET VULNÉRABILITÉS</a></h2>
+<div class="vulnerability-section severity-info">
+<h4 id="dépendance-à-snprintf"><a class="header" href="#dépendance-à-snprintf">Dépendance à snprintf</a></h4>
+<p><strong>Description</strong> : Utilise <code>snprintf</code> de la libc standard.</p>
+<p><strong>Impact</strong> :</p>
+<ul>
+<li>Fonctionne seulement si libc est linkée au noyau</li>
+<li>Comportement dépend de l’implémentation libc</li>
+</ul>
+<p><strong>Alternative</strong> : Implémenter une conversion manuelle int→string</p>
+</div>
+
+<h2 id="bugs-connus-4"><a class="header" href="#bugs-connus-4">BUGS CONNUS</a></h2>
+<p>Aucun bug connu.</p>
+<h2 id="historique-des-versions-4"><a class="header" href="#historique-des-versions-4">Historique des versions</a></h2>
+<ul>
+<li><strong>v1.0</strong> : Implémentation initiale</li>
+<li><strong>v1.1</strong> : Ajout du retour explicite manquant</li>
+</ul>
+<h2 id="voir-aussi-6"><a class="header" href="#voir-aussi-6">VOIR AUSSI</a></h2>
+<ul>
+<li><a href="#getint">GetInt</a> - Lecture d’un entier</li>
+<li><a href="#putstring">PutString</a> - Affichage de chaîne</li>
+<li><a href="#putchar">PutChar</a> - Affichage d’un caractère</li>
+</ul>
+<h2 id="auteurs-5"><a class="header" href="#auteurs-5">AUTEURS</a></h2>
+<p>Antoine, 20 Dec 2025</p>
+<h2 id="dernière-révision-5"><a class="header" href="#dernière-révision-5">DERNIÈRE RÉVISION</a></h2>
+<p>20 Dec 2025 par Antoine</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="getint"><a class="header" href="#getint">GetInt</a></h1>
+<p><code>GetInt</code> - Lit un entier depuis la console d’entrée standard</p>
+<h2 id="synopsis-5"><a class="header" href="#synopsis-5">SYNOPSIS</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+int GetInt(int *n);
+</code></pre>
+<h2 id="description-5"><a class="header" href="#description-5">DESCRIPTION</a></h2>
+<p><code>GetInt</code> lit une ligne de texte depuis la console, la convertit en entier, et stocke le résultat à l’adresse pointée par <code>n</code>. La fonction attend que l’utilisateur tape Enter après avoir saisi un nombre.</p>
+<p>Numéro d’appel système : <code>16</code></p>
+<h3 id="comportement-nominal-5"><a class="header" href="#comportement-nominal-5">Comportement nominal</a></h3>
+<ul>
+<li>Lit jusqu’à 11 caractères (taille d’un int 32-bit)</li>
+<li>Utilise <code>SynchGetString</code> puis <code>sscanf</code> pour la conversion</li>
+<li>Accepte les nombres négatifs (préfixe <code>-</code>)</li>
+<li>Retourne 0 en cas de succès, -1 en cas d’erreur</li>
+<li>Bloque jusqu’à ce que Enter soit pressé</li>
+</ul>
+<h3 id="cas-particuliers-5"><a class="header" href="#cas-particuliers-5">Cas particuliers</a></h3>
+<ul>
+<li><strong>Entrée vide</strong> : Erreur, retourne -1</li>
+<li><strong>Entrée non-numérique</strong> : Erreur (<code>errno = E_INVAL</code>)</li>
+<li><strong>Overflow</strong> : Comportement dépend de <code>sscanf</code> (typiquement INT_MAX/MIN)</li>
+<li><strong>Plusieurs nombres</strong> : Seul le premier est pris (<code>"42 56"</code> → 42)</li>
+</ul>
+<h2 id="paramètres-5"><a class="header" href="#paramètres-5">PARAMÈTRES</a></h2>
+<h3 id="n-3"><a class="header" href="#n-3"><code>n</code></a></h3>
+<p>Pointeur vers l’entier où stocker le résultat.</p>
+<p><strong>Type</strong> : <code>int *</code><br><strong>Direction</strong> : OUT<br><strong>Registre</strong> : <code>$4</code>
+<strong>Contraintes</strong> :</p>
+<ul>
+<li>Doit pointer vers mémoire accessible en écriture</li>
+<li>Doit être aloué par le programme utilisateur</li>
+<li><strong>NON VÉRIFIÉ</strong> : Peut être NULL</li>
+<li><strong>NON VÉRIFIÉ</strong> : Peut être dans l’espace noyau</li>
+</ul>
+<h2 id="valeur-de-retour-5"><a class="header" href="#valeur-de-retour-5">VALEUR DE RETOUR</a></h2>
+<p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
+<p><strong>En cas de succès</strong> : <code>0</code> et <code>*n</code> contient la valeur lue</p>
+<p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
+<h2 id="codes-derreur-5"><a class="header" href="#codes-derreur-5">CODES D’ERREUR</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td><code>E_INVAL</code></td><td>Format invalide (non numérique)</td></tr>
+<tr><td>2</td><td><code>E_FAULT</code></td><td><code>addr &lt; 0</code></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="implémentation-5"><a class="header" href="#implémentation-5">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-5"><a class="header" href="#localisation-du-code-5">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handler_SC_GetInt()</code></li>
+<li><strong>Implémentation</strong> : Utilise <code>SynchConsole::SynchGetString()</code> + <code>sscanf</code></li>
+</ul>
+<h3 id="synchronisation-4"><a class="header" href="#synchronisation-4">Synchronisation</a></h3>
+<p>Hérite de <code>SynchGetString</code> :</p>
+<ul>
+<li><code>IO_Lock</code> pour exclusivité</li>
+<li><code>readAvail</code> pour attendre input utilisateur</li>
+<li>Bloquant jusqu’à newline</li>
+</ul>
+<h3 id="thread-safety-5"><a class="header" href="#thread-safety-5">Thread-safety</a></h3>
+<p>Hérite de <code>SynchGetString</code> :</p>
+<ul>
+<li><strong>Garanti au niveau caractère</strong></li>
+<li><strong>Pas garanti au niveau nombre</strong> : Entrées entrelacées possibles</li>
+</ul>
+<h2 id="décisions-de-conception-5"><a class="header" href="#décisions-de-conception-5">DÉCISIONS DE CONCEPTION</a></h2>
+<h3 id="choix-1--buffer-de-12-octets-1"><a class="header" href="#choix-1--buffer-de-12-octets-1">Choix 1 : Buffer de 12 octets</a></h3>
+<p><strong>Problème</strong> : Quelle taille pour lire la chaîne ?</p>
+<p><strong>Solution retenue</strong> : 12 octets</p>
+<p><strong>Justification</strong> :</p>
+<ul>
+<li>INT_MIN = -2147483648 : 11 caractères + <code>\0</code> = 12 octets</li>
+<li>Cohérent avec <code>PutInt</code></li>
+</ul>
+<h2 id="exemples-5"><a class="header" href="#exemples-5">EXEMPLES</a></h2>
+<h3 id="exemple-1--utilisation-basique-3"><a class="header" href="#exemple-1--utilisation-basique-3">Exemple 1 : Utilisation basique</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int number;
+    
+    PutString("Enter a number: ", 16);
+    GetInt(&amp;number);
+    
+    PutString("You entered: ", 13);
+    PutInt(number);
+    PutChar('\n');
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Interaction</strong> :</p>
+<pre><code>Enter a number: 42
+You entered: 42
+</code></pre>
+<h3 id="exemple-2--gestion-derreur"><a class="header" href="#exemple-2--gestion-derreur">Exemple 2 : Gestion d’erreur</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+#include "my_stdlib.h"
+
+int main() {
+    int number;
+    int result;
+    
+    PutString("Enter a number: ", 16);
+    result = GetInt(&amp;number);
+    
+    if (result == -1) {
+        print_error("Invalid input");
+        // errno contient E_INVAL
+    } else {
+        PutString("Valid: ", 7);
+        PutInt(number);
+        PutChar('\n');
+    }
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Interaction</strong> :</p>
+<pre><code>Enter a number: abc
+Invalid input
+</code></pre>
+<h3 id="exemple-3--boucle-de-validation"><a class="header" href="#exemple-3--boucle-de-validation">Exemple 3 : Boucle de validation</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int number;
+    int valid = 0;
+    
+    while (!valid) {
+        PutString("Enter a positive number: ", 25);
+        
+        if (GetInt(&amp;number) == 0 &amp;&amp; number &gt; 0) {
+            valid = 1;
+        } else {
+            PutString("Invalid, try again.\n", 20);
+        }
+    }
+    
+    PutString("Thank you! You entered: ", 24);
+    PutInt(number);
+    PutChar('\n');
+    
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-4--calcul"><a class="header" href="#exemple-4--calcul">Exemple 4 : Calcul</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int a, b, sum;
+    
+    PutString("Enter first number: ", 20);
+    GetInt(&amp;a);
+    
+    PutString("Enter second number: ", 21);
+    GetInt(&amp;b);
+    
+    sum = a + b;
+    
+    PutInt(a);
+    PutString(" + ", 3);
+    PutInt(b);
+    PutString(" = ", 3);
+    PutInt(sum);
+    PutChar('\n');
+    
+    return 0;
+}
+</code></pre>
+<h2 id="comportement-détaillé-4"><a class="header" href="#comportement-détaillé-4">COMPORTEMENT DÉTAILLÉ</a></h2>
+<h3 id="états-de-la-machine-5"><a class="header" href="#états-de-la-machine-5">États de la machine</a></h3>
+<p><strong>Avant l’appel</strong> :</p>
+<ul>
+<li><code>$4</code> : Adresse où écrire l’entier</li>
+<li>Mémoire à <code>addr</code> : Contenu indéfini</li>
+</ul>
+<p><strong>Pendant l’appel</strong> :</p>
+<ul>
+<li>Buffer de 12 octets alloué sur stack</li>
+<li>Lecture de la ligne (bloquant)</li>
+<li>Conversion string → int</li>
+</ul>
+<p><strong>Après l’appel</strong> :</p>
+<ul>
+<li><code>$v0</code> : 0 (succès) ou -1 (erreur)</li>
+<li><code>*n</code> : Contient la valeur lue (si succès)</li>
+<li><code>errno</code> : 0 ou code d’erreur</li>
+</ul>
+<h2 id="performances-5"><a class="header" href="#performances-5">PERFORMANCES</a></h2>
+<h3 id="complexité-5"><a class="header" href="#complexité-5">Complexité</a></h3>
+<ul>
+<li><strong>Temporelle</strong> : O(k) où k = longueur de l’entrée utilisateur (max 12)</li>
+<li><strong>Spatiale</strong> : O(1) - buffer fixe de 12 octets</li>
+</ul>
+<h2 id="notes-5"><a class="header" href="#notes-5">NOTES</a></h2>
+<ul>
+<li><strong>Format décimal uniquement</strong> : Pas de support hexa/octal</li>
+<li><strong>Overflow</strong> : Comportement de <code>sscanf</code> (wraparound ou INT_MAX/MIN)</li>
+</ul>
+<h2 id="failles-et-vulnérabilités-5"><a class="header" href="#failles-et-vulnérabilités-5">FAILLES ET VULNÉRABILITÉS</a></h2>
+<div class="vulnerability-section severity-critical">
+<h4 id="aucune-validation-de-lespace-dadressage-2"><a class="header" href="#aucune-validation-de-lespace-dadressage-2">Aucune validation de l’espace d’adressage</a></h4>
+<p><strong>Description</strong> : Seul <code>addr &lt; 0</code> est vérifié.</p>
+<p><strong>Impact</strong> :</p>
+<ul>
+<li><strong>Écriture arbitraire en mémoire noyau</strong> : Corruption critique</li>
+<li><strong>Ascension de privilèges</strong> : Écraser des pointeurs/structures noyau</li>
+</ul>
+<p><strong>Exploitation</strong> :</p>
+<pre><code class="language-c">// Écrire dans la mémoire noyau
+int *kernel_ptr = (int *)0x00000000;
+GetInt(kernel_ptr);
+// L'utilisateur contrôle maintenant la valeur en mémoire noyau
+</code></pre>
+</div>
+
+<div class="vulnerability-section severity-critical">
+<h4 id="writemem-peut-échouer-silencieusement"><a class="header" href="#writemem-peut-échouer-silencieusement">WriteMem peut échouer silencieusement</a></h4>
+<p><strong>Description</strong> : <code>machine-&gt;WriteMem(addr, 4, *new_val)</code> peut échouer si la page n’est pas mappée ou accessible en écriture.</p>
+<p><strong>Impact</strong> :</p>
+<ul>
+<li><strong>Écriture ignorée</strong></li>
+<li><strong>Pas de notification d’erreur</strong></li>
+</ul>
+<p><strong>Code problématique</strong> :</p>
+<pre><code class="language-c">machine-&gt;WriteMem(addr, 4, *new_val);  // Potentielle échec ignoré
+delete new_val;
+RETURN(0);  // Succès même si WriteMem a échoué !
+</code></pre>
+</div>
+
+<div class="vulnerability-section severity-critical">
+<h4 id="buffer-overflow-potentiel-sur-synchgetstring"><a class="header" href="#buffer-overflow-potentiel-sur-synchgetstring">Buffer overflow potentiel sur SynchGetString</a></h4>
+<p><strong>Description</strong> : Si <code>SynchGetString</code> écrit plus de 12 octets (impossible normalement mais…), stack overflow.</p>
+<p><strong>Impact</strong> : Corruption de stack du noyau</p>
+<p><strong>Correction</strong> : <code>SynchGetString</code> limite à 12 mais vérifier quand même</p>
+</div>
+
+<div class="vulnerability-section severity-info">
+<h4 id="pas-de-timeout-2"><a class="header" href="#pas-de-timeout-2">Pas de timeout</a></h4>
+<p><strong>Description</strong> : Bloque indéfiniment en attendant l’utilisateur.</p>
+<p><strong>Impact</strong> : Pas de mécanisme de timeout programmatique</p>
+</div>
+
+<h2 id="bugs-connus-5"><a class="header" href="#bugs-connus-5">BUGS CONNUS</a></h2>
+<p>Aucun bug connu à ce jour.</p>
+<h2 id="historique-des-versions-5"><a class="header" href="#historique-des-versions-5">Historique des versions</a></h2>
+<ul>
+<li><strong>v1.0</strong> : Implémentation initiale</li>
+<li><strong>v2.0</strong> : Ajout de la valeur de retour et gestion d’erreurs basique</li>
+<li><strong>v2.1</strong> : Fix allocation inutile</li>
+</ul>
+<h2 id="voir-aussi-7"><a class="header" href="#voir-aussi-7">VOIR AUSSI</a></h2>
+<ul>
+<li><a href="#putint">PutInt</a> - Affichage d’un entier</li>
+<li><a href="#getstring">GetString</a> - Lecture de chaîne</li>
+<li><a href="#getchar">GetChar</a> - Lecture d’un caractère</li>
+</ul>
+<h2 id="auteurs-6"><a class="header" href="#auteurs-6">AUTEURS</a></h2>
+<p>Antoine, 20 Dec 2025</p>
+<h2 id="dernière-révision-6"><a class="header" href="#dernière-révision-6">DERNIÈRE RÉVISION</a></h2>
+<p>20 Dec 2025 par Antoine</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="sémaphores-1"><a class="header" href="#sémaphores-1">Sémaphores</a></h1>
+<ul>
+<li><a href="syscalls/sync/README.html">Vue d’ensemble</a></li>
+</ul>
+<h1 id="appels-système-sur-les-sémaphores"><a class="header" href="#appels-système-sur-les-sémaphores">Appels système sur les Sémaphores</a></h1>
+<ul>
+<li><a href="#seminit">SemInit</a></li>
+<li><a href="#semp">SemP</a></li>
+<li><a href="#semv">SemV</a></li>
+<li><a href="#semdestroy">SemDestroy</a></li>
+<li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="vue-densemble---synchronisation-par-sémaphores"><a class="header" href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble - Synchronisation par sémaphores</a></h1>
+<p>Les appels système de sémaphores permettent la synchronisation entre threads utilisateur au sein d’un même processus. NachOS fournit une implémentation sécurisée basée sur des descripteurs.</p>
+<h2 id="opérations-disponibles"><a class="header" href="#opérations-disponibles">Opérations disponibles</a></h2>
+<ul>
+<li><strong><a href="#seminit">SemInit</a></strong> : Crée et initialise un nouveau sémaphore</li>
+<li><strong><a href="#semp">SemP</a></strong> : Opération P (wait/acquire) sur un sémaphore</li>
+<li><strong><a href="#semv">SemV</a></strong> : Opération V (signal/release) sur un sémaphore</li>
+<li><strong><a href="#semdestroy">SemDestroy</a></strong> : Détruit un sémaphore</li>
+<li><strong><a href="#setmaxsemforprocess">SetMaxSemForProcess</a></strong> : Redimensionne la table de sémaphores</li>
+</ul>
+<h2 id="architecture-1"><a class="header" href="#architecture-1">Architecture</a></h2>
+<h3 id="modèle-de-sécurité"><a class="header" href="#modèle-de-sécurité">Modèle de sécurité</a></h3>
+<p>Les sémaphores utilisent une table de descripteurs au niveau de chaque processus (<code>AddrSpace</code>). L’utilisateur manipule des descripteurs (entiers), jamais des pointeurs directs vers les structures kernel.</p>
+<p><strong>Avantages</strong> :</p>
+<ul>
+<li><strong>Isolation complète</strong> : impossible d’accéder aux structures kernel</li>
+<li><strong>Validation stricte</strong> : chaque descripteur est vérifié avant utilisation</li>
+<li><strong>Nettoyage automatique</strong> : libération à la terminaison du processus</li>
+</ul>
+<h3 id="limites-et-dimensionnement"><a class="header" href="#limites-et-dimensionnement">Limites et dimensionnement</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Paramètre</th><th>Valeur</th><th>Configurable</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Taille initiale table</strong></td><td>16</td><td>Non (compile-time)</td></tr>
+<tr><td><strong>Taille maximale table</strong></td><td>512</td><td>Non (compile-time)</td></tr>
+<tr><td><strong>Auto-expansion</strong></td><td>Oui (×2)</td><td>-</td></tr>
+<tr><td><strong>Partage inter-threads</strong></td><td>Oui</td><td>-</td></tr>
+<tr><td><strong>Partage inter-processus</strong></td><td>Non</td><td>-</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="gestion-dynamique-de-la-table"><a class="header" href="#gestion-dynamique-de-la-table">Gestion dynamique de la table</a></h3>
+<p>La table de sémaphores s’adapte automatiquement aux besoins :</p>
+<ol>
+<li><strong>Taille initiale</strong> : 16 slots (défini par <code>INITIAL_SEMAPHORE_TABLE_SIZE</code>)</li>
+<li><strong>Auto-expansion</strong> : Si <code>SemInit()</code> est appelé et la table est pleine, elle double automatiquement</li>
+<li><strong>Taille maximale</strong> : 512 slots (défini par <code>MAX_SEMAPHORES_PER_PROCESS</code>)</li>
+<li><strong>Pré-allocation</strong> : <code>SetMaxSemForProcess()</code> permet de dimensionner manuellement</li>
+</ol>
+<blockquote>
+<p><strong>Note</strong> : Le facteur d’expansion (×2) est susceptible d’évoluer dans les versions futures.</p>
+</blockquote>
+<h2 id="cycle-de-vie-dun-sémaphore"><a class="header" href="#cycle-de-vie-dun-sémaphore">Cycle de vie d’un sémaphore</a></h2>
+<pre><code>┌─────────────┐
+│  SemInit()  │  Retourne handle (0 à maxSemaphores-1)
+└──────┬──────┘
+       │
+       ▼
+┌─────────────────┐
+│ Sémaphore actif │ ◄──┐
+│  (utilisable)   │    │
+└────┬────────┬───┘    │
+     │        │        │
+     │        │        │
+  SemP()   SemV()      │ Utilisation répétée
+     │        │        │
+     │        │        │
+     └────────┘────────┘
+       │
+       ▼
+┌──────────────────┐
+│  SemDestroy()    │  Libère le handle
+└──────────────────┘
+</code></pre>
+<h2 id="gestion-des-erreurs-2"><a class="header" href="#gestion-des-erreurs-2">Gestion des erreurs</a></h2>
+<p>Tous les appels système de sémaphores retournent un code d’erreur et définissent <code>errno</code> en cas d’échec.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Appel</th><th>Succès</th><th>Échec</th><th>Codes errno possibles</th></tr>
+</thead>
+<tbody>
+<tr><td><code>SemInit(value)</code></td><td>handle (≥0)</td><td>-1</td><td><code>E_INVAL</code>, <code>E_FTABLE</code></td></tr>
+<tr><td><code>SemP(sem_id)</code></td><td>0</td><td>-1</td><td><code>E_NOENT</code></td></tr>
+<tr><td><code>SemV(sem_id)</code></td><td>0</td><td>-1</td><td><code>E_NOENT</code></td></tr>
+<tr><td><code>SemDestroy(sem_id)</code></td><td>0</td><td>-1</td><td><code>E_NOENT</code></td></tr>
+<tr><td><code>SetMaxSemForProcess(max)</code></td><td>0</td><td>-1</td><td><code>E_INVAL</code></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="thread-safety-6"><a class="header" href="#thread-safety-6">Thread-safety</a></h2>
+<p><strong>Garanti</strong> :</p>
+<ul>
+<li>Les opérations P() et V() sont atomiques et thread-safe</li>
+<li>Plusieurs threads peuvent utiliser le même sémaphore simultanément</li>
+<li>La table de descripteurs est protégée par un verrou interne</li>
+</ul>
+<p><strong>Comportement</strong> :</p>
+<ul>
+<li><code>SemP()</code> bloque le thread appelant si le compteur est à 0</li>
+<li><code>SemV()</code> réveille un thread bloqué en attente (aucune garentie sur le thread reveillé)</li>
+</ul>
+<h2 id="exemple-complet"><a class="header" href="#exemple-complet">Exemple complet</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+// Variables partagées
+int counter = 0;
+int mutex_id;
+
+void increment_thread(void *arg) {
+    for (int i = 0; i &lt; 1000; i++) {
+        SemP(mutex_id);      // Entrer en section critique
+        counter++;
+        SemV(mutex_id);      // Sortir de section critique
+    }
+    ExitThread();
+}
+
+int main() {
+    // Créer un mutex (sémaphore binaire)
+    mutex_id = SemInit(1);
+    if (mutex_id &lt; 0) {
+        PutString("Erreur création mutex\n", 23);
+        Exit(-1);
+    }
+    
+    // Créer 2 threads
+    int tid1 = CreateThread(increment_thread, 0);
+    int tid2 = CreateThread(increment_thread, 0);
+    
+    // Attendre les threads
+    JoinThread(tid1);
+    JoinThread(tid2);
+    
+    // Vérifier résultat
+    PutString("Counter final: ", 15);
+    PutInt(counter);  // Devrait être 2000
+    PutChar('\n');
+    
+    // Nettoyer
+    SemDestroy(mutex_id);
+    
+    return 0;
+}
+</code></pre>
+<h2 id="limitations-connues-1"><a class="header" href="#limitations-connues-1">Limitations connues</a></h2>
+<h3 id="1-pas-de-timeout"><a class="header" href="#1-pas-de-timeout">1. Pas de timeout</a></h3>
+<p><code>SemP()</code> peut bloquer indéfiniment si <code>SemV()</code> n’est jamais appelé.</p>
+<p><strong>Impact</strong> : Impossible d’implémenter des locks avec timeout.</p>
+<h3 id="2-limite-de-16-sémaphores"><a class="header" href="#2-limite-de-16-sémaphores">2. Limite de 16 sémaphores</a></h3>
+<p>Maximum 16 sémaphores actifs par processus.</p>
+<p><strong>Impact</strong> : Applications complexes peuvent manquer de descripteurs.</p>
+<p><strong>Note</strong> : Configuration dynamique de la taille de la table envisagée.</p>
+<h3 id="3-pas-de-partage-inter-processus"><a class="header" href="#3-pas-de-partage-inter-processus">3. Pas de partage inter-processus</a></h3>
+<p>Les sémaphores sont locaux à un processus.</p>
+<p><strong>Impact</strong> : Impossible de synchroniser des processus différents.</p>
+<h2 id="performances-6"><a class="header" href="#performances-6">Performances</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Opération</th><th>Complexité temporelle</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>SemInit</code> (liste non pleine)</td><td>O(1)</td><td>Allocation O(1)</td></tr>
+<tr><td><code>SemInit</code> (liste pleine)</td><td>O(n)</td><td>Réallocation O(n)</td></tr>
+<tr><td><code>SemP</code></td><td>O(1)*</td><td>*Bloquant si compteur = 0</td></tr>
+<tr><td><code>SemV</code></td><td>O(1)</td><td>Réveil thread O(1)</td></tr>
+<tr><td><code>SemDestroy</code></td><td>O(1)</td><td>Libération bitmap</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="voir-aussi-8"><a class="header" href="#voir-aussi-8">Voir aussi</a></h2>
+<ul>
+<li><a href="#gestion-des-erreurs-3">Gestion des erreurs</a> - Codes d’erreur système</li>
+</ul>
+<h2 id="auteurs-7"><a class="header" href="#auteurs-7">Auteurs</a></h2>
+<p>Antoine, 25 Dec 2025</p>
+<h2 id="dernière-révision-7"><a class="header" href="#dernière-révision-7">Dernière révision</a></h2>
+<p>25 Dec 2025 par Antoine</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="seminit"><a class="header" href="#seminit">SemInit</a></h1>
+<p><code>SemInit</code> - Crée et initialise un nouveau sémaphore</p>
+<h2 id="synopsis-6"><a class="header" href="#synopsis-6">SYNOPSIS</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+int SemInit(int value);
+</code></pre>
+<h2 id="description-6"><a class="header" href="#description-6">DESCRIPTION</a></h2>
+<p><code>SemInit</code> crée un nouveau sémaphore avec une valeur initiale spécifiée et retourne un descripteur permettant de l’identifier. Le sémaphore peut ensuite être utilisé pour la synchronisation entre threads du même processus.</p>
+<p>Numéro d’appel système : <code>24</code></p>
+<h3 id="comportement-nominal-6"><a class="header" href="#comportement-nominal-6">Comportement nominal</a></h3>
+<ul>
+<li>Alloue un nouveau descripteur dans la table de sémaphores du processus</li>
+<li>Initialise le compteur interne du sémaphore à <code>value</code></li>
+<li>Retourne un handle unique (entier entre 0 et <code>maxSemaphores - 1</code>)</li>
+<li>Le sémaphore est partagé entre tous les threads du processus</li>
+<li>Le sémaphore persiste jusqu’à destruction explicite ou terminaison du processus</li>
+</ul>
+<h3 id="auto-expansion-de-la-table"><a class="header" href="#auto-expansion-de-la-table">Auto-expansion de la table</a></h3>
+<p>Si la table de sémaphores est pleine lors d’un appel à <code>SemInit()</code>, le système tente automatiquement de l’agrandir (doublement de la taille). Cette expansion est transparente pour l’utilisateur.</p>
+<p>L’expansion échoue uniquement si la nouvelle taille dépasserait <code>MAX_SEMAPHORES_PER_PROCESS</code> (512).</p>
+<h3 id="cas-particuliers-6"><a class="header" href="#cas-particuliers-6">Cas particuliers</a></h3>
+<ul>
+<li><strong>value &lt; 0</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
+<li><strong>Table pleine et expansion impossible</strong> : Retourne -1, <code>errno = E_FTABLE</code> (maximum 512 sémaphores atteint)</li>
+</ul>
+<h2 id="paramètres-6"><a class="header" href="#paramètres-6">PARAMÈTRES</a></h2>
+<h3 id="value"><a class="header" href="#value"><code>value</code></a></h3>
+<p>Valeur initiale du compteur du sémaphore.</p>
+<p><strong>Type</strong> : <code>int</code>
+<strong>Direction</strong> : IN
+<strong>Registre</strong> : <code>$4</code>
+<strong>Contraintes</strong> :</p>
+<ul>
+<li>Doit être ≥ 0</li>
+<li>Représente le nombre de threads pouvant exécuter <code>SemP()</code> simultanément sans bloquer</li>
+</ul>
+<h2 id="valeur-de-retour-6"><a class="header" href="#valeur-de-retour-6">VALEUR DE RETOUR</a></h2>
+<p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
+<p><strong>En cas de succès</strong> : Handle du sémaphore (0 à <code>maxSemaphores - 1</code>)</p>
+<p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
+<h2 id="codes-derreur-6"><a class="header" href="#codes-derreur-6">CODES D’ERREUR</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td><code>E_INVAL</code></td><td><code>value &lt; 0</code></td></tr>
+<tr><td>10</td><td><code>E_FTABLE</code></td><td>Table pleine (512 sémaphores) et expansion impossible</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="implémentation-6"><a class="header" href="#implémentation-6">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-6"><a class="header" href="#localisation-du-code-6">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SemInit()</code></li>
+<li><strong>Implémentation</strong> : <code>code/userprog/addrspace.cc:AddrSpace::SemaphoreCreate()</code></li>
+</ul>
+<h3 id="architecture-interne"><a class="header" href="#architecture-interne">Architecture interne</a></h3>
+<p><strong>Table de descripteurs</strong> :</p>
+<ul>
+<li>Taille initiale : 16 entrées (<code>INITIAL_SEMAPHORE_TABLE_SIZE</code>)</li>
+<li>Taille maximale : 512 entrées (<code>MAX_SEMAPHORES_PER_PROCESS</code>)</li>
+<li>Auto-expansion : doublement automatique si table pleine</li>
+<li>BitMap pour tracking des slots utilisés/libres</li>
+<li>Chaque descripteur contient :
+<ul>
+<li><code>Semaphore* semaphore</code> : pointeur vers objet kernel</li>
+<li><code>bool valid</code> : flag de validité</li>
+</ul>
+</li>
+</ul>
+<p><strong>Allocation</strong> :</p>
+<ol>
+<li>Vérification de <code>value ≥ 0</code></li>
+<li>Recherche d’un slot libre via <code>BitMap::Find()</code> → O(1)</li>
+<li>Si aucun slot libre : tentative d’expansion (×2)</li>
+<li>Création de <code>Semaphore("UserSemaphore", value)</code></li>
+<li>Enregistrement dans la table</li>
+<li>Marquage du slot comme utilisé</li>
+</ol>
+<h3 id="thread-safety-7"><a class="header" href="#thread-safety-7">Thread-safety</a></h3>
+<p><strong>Garanties</strong> :</p>
+<ul>
+<li>Plusieurs threads peuvent appeler <code>SemInit</code> simultanément</li>
+<li>Les descripteurs sont alloués de manière atomique</li>
+<li>Pas de race condition sur le BitMap</li>
+</ul>
+<h2 id="décisions-de-conception-6"><a class="header" href="#décisions-de-conception-6">DÉCISIONS DE CONCEPTION</a></h2>
+<h3 id="pourquoi-des-descripteurs-plutôt-que-des-pointeurs-"><a class="header" href="#pourquoi-des-descripteurs-plutôt-que-des-pointeurs-">Pourquoi des descripteurs plutôt que des pointeurs ?</a></h3>
+<p><strong>Sécurité</strong> : Empêche l’utilisateur de manipuler directement la mémoire kernel. Sans descripteurs, un utilisateur malveillant pourrait :</p>
+<ul>
+<li>Forger un pointeur vers n’importe quelle structure kernel</li>
+<li>Provoquer des crashs ou corruption mémoire</li>
+<li>Contourner les mécanismes de protection</li>
+</ul>
+<h3 id="pourquoi-lauto-expansion-"><a class="header" href="#pourquoi-lauto-expansion-">Pourquoi l’auto-expansion ?</a></h3>
+<p><em>TODO</em></p>
+<h2 id="exemples-6"><a class="header" href="#exemples-6">EXEMPLES</a></h2>
+<h3 id="exemple-1--créer-un-mutex"><a class="header" href="#exemple-1--créer-un-mutex">Exemple 1 : Créer un mutex</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    // Créer un sémaphore binaire (mutex)
+    int mutex = SemInit(1);
+    
+    if (mutex &lt; 0) {
+        PutString("Erreur création mutex\n", 23);
+        Exit(-1);
+    }
+    
+    PutString("Mutex créé avec handle: ", 25);
+    PutInt(mutex);
+    PutChar('\n');
+    
+    // Utiliser le mutex...
+    
+    SemDestroy(mutex);
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie attendue</strong> :</p>
+<pre><code>Mutex créé avec handle: 0
+</code></pre>
+<h3 id="exemple-2--sémaphore-pour-rendez-vous"><a class="header" href="#exemple-2--sémaphore-pour-rendez-vous">Exemple 2 : Sémaphore pour rendez-vous</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int rdv;
+
+void worker_thread(void *arg) {
+    PutString("Thread: travail en cours...\n", 29);
+    Sleep(100);  // Simuler du travail
+    PutString("Thread: travail terminé\n", 25);
+    
+    SemV(rdv);  // Signaler terminaison
+    ExitThread();
+}
+
+int main() {
+    // Sémaphore initialement bloqué
+    rdv = SemInit(0);
+    if (rdv &lt; 0) {
+        PutString("Erreur création sémaphore\n", 27);
+        Exit(-1);
+    }
+    
+    int tid = CreateThread(worker_thread, 0);
+    
+    PutString("Main: attente du worker...\n", 28);
+    SemP(rdv);  // Bloquer jusqu'au signal
+    PutString("Main: worker terminé!\n", 23);
+    
+    JoinThread(tid);
+    SemDestroy(rdv);
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-3--auto-expansion-de-la-table"><a class="header" href="#exemple-3--auto-expansion-de-la-table">Exemple 3 : Auto-expansion de la table</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int sems[100];
+    int count = 0;
+    
+    // Créer 100 sémaphores (dépasse la taille initiale de 16)
+    for (int i = 0; i &lt; 100; i++) {
+        sems[i] = SemInit(0);
+        
+        if (sems[i] &lt; 0) {
+            PutString("Échec après ", 13);
+            PutInt(count);
+            PutString(" sémaphores\n", 13);
+            break;
+        }
+        
+        count++;
+    }
+    
+    PutString("Créé ", 6);
+    PutInt(count);
+    PutString(" sémaphores avec succès\n", 25);
+    
+    // Nettoyer
+    for (int i = 0; i &lt; count; i++) {
+        SemDestroy(sems[i]);
+    }
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie attendue</strong> :</p>
+<pre><code>Créé 100 sémaphores avec succès
+</code></pre>
+<h3 id="exemple-4--limite-maximale-atteinte"><a class="header" href="#exemple-4--limite-maximale-atteinte">Exemple 4 : Limite maximale atteinte</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int sems[600];
+    int count = 0;
+    
+    // Tenter de créer 600 sémaphores (&gt; MAX_SEMAPHORES_PER_PROCESS)
+    for (int i = 0; i &lt; 600; i++) {
+        sems[i] = SemInit(0);
+        
+        if (sems[i] &lt; 0) {
+            PutString("Limite atteinte après ", 23);
+            PutInt(count);
+            PutString(" sémaphores\n", 13);
+            break;
+        }
+        
+        count++;
+    }
+    
+    // Nettoyer
+    for (int i = 0; i &lt; count; i++) {
+        SemDestroy(sems[i]);
+    }
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie attendue</strong> :</p>
+<pre><code>Limite atteinte après 512 sémaphores
+</code></pre>
+<h2 id="comportement-détaillé-5"><a class="header" href="#comportement-détaillé-5">COMPORTEMENT DÉTAILLÉ</a></h2>
+<h3 id="états-de-la-machine-6"><a class="header" href="#états-de-la-machine-6">États de la machine</a></h3>
+<p><strong>Avant l’appel</strong> :</p>
+<ul>
+<li><code>$4</code> : Valeur initiale du sémaphore</li>
+<li>Table de sémaphores : peut contenir 0 à <code>maxSemaphores</code> descripteurs actifs</li>
+<li>BitMap : indique slots libres/occupés</li>
+</ul>
+<p><strong>Pendant l’appel</strong> :</p>
+<ul>
+<li>Recherche de slot libre : <code>BitMapThreadSafe::Find()</code></li>
+<li>Si aucun slot : tentative d’expansion via <code>AllocateSemaphoreTable(maxSemaphores * 2)</code></li>
+<li>Allocation objet <code>Semaphore</code> sur le heap kernel</li>
+<li>Enregistrement dans <code>semaphoreTable[handle]</code></li>
+<li>BitMap mis à jour</li>
+</ul>
+<p><strong>Après l’appel</strong> :</p>
+<ul>
+<li><code>$2</code> : Handle du sémaphore (0 à maxSemaphores-1) ou -1</li>
+<li><code>errno</code> : 0 ou code d’erreur</li>
+<li>Table : nouveau descripteur valide enregistré (potentiellement agrandie)</li>
+</ul>
+<h2 id="notes-6"><a class="header" href="#notes-6">NOTES</a></h2>
+<ul>
+<li><strong>Handles réutilisables</strong> : Après <code>SemDestroy(X)</code>, le handle X peut être réalloué</li>
+<li><strong>Pas de limite globale</strong> : Chaque processus a sa propre table (max 512 sémaphores)</li>
+<li><strong>Nettoyage automatique</strong> : Les sémaphores non détruits sont libérés à la terminaison du processus</li>
+<li><strong>Ordre d’allocation</strong> : Dépend de <code>BitMap::Find()</code>, généralement ordre croissant puis réutilisation</li>
+<li><strong>Pré-allocation</strong> : Utiliser <code>SetMaxSemForProcess()</code> pour éviter les réallocations si le nombre est connu</li>
+</ul>
+<h2 id="failles-et-vulnérabilités-6"><a class="header" href="#failles-et-vulnérabilités-6">FAILLES ET VULNÉRABILITÉS</a></h2>
+<p>Aucune faille de sécurité connue.</p>
+<h2 id="bugs-connus-6"><a class="header" href="#bugs-connus-6">BUGS CONNUS</a></h2>
+<p>Aucun bug connu à ce jour.</p>
+<h2 id="historique-des-versions-6"><a class="header" href="#historique-des-versions-6">HISTORIQUE DES VERSIONS</a></h2>
+<ul>
+<li><strong>v1.0</strong> : Implémentation initiale avec adresses</li>
+<li><strong>v2.0</strong> : Modification avec table de descripteurs (taille fixe 16)</li>
+<li><strong>v2.1</strong> : Auto-expansion de la table (taille initiale 16, max 512)</li>
+</ul>
+<h2 id="voir-aussi-9"><a class="header" href="#voir-aussi-9">VOIR AUSSI</a></h2>
+<ul>
+<li><a href="#semp">SemP</a> - Opération P (wait) sur un sémaphore</li>
+<li><a href="#semv">SemV</a> - Opération V (signal) sur un sémaphore</li>
+<li><a href="#semdestroy">SemDestroy</a> - Destruction d’un sémaphore</li>
+<li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a> - Redimensionnement manuel de la table</li>
+<li><a href="syscalls/sync/README.html">Vue d’ensemble</a> - Guide complet des sémaphores</li>
+</ul>
+<h2 id="auteurs-8"><a class="header" href="#auteurs-8">AUTEURS</a></h2>
+<p>Antoine, 25 Dec 2025</p>
+<h2 id="dernière-révision-8"><a class="header" href="#dernière-révision-8">DERNIÈRE RÉVISION</a></h2>
+<p>25 Dec 2025 par Antoine</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="semp"><a class="header" href="#semp">SemP</a></h1>
+<p><code>SemP</code> - Opération P (wait/acquire) sur un sémaphore</p>
+<h2 id="synopsis-7"><a class="header" href="#synopsis-7">SYNOPSIS</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+int SemP(int sem_id);
+</code></pre>
+<h2 id="description-7"><a class="header" href="#description-7">DESCRIPTION</a></h2>
+<p><code>SemP</code> effectue l’opération P (Proberen) sur le sémaphore identifié par <code>sem_id</code>. Cette opération décrémente le compteur du sémaphore et bloque le thread appelant si le compteur devient négatif.</p>
+<p>Numéro d’appel système : <code>25</code></p>
+<h3 id="comportement-nominal-7"><a class="header" href="#comportement-nominal-7">Comportement nominal</a></h3>
+<ul>
+<li>Vérifie la validité du descripteur <code>sem_id</code></li>
+<li>Si compteur &gt; 0 : décrémente et retourne immédiatement</li>
+<li>Si compteur = 0 : bloque le thread en attente d’un <code>SemV()</code></li>
+<li>L’opération est atomique et thread-safe</li>
+</ul>
+<h3 id="cas-particuliers-7"><a class="header" href="#cas-particuliers-7">Cas particuliers</a></h3>
+<ul>
+<li><strong>Handle invalide</strong> : Retourne -1</li>
+<li><strong>Sémaphore détruit</strong> : Retourne -1</li>
+<li><strong>Blocage indéfini</strong> : Si aucun <code>SemV()</code> n’est appelé, le thread reste bloqué (pas de timeout)</li>
+<li><strong>Interruptions</strong> : Le blocage n’est pas interruptible</li>
+</ul>
+<h2 id="paramètres-7"><a class="header" href="#paramètres-7">PARAMÈTRES</a></h2>
+<h3 id="sem_id"><a class="header" href="#sem_id"><code>sem_id</code></a></h3>
+<p>Descripteur du sémaphore sur lequel effectuer l’opération P.</p>
+<p><strong>Type</strong> : <code>int</code>
+<strong>Direction</strong> : IN
+<strong>Registre</strong> : <code>$4</code>
+<strong>Contraintes</strong> :</p>
+<ul>
+<li>Doit être un descripteur valide retourné par <code>SemInit()</code></li>
+<li>Doit être dans l’intervalle [0, maxSemaphores-1] (max 511)</li>
+<li>Le sémaphore ne doit pas avoir été détruit</li>
+</ul>
+<h2 id="valeur-de-retour-7"><a class="header" href="#valeur-de-retour-7">VALEUR DE RETOUR</a></h2>
+<p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
+<p><strong>En cas de succès</strong> : <code>0</code></p>
+<p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
+<h2 id="codes-derreur-7"><a class="header" href="#codes-derreur-7">CODES D’ERREUR</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
+</thead>
+<tbody>
+<tr><td>10</td><td><code>E_NOENT</code></td><td>Handle invalide ou sémaphore détruit</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="implémentation-7"><a class="header" href="#implémentation-7">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-7"><a class="header" href="#localisation-du-code-7">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SemP()</code></li>
+<li><strong>Implémentation</strong> :
+<ul>
+<li><code>code/userprog/addrspace.cc:AddrSpace::SemaphoreWait()</code></li>
+<li><code>code/threads/synch.cc:Semaphore::P()</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="thread-safety-8"><a class="header" href="#thread-safety-8">Thread-safety</a></h3>
+<p><strong>Sémaphore interne</strong> : <code>Semaphore::P()</code> utilise son propre lock interne :</p>
+<ul>
+<li>Lock sémaphore acquis</li>
+<li>Si <code>value &gt; 0</code> : décrémente et retourne</li>
+<li>Sinon : thread ajouté à la queue, mis en sommeil</li>
+<li>Lock sémaphore libéré</li>
+</ul>
+<h2 id="décisions-de-conception-7"><a class="header" href="#décisions-de-conception-7">DÉCISIONS DE CONCEPTION</a></h2>
+<p><em>TODO</em></p>
+<h2 id="exemples-7"><a class="header" href="#exemples-7">EXEMPLES</a></h2>
+<h3 id="exemple-1--mutex-basique"><a class="header" href="#exemple-1--mutex-basique">Exemple 1 : Mutex basique</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int mutex;
+int shared_counter = 0;
+
+void increment_thread(void *arg) {
+    for (int i = 0; i &lt; 1000; i++) {
+        // Entrer en section critique
+        if (SemP(mutex) &lt; 0) {
+            PutString("Erreur SemP\n", 13);
+            ExitThread();
+        }
+        
+        shared_counter++;
+        
+        // Sortir de section critique
+        SemV(mutex);
+    }
+    ExitThread();
+}
+
+int main() {
+    mutex = SemInit(1);
+    
+    int tid1 = CreateThread(increment_thread, 0);
+    int tid2 = CreateThread(increment_thread, 0);
+    
+    JoinThread(tid1);
+    JoinThread(tid2);
+    
+    PutString("Counter: ", 9);
+    PutInt(shared_counter);  // Devrait être 2000
+    PutChar('\n');
+    
+    SemDestroy(mutex);
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-2--rendez-vous-entre-threads"><a class="header" href="#exemple-2--rendez-vous-entre-threads">Exemple 2 : Rendez-vous entre threads</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int rdv1, rdv2;
+
+void thread_A(void *arg) {
+    PutString("A: Phase 1\n", 12);
+    Sleep(50);
+    
+    SemV(rdv1);  // Signaler à B
+    SemP(rdv2);  // Attendre B
+    
+    PutString("A: Phase 2\n", 12);
+    ExitThread();
+}
+
+void thread_B(void *arg) {
+    PutString("B: Phase 1\n", 12);
+    Sleep(100);
+    
+    SemV(rdv2);  // Signaler à A
+    SemP(rdv1);  // Attendre A
+    
+    PutString("B: Phase 2\n", 12);
+    ExitThread();
+}
+
+int main() {
+    rdv1 = SemInit(0);
+    rdv2 = SemInit(0);
+    
+    int ta = CreateThread(thread_A, 0);
+    int tb = CreateThread(thread_B, 0);
+    
+    JoinThread(ta);
+    JoinThread(tb);
+    
+    SemDestroy(rdv1);
+    SemDestroy(rdv2);
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie garantie</strong> :</p>
+<pre><code>A: Phase 1
+B: Phase 1
+A: Phase 2   (ou B: Phase 2)
+B: Phase 2   (ou A: Phase 2)
+</code></pre>
+<h3 id="exemple-3--gestion-derreur-2"><a class="header" href="#exemple-3--gestion-derreur-2">Exemple 3 : Gestion d’erreur</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int sem = SemInit(1);
+    
+    // Utilisation normale
+    if (SemP(sem) == 0) {
+        PutString("P réussi\n", 10);
+        SemV(sem);
+    }
+    
+    // Détruire le sémaphore
+    SemDestroy(sem);
+    
+    // Tenter d'utiliser un handle détruit
+    if (SemP(sem) &lt; 0) {
+        PutString("Erreur: sémaphore détruit\n", 27);
+    }
+    
+    // Tenter d'utiliser un handle invalide
+    if (SemP(999) &lt; 0) {
+        PutString("Erreur: handle invalide\n", 25);
+    }
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie attendue</strong> :</p>
+<pre><code>P réussi
+Erreur: sémaphore détruit
+Erreur: handle invalide
+</code></pre>
+<h2 id="comportement-détaillé-6"><a class="header" href="#comportement-détaillé-6">COMPORTEMENT DÉTAILLÉ</a></h2>
+<h3 id="états-de-la-machine-7"><a class="header" href="#états-de-la-machine-7">États de la machine</a></h3>
+<p><strong>Avant l’appel</strong> :</p>
+<ul>
+<li><code>$4</code> : Handle du sémaphore</li>
+<li>Thread : état RUNNING</li>
+<li>Compteur sémaphore : valeur quelconque ≥ 0</li>
+</ul>
+<p><strong>Pendant l’appel (cas non-bloquant)</strong> :</p>
+<ul>
+<li>Validation du descripteur</li>
+<li>Lock sémaphore acquis</li>
+<li>Compteur décrémenté</li>
+<li>Lock sémaphore libéré</li>
+</ul>
+<p><strong>Pendant l’appel (cas bloquant)</strong> :</p>
+<ul>
+<li>Validation du descripteur</li>
+<li>Lock sémaphore acquis</li>
+<li>Thread ajouté à la queue d’attente</li>
+<li>Thread mis en état BLOCKED</li>
+<li>Lock sémaphore libéré</li>
+<li>Thread reste bloqué jusqu’à <code>SemV()</code></li>
+</ul>
+<p><strong>Après l’appel</strong> :</p>
+<ul>
+<li><code>$2</code> : 0 (succès) ou -1 (erreur)</li>
+<li><code>errno</code> : 0 ou E_NOENT</li>
+</ul>
+<h2 id="notes-7"><a class="header" href="#notes-7">NOTES</a></h2>
+<ul>
+<li><strong>Atomicité</strong> : P() est atomique, pas de race condition possible</li>
+</ul>
+<h2 id="failles-et-vulnérabilités-7"><a class="header" href="#failles-et-vulnérabilités-7">FAILLES ET VULNÉRABILITÉS</a></h2>
+<p>Aucune vulnérabilité connue à ce jour.</p>
+<h2 id="bugs-connus-7"><a class="header" href="#bugs-connus-7">BUGS CONNUS</a></h2>
+<p>Aucun bug connu à ce jour.</p>
+<h2 id="historique-des-versions-7"><a class="header" href="#historique-des-versions-7">HISTORIQUE DES VERSIONS</a></h2>
+<ul>
+<li><strong>v1.0</strong> : Implémentation initiale avec adresses</li>
+<li><strong>v2.0</strong> : Modification avec table de descripteurs</li>
+</ul>
+<h2 id="voir-aussi-10"><a class="header" href="#voir-aussi-10">VOIR AUSSI</a></h2>
+<ul>
+<li><a href="#seminit">SemInit</a> - Création d’un sémaphore</li>
+<li><a href="#semv">SemV</a> - Opération V (signal) sur un sémaphore</li>
+<li><a href="#semdestroy">SemDestroy</a> - Destruction d’un sémaphore</li>
+<li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a> - Redimensionnement de la table</li>
+<li><a href="syscalls/sync/README.html">Vue d’ensemble</a> - Guide complet des sémaphores</li>
+</ul>
+<h2 id="auteurs-9"><a class="header" href="#auteurs-9">AUTEURS</a></h2>
+<p>Antoine, 25 Dec 2025</p>
+<h2 id="dernière-révision-9"><a class="header" href="#dernière-révision-9">DERNIÈRE RÉVISION</a></h2>
+<p>25 Dec 2025 par Antoine</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="semv"><a class="header" href="#semv">SemV</a></h1>
+<p><code>SemV</code> - Opération V (signal/release) sur un sémaphore</p>
+<h2 id="synopsis-8"><a class="header" href="#synopsis-8">SYNOPSIS</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+int SemV(int sem_id);
+</code></pre>
+<h2 id="description-8"><a class="header" href="#description-8">DESCRIPTION</a></h2>
+<p><code>SemV</code> effectue l’opération V (Verhogen) sur le sémaphore identifié par <code>sem_id</code>. Cette opération incrémente le compteur du sémaphore et réveille un thread bloqué en attente sur <code>SemP()</code> si la queue n’est pas vide.</p>
+<p>Numéro d’appel système : <code>26</code></p>
+<h3 id="comportement-nominal-8"><a class="header" href="#comportement-nominal-8">Comportement nominal</a></h3>
+<ul>
+<li>Vérifie la validité du handle <code>sem_id</code></li>
+<li>Incrémente le compteur du sémaphore de manière atomique</li>
+<li>Si des threads sont bloqués en <code>SemP()</code> : en réveille un</li>
+<li>Retourne immédiatement (opération non-bloquante)</li>
+<li>L’opération est atomique et thread-safe</li>
+</ul>
+<h3 id="cas-particuliers-8"><a class="header" href="#cas-particuliers-8">Cas particuliers</a></h3>
+<ul>
+<li><strong>Handle invalide</strong> : Retourne -1</li>
+<li><strong>Sémaphore détruit</strong> : Retourne -1</li>
+<li><strong>Queue vide</strong> : Compteur simplement incrémenté, pas de réveil</li>
+<li><strong>Overflow</strong> : Compteur peut croître indéfiniment (pas de limite supérieure)</li>
+</ul>
+<h2 id="paramètres-8"><a class="header" href="#paramètres-8">PARAMÈTRES</a></h2>
+<h3 id="sem_id-1"><a class="header" href="#sem_id-1"><code>sem_id</code></a></h3>
+<p>Descripteur du sémaphore sur lequel effectuer l’opération V.</p>
+<p><strong>Type</strong> : <code>int</code>
+<strong>Direction</strong> : IN
+<strong>Registre</strong> : <code>$4</code>
+<strong>Contraintes</strong> :</p>
+<ul>
+<li>Doit être un descripteur valide retourné par <code>SemInit()</code></li>
+<li>Doit être dans l’intervalle [0, maxSemaphores-1] (max 511)</li>
+<li>Le sémaphore ne doit pas avoir été détruit</li>
+</ul>
+<h2 id="valeur-de-retour-8"><a class="header" href="#valeur-de-retour-8">VALEUR DE RETOUR</a></h2>
+<p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
+<p><strong>En cas de succès</strong> : <code>0</code></p>
+<p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
+<h2 id="codes-derreur-8"><a class="header" href="#codes-derreur-8">CODES D’ERREUR</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
+</thead>
+<tbody>
+<tr><td>10</td><td><code>E_NOENT</code></td><td>Handle invalide ou sémaphore détruit</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="implémentation-8"><a class="header" href="#implémentation-8">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-8"><a class="header" href="#localisation-du-code-8">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SemV()</code></li>
+<li><strong>Implémentation</strong> :
+<ul>
+<li><code>code/userprog/addrspace.cc:AddrSpace::SemaphorePost()</code></li>
+<li><code>code/threads/synch.cc:Semaphore::V()</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="thread-safety-9"><a class="header" href="#thread-safety-9">Thread-safety</a></h3>
+<p><strong>Sémaphore interne</strong> : Désactivation des interruptions assure atomicité :</p>
+<ul>
+<li>Pas de race condition entre V() concurrent</li>
+<li>Pas de corruption de la queue d’attente</li>
+<li>Thread réveillé de manière atomique</li>
+</ul>
+<h2 id="décisions-de-conception-8"><a class="header" href="#décisions-de-conception-8">DÉCISIONS DE CONCEPTION</a></h2>
+<p><em>TODO</em></p>
+<h2 id="exemples-8"><a class="header" href="#exemples-8">EXEMPLES</a></h2>
+<h3 id="exemple-1--libération-de-mutex"><a class="header" href="#exemple-1--libération-de-mutex">Exemple 1 : Libération de mutex</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int mutex;
+
+void critical_section() {
+    SemP(mutex);
+    
+    PutString("Dans section critique\n", 23);
+    
+    SemV(mutex);  // Libérer le mutex
+}
+
+int main() {
+    mutex = SemInit(1);
+    
+    critical_section();
+    critical_section();
+    
+    SemDestroy(mutex);
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-2--signaler-terminaison"><a class="header" href="#exemple-2--signaler-terminaison">Exemple 2 : Signaler terminaison</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int done;
+
+void worker_thread(void *arg) {
+    PutString("Worker: calcul en cours...\n", 28);
+    
+    // Simuler travail intensif
+    for (int i = 0; i &lt; 1000000; i++) {
+        // computation
+    }
+    
+    PutString("Worker: terminé\n", 17);
+    
+    SemV(done);  // Signaler terminaison
+    ExitThread();
+}
+
+int main() {
+    done = SemInit(0);
+    
+    int tid = CreateThread(worker_thread, 0);
+    
+    PutString("Main: attente worker...\n", 25);
+    SemP(done);  // Bloque jusqu'au signal
+    PutString("Main: worker terminé!\n", 23);
+    
+    JoinThread(tid);
+    SemDestroy(done);
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-3--barrière-de-synchronisation"><a class="header" href="#exemple-3--barrière-de-synchronisation">Exemple 3 : Barrière de synchronisation</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+#define NUM_THREADS 5
+
+int barrier;
+int count = 0;
+int mutex;
+
+void barrier_thread(void *arg) {
+    int id = (int)arg;
+    
+    PutString("Thread ", 7);
+    PutInt(id);
+    PutString(": phase 1\n", 11);
+    
+    // Arriver à la barrière
+    SemP(mutex);
+    count++;
+    if (count == NUM_THREADS) {
+        // Dernier thread : réveiller tous les autres
+        for (int i = 0; i &lt; NUM_THREADS - 1; i++) {
+            SemV(barrier);
+        }
+    }
+    SemV(mutex);
+    
+    if (count &lt; NUM_THREADS) {
+        SemP(barrier);  // Attendre les autres
+    }
+    
+    PutString("Thread ", 7);
+    PutInt(id);
+    PutString(": phase 2\n", 11);
+    
+    ExitThread();
+}
+
+int main() {
+    barrier = SemInit(0);
+    mutex = SemInit(1);
+    
+    for (int i = 0; i &lt; NUM_THREADS; i++) {
+        CreateThread(barrier_thread, (void*)i);
+    }
+    
+    Sleep(500);
+    
+    SemDestroy(barrier);
+    SemDestroy(mutex);
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie</strong> (ordre des threads peut varier) :</p>
+<pre><code>Thread 0: phase 1
+Thread 1: phase 1
+Thread 2: phase 1
+Thread 3: phase 1
+Thread 4: phase 1
+Thread 0: phase 2
+Thread 1: phase 2
+Thread 2: phase 2
+Thread 3: phase 2
+Thread 4: phase 2
+</code></pre>
+<h3 id="exemple-4--gestion-derreur"><a class="header" href="#exemple-4--gestion-derreur">Exemple 4 : Gestion d’erreur</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int sem = SemInit(0);
+    
+    // V() sur sémaphore valide
+    if (SemV(sem) == 0) {
+        PutString("V réussi\n", 10);
+    }
+    
+    // Détruire le sémaphore
+    SemDestroy(sem);
+    
+    // Tenter V() sur sémaphore détruit
+    if (SemV(sem) &lt; 0) {
+        PutString("Erreur: sémaphore détruit\n", 27);
+    }
+    
+    // Tenter V() sur handle invalide
+    if (SemV(999) &lt; 0) {
+        PutString("Erreur: handle invalide\n", 25);
+    }
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie attendue</strong> :</p>
+<pre><code>V réussi
+Erreur: sémaphore détruit
+Erreur: handle invalide
+</code></pre>
+<h2 id="comportement-détaillé-7"><a class="header" href="#comportement-détaillé-7">COMPORTEMENT DÉTAILLÉ</a></h2>
+<h3 id="états-de-la-machine-8"><a class="header" href="#états-de-la-machine-8">États de la machine</a></h3>
+<p><strong>Avant l’appel</strong> :</p>
+<ul>
+<li><code>$4</code> : Descripteur du sémaphore</li>
+<li>Compteur sémaphore : valeur ≥ 0</li>
+<li>Queue d’attente : 0+ threads bloqués</li>
+</ul>
+<p><strong>Pendant l’appel (queue vide)</strong> :</p>
+<ul>
+<li>Validation du handle</li>
+<li>Interruptions désactivées</li>
+<li>Compteur incrémenté</li>
+<li>Interruptions réactivées</li>
+</ul>
+<p><strong>Pendant l’appel (queue non-vide)</strong> :</p>
+<ul>
+<li>Validation du handle</li>
+<li>Interruptions désactivées</li>
+<li>Thread retiré de la queue</li>
+<li>Thread mis en état READY</li>
+<li>Compteur incrémenté</li>
+<li>Interruptions réactivées</li>
+</ul>
+<p><strong>Après l’appel</strong> :</p>
+<ul>
+<li><code>$2</code> : 0 (succès) ou -1 (erreur)</li>
+<li>Thread appelant continue son exécution</li>
+<li>Thread réveillé (si applicable) : en état READY, sera schedulé plus tard</li>
+</ul>
+<h2 id="notes-8"><a class="header" href="#notes-8">NOTES</a></h2>
+<ul>
+<li><strong>Toujours retourne immédiatement</strong> : <code>SemV()</code> ne bloque jamais</li>
+<li><strong>Pas de limite supérieure</strong> : Compteur peut croître indéfiniment</li>
+<li><strong>Sémaphore détruit avec threads en attente</strong> : Undefined behavior</li>
+</ul>
+<h2 id="failles-et-vulnérabilités-8"><a class="header" href="#failles-et-vulnérabilités-8">FAILLES ET VULNÉRABILITÉS</a></h2>
+<p>Aucune vulnérabilité connue à ce jour.</p>
+<h2 id="bugs-connus-8"><a class="header" href="#bugs-connus-8">BUGS CONNUS</a></h2>
+<p>Aucun bug connu à ce jour.</p>
+<h2 id="historique-des-versions-8"><a class="header" href="#historique-des-versions-8">HISTORIQUE DES VERSIONS</a></h2>
+<ul>
+<li><strong>v1.0</strong> : Implémentation initiale avec adresses</li>
+<li><strong>v2.0</strong> : Modification avec table de descripteurs</li>
+</ul>
+<h2 id="voir-aussi-11"><a class="header" href="#voir-aussi-11">VOIR AUSSI</a></h2>
+<ul>
+<li><a href="#seminit">SemInit</a> - Création d’un sémaphore</li>
+<li><a href="#semp">SemP</a> - Opération P (wait) sur un sémaphore</li>
+<li><a href="#semdestroy">SemDestroy</a> - Destruction d’un sémaphore</li>
+<li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a> - Redimensionnement de la table</li>
+<li><a href="syscalls/sync/README.html">Vue d’ensemble</a> - Guide complet des sémaphores</li>
+</ul>
+<h2 id="auteurs-10"><a class="header" href="#auteurs-10">AUTEURS</a></h2>
+<p>Antoine, 25 Dec 2025</p>
+<h2 id="dernière-révision-10"><a class="header" href="#dernière-révision-10">DERNIÈRE RÉVISION</a></h2>
+<p>25 Dec 2025 par Antoine</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="semdestroy"><a class="header" href="#semdestroy">SemDestroy</a></h1>
+<p><code>SemDestroy</code> - Détruit un sémaphore et libère ses ressources</p>
+<h2 id="synopsis-9"><a class="header" href="#synopsis-9">SYNOPSIS</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+int SemDestroy(int sem_id);
+</code></pre>
+<h2 id="description-9"><a class="header" href="#description-9">DESCRIPTION</a></h2>
+<p><code>SemDestroy</code> détruit le sémaphore identifié par <code>sem_id</code>, libère ses ressources kernel et invalide le descripteur.</p>
+<p>Numéro d’appel système : <code>27</code></p>
+<h3 id="comportement-nominal-9"><a class="header" href="#comportement-nominal-9">Comportement nominal</a></h3>
+<ul>
+<li>Vérifie la validité du handle <code>sem_id</code></li>
+<li>Marque le descripteur comme invalide</li>
+<li>Libère l’objet <code>Semaphore</code> kernel (destructeur appelé)</li>
+<li>Libère le slot dans la table de descripteurs (BitMap)</li>
+<li>Le handle peut être réutilisé par un futur <code>SemInit()</code></li>
+</ul>
+<h3 id="cas-particuliers-9"><a class="header" href="#cas-particuliers-9">Cas particuliers</a></h3>
+<ul>
+<li><strong>Descripteur invalide</strong> : Retourne -1</li>
+<li><strong>Double-free</strong> : Retourne -1</li>
+<li><strong>Threads bloqués</strong> : <strong>UNDEFINED BEHAVIOR</strong> - Ne pas détruire un sémaphore avec threads en attente</li>
+<li><strong>Nettoyage automatique</strong> : Si non détruit explicitement, libération automatique à la terminaison du processus</li>
+</ul>
+<h2 id="paramètres-9"><a class="header" href="#paramètres-9">PARAMÈTRES</a></h2>
+<h3 id="sem_id-2"><a class="header" href="#sem_id-2"><code>sem_id</code></a></h3>
+<p>Descripteur du sémaphore à détruire.</p>
+<p><strong>Type</strong> : <code>int</code>
+<strong>Direction</strong> : IN
+<strong>Registre</strong> : <code>$4</code>
+<strong>Contraintes</strong> :</p>
+<ul>
+<li>Doit être un handle valide retourné par <code>SemInit()</code></li>
+<li>Doit être dans l’intervalle [0, maxSemaphores-1] (max 511)</li>
+<li>Le sémaphore ne doit pas déjà être détruit</li>
+<li><strong>IMPORTANT</strong> : Aucun thread ne doit être bloqué sur ce sémaphore</li>
+</ul>
+<h2 id="valeur-de-retour-9"><a class="header" href="#valeur-de-retour-9">VALEUR DE RETOUR</a></h2>
+<p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
+<p><strong>En cas de succès</strong> : <code>0</code></p>
+<p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
+<h2 id="implémentation-9"><a class="header" href="#implémentation-9">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-9"><a class="header" href="#localisation-du-code-9">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SemDestroy()</code></li>
+<li><strong>Implémentation</strong> : <code>code/userprog/addrspace.cc:AddrSpace::SemaphoreDestroy()</code></li>
+</ul>
+<h3 id="thread-safety-10"><a class="header" href="#thread-safety-10">Thread-safety</a></h3>
+<p><strong>Garanties</strong> :</p>
+<ul>
+<li>Destruction atomique : pas de race condition entre threads</li>
+<li>Double-free impossible : flag <code>valid</code> protège</li>
+<li>Pas de corruption de la table</li>
+</ul>
+<p><strong>Limitation</strong> : Aucune vérification que des threads sont bloqués sur le sémaphore. Responsabilité de l’appelant.</p>
+<h2 id="décisions-de-conception-9"><a class="header" href="#décisions-de-conception-9">DÉCISIONS DE CONCEPTION</a></h2>
+<h3 id="pourquoi-nettoyage-automatique-"><a class="header" href="#pourquoi-nettoyage-automatique-">Pourquoi nettoyage automatique ?</a></h3>
+<p><strong>Robustesse</strong> : Évite les fuites mémoire si l’utilisateur oublie de détruire.</p>
+<p><strong>Pattern RAII</strong> : Ressource liée à la durée de vie du processus (<code>AddrSpace</code>).</p>
+<p><strong>Coût</strong> : Néant - le destructeur <code>~AddrSpace()</code> est appelé de toute façon.</p>
+<h2 id="exemples-9"><a class="header" href="#exemples-9">EXEMPLES</a></h2>
+<h3 id="exemple-1--utilisation-normale"><a class="header" href="#exemple-1--utilisation-normale">Exemple 1 : Utilisation normale</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int sem = SemInit(1);
+    if (sem &lt; 0) {
+        Exit(-1);
+    }
+    
+    // Utiliser le sémaphore
+    SemP(sem);
+    PutString("Section critique\n", 18);
+    SemV(sem);
+    
+    // Nettoyer
+    if (SemDestroy(sem) == 0) {
+        PutString("Sémaphore détruit\n", 19);
+    }
+    
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-2--détection-de-double-free"><a class="header" href="#exemple-2--détection-de-double-free">Exemple 2 : Détection de double-free</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int sem = SemInit(0);
+    
+    // Première destruction : OK
+    if (SemDestroy(sem) == 0) {
+        PutString("Première destruction OK\n", 25);
+    }
+    
+    // Deuxième destruction : ERREUR
+    if (SemDestroy(sem) &lt; 0) {
+        PutString("Erreur: déjà détruit\n", 22);
+    }
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie attendue</strong> :</p>
+<pre><code>Première destruction OK
+Erreur: déjà détruit
+</code></pre>
+<h3 id="exemple-3--incorrect---destruction-avec-threads-bloqués"><a class="header" href="#exemple-3--incorrect---destruction-avec-threads-bloqués">Exemple 3 : INCORRECT - Destruction avec threads bloqués</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int sem;
+
+void blocked_thread(void *arg) {
+    PutString("Thread: attente sémaphore...\n", 30);
+    SemP(sem);  // Bloque ici indéfiniment
+    PutString("Thread: réveillé\n", 18);  // Jamais atteint
+    ExitThread();
+}
+
+int main() {
+    sem = SemInit(0);
+    
+    int tid = CreateThread(blocked_thread, 0);
+    Sleep(50);  // Laisser le thread bloquer
+    
+    // ⚠️ DANGER : Détruire le sémaphore avec thread bloqué
+    SemDestroy(sem);
+    
+    // Comportement indéfini : le thread bloqué peut crasher
+    
+    JoinThread(tid);  // Peut ne jamais retourner
+    return 0;
+}
+</code></pre>
+<p><strong>Comportement</strong> : UNDEFINED - Le thread bloqué peut :</p>
+<ul>
+<li>Crasher (segfault en accédant au sémaphore libéré)</li>
+<li>Rester bloqué indéfiniment</li>
+<li>Corrompre la mémoire</li>
+</ul>
+<p><strong>Solution</strong> : Toujours signaler les threads bloqués avant destruction :</p>
+<pre><code class="language-c">SemV(sem);  // Réveiller le thread
+JoinThread(tid);  // Attendre terminaison
+SemDestroy(sem);  // Maintenant sûr
+</code></pre>
+<h3 id="exemple-4--nettoyage-automatique"><a class="header" href="#exemple-4--nettoyage-automatique">Exemple 4 : Nettoyage automatique</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int sem = SemInit(1);
+    
+    SemP(sem);
+    PutString("Travail...\n", 12);
+    SemV(sem);
+    
+    // Terminer SANS détruire explicitement
+    // → Nettoyage automatique dans ~AddrSpace()
+    
+    return 0;  // Pas de fuite mémoire
+}
+</code></pre>
+<h2 id="comportement-détaillé-8"><a class="header" href="#comportement-détaillé-8">COMPORTEMENT DÉTAILLÉ</a></h2>
+<h3 id="états-de-la-machine-9"><a class="header" href="#états-de-la-machine-9">États de la machine</a></h3>
+<p><strong>Avant l’appel</strong> :</p>
+<ul>
+<li><code>$4</code> : Handle du sémaphore</li>
+<li><code>semaphoreTable[handle].valid</code> : true</li>
+<li><code>semaphoreBitmap-&gt;Test(handle)</code> : true</li>
+<li>Objet <code>Semaphore</code> existe en mémoire kernel</li>
+</ul>
+<p><strong>Pendant l’appel</strong> :</p>
+<ul>
+<li>Validations effectuées</li>
+<li><code>valid</code> flag mis à false</li>
+<li>Destructeur <code>~Semaphore()</code> appelé</li>
+<li>BitMap mis à jour : slot marqué libre</li>
+</ul>
+<p><strong>Après l’appel</strong> :</p>
+<ul>
+<li><code>$2</code> : 0 (succès) ou -1 (erreur)</li>
+<li><code>semaphoreTable[handle].valid</code> : false</li>
+<li><code>semaphoreTable[handle].semaphore</code> : nullptr</li>
+<li><code>semaphoreBitmap-&gt;Test(handle)</code> : false</li>
+<li>Handle réutilisable par <code>SemInit()</code></li>
+</ul>
+<h2 id="notes-9"><a class="header" href="#notes-9">NOTES</a></h2>
+<ul>
+<li><strong>Ordre de destruction</strong> : Pas d’ordre imposé, mais recommandé de détruire en ordre inverse de création (style LIFO/RAII)</li>
+<li><strong>Nettoyage automatique</strong> : Même si non détruit, pas de fuite à la terminaison du processus</li>
+<li><strong>Handle réutilisable</strong> : Après destruction, le handle peut être réalloué immédiatement</li>
+<li><strong>Pas de vérification threads bloqués</strong> : Responsabilité de l’appelant</li>
+</ul>
+<h2 id="failles-et-vulnérabilités-9"><a class="header" href="#failles-et-vulnérabilités-9">FAILLES ET VULNÉRABILITÉS</a></h2>
+<p>Aucune vulnérabilité connue à ce jour.</p>
+<h2 id="bugs-connus-9"><a class="header" href="#bugs-connus-9">BUGS CONNUS</a></h2>
+<p>Aucun bug connu à ce jour.</p>
+<h2 id="historique-des-versions-9"><a class="header" href="#historique-des-versions-9">HISTORIQUE DES VERSIONS</a></h2>
+<ul>
+<li><strong>v1.0</strong> : Implémentation initiale avec adresses</li>
+<li><strong>v2.0</strong> : Modification avec table de descripteurs</li>
+</ul>
+<h2 id="voir-aussi-12"><a class="header" href="#voir-aussi-12">VOIR AUSSI</a></h2>
+<ul>
+<li><a href="#seminit">SemInit</a> - Création d’un sémaphore</li>
+<li><a href="#semp">SemP</a> - Opération P (wait) sur un sémaphore</li>
+<li><a href="#semv">SemV</a> - Opération V (signal) sur un sémaphore</li>
+<li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a> - Redimensionnement de la table</li>
+<li><a href="syscalls/sync/README.html">Vue d’ensemble</a> - Guide complet des sémaphores</li>
+</ul>
+<h2 id="auteurs-11"><a class="header" href="#auteurs-11">AUTEURS</a></h2>
+<p>Antoine, 25 Dec 2025</p>
+<h2 id="dernière-révision-11"><a class="header" href="#dernière-révision-11">DERNIÈRE RÉVISION</a></h2>
+<p>25 Dec 2025 par Antoine</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="setmaxsemforprocess"><a class="header" href="#setmaxsemforprocess">SetMaxSemForProcess</a></h1>
+<p><code>SetMaxSemForProcess</code> - Définit la taille maximale de la table de sémaphores du processus</p>
+<h2 id="synopsis-10"><a class="header" href="#synopsis-10">SYNOPSIS</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+int SetMaxSemForProcess(unsigned int maxSemaphores);
+</code></pre>
+<h2 id="description-10"><a class="header" href="#description-10">DESCRIPTION</a></h2>
+<p><code>SetMaxSemForProcess</code> permet de redimensionner explicitement la table de sémaphores du processus courant. Cette fonction est utile pour pré-allouer une table de grande taille si le nombre de sémaphores nécessaires est connu à l’avance, évitant ainsi les réallocations dynamiques.</p>
+<p>Numéro d’appel système : <code>28</code></p>
+<h3 id="comportement-nominal-10"><a class="header" href="#comportement-nominal-10">Comportement nominal</a></h3>
+<ul>
+<li>Réalloue la table de sémaphores à la taille spécifiée</li>
+<li>Préserve les sémaphores existants (si agrandissement)</li>
+<li>Initialise les nouveaux slots comme invalides</li>
+<li>Met à jour le BitMap de tracking</li>
+</ul>
+<h3 id="cas-particuliers-10"><a class="header" href="#cas-particuliers-10">Cas particuliers</a></h3>
+<ul>
+<li><strong>maxSemaphores ≤ 0</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
+<li><strong>maxSemaphores &gt; MAX_SEMAPHORES_PER_PROCESS (512)</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
+<li><strong>Réduction de taille</strong> : Les sémaphores au-delà de la nouvelle limite sont perdus (non recommandé)</li>
+</ul>
+<h2 id="paramètres-10"><a class="header" href="#paramètres-10">PARAMÈTRES</a></h2>
+<h3 id="maxsemaphores"><a class="header" href="#maxsemaphores"><code>maxSemaphores</code></a></h3>
+<p>Nouvelle taille de la table de sémaphores.</p>
+<p><strong>Type</strong> : <code>unsigned int</code>
+<strong>Direction</strong> : IN
+<strong>Registre</strong> : <code>$4</code>
+<strong>Contraintes</strong> :</p>
+<ul>
+<li>Doit être &gt; 0</li>
+<li>Doit être ≤ 512 (<code>MAX_SEMAPHORES_PER_PROCESS</code>)</li>
+</ul>
+<h2 id="valeur-de-retour-10"><a class="header" href="#valeur-de-retour-10">VALEUR DE RETOUR</a></h2>
+<p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
+<p><strong>En cas de succès</strong> : <code>0</code></p>
+<p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
+<h2 id="implémentation-10"><a class="header" href="#implémentation-10">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-10"><a class="header" href="#localisation-du-code-10">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SetMaxSemForProcess()</code></li>
+<li><strong>Implémentation</strong> : <code>code/userprog/addrspace.cc:AddrSpace::AllocateSemaphoreTable()</code></li>
+</ul>
+<h3 id="thread-safety-11"><a class="header" href="#thread-safety-11">Thread-safety</a></h3>
+<p><em>TODO</em></p>
+<h2 id="décisions-de-conception-10"><a class="header" href="#décisions-de-conception-10">DÉCISIONS DE CONCEPTION</a></h2>
+<h3 id="pourquoi-permettre-le-redimensionnement-manuel-"><a class="header" href="#pourquoi-permettre-le-redimensionnement-manuel-">Pourquoi permettre le redimensionnement manuel ?</a></h3>
+<p><strong>Optimisation</strong> : Évite les réallocations multiples si le nombre de sémaphores est connu à l’avance.</p>
+<p><strong>Contrôle mémoire</strong> : Permet de limiter l’utilisation mémoire en spécifiant une taille exacte.</p>
+<h2 id="exemples-10"><a class="header" href="#exemples-10">EXEMPLES</a></h2>
+<h3 id="exemple-1--pré-allocation-pour-application-intensive"><a class="header" href="#exemple-1--pré-allocation-pour-application-intensive">Exemple 1 : Pré-allocation pour application intensive</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    // Pré-allouer 100 sémaphores pour éviter les réallocations
+    if (SetMaxSemForProcess(100) &lt; 0) {
+        PutString("Erreur: impossible de redimensionner la table\n", 47);
+        Exit(-1);
+    }
+    
+    PutString("Table redimensionnée à 100 slots\n", 34);
+    
+    // Créer les sémaphores nécessaires...
+    int sems[50];
+    for (int i = 0; i &lt; 50; i++) {
+        sems[i] = SemInit(1);
+    }
+    
+    // Utilisation...
+    
+    // Nettoyage
+    for (int i = 0; i &lt; 50; i++) {
+        SemDestroy(sems[i]);
+    }
+    
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-2--gestion-derreur-1"><a class="header" href="#exemple-2--gestion-derreur-1">Exemple 2 : Gestion d’erreur</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    // Tenter une taille invalide (0)
+    if (SetMaxSemForProcess(0) &lt; 0) {
+        PutString("Erreur attendue: taille 0 invalide\n", 36);
+    }
+    
+    // Tenter une taille trop grande
+    if (SetMaxSemForProcess(1000) &lt; 0) {
+        PutString("Erreur attendue: taille &gt; 512\n", 31);
+    }
+    
+    // Taille valide
+    if (SetMaxSemForProcess(256) == 0) {
+        PutString("Redimensionnement à 256 réussi\n", 32);
+    }
+    
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie attendue</strong> :</p>
+<pre><code>Erreur attendue: taille 0 invalide
+Erreur attendue: taille &gt; 512
+Redimensionnement à 256 réussi
+</code></pre>
+<h3 id="exemple-3--déconseillé---réduction-de-la-table"><a class="header" href="#exemple-3--déconseillé---réduction-de-la-table">Exemple 3 : DÉCONSEILLÉ - Réduction de la table</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    // Créer des sémaphores
+    int sem1 = SemInit(1);  // handle 0
+    int sem2 = SemInit(1);  // handle 1
+    
+    PutString("Créé sémaphores 0 et 1\n", 24);
+    
+    // ⚠️ DANGER : Réduire la table à 1 slot
+    SetMaxSemForProcess(1);
+    
+    // sem1 (handle 0) est toujours valide
+    if (SemP(sem1) == 0) {
+        PutString("sem1 OK\n", 9);
+        SemV(sem1);
+    }
+    
+    // sem2 (handle 1) est PERDU
+    if (SemP(sem2) &lt; 0) {
+        PutString("sem2 perdu!\n", 13);
+    }
+    
+    return 0;
+}
+</code></pre>
+<h2 id="comportement-détaillé-9"><a class="header" href="#comportement-détaillé-9">COMPORTEMENT DÉTAILLÉ</a></h2>
+<h3 id="états-de-la-machine-10"><a class="header" href="#états-de-la-machine-10">États de la machine</a></h3>
+<p><strong>Avant l’appel</strong> :</p>
+<ul>
+<li><code>$4</code> : Nouvelle taille souhaitée</li>
+<li><code>maxSemaphores</code> : Taille actuelle de la table</li>
+<li>Table : peut contenir 0-N sémaphores actifs</li>
+</ul>
+<p><strong>Pendant l’appel</strong> :</p>
+<ul>
+<li>Allocation nouvelle table</li>
+<li>Copie des entrées (min(ancienne_taille, nouvelle_taille))</li>
+<li>Mise à jour du BitMap</li>
+<li>Libération ancienne table</li>
+</ul>
+<p><strong>Après l’appel</strong> :</p>
+<ul>
+<li><code>$2</code> : 0 (succès) ou -1 (erreur)</li>
+<li><code>maxSemaphores</code> : Nouvelle taille</li>
+<li>Table : redimensionnée, sémaphores existants préservés (si agrandissement)</li>
+</ul>
+<h2 id="notes-10"><a class="header" href="#notes-10">NOTES</a></h2>
+<ul>
+<li><strong>Taille initiale</strong> : 16 sémaphores par défaut (défini par <code>INITIAL_SEMAPHORE_TABLE_SIZE</code>)</li>
+<li><strong>Taille maximale</strong> : 512 sémaphores (défini par <code>MAX_SEMAPHORES_PER_PROCESS</code>)</li>
+<li><strong>Auto-expansion</strong> : <code>SemInit()</code> agrandit automatiquement la table si nécessaire (doublement)</li>
+<li><strong>Cas d’usage principal</strong> : Pré-allocation pour éviter les réallocations dynamiques</li>
+</ul>
+<h2 id="failles-et-vulnérabilités-10"><a class="header" href="#failles-et-vulnérabilités-10">FAILLES ET VULNÉRABILITÉS</a></h2>
+<p>Aucune vulnérabilité connue à ce jour.</p>
+<h2 id="bugs-connus-10"><a class="header" href="#bugs-connus-10">BUGS CONNUS</a></h2>
+<p>Aucun bug connu à ce jour.</p>
+<h2 id="historique-des-versions-10"><a class="header" href="#historique-des-versions-10">HISTORIQUE DES VERSIONS</a></h2>
+<ul>
+<li><strong>v1.0</strong> : Implémentation initiale</li>
+</ul>
+<h2 id="voir-aussi-13"><a class="header" href="#voir-aussi-13">VOIR AUSSI</a></h2>
+<ul>
+<li><a href="#seminit">SemInit</a> - Création d’un sémaphore (déclenche auto-expansion si nécessaire)</li>
+<li><a href="syscalls/sync/README.html">Vue d’ensemble</a> - Guide complet des sémaphores</li>
+</ul>
+<h2 id="auteurs-12"><a class="header" href="#auteurs-12">AUTEURS</a></h2>
+<p>Antoine, 25 Dec 2025</p>
+<h2 id="dernière-révision-12"><a class="header" href="#dernière-révision-12">DERNIÈRE RÉVISION</a></h2>
+<p>25 Dec 2025 par Antoine</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="gestion-des-erreurs-3"><a class="header" href="#gestion-des-erreurs-3">Gestion des erreurs</a></h1>
+<p>Ce document décrit le mécanisme de gestion des erreurs dans NachOS et l’utilisation de la variable globale <code>errno</code>.</p>
+<h2 id="vue-densemble"><a class="header" href="#vue-densemble">Vue d’ensemble</a></h2>
+<p>NachOS utilise une convention de gestion d’erreurs inspirée de POSIX mais simplifiée :</p>
+<ul>
+<li>Les appels système qui peuvent échouer retournent <code>-1</code> en cas d’erreur</li>
+<li>Le code d’erreur spécifique est stocké dans la variable globale <code>errno</code></li>
+<li>En cas de succès, <code>errno</code> est mis à 0</li>
+</ul>
+<h2 id="mécanisme-derreur"><a class="header" href="#mécanisme-derreur">Mécanisme d’erreur</a></h2>
+<h3 id="convention-de-retour"><a class="header" href="#convention-de-retour">Convention de retour</a></h3>
+<pre><code class="language-c">int result = SomeSystemCall(...);
+
+if (result == -1) {
+    // Erreur : consulter errno
+    int error_code = GetLastError();
+    // Gérer l'erreur
+} else {
+    // Succès : errno == 0
+}
+</code></pre>
+<h3 id="implémentation-dans-les-stubs"><a class="header" href="#implémentation-dans-les-stubs">Implémentation dans les stubs</a></h3>
+<p>Chaque stub d’appel système suit ce pattern (exemple <code>PutString</code>) :</p>
+<pre><code class="language-asm">PutString:
+    addiu $2,$0,SC_PutString
+    syscall
+    bgez  $2,PutString_ok      # Si $v0 &gt;= 0 : succès
+    nop
+    
+    # Gestion d'erreur
+    subu  $3,$0,$2             # $a0 = -$v0 (code positif)
+    sw    $3,errno             # Stocker dans errno
+    addiu $2,$0,-1             # Retourner -1
+    j     $31
+    nop
+    
+PutString_ok:
+    sw    $0,errno             # errno = 0 (succès)
+    j     $31
+</code></pre>
+<h3 id="handlers-noyau"><a class="header" href="#handlers-noyau">Handlers noyau</a></h3>
+<p>Les handlers noyau retournent des codes d’erreur négatifs via la macro <code>RETURN()</code> :</p>
+<pre><code class="language-c">void handler_SC_putString() {
+    int addr = machine-&gt;ReadRegister(4);
+    int n = machine-&gt;ReadRegister(5);
+    
+    // Validations
+    if (addr &lt; 0) { 
+        RETURN(-E_FAULT);  // Retourne -2
+    }
+    if (n &lt; 0) { 
+        RETURN(-E_INVAL);  // Retourne -1
+    }
+    
+    // Traitement...
+    RETURN(bytes_written);  // Retourne valeur positive
+}
+</code></pre>
+<h2 id="variable-errno"><a class="header" href="#variable-errno">Variable errno</a></h2>
+<h3 id="déclaration"><a class="header" href="#déclaration">Déclaration</a></h3>
+<p><code>errno</code> est une variable globale définie dans <code>start.S</code> :</p>
+<pre><code class="language-asm">.data
+.align  2
+.globl  errno
+errno:
+    .word   0    # Initialisée à 0
+</code></pre>
+<h3 id="fonctions-utilitaires"><a class="header" href="#fonctions-utilitaires">Fonctions utilitaires</a></h3>
+<h4 id="getlasterror"><a class="header" href="#getlasterror">GetLastError</a></h4>
+<p>Retourne la valeur actuelle d’<code>errno</code> :</p>
+<pre><code class="language-c">int GetLastError(void);
+</code></pre>
+<p><strong>Exemple</strong> :</p>
+<pre><code class="language-c">int result = GetString(buffer, -10);
+if (result == -1) {
+    int err = GetLastError();  // err = E_INVAL (1)
+    PutString("Error code: ", 12);
+    PutInt(err);
+    PutChar('\n');
+}
+</code></pre>
+<h4 id="clearerror"><a class="header" href="#clearerror">ClearError</a></h4>
+<p>Remet <code>errno</code> à 0 :</p>
+<pre><code class="language-c">void ClearError(void);
+</code></pre>
+<p><strong>Exemple</strong> :</p>
+<pre><code class="language-c">ClearError();  // errno = 0
+int err = GetLastError();  // err = 0
+</code></pre>
+<h3 id="helper-my_stdlib"><a class="header" href="#helper-my_stdlib">Helper my_stdlib</a></h3>
+<p>La bibliothèque <code>my_stdlib</code> fournit une fonction pour afficher les erreurs :</p>
+<pre><code class="language-c">void print_error(const char *msg);
+</code></pre>
+<p><strong>Exemple</strong> :</p>
+<pre><code class="language-c">#include "my_stdlib.h"
+
+int main() {
+    char buffer[64];
+    int result = GetString(buffer, -10);
+    
+    if (result == -1) {
+        print_error("GetString failed");
+        // Affiche: "GetString failed (errno=1)\n"
+    }
+    
+    return 0;
+}
+</code></pre>
+<h2 id="codes-derreur-9"><a class="header" href="#codes-derreur-9">Codes d’erreur</a></h2>
+<p>Voir <a href="#liste-des-codes-errno">Liste des codes errno</a> pour la documentation complète de chaque code.</p>
+<h3 id="codes-principaux"><a class="header" href="#codes-principaux">Codes principaux</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Code</th><th>Constante</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td>0</td><td>E_SUCCESS</td><td>Aucune erreur</td></tr>
+<tr><td>1</td><td>E_INVAL</td><td>Argument invalide</td></tr>
+<tr><td>2</td><td>E_FAULT</td><td>Adresse mémoire invalide</td></tr>
+<tr><td>3</td><td>E_OVERFLOW</td><td>Dépassement arithmétique</td></tr>
+<tr><td>4</td><td>E_IO</td><td>Erreur d’entrée/sortie</td></tr>
+<tr><td>5</td><td>E_FORMAT</td><td>Format invalide</td></tr>
+<tr><td>6</td><td>E_EOF</td><td>Fin de fichier</td></tr>
+<tr><td>7</td><td>E_NOMEM</td><td>Mémoire insuffisante</td></tr>
+<tr><td>8</td><td>E_RANGE</td><td>Résultat hors limites</td></tr>
+<tr><td>9</td><td>E_NOSPC</td><td>Aucun processus correspondant</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="appels-système-avec-gestion-errno"><a class="header" href="#appels-système-avec-gestion-errno">Appels système avec gestion errno</a></h2>
+<h3 id="avec-gestion-derreur"><a class="header" href="#avec-gestion-derreur">Avec gestion d’erreur</a></h3>
+<p>Ces appels retournent <code>-1</code> et positionnent <code>errno</code> en cas d’erreur :</p>
+<h3 id="sans-gestion-derreur"><a class="header" href="#sans-gestion-derreur">Sans gestion d’erreur</a></h3>
+<p>Ces appels ne modifient jamais <code>errno</code> :</p>
+<h2 id="failles-et-vulnérabilités-11"><a class="header" href="#failles-et-vulnérabilités-11">FAILLES ET VULNÉRABILITÉS</a></h2>
+<div class="vulnerability-section severity-critical">
+<h4 id="errno-global---non-thread-safe"><a class="header" href="#errno-global---non-thread-safe">errno global - Non thread-safe</a></h4>
+<p><strong>Description</strong> : <code>errno</code> est une variable globale unique partagée par tous les threads.</p>
+<p><strong>Impact</strong> :</p>
+<ul>
+<li><strong>Race condition</strong> : Plusieurs threads peuvent écraser mutuellement leur errno</li>
+<li><strong>Lecture incorrecte</strong> : Thread A lit errno positionné par thread B</li>
+<li><strong>Debug impossible</strong> : Impossible de tracer quelle erreur vient de quel thread</li>
+</ul>
+<p><strong>Exploitation</strong> :</p>
+<pre><code class="language-c">// Thread 1
+int r1 = GetString(buf1, -10);  // errno = E_INVAL
+// Context switch ici...
+if (r1 == -1) {
+    int err = GetLastError();  // Peut lire errno de Thread 2
+}
+
+// Thread 2 (simultané)
+int r2 = GetInt(NULL);  // errno = E_FAULT (écrase E_INVAL)
+</code></pre>
+<p><strong>Statut</strong> : ⚠️ <strong>Correction prévue prochainement</strong></p>
+<p>Cette limitation est connue et il est prévu de la corriger dans une future version. Pour l’instant, évitez d’utiliser errno dans du code multi-thread, ou protégez les accès avec des sémaphores.</p>
+</div>
+
+<div class="vulnerability-section severity-warning">
+<h4 id="pas-de-mécanisme-de-protection"><a class="header" href="#pas-de-mécanisme-de-protection">Pas de mécanisme de protection</a></h4>
+<p><strong>Description</strong> : Rien n’empêche un thread de modifier errno manuellement.</p>
+<p><strong>Impact</strong> : Corruption possible de l’état d’erreur</p>
+<p><strong>Exploitation</strong> :</p>
+<pre><code class="language-c">// Corrompre errno d'un autre thread
+extern int errno;
+errno = 42;  // Valeur invalide
+</code></pre>
+</div>
+
+<div class="vulnerability-section severity-warning">
+<h4 id="pas-de-fonction-strerror"><a class="header" href="#pas-de-fonction-strerror">Pas de fonction strerror</a></h4>
+<p><strong>Description</strong> : Aucune fonction pour convertir errno en message lisible.</p>
+<p><strong>Impact</strong> : Messages d’erreur moins informatifs</p>
+</div>
+
+<h2 id="exemples-complets"><a class="header" href="#exemples-complets">Exemples complets</a></h2>
+<h3 id="exemple-1--gestion-basique"><a class="header" href="#exemple-1--gestion-basique">Exemple 1 : Gestion basique</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+#include "my_stdlib.h"
+
+int main() {
+    char buffer[100];
+    
+    int result = GetString(buffer, 100);
+    
+    if (result == -1) {
+        print_error("Failed to read string");
+        Exit(1);
+    }
+    
+    PutString("Read: ", 6);
+    PutString(buffer, result);
+    PutChar('\n');
+    
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-2--distinction-entre-erreurs"><a class="header" href="#exemple-2--distinction-entre-erreurs">Exemple 2 : Distinction entre erreurs</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+#include "my_stdlib.h"
+
+int main() {
+    int value;
+    int result = GetInt(&amp;value);
+    
+    if (result == -1) {
+        int err = GetLastError();
+        
+        switch(err) {
+            case E_INVAL:
+                PutString("Invalid format\n", 15);
+                break;
+            case E_FAULT:
+                PutString("Bad address\n", 12);
+                break;
+            default:
+                PutString("Unknown error\n", 14);
+        }
+        
+        Exit(1);
+    }
+    
+    PutString("Got: ", 5);
+    PutInt(value);
+    PutChar('\n');
+    
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-3--réessai-sur-erreur-temporaire"><a class="header" href="#exemple-3--réessai-sur-erreur-temporaire">Exemple 3 : Réessai sur erreur temporaire</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    char buffer[100];
+    int result;
+    int attempts = 0;
+    
+    while (attempts &lt; 3) {
+        result = GetString(buffer, 100);
+        
+        if (result != -1) {
+            break;  // Succès
+        }
+        
+        int err = GetLastError();
+        if (err != E_IO) {
+            // Erreur non-récupérable
+            Exit(1);
+        }
+        
+        // Erreur I/O : réessayer
+        attempts++;
+        Yield();  // Laisser du temps
+    }
+    
+    if (result == -1) {
+        PutString("Failed after 3 attempts\n", 24);
+        Exit(1);
+    }
+    
+    return 0;
+}
+</code></pre>
+<h2 id="voir-aussi-14"><a class="header" href="#voir-aussi-14">Voir aussi</a></h2>
+<ul>
+<li><a href="#liste-des-codes-errno">Liste des codes errno</a> - Documentation détaillée de chaque code</li>
+<li><a href="syscalls/console/README.html">Console I/O Overview</a> - Appels système avec gestion errno</li>
+<li><a href="userspace/my_stdlib.html">my_stdlib</a> - Fonctions utilitaires pour errno</li>
+</ul>
+<h2 id="auteurs-13"><a class="header" href="#auteurs-13">Auteurs</a></h2>
+<p>Antoine, 20 Dec 2025</p>
+<h2 id="dernière-révision-13"><a class="header" href="#dernière-révision-13">Dernière révision</a></h2>
+<p>20 Dec 2025 par Antoine</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="liste-des-codes-errno"><a class="header" href="#liste-des-codes-errno">Liste des codes errno</a></h1>
+<p>Documentation détaillée de tous les codes d’erreur utilisés dans NachOS.</p>
+<h2 id="définitions"><a class="header" href="#définitions">Définitions</a></h2>
+<p>Les codes d’erreur sont définis dans <code>code/userprog/syscall.h</code> :</p>
+<pre><code class="language-c">#define E_SUCCESS       0   /* No error */
+#define E_INVAL         1   /* Invalid argument */
+#define E_FAULT         2   /* Bad address / memory access error */
+#define E_OVERFLOW      3   /* Arithmetic overflow */
+#define E_IO            4   /* I/O error */
+#define E_FORMAT        5   /* Invalid format */
+#define E_EOF           6   /* End of file */
+#define E_NOMEM         7   /* Out of memory */
+#define E_RANGE         8   /* Result out of range */
+#define E_NOSPC         9   /* No such process */
+</code></pre>
+<h2 id="codes-derreur-détaillés"><a class="header" href="#codes-derreur-détaillés">Codes d’erreur détaillés</a></h2>
+<hr>
+<h3 id="e_success-0"><a class="header" href="#e_success-0">E_SUCCESS (0)</a></h3>
+<p><strong>Nom</strong> : Succès (pas d’erreur)</p>
+<p><strong>Description</strong> : Opération réussie, aucune erreur.</p>
+<p><strong>Quand positionné</strong> :</p>
+<ul>
+<li>Automatiquement par les stubs en cas de succès</li>
+<li><code>errno</code> est mis à 0 après chaque appel système réussi</li>
+</ul>
+<p><strong>Utilisation</strong> :</p>
+<pre><code class="language-c">int result = GetString(buffer, 100);
+if (result != -1) {
+    int err = GetLastError();  // err = 0 (E_SUCCESS)
+}
+</code></pre>
+<hr>
+<h3 id="e_inval-1"><a class="header" href="#e_inval-1">E_INVAL (1)</a></h3>
+<p><strong>Nom</strong> : Argument invalide</p>
+<p><strong>Description</strong> : Un ou plusieurs arguments passés à l’appel système sont invalides.</p>
+<p><strong>Causes courantes</strong> :</p>
+<ul>
+<li>Taille négative (<code>n &lt; 0</code>)</li>
+<li>Valeur hors limites</li>
+<li>Paramètre incohérent</li>
+<li>Format de données incorrect</li>
+</ul>
+<hr>
+<h3 id="e_fault-2"><a class="header" href="#e_fault-2">E_FAULT (2)</a></h3>
+<p><strong>Nom</strong> : Adresse mémoire invalide</p>
+<p><strong>Description</strong> : L’adresse mémoire fournie est invalide ou inaccessible.</p>
+<p><strong>Causes courantes</strong> :</p>
+<ul>
+<li>Pointeur NULL</li>
+<li>Adresse négative</li>
+<li>Adresse hors de l’espace utilisateur</li>
+<li>Page non mappée</li>
+</ul>
+<p><strong>Note</strong> : Dans NachOS actuel, la validation d’adresse est incomplète. Beaucoup de cas invalides ne sont pas détectés et causent des crashes.</p>
+<hr>
+<h3 id="e_overflow-3"><a class="header" href="#e_overflow-3">E_OVERFLOW (3)</a></h3>
+<p><strong>Nom</strong> : Dépassement arithmétique</p>
+<p><strong>Description</strong> : Une opération arithmétique a causé un dépassement de capacité. Peut également être utilisé de manière préventive pour éviter des dépassements d’adresse.</p>
+<p><strong>Causes courantes</strong> :</p>
+<ul>
+<li>Addition qui dépasse INT_MAX</li>
+<li>Vérification <code>n &gt; INT32_MAX - addr</code> (éviter overflow d’adresse)</li>
+</ul>
+<hr>
+<h3 id="e_io-4"><a class="header" href="#e_io-4">E_IO (4)</a></h3>
+<p><strong>Nom</strong> : Erreur d’entrée/sortie</p>
+<p><strong>Description</strong> : Erreur lors d’une opération d’entrée/sortie physique.</p>
+<p><strong>Causes courantes</strong> :</p>
+<ul>
+<li>Défaillance hardware (non simulée dans NachOS)</li>
+<li>Timeout de périphérique</li>
+<li>Erreur de transmission</li>
+</ul>
+<h2 id="note--actuellement-non-utilisé-notamment-car-le-matériel-simulé-ne-génère-pas-derreurs-io"><a class="header" href="#note--actuellement-non-utilisé-notamment-car-le-matériel-simulé-ne-génère-pas-derreurs-io"><strong>Note</strong> : Actuellement non utilisé, notamment car le matériel simulé ne génère pas d’erreurs I/O.</a></h2>
+<h3 id="e_format-5"><a class="header" href="#e_format-5">E_FORMAT (5)</a></h3>
+<p><strong>Nom</strong> : Format invalide</p>
+<p><strong>Description</strong> : Format de données incorrect ou non reconnu.</p>
+<p><strong>Causes courantes</strong> :</p>
+<ul>
+<li>Fichier corrompu</li>
+<li>En-tête invalide</li>
+<li>Structure de données mal formée</li>
+</ul>
+<hr>
+<h3 id="e_eof-6"><a class="header" href="#e_eof-6">E_EOF (6)</a></h3>
+<p><strong>Nom</strong> : Fin de fichier</p>
+<p><strong>Description</strong> : Tentative de lecture au-delà de la fin d’un fichier.</p>
+<p><strong>Causes courantes</strong> :</p>
+<ul>
+<li><code>Read</code> sur fichier épuisé</li>
+<li><code>GetChar</code> sur stdin redirigé depuis fichier terminé</li>
+</ul>
+<p><strong>Note</strong> : <code>GetChar</code> retourne EOF (-1) comme valeur, pas via errno.</p>
+<hr>
+<h3 id="e_nomem-7"><a class="header" href="#e_nomem-7">E_NOMEM (7)</a></h3>
+<p><strong>Nom</strong> : Mémoire insuffisante</p>
+<p><strong>Description</strong> : Allocation mémoire échouée, plus assez de mémoire disponible.</p>
+<p><strong>Causes courantes</strong> :</p>
+<ul>
+<li>Allocation de pages échouée</li>
+<li>Heap saturé</li>
+<li>Trop de threads créés</li>
+</ul>
+<hr>
+<h3 id="e_range-8"><a class="header" href="#e_range-8">E_RANGE (8)</a></h3>
+<p><strong>Nom</strong> : Résultat hors limites</p>
+<p><strong>Description</strong> : Le résultat d’une opération est hors des limites acceptables.</p>
+<p><strong>Causes courantes</strong> :</p>
+<ul>
+<li>Résultat mathématique hors intervalle</li>
+<li>Valeur retournée trop grande ou trop petite</li>
+</ul>
+<hr>
+<h3 id="e_nospc-9"><a class="header" href="#e_nospc-9">E_NOSPC (9)</a></h3>
+<p><strong>Nom</strong> : Aucun processus correspondant (No such process)</p>
+<p><strong>Description</strong> : Aucun processus/thread trouvé avec l’ID spécifié.</p>
+<p><strong>Causes courantes</strong> :</p>
+<ul>
+<li><code>JoinThread</code> avec TID invalide</li>
+<li>Thread déjà terminé</li>
+<li>TID jamais créé</li>
+</ul>
+<h2 id="voir-aussi-15"><a class="header" href="#voir-aussi-15">Voir aussi</a></h2>
+<ul>
+<li><a href="#gestion-des-erreurs-3">Gestion des erreurs</a> - Vue d’ensemble du mécanisme errno</li>
+<li><a href="syscalls/console/README.html">Console I/O</a> - Appels avec gestion d’erreur</li>
+<li><a href="userspace/my_stdlib.html">my_stdlib</a> - Fonctions print_error()</li>
+</ul>
+<h2 id="auteurs-14"><a class="header" href="#auteurs-14">Auteurs</a></h2>
+<p>Antoine, 20 Dec 2025</p>
+<h2 id="dernière-révision-14"><a class="header" href="#dernière-révision-14">Dernière révision</a></h2>
+<p>20 Dec 2025 par Antoine</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="theme/custom-da2ff7a9.js"></script>
+
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+
+
+    </div>
+    </body>
+</html>
