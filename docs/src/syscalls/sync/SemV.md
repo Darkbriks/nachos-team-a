@@ -302,7 +302,7 @@ Aucun bug connu à ce jour.
 - [SemP](./SemP.md) - Opération P (wait) sur un sémaphore
 - [SemDestroy](./SemDestroy.md) - Destruction d'un sémaphore
 - [SetMaxSemForProcess](./SetMaxSemForProcess.md) - Redimensionnement de la table
-- [Vue d'ensemble](./README.md) - Guide complet des sémaphores
+- [Vue d'ensemble](Sync.md) - Guide complet des sémaphores
 
 ## AUTEURS
 

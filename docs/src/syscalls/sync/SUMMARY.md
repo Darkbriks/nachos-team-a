@@ -1,6 +1,6 @@
 # Sémaphores
 
-- [Vue d'ensemble](./README.md)
+- [Vue d'ensemble](Sync.md)
 
 # Appels système sur les Sémaphores
 

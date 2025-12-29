@@ -205,7 +205,7 @@ Aucun bug connu à ce jour.
 ## VOIR AUSSI
 
 - [SemInit](./SemInit.md) - Création d'un sémaphore (déclenche auto-expansion si nécessaire)
-- [Vue d'ensemble](./README.md) - Guide complet des sémaphores
+- [Vue d'ensemble](Sync.md) - Guide complet des sémaphores
 
 ## AUTEURS
 

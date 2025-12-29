@@ -244,7 +244,7 @@ Aucun bug connu à ce jour.
 - [SemP](./SemP.md) - Opération P (wait) sur un sémaphore
 - [SemV](./SemV.md) - Opération V (signal) sur un sémaphore
 - [SetMaxSemForProcess](./SetMaxSemForProcess.md) - Redimensionnement de la table
-- [Vue d'ensemble](./README.md) - Guide complet des sémaphores
+- [Vue d'ensemble](Sync.md) - Guide complet des sémaphores
 
 ## AUTEURS
 

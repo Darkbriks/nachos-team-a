@@ -303,7 +303,7 @@ Aucun bug connu à ce jour.
 - [SemV](./SemV.md) - Opération V (signal) sur un sémaphore
 - [SemDestroy](./SemDestroy.md) - Destruction d'un sémaphore
 - [SetMaxSemForProcess](./SetMaxSemForProcess.md) - Redimensionnement manuel de la table
-- [Vue d'ensemble](./README.md) - Guide complet des sémaphores
+- [Vue d'ensemble](Sync.md) - Guide complet des sémaphores
 
 ## AUTEURS
 

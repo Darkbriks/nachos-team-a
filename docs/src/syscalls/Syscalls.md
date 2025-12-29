@@ -110,7 +110,7 @@ Programme utilisateur
 
 ## Voir aussi
 
-- [Console I/O Overview](./console/README.md) - Détails des appels console
+- [Console I/O Overview](console/Console.md) - Détails des appels console
 - [Gestion des erreurs](./errors.md) - Mécanisme errno
 - [Liste des codes errno](./errno.md) - Tous les codes d'erreur
 

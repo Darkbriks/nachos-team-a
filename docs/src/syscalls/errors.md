@@ -334,7 +334,7 @@ int main() {
 ## Voir aussi
 
 - [Liste des codes errno](./errno.md) - Documentation détaillée de chaque code
-- [Console I/O Overview](./console/README.md) - Appels système avec gestion errno
+- [Console I/O Overview](console/Console.md) - Appels système avec gestion errno
 - [my_stdlib](../userspace/my_stdlib.md) - Fonctions utilitaires pour errno
 
 ## Auteurs
