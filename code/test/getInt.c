@@ -1,5 +1,5 @@
 #include "syscall.h"
-#include "my_stdlib.h"
+#include "nos_stdlib.h"
 
 void get(int n)
 {

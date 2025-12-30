@@ -15,7 +15,7 @@
  * @param wrapper_addr The address of the thread exit wrapper function
  * @return 0 on success, -1 on error (check errno)
  */
-extern int do_PthreadCreate(posix_thread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg, int wrapper_addr);
+extern int do_PthreadCreate(posix_thread_t *thread, const posix_thread_attr_t *attr, void *(*start_routine)(void *), void *arg, int wrapper_addr);
 
 /**
  * @brief Destruct the caller thread
