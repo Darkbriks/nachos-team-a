@@ -21,25 +21,25 @@ void func2(void *arg) {
     PutInt(after_sleep - before_sleep);
     my_printf(" ticks (expected ~"); PutInt(1000 * thread_id); my_printf(")\n");
 
-    Pthread_exit(0);
+    PthreadExit(0);
 }
 
 void func1(void *arg) {
     for (int i = 1; i <= 5; i++) {
         int thread_id;
-        Pthread_create((posix_thread_t *)&thread_id, nullptr, (void *(*)(void *))func2, (void *)(long)i);
+        PthreadCreate((posix_thread_t *)&thread_id, nullptr, (void *(*)(void *))func2, (void *)(long)i);
         my_printf("Main: Created thread with ID "); PutInt(thread_id); my_printf("\n");
         Sleep(100);
     }
-    Pthread_exit(0);
+    PthreadExit(0);
 }
 
 int main() {
     my_printf("=== Test Sleep syscall with multiple threads ===\n");
 
     int main_thread_id;
-    Pthread_create((posix_thread_t *)&main_thread_id, nullptr, (void *(*)(void *))func1, nullptr);
-    Pthread_join(main_thread_id, nullptr);
+    PthreadCreate((posix_thread_t *)&main_thread_id, nullptr, (void *(*)(void *))func1, nullptr);
+    PthreadJoin(main_thread_id, nullptr);
 
     my_printf("Main thread finished.\n");
     return 0;

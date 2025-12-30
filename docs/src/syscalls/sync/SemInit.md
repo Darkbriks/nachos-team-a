@@ -40,7 +40,7 @@ Valeur initiale du compteur du sémaphore.
 **Registre** : `$4`
 **Contraintes** :
 - Doit être ≥ 0
-- Représente le nombre de threads pouvant exécuter `SemP()` simultanément sans bloquer
+- Représente le nombre de threads pouvant exécuter `SemWait()` simultanément sans bloquer
 
 ## VALEUR DE RETOUR
 
@@ -141,7 +141,7 @@ void worker_thread(void *arg) {
     Sleep(100);  // Simuler du travail
     PutString("Thread: travail terminé\n", 25);
     
-    SemV(rdv);  // Signaler terminaison
+    SemPost(rdv);  // Signaler terminaison
     ExitThread();
 }
 
@@ -156,7 +156,7 @@ int main() {
     int tid = CreateThread(worker_thread, 0);
     
     PutString("Main: attente du worker...\n", 28);
-    SemP(rdv);  // Bloquer jusqu'au signal
+    SemWait(rdv);  // Bloquer jusqu'au signal
     PutString("Main: worker terminé!\n", 23);
     
     JoinThread(tid);
@@ -244,8 +244,8 @@ Aucun bug connu à ce jour.
 
 ## VOIR AUSSI
 
-- [SemP](./SemP.md) - Opération P (wait) sur un sémaphore
-- [SemV](./SemV.md) - Opération V (signal) sur un sémaphore
+- [SemP](SemWait.md) - Opération P (wait) sur un sémaphore
+- [SemV](SemPost.md) - Opération V (signal) sur un sémaphore
 - [SemDestroy](./SemDestroy.md) - Destruction d'un sémaphore
 - [Vue d'ensemble](./README.md) - Guide complet des sémaphores
 

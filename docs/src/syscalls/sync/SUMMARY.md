@@ -5,6 +5,6 @@
 # Appels système sur les Sémaphores
 
 - [SemInit](./SemInit.md)
-- [SemP](./SemP.md)
-- [SemV](./SemV.md)
+- [SemP](SemWait.md)
+- [SemV](SemPost.md)
 - [SemDestroy](./SemDestroy.md)

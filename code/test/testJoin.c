@@ -8,8 +8,8 @@ int main() {
     posix_thread_t tid;
     void *retval;
     
-    Pthread_create(&tid, 0, thread_func, 0);
-    Pthread_join(tid, &retval);
+    PthreadCreate(&tid, 0, thread_func, 0);
+    PthreadJoin(tid, &retval);
 
     if (retval != (void *)42) {
         PutString("Test failed: incorrect return value from joined thread: ", 100);

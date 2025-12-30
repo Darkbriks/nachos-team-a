@@ -16,7 +16,7 @@ int main(){
     pthread_cond_init(&cond, NULL);
     unsigned long long number_thread = 0;
     pthread_t thread;
-    while ( pthread_create(&thread, NULL, fun, NULL) == 0){
+    while ( PthreadCreate(&thread, NULL, fun, NULL) == 0){
         number_thread++;
     }
     printf("Fail %d\n", errno );
@@ -24,7 +24,7 @@ int main(){
     printf("max_thread = %lld\n", number_thread);
     pthread_cond_signal(&cond);
     printf("Peut on en créer un nouveau ?\n");
-    while ( pthread_create(&thread, NULL, fun, NULL) != 0){}
+    while ( PthreadCreate(&thread, NULL, fun, NULL) != 0){}
     printf("on a pu en créer un nouveau après la terminaison d'un autre\n");
 
 

@@ -6,7 +6,7 @@ int thread_executed = 0;
 void *thread_func(void *arg) {
     PutString("Thread executing and terminating\n", 33);
     thread_executed = 1;
-    SemV(join_sem);
+    SemPost(join_sem);
     return 0;
 }
 
@@ -17,14 +17,14 @@ int main() {
 
     join_sem = SemInit(0);
 
-    if (Pthread_create(&tid, 0, thread_func, 0) != 0) {
+    if (PthreadCreate(&tid, 0, thread_func, 0) != 0) {
         PutString("ERROR: Failed to create thread\n", 31);
         return 1;
     }
 
-    SemP(join_sem);
+    SemWait(join_sem);
 
-    if (Pthread_join(tid, 0) != 0) {
+    if (PthreadJoin(tid, 0) != 0) {
         PutString("ERROR: Join failed on terminated thread\n", 40);
         return 1;
     }

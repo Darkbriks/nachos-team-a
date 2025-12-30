@@ -21,6 +21,6 @@
 
 - [Sémaphores](./sync/SUMMARY.md)
     - [SemInit](./sync/SemInit.md)
-    - [SemP](./sync/SemP.md)
-    - [SemV](./sync/SemV.md)
+    - [SemP](sync/SemWait.md)
+    - [SemV](sync/SemPost.md)
     - [SemDestroy](./sync/SemDestroy.md)

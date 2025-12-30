@@ -30,8 +30,8 @@ int main() {
 
     // Create threads that will return without calling ExitThread
     posix_thread_t tid1, tid2;
-    Pthread_create(&tid1, nullptr, (void *(*)(void *))thread_func, (void *)1);
-    Pthread_create(&tid2, nullptr, (void *(*)(void *))thread_func, (void *)2);
+    PthreadCreate(&tid1, nullptr, (void *(*)(void *))thread_func, (void *)1);
+    PthreadCreate(&tid2, nullptr, (void *(*)(void *))thread_func, (void *)2);
 
     PutString("Main: Created threads ", 22);
     PutInt(tid1);
@@ -43,12 +43,12 @@ int main() {
     PutString("Main: Waiting for thread ", 25);
     PutInt(tid1);
     PutString("...\n", 4);
-    Pthread_join(tid1, 0);
+    PthreadJoin(tid1, 0);
 
     PutString("Main: Waiting for thread ", 25);
     PutInt(tid2);
     PutString("...\n", 4);
-    Pthread_join(tid2, 0);
+    PthreadJoin(tid2, 0);
 
     PutString("Main: All threads finished successfully!\n", 41);
 }

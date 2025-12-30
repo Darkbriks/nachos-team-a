@@ -18,12 +18,16 @@
 /* system call codes -- used by the stubs to tell the kernel which system call
  * is being asked for
  */
+
+/* --- System Control --- */
 #define SC_Halt 0
 #define SC_Exit 1
 
+/* --- Process Management --- */
 #define SC_Exec 2
 #define SC_Join 3
 
+/* --- File System --- */
 #define SC_Create 4
 #define SC_Open 5
 #define SC_Read 6
@@ -33,6 +37,7 @@
 #define SC_Fork 9
 #define SC_Yield 10
 
+/* --- Console I/O --- */
 #define SC_PutChar 11
 #define SC_PutString 12
 #define SC_GetChar 13
@@ -40,27 +45,36 @@
 #define SC_PutInt 15
 #define SC_GetInt 16
 
-#define SC_Pthread_create 17
-#define SC_Pthread_exit 18
-#define SC_Pthread_join 19
-#define SC_Pthread_detach 20
+/* --- Pthreads --- */
+#define SC_PthreadCreate 17
+#define SC_PthreadExit 18
+#define SC_PthreadJoin 19
+#define SC_PthreadDetach 20
 
+/* --- Pthread attributes --- */
 #define SC_Pthread_attr_init 21
 #define SC_Pthread_attr_destroy 22
 #define SC_Pthread_attr_setdetachstate 23
 #define SC_Pthread_attr_getdetachstate 24
 
+/* --- Time --- */
 #define SC_Sleep 25
 #define SC_SleepUntil 26
 #define SC_GetCurrentTick 27
 
+/* --- Semaphores --- */
 #define SC_SemInit 28
-#define SC_SemP 29
-#define SC_SemV 30
+#define SC_SemWait 29
+#define SC_SemPost 30
 #define SC_SemDestroy 31
 #define SC_SetMaxSemForProcess 32
 
-/* Error codes - returned as negative values by syscalls, stored as positive in errno */
+/* ============================================================
+ * ERROR CODES
+ * Returned as negative values by syscalls, stored as positive in errno
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/errno.html">Documentation</a>
+ * ============================================================
+ */
 #define E_SUCCESS       0   /* No error */
 #define E_INVAL         1   /* Invalid argument */
 #define E_FAULT         2   /* Bad address / memory access error */
@@ -90,9 +104,10 @@
  */
 
 
-/* -------------------------------------------------------------
+/* ============================================================
  * ERROR HANDLING
- * -------------------------------------------------------------
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/errors.html">Documentation</a>
+ * ============================================================
  */
 
 /**
@@ -104,26 +119,32 @@ extern int errno;
 /**
  * @brief Get the last error code
  * @return Current value of errno
+ *
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/errors.html#GetLastError">Full documentation</a>
  */
 int GetLastError(void);
 
 /**
  * @brief Clear the error code (set errno to 0)
+ *
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/errors.html#ClearError">Full documentation</a>
  */
 void ClearError(void);
 
 
 /* -------------------------------------------------------------
- * SYSTEM CONTROL OPERATIONS: Halt
+ * SYSTEM CONTROL
  * -------------------------------------------------------------
  */
 
-/* Stop Nachos, and print out performance stats */
+/**
+ * @brief Stop Nachos, and print out performance stats
+ */
 void Halt() __attribute__((noreturn));
 
 
 /* -------------------------------------------------------------
- * ADDRESS SPACE CONTROL OPERATIONS: Exit, Exec, Join
+ * PROCESS MANAGEMENT
  * -------------------------------------------------------------
  */
 
@@ -145,7 +166,7 @@ int Join(SpaceId id);
 
 
 /* -------------------------------------------------------------
- * FILE SYSTEM OPERATIONS : Create, Open, Read, Write, Close
+ * FILE SYSTEM OPERATIONS
  *
  * These functions are patterned after UNIX -- files represent
  * both files *and* hardware I/O devices.
@@ -192,7 +213,7 @@ void Close(OpenFileId id);
 
 
 /* -------------------------------------------------------------
- * USER-LEVEL THREAD OPERATIONS : Fork, Yield
+ * USER-LEVEL THREAD OPERATIONS
  * -------------------------------------------------------------
  */
 
@@ -208,67 +229,66 @@ void Yield();
 
 
 /* -------------------------------------------------------------
- * CONSOLE I/O OPERATIONS : PutChar, PutString, PutInt, GetChar, GetString, GetInt
+ * CONSOLE I/O
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/console/Console.html">Full documentation</a>
  * -------------------------------------------------------------
  */
 
 /**
- * @brief Write a char in the console 
+ * @brief Output a character to the console
+ * @param c Character to output
  *
- * @param c  The character to print on the console
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/console/PutChar.html">Full documentation</a>
  */
 void PutChar(char c);
 
 /**
- * @brief Write a String on the console
- * @note '\0' is implicitly added at the end of the string,
- *		so you don't need to count it in n
+ * @brief Output a string to the console
+ * @param s String to output
+ * @param n Maximum number of characters to output
+ * @return Number of characters actually output
  *
- * @code int n = PutString("Hello World\n", 12);
- * @param s  The string to print on the console
- * @param n Maximum number of bytes to write (stops at '\0' or after n bytes)
- * @return The number of bytes effectively written, or -1 on error (check errno)
- * @warning if n > MAX_PUT_STRING then we only display the MAX_PUT_STRING first characters
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/console/PutString.html">Full documentation</a>
  */
 int PutString(char *s, int n);
 
 /**
- * @brief Write an integer on a console
+ * @brief Output an integer to the console
+ * @param n Integer to output
  *
- * @param n The integer to write
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/console/PutInt.html">Full documentation</a>
  */
 void PutInt(int n);
 
 /**
- * @brief Read a character from console
+ * @brief Input a character from the console
+ * @return The character read
  *
- * @return The character read (or EOF)
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/console/GetChar.html">Full documentation</a>
  */
 char GetChar();
 
 /**
- * @brief Read a string from console
+ * @brief Input a string from the console
+ * @param s Buffer to store the string
+ * @param n Maximum number of characters to read
+ * @return Number of characters actually read
  *
- * @param s Buffer to store string (must be allocated by caller)
- * @param n Maximum number of characters to read (including '\0')
- * @return Number of bytes read (excluding '\0'), or -1 on error (check errno)
- *
- * @note Stops at newline ('\n') or after n-1 characters
- * @note Always null-terminates the string
- * @warning Buffer must be at least n bytes large
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/console/GetString.html">Full documentation</a>
  */
 int GetString(char *s, int n);
 
 /**
- * @brief Read an integer from a console
- *                                                                                                                                                                              
- * @param n A pointer on an integer. This is where the result will be put
- * @warning If the string provided can't be cast in integer we exit the programm
+ * @brief Input an integer from the console
+ * @param n Pointer to store the read integer
+ * @return 0 on success, negative error code on failure
+ *
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/console/GetInt.html">Full documentation</a>
  */
 int GetInt(int *n);
 
 /* -------------------------------------------------------------
- * POSIX THREAD OPERATIONS : Pthread_create, ExitThread, JoinThread
+ * POSIX THREAD OPERATIONS
  * -------------------------------------------------------------
  */
 
@@ -284,7 +304,7 @@ typedef struct {} pthread_attr_t;
  * @param arg The argument to be passed to the function
  * @return 0 on success, -1 on error (check errno)
  */
-int Pthread_create(posix_thread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg);
+int PthreadCreate(posix_thread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg);
 
 /**
  * @brief Destruct the caller thread
@@ -292,7 +312,7 @@ int Pthread_create(posix_thread_t *thread, const pthread_attr_t *attr, void *(*s
  * @param retval The return value of the thread
  * @return This function does not return
  */
-void Pthread_exit(void *retval);
+void PthreadExit(void *retval);
 
 /**
  * @brief Caller will wait other thread to finish
@@ -301,7 +321,7 @@ void Pthread_exit(void *retval);
  * @param retval A pointer to store the return value of the joined thread (can be nullptr)
  * @return 0 on success, -1 on error (check errno)
  */
-int Pthread_join(posix_thread_t thread, void **retval);
+int PthreadJoin(posix_thread_t thread, void **retval);
 
 /**
  * @brief Detach a thread
@@ -309,10 +329,10 @@ int Pthread_join(posix_thread_t thread, void **retval);
  * @param thread The thread to detach
  * @return 0 on success, -1 on error (check errno)
  */
-int Pthread_detach(posix_thread_t thread);
+int PthreadDetach(posix_thread_t thread);
 
 /* -------------------------------------------------------------
- * POSIX THREAD ATTRIBUTES OPERATIONS : Attr_init, Attr_destroy, Attr_setdetachstate, Attr_getdetachstate
+ * POSIX THREAD ATTRIBUTES OPERATIONS
  * -------------------------------------------------------------
  */
 /**
@@ -350,7 +370,7 @@ int Pthread_attr_setdetachstate(pthread_attr_t *attr, int detachstate);
 int Pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate);
 
 /* -------------------------------------------------------------
- * SLEEP AND TIME OPERATIONS : Sleep, SleepUntil, GetCurrentTick
+ * TIME OPERATIONS
  * -------------------------------------------------------------
  */
 
@@ -378,46 +398,54 @@ int SleepUntil(long long wake_time);
  */
 int GetCurrentTick(long long *tick);
 
+/* -------------------------------------------------------------
+ * SEMAPHORE OPERATIONS
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/sync/Sync.html">Full documentation</a>
+ * -------------------------------------------------------------
+ */
+
 /**
- * @brief Init a Semaphore with original value of value
+ * @brief Initialize a semaphore
+ * @param value Initial value of the semaphore
+ * @return Semaphore ID on success, negative error code on failure
  *
- * @param value  The original number of thread can P this semaphore
- * @return 0 if everything is fine, or -1 on error (check errno)
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/sync/SemInit.html">Full documentation</a>
  */
 int SemInit(int value);
 
 /**
- * @brief Semaphore must be init before call this, try to take one of the sem token, wait while value <= 0
+ * @brief Wait (P) operation on semaphore
+ * @param semId Semaphore ID
+ * @return 0 on success, negative error code on failure
  *
- * @param sem_id Id of a semaphore previously init
- * @return 0 if everything is fine, or -1 on error (check errno)
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/sync/SemWait.html">Full documentation</a>
  */
-int SemP(int sem_id);
+int SemWait(int sem_id);
 
 /**
- * @brief Semaphore must be init before call this, post one of the sem token if the caller has one ;
+ * @brief Signal (V) operation on semaphore
+ * @param semId Semaphore ID
+ * @return 0 on success, negative error code on failure
  *
- * @param sem_id Id of a semaphore previously init
- * @return 0 if everything is fine, or -1 on error (check errno)
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/sync/SemPost.html">Full documentation</a>
  */
-int SemV(int sem_id);
+int SemPost(int sem_id);
 
 /**
- * @brief destroy a sem previously init
+ * @brief Destroy a semaphore
+ * @param semId Semaphore ID
+ * @return 0 on success, negative error code on failure
  *
- * @param sem_id Id of a semaphore previously init
- * @return 0 if everything is fine, or -1 on error (check errno)
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/sync/SemDestroy.html">Full documentation</a>
  */
 int SemDestroy(int sem_id);
 
 /**
- * @brief Set the maximum number of semaphores for the current process
- * @warning It's absolutely not recommended to use this function to reduce
- * the size of the semaphore table if it has already been allocated, as
- * all entries beyond the new size will be lost.
+ * @brief Set maximum number of semaphores for the current process
+ * @param max Maximum number of semaphores
+ * @return Previous maximum number of semaphores
  *
- * @param maxSemaphores Maximum number of semaphores
- * @return 0 if everything is fine, or -1 on error (check errno)
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/sync/SetMaxSemForProcess.html">Full documentation</a>
  */
 int SetMaxSemForProcess(unsigned int maxSemaphores);
 

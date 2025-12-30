@@ -5,11 +5,11 @@ int mutex_id;
 
 void increment_thread(void *arg) {
     for (int i = 0; i < 1000; i++) {
-        SemP(mutex_id);
+        SemWait(mutex_id);
         counter++;
-        SemV(mutex_id);
+        SemPost(mutex_id);
     }
-    Pthread_exit(0);
+    PthreadExit(0);
 }
 
 int main() {
@@ -20,11 +20,11 @@ int main() {
     }
 
     posix_thread_t tid1, tid2;
-    Pthread_create(&tid1, nullptr, (void *(*)(void *))increment_thread, nullptr);
-    Pthread_create(&tid2, nullptr, (void *(*)(void *))increment_thread, nullptr);
+    PthreadCreate(&tid1, nullptr, (void *(*)(void *))increment_thread, nullptr);
+    PthreadCreate(&tid2, nullptr, (void *(*)(void *))increment_thread, nullptr);
 
-    Pthread_join(tid1, nullptr);
-    Pthread_join(tid2, nullptr);
+    PthreadJoin(tid1, nullptr);
+    PthreadJoin(tid2, nullptr);
 
     PutString("Counter final: ", 15);
     PutInt(counter);  // Devrait être 2000

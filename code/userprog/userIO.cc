@@ -4,11 +4,11 @@
 
 #include "userIO.h"
 
-void handler_SC_putChar(){
+void handle_SC_PutChar(){
     synchConsole->SynchPutChar(static_cast<char>(machine->ReadRegister(4)));
 }
 
-void handler_SC_putString(){
+void handle_SC_PutString(){
     int addr = machine->ReadRegister(4);
     int n = machine->ReadRegister(5);
 
@@ -33,11 +33,11 @@ void handler_SC_putString(){
     RETURN(n);
 }
 
-void handler_SC_getChar(){
+void handle_SC_GetChar(){
     machine->WriteRegister(2, synchConsole->SynchGetChar());
 }
 
-void handler_SC_getString(){
+void handle_SC_GetString(){
     int addr = machine->ReadRegister(4);
     int n = machine->ReadRegister(5);
 
@@ -54,14 +54,14 @@ void handler_SC_getString(){
     }
 }
 
-void handler_SC_PutInt(){
+void handle_SC_PutInt(){
     int value = machine->ReadRegister(4);
     char value_str[12]; // An integer is never bigger than 12 character.
     snprintf(value_str, 12, "%d", value);
     RETURN(synchConsole->SynchPutString(value_str, 12)); // TODO handle future errno exception
 }
 
-void handler_SC_GetInt(){
+void handle_SC_GetInt(){
     ptr_32 addr = (ptr_32) machine->ReadRegister(4);
     if (addr < 0) { RETURN(-E_FAULT); }
     char value[12]; // An integer is never bigger than 12 character.

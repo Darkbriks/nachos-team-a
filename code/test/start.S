@@ -277,15 +277,15 @@ GetInt_ok:
     j      $31
     .end GetInt
 
-/* Pthread_create: with error handling*/
-    .globl Pthread_create
-    .ent	Pthread_create
-Pthread_create:
-    la $8, pthread_exit_wrapper  # Load address of wrapper
+/* PthreadCreate: with error handling*/
+    .globl PthreadCreate
+    .ent	PthreadCreate
+PthreadCreate:
+    la $8, PthreadExit_wrapper  # Load address of wrapper
 
-    addiu $2,$0,SC_Pthread_create
+    addiu $2,$0,SC_PthreadCreate
     syscall
-    bgez  $2,Pthread_create_ok
+    bgez  $2,PthreadCreate_ok
     nop
     # Error handling
     subu   $3,$0,$2
@@ -293,27 +293,27 @@ Pthread_create:
     addiu  $2,$0,-1
     j      $31
     nop
-Pthread_create_ok:
+PthreadCreate_ok:
     sw     $0,errno
     j      $31
-    .end Pthread_create
+    .end PthreadCreate
 
-/* Pthread_exit : no error handling */
-    .globl Pthread_exit
-    .ent	Pthread_exit
-Pthread_exit:
-    addiu $2,$0,SC_Pthread_exit
+/* PthreadExit : no error handling */
+    .globl PthreadExit
+    .ent	PthreadExit
+PthreadExit:
+    addiu $2,$0,SC_PthreadExit
     syscall
     j      $31
-    .end Pthread_exit
+    .end PthreadExit
 
-/* Pthread_join : with error handling */
-    .globl Pthread_join
-    .ent	Pthread_join
-Pthread_join:
-    addiu $2,$0,SC_Pthread_join
+/* PthreadJoin : with error handling */
+    .globl PthreadJoin
+    .ent	PthreadJoin
+PthreadJoin:
+    addiu $2,$0,SC_PthreadJoin
     syscall
-    bgez  $2,Pthread_join_ok
+    bgez  $2,PthreadJoin_ok
     nop
     # Error handling
     subu   $3,$0,$2
@@ -321,18 +321,18 @@ Pthread_join:
     addiu  $2,$0,-1
     j      $31
     nop
-Pthread_join_ok:
+PthreadJoin_ok:
     sw     $0,errno
     j      $31
-    .end Pthread_join
+    .end PthreadJoin
 
-/* Pthread_detach : with error handling */
-    .globl Pthread_detach
-    .ent	Pthread_detach
-Pthread_detach:
-    addiu $2,$0,SC_Pthread_detach
+/* PthreadDetach : with error handling */
+    .globl PthreadDetach
+    .ent	PthreadDetach
+PthreadDetach:
+    addiu $2,$0,SC_PthreadDetach
     syscall
-    bgez  $2,Pthread_detach_ok
+    bgez  $2,PthreadDetach_ok
     nop
     # Error handling
     subu   $3,$0,$2
@@ -340,10 +340,10 @@ Pthread_detach:
     addiu  $2,$0,-1
     j      $31
     nop
-Pthread_detach_ok:
+PthreadDetach_ok:
     sw     $0,errno
     j      $31
-    .end Pthread_detach
+    .end PthreadDetach
 
 /* Pthread_attr_init : with error handling */
     .globl Pthread_attr_init
@@ -497,13 +497,13 @@ SemInit_ok:
     j      $31
     .end SemInit
 
-/* SemP : with error handling */
-    .globl SemP
-    .ent	SemP
-SemP:
-    addiu $2,$0,SC_SemP
+/* SemWait : with error handling */
+    .globl SemWait
+    .ent	SemWait
+SemWait:
+    addiu $2,$0,SC_SemWait
     syscall
-    bgez  $2,SemP_ok
+    bgez  $2,SemWait_ok
     nop
     # Error handling
     subu   $3,$0,$2
@@ -511,18 +511,18 @@ SemP:
     addiu  $2,$0,-1
     j      $31
     nop
-SemP_ok:
+SemWait_ok:
     sw     $0,errno
     j      $31
-    .end SemP
+    .end SemWait
 
-/* SemV : with error handling */
-    .globl SemV
-    .ent	SemV
-SemV:
-    addiu $2,$0,SC_SemV
+/* SemPost : with error handling */
+    .globl SemPost
+    .ent	SemPost
+SemPost:
+    addiu $2,$0,SC_SemPost
     syscall
-    bgez  $2,SemV_ok
+    bgez  $2,SemPost_ok
     nop
     # Error handling
     subu   $3,$0,$2
@@ -530,10 +530,10 @@ SemV:
     addiu  $2,$0,-1
     j      $31
     nop
-SemV_ok:
+SemPost_ok:
     sw     $0,errno
     j      $31
-    .end SemV
+    .end SemPost
 
 /* SemDestroy : with error handling */
     .globl SemDestroy
@@ -577,13 +577,13 @@ SetMaxSemForProcess_ok:
  * Posix thread exit wrapper
  * -------------------------------------------------------------
  */
-    .globl  pthread_exit_wrapper
-    .ent    pthread_exit_wrapper
-pthread_exit_wrapper:
+    .globl  PthreadExit_wrapper
+    .ent    PthreadExit_wrapper
+PthreadExit_wrapper:
     move   $4,$2
-    j     Pthread_exit
+    j     PthreadExit
     nop
-    .end    pthread_exit_wrapper
+    .end    PthreadExit_wrapper
 
 /* -------------------------------------------------------------
  * Errno utility functions

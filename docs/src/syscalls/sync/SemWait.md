@@ -6,7 +6,7 @@
 ```c
 #include "syscall.h"
 
-int SemP(int sem_id);
+int SemWait(int sem_id);
 ```
 
 ## DESCRIPTION
@@ -19,14 +19,14 @@ Numéro d'appel système : `25`
 
 - Vérifie la validité du déscripteur `sem_id`
 - Si compteur > 0 : décrémente et retourne immédiatement
-- Si compteur = 0 : bloque le thread en attente d'un `SemV()`
+- Si compteur = 0 : bloque le thread en attente d'un `SemPost()`
 - L'opération est atomique et thread-safe
 
 ### Cas particuliers
 
 - **Handle invalide** : Retourne -1
 - **Sémaphore détruit** : Retourne -1
-- **Blocage indéfini** : Si aucun `SemV()` n'est appelé, le thread reste bloqué (pas de timeout)
+- **Blocage indéfini** : Si aucun `SemPost()` n'est appelé, le thread reste bloqué (pas de timeout)
 - **Interruptions** : Le blocage n'est pas interruptible
 
 ## PARAMÈTRES
@@ -61,7 +61,7 @@ Déscripteur du sémaphore sur lequel effectuer l'opération P.
 ### Localisation du code
 
 - **Stub utilisateur** : `code/test/start.S`
-- **Handler noyau** : `code/userprog/exception.cc:handle_SC_SemP()`
+- **Handler noyau** : `code/userprog/exception.cc:handle_SC_SemWait()`
 - **Implémentation** : 
   - `code/userprog/addrspace.cc:AddrSpace::SemaphoreP()`
   - `code/threads/synch.cc:Semaphore::P()`
@@ -88,7 +88,7 @@ int shared_counter = 0;
 void increment_thread(void *arg) {
     for (int i = 0; i < 1000; i++) {
         // Entrer en section critique
-        if (SemP(mutex) < 0) {
+        if (SemWait(mutex) < 0) {
             PutString("Erreur SemP\n", 13);
             ExitThread();
         }
@@ -96,7 +96,7 @@ void increment_thread(void *arg) {
         shared_counter++;
         
         // Sortir de section critique
-        SemV(mutex);
+        SemPost(mutex);
     }
     ExitThread();
 }
@@ -130,8 +130,8 @@ void thread_A(void *arg) {
     PutString("A: Phase 1\n", 12);
     Sleep(50);
     
-    SemV(rdv1);  // Signaler à B
-    SemP(rdv2);  // Attendre B
+    SemPost(rdv1);  // Signaler à B
+    SemWait(rdv2);  // Attendre B
     
     PutString("A: Phase 2\n", 12);
     ExitThread();
@@ -141,8 +141,8 @@ void thread_B(void *arg) {
     PutString("B: Phase 1\n", 12);
     Sleep(100);
     
-    SemV(rdv2);  // Signaler à A
-    SemP(rdv1);  // Attendre A
+    SemPost(rdv2);  // Signaler à A
+    SemWait(rdv1);  // Attendre A
     
     PutString("B: Phase 2\n", 12);
     ExitThread();
@@ -181,21 +181,21 @@ int main() {
     int sem = SemInit(1);
     
     // Utilisation normale
-    if (SemP(sem) == 0) {
+    if (SemWait(sem) == 0) {
         PutString("P réussi\n", 10);
-        SemV(sem);
+        SemPost(sem);
     }
     
     // Détruire le sémaphore
     SemDestroy(sem);
     
     // Tenter d'utiliser un handle détruit
-    if (SemP(sem) < 0) {
+    if (SemWait(sem) < 0) {
         PutString("Erreur: sémaphore détruit\n", 27);
     }
     
     // Tenter d'utiliser un handle invalide
-    if (SemP(999) < 0) {
+    if (SemWait(999) < 0) {
         PutString("Erreur: handle invalide\n", 25);
     }
     
@@ -231,7 +231,7 @@ Erreur: handle invalide
 - Thread ajouté à la queue d'attente
 - Thread mis en état BLOCKED
 - Lock sémaphore libéré
-- Thread reste bloqué jusqu'à `SemV()`
+- Thread reste bloqué jusqu'à `SemPost()`
 
 **Après l'appel** :
 - `$2` : 0 (succès) ou -1 (erreur)
@@ -256,7 +256,7 @@ Aucun bug connu à ce jour.
 ## VOIR AUSSI
 
 - [SemInit](./SemInit.md) - Création d'un sémaphore
-- [SemV](./SemV.md) - Opération V (signal) sur un sémaphore
+- [SemV](SemPost.md) - Opération V (signal) sur un sémaphore
 - [SemDestroy](./SemDestroy.md) - Destruction d'un sémaphore
 - [Vue d'ensemble](./README.md) - Guide complet des sémaphores
 

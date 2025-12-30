@@ -7,8 +7,8 @@ Les appels système de sémaphores permettent la synchronisation entre threads u
 ## Opérations disponibles
 
 - **[SemInit](./SemInit.md)** : Crée et initialise un nouveau sémaphore
-- **[SemP](./SemP.md)** : Opération P (wait/acquire) sur un sémaphore
-- **[SemV](./SemV.md)** : Opération V (signal/release) sur un sémaphore
+- **[SemP](SemWait.md)** : Opération P (wait/acquire) sur un sémaphore
+- **[SemV](SemPost.md)** : Opération V (signal/release) sur un sémaphore
 - **[SemDestroy](./SemDestroy.md)** : Détruit un sémaphore
 
 ## Architecture
@@ -46,7 +46,7 @@ Les sémaphores utilisent une table de descripteurs au niveau de chaque processu
 └────┬────────┬───┘    │
      │        │        │
      │        │        │
-  SemP()   SemV()      │ Utilisation répétée
+ SemWait() SemPost()   │ Utilisation répétée
      │        │        │
      │        │        │
      └────────┘────────┘
@@ -76,8 +76,8 @@ Tous les appels système de sémaphores retournent un code d'erreur et définiss
 - La table de descripteurs est protégée par un verrou interne
 
 **Comportement** :
-- `SemP()` bloque le thread appelant si le compteur est à 0
-- `SemV()` réveille un thread bloqué en attente (aucune garentie sur le thread reveillé)
+- `SemWait()` bloque le thread appelant si le compteur est à 0
+- `SemPost()` réveille un thread bloqué en attente (aucune garentie sur le thread reveillé)
 
 
 ## Exemple complet
@@ -91,9 +91,9 @@ int mutex_id;
 
 void increment_thread(void *arg) {
     for (int i = 0; i < 1000; i++) {
-        SemP(mutex_id);      // Entrer en section critique
+        SemWait(mutex_id);      // Entrer en section critique
         counter++;
-        SemV(mutex_id);      // Sortir de section critique
+        SemPost(mutex_id);      // Sortir de section critique
     }
     ExitThread();
 }
@@ -130,7 +130,7 @@ int main() {
 
 ### 1. Pas de timeout
 
-`SemP()` peut bloquer indéfiniment si `SemV()` n'est jamais appelé.
+`SemWait()` peut bloquer indéfiniment si `SemPost()` n'est jamais appelé.
 
 **Impact** : Impossible d'implémenter des locks avec timeout.
 
