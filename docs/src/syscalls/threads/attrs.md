@@ -314,7 +314,7 @@ int main() {
 
 - [PthreadCreate](./PthreadCreate.md) - Utilisation des attributs
 - [PthreadDetach](./PthreadDetach.md) - Alternative au détachement via attributs
-- [Vue d'ensemble](./README.md) - Guide des threads
+- [Vue d'ensemble](Threads.md) - Guide des threads
 
 </div>
 </div>

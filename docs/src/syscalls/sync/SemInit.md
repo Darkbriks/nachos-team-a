@@ -299,8 +299,8 @@ Aucun bug connu à ce jour.
 
 ## VOIR AUSSI
 
-- [SemP](SemWait.md) - Opération P (wait) sur un sémaphore
-- [SemV](SemPost.md) - Opération V (signal) sur un sémaphore
+- [SemWait](SemWait.md) - Opération P (wait) sur un sémaphore
+- [SemPost](SemPost.md) - Opération V (signal) sur un sémaphore
 - [SemDestroy](./SemDestroy.md) - Destruction d'un sémaphore
 - [SetMaxSemForProcess](./SetMaxSemForProcess.md) - Redimensionnement manuel de la table
 - [Vue d'ensemble](Sync.md) - Guide complet des sémaphores

@@ -5,7 +5,7 @@
 # Appels système sur les Sémaphores
 
 - [SemInit](./SemInit.md)
-- [SemP](SemWait.md)
-- [SemV](SemPost.md)
+- [SemWait](SemWait.md)
+- [SemPost](SemPost.md)
 - [SemDestroy](./SemDestroy.md)
 - [SetMaxSemForProcess](./SetMaxSemForProcess.md)

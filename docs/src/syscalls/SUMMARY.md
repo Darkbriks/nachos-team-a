@@ -10,7 +10,7 @@
 # Console I/O
 
 - [Console](./console/SUMMARY.md)
-    -  [Vue d'ensemble](./console/README.md)
+    - [Vue d'ensemble](./console/Console.md)
     - [PutChar](./console/PutChar.md)
     - [GetChar](./console/GetChar.md)
     - [PutString](./console/PutString.md)
@@ -21,7 +21,7 @@
 # Threads
 
 - [Threads](./threads/SUMMARY.md)
-    - [Vue d'ensemble](./threads/README.md)
+    - [Vue d'ensemble](threads/Threads.md)
     - [PthreadCreate](./threads/PthreadCreate.md)
     - [PthreadExit](./threads/PthreadExit.md)
     - [PthreadJoin](./threads/PthreadJoin.md)
@@ -30,9 +30,9 @@
 # Sémaphores
 
 - [Sémaphores](./sync/SUMMARY.md)
-    - [Vue d'ensemble](./sync/README.md)
+    - [Vue d'ensemble](./sync/Sync.md)
     - [SemInit](./sync/SemInit.md)
-    - [SemP](sync/SemWait.md)
-    - [SemV](sync/SemPost.md)
+    - [SemWait](sync/SemWait.md)
+    - [SemPost](sync/SemPost.md)
     - [SemDestroy](./sync/SemDestroy.md)
     - [SetMaxSemForProcess](./sync/SetMaxSemForProcess.md)

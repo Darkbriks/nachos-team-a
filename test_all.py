@@ -201,7 +201,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_lot_of_thread_from_different_functions.txt",
-                         line_to_execute =f"./nachos-step{CURRENT_STEP} -rs 5 -x ./makethreads",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} {RS} -x ./makethreads",
                          name = "Test création de plusieurs threads",
                          description = "Test du lancement de plusieurs threads depuis un programme utilisateur, avec plusieurs niveaux de threads."
                          )

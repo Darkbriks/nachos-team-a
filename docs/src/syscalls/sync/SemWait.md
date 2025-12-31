@@ -1,6 +1,6 @@
-# SemP
+# SemWait
 
-`SemP` - Opération P (wait/acquire) sur un sémaphore
+`SemWait` - Opération P (wait/acquire) sur un sémaphore
 
 ## SYNOPSIS
 ```c
@@ -11,7 +11,7 @@ int SemWait(int sem_id);
 
 ## DESCRIPTION
 
-`SemP` effectue l'opération P (Proberen) sur le sémaphore identifié par `sem_id`. Cette opération décrémente le compteur du sémaphore et bloque le thread appelant si le compteur devient négatif.
+`SemWait` effectue l'opération P (Proberen) sur le sémaphore identifié par `sem_id`. Cette opération décrémente le compteur du sémaphore et bloque le thread appelant si le compteur devient négatif.
 
 Numéro d'appel système : `25`
 
@@ -92,7 +92,7 @@ void increment_thread(void *arg) {
     for (int i = 0; i < 1000; i++) {
         // Entrer en section critique
         if (SemWait(mutex) < 0) {
-            PutString("Erreur SemP\n", 13);
+            PutString("Erreur SemWait\n", 13);
             ExitThread();
         }
         

@@ -1,6 +1,6 @@
-# SemV
+# SemPost
 
-`SemV` - Opération V (signal/release) sur un sémaphore
+`SemPost` - Opération V (signal/release) sur un sémaphore
 
 ## SYNOPSIS
 ```c
@@ -11,7 +11,7 @@ int SemPost(int sem_id);
 
 ## DESCRIPTION
 
-`SemV` effectue l'opération V (Verhogen) sur le sémaphore identifié par `sem_id`. Cette opération incrémente le compteur du sémaphore et réveille un thread bloqué en attente sur `SemWait()` si la queue n'est pas vide.
+`SemPost` effectue l'opération V (Verhogen) sur le sémaphore identifié par `sem_id`. Cette opération incrémente le compteur du sémaphore et réveille un thread bloqué en attente sur `SemWait()` si la queue n'est pas vide.
 
 Numéro d'appel système : `26`
 
@@ -62,7 +62,7 @@ Descripteur du sémaphore sur lequel effectuer l'opération V.
 ### Localisation du code
 
 - **Stub utilisateur** : `code/test/start.S`
-- **Handler noyau** : `code/userprog/userSem.cc:handle_SC_SemV()`
+- **Handler noyau** : `code/userprog/userSem.cc:handle_SC_SemPost()`
 - **Implémentation** :
     - `code/userprog/addrspace.cc:AddrSpace::SemaphorePost()`
     - `code/threads/synch.cc:Semaphore::V()`

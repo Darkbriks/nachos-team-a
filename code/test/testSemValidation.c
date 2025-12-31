@@ -11,15 +11,15 @@ void test_normal_usage() {
         return;
     }
 
-    int ret = SemP(sem);
+    int ret = SemWait(sem);
     if (ret != 0) {
-        PutString("FAIL: SemP failed\n", 19);
+        PutString("FAIL: SemWait failed\n", 19);
         return;
     }
 
-    ret = SemV(sem);
+    ret = SemPost(sem);
     if (ret != 0) {
-        PutString("FAIL: SemV failed\n", 19);
+        PutString("FAIL: SemPost failed\n", 19);
         return;
     }
     ret = SemDestroy(sem);
@@ -52,7 +52,7 @@ void test_use_after_destroy() {
     PutString("Test 3: Use after destroy\n", 28);
     sem = SemInit(1);
     SemDestroy(sem);
-    int ret = SemP(sem);
+    int ret = SemWait(sem);
     if (ret == 0) {
         PutString("FAIL: Used destroyed semaphore\n", 33);
         return;
@@ -61,13 +61,14 @@ void test_use_after_destroy() {
 }
 
 // Test 4: Multi-threaded synchronization
-void thread_func(void *arg) {
+void* thread_func(void *arg) {
     int sem = (int)(void *)arg;
     PutString("  Thread: Waiting on semaphore...\n", 36);
-    SemP(sem);
+    SemWait(sem);
     PutString("  Thread: Got semaphore\n", 27);
-    SemV(sem);
+    SemPost(sem);
     PutString("  Thread: Released semaphore\n", 31);
+    return 0;
 }
 
 void test_threading() {
@@ -76,13 +77,13 @@ void test_threading() {
 
     sem = SemInit(0);
     PutString("  Main: Creating thread...\n", 29);
-    CreateThread(thread_func, (void *)sem);
+    PthreadCreate(0, 0, thread_func, (void *)sem);
 
     PutString("  Main: Sleeping briefly...\n", 30);
     Sleep(100);
 
     PutString("  Main: Signaling semaphore\n", 30);
-    SemV(sem);
+    SemPost(sem);
 
     Sleep(200); // Give thread time to finish
 

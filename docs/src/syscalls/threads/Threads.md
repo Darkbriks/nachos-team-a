@@ -122,7 +122,7 @@ Chaque thread possède :
 <div class="callout callout-warning">
     <div class="callout-title">Race conditions</div>
     <div class="callout-content">
-        <p>Les variables globales sont partagées sans protection. Utilisez des <a href="../sync/README.md">sémaphores</a> pour synchroniser les accès.</p>
+        <p>Les variables globales sont partagées sans protection. Utilisez des <a href="../sync/Sync.md">sémaphores</a> pour synchroniser les accès.</p>
     </div>
 </div>
 
@@ -214,7 +214,7 @@ int main() {
 - [PthreadCreate](./PthreadCreate.md) - Création de thread
 - [PthreadJoin](./PthreadJoin.md) - Attente de terminaison
 - [Attributs de thread](./attrs.md) - Configuration des threads
-- [Sémaphores](../sync/README.md) - Synchronisation entre threads
+- [Sémaphores](../sync/Sync.md) - Synchronisation entre threads
 - [Gestion des erreurs](../errors.md) - errno et codes d'erreur
 
 </div>

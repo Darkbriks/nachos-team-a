@@ -1,6 +1,6 @@
 # Threads
 
-- [Threads Overview](./README.md)
+- [Threads Overview](Threads.md)
 
 # Appels système sur les Threads
 

@@ -149,13 +149,13 @@ int main() {
     SetMaxSemForProcess(1);
     
     // sem1 (handle 0) est toujours valide
-    if (SemP(sem1) == 0) {
+    if (SemWait(sem1) == 0) {
         PutString("sem1 OK\n", 9);
-        SemV(sem1);
+        SemPost(sem1);
     }
     
     // sem2 (handle 1) est PERDU
-    if (SemP(sem2) < 0) {
+    if (SemWait(sem2) < 0) {
         PutString("sem2 perdu!\n", 13);
     }
     
