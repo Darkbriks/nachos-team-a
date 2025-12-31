@@ -1,0 +1,10 @@
+Type here: You typed: a
+Machine halting!
+
+Ticks: total 3056, idle 2400, system 590, user 66
+Disk I/O: reads 0, writes 0
+Console I/O: reads 2, writes 24
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

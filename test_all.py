@@ -128,6 +128,14 @@ if __name__ == "__main__":
     all_test : list[Test] = []
 
     all_test.append(Test(
+                         file_expect="test_halt.txt",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./halt",
+                         name= "Test Halt" ,
+                         description = "Test du syscall Halt depuis un programme utilisateur."
+                         )
+                   )
+
+    all_test.append(Test(
                          file_expect="test_putchar_user_mode_result_expected.txt",
                          line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./putChar",
                          name= "Test PutChar" ,
@@ -136,10 +144,34 @@ if __name__ == "__main__":
                    )
 
     all_test.append(Test(
+                         file_expect = "test_putString_user_mode_expect.txt",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./putString",
+                         name = "Test PutString",
+                         description = "Test du syscall PutString depuis un programme utilisateur dans un cas normal."
+                         )
+                   )
+
+    all_test.append(Test(
                          file_expect = "test_putStringError_user_mode_expect.txt",
                          line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./putStringError",
                          name = "Test PutString overflow buffer",
                          description = "Test du syscall PutString depuis un programme utilisateur avec en entrée une chaîne de caractères plus longue que la taille du buffer."
+                         )
+                   )
+
+    all_test.append(Test(
+                         file_expect = "test_putInt.txt",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./putInt",
+                         name = "Test PutInt",
+                         description = "Test du syscall PutInt depuis un programme utilisateur dans un cas normal."
+                         )
+                     )
+
+    all_test.append(Test(
+                         file_expect = "test_getChar.txt",
+                         line_to_execute =f'echo "a" | ./nachos-step{CURRENT_STEP} -x ./getChar',
+                         name = "Test GetChar",
+                         description = "Test du syscall GetChar depuis un programme utilisateur dans un cas normal."
                          )
                    )
 
@@ -232,6 +264,14 @@ if __name__ == "__main__":
                    )
 
     all_test.append(Test(
+                         file_expect = "test_multithreadSleep.txt",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} {RS} -x ./multithreadSleep",
+                         name = "Test Sleep concurrent",
+                         description = "Test de la gestion concurrente des appels Sleep depuis plusieurs threads dans un programme utilisateur."
+                         )
+                   )
+
+    all_test.append(Test(
                          file_expect = "test_multiplethread_use_putString.txt",
                          line_to_execute =f"./nachos-step{CURRENT_STEP} {RS} -x ./multi_thread_putString",
                          name = "Test PutString concurrent",
@@ -276,6 +316,62 @@ if __name__ == "__main__":
                         line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./testSemValidation",
                         name = "Vérification du comportement nominal des sémaphores dans un contexte d'utilisation normal",
                         description = "Test pour vérifier le comportement nominal des sémaphores dans un contexte d'utilisation normal."
+                    )
+                )
+
+    all_test.append(Test(
+                        file_expect = "test_useLib.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./useLib",
+                        name = "Test utilisation de la librairie utilisateur",
+                        description = "Test pour vérifier l'utilisation correcte de la librairie utilisateur fournie avec Nachos."
+                    )
+                )
+
+    all_test.append(Test(
+                        file_expect = "test_thread_basicThreadCreate.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./threads/basicThreadsCreate",
+                        name = "Test basicThreadCreate",
+                        description = "Test pour vérifier la création de threads basique."
+                    )
+                )
+
+    all_test.append(Test(
+                        file_expect ="test_thread_exitRetVal.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./threads/exitRetVal",
+                        name = "Test exitRetVal",
+                        description = "Test pour vérifier la valeur de retour des threads à leur sortie."
+                    )
+                )
+
+    all_test.append(Test(
+                        file_expect ="test_thread_joinOnTerminated.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./threads/joinOnTerminated",
+                        name = "Test joinOnTerminated",
+                        description = "Test pour vérifier le comportement de join sur un thread déjà terminé."
+                    )
+                )
+
+    all_test.append(Test(
+                        file_expect ="test_thread_threadAttr.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./threads/threadAttr",
+                        name = "Test threadAttr",
+                        description = "Test pour vérifier les attributs des threads."
+                    )
+                )
+
+    all_test.append(Test(
+                        file_expect ="test_thread_threadDetach.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./threads/threadDetach",
+                        name = "Test threadDetach",
+                        description = "Test pour vérifier le détachement des threads."
+                    )
+                )
+
+    all_test.append(Test(
+                        file_expect ="test_thread_threadJoinErrors.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./threads/threadJoinErrors",
+                        name = "Test threadJoinErrors",
+                        description = "Test pour vérifier la gestion des erreurs lors de l'appel à threadJoin."
                     )
                 )
 

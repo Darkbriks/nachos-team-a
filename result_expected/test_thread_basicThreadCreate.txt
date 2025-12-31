@@ -1,0 +1,14 @@
+=== Test PthreadCreate Basic ===
+Thread 1 executed
+Thread 3 executed
+Thread 2 executed
+SUCCESS: All threads created and joined correctly
+Machine halting!
+
+Ticks: total 17110, idle 13596, system 3160, user 354
+Disk I/O: reads 0, writes 0
+Console I/O: reads 0, writes 137
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

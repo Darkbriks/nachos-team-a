@@ -1,0 +1,26 @@
+=== Test PthreadJoin Error Cases ===
+Test 1: Join non-existent thread
+Test 1: PASS - Cannot join non-existent thread
+Test 2: Self-join
+Test 2: PASS - Cannot self-join
+Test 3: Double join
+Thread executing
+Test 3: PASS - Cannot join twice
+Test 4: Two threads joining same thread
+Thread executing
+Attempting to join from child thread
+Attempting to join from child thread
+Test 4: PASS - Only one joiner succeeded
+Test 5: Join detached thread
+Test 5: PASS - Cannot join detached thread
+SUCCESS: All join error tests passed
+Thread executing
+Machine halting!
+
+Ticks: total 65471, idle 53387, system 11480, user 604
+Disk I/O: reads 0, writes 0
+Console I/O: reads 0, writes 535
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...
