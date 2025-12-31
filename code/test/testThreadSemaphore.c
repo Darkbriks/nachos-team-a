@@ -1,4 +1,5 @@
 #include "syscall.h"
+#include "types.h"
 
 int counter = 0;
 int mutex_id;
@@ -20,11 +21,11 @@ int main() {
     }
 
     posix_thread_t tid1, tid2;
-    PthreadCreate(&tid1, nullptr, (void *(*)(void *))increment_thread, nullptr);
-    PthreadCreate(&tid2, nullptr, (void *(*)(void *))increment_thread, nullptr);
+    PthreadCreate(&tid1, NULL, (void *(*)(void *))increment_thread, NULL);
+    PthreadCreate(&tid2, NULL, (void *(*)(void *))increment_thread, NULL);
 
-    PthreadJoin(tid1, nullptr);
-    PthreadJoin(tid2, nullptr);
+    PthreadJoin(tid1, NULL);
+    PthreadJoin(tid2, NULL);
 
     PutString("Counter final: ", 15);
     PutInt(counter);  // Devrait être 2000
