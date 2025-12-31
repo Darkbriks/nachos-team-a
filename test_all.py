@@ -26,6 +26,24 @@ TEST_DIR=PROJECT_ROOT + "/result_expected"
 tmp_null = PROJECT_ROOT.split("/")
 HOME_USER = f"/{tmp_null[1]}/{tmp_null[2]}/{tmp_null[3]}/tmp"
 
+
+class Test:
+    name : str
+    file_expect : str
+    description : str
+    line_to_execute : str
+
+    def __init__(self,
+                         name : str, file_expect :str,
+                         description : str,
+                         line_to_execute : str):
+        self.name = name
+        self.file_expect = file_expect
+        self.description = description
+        self.line_to_execute = line_to_execute
+
+
+
 def print_line(text : str, color : str, desc : str) -> None:
     name_length = len(text)
     sep_length = (LINE_LENGTH - name_length - 12) // 2
@@ -51,8 +69,9 @@ def exec_nachos(prog : str, tmp_file : str) -> bool:
                 f.write(e.output.decode("utf-8"))
         return True
 
-def verify_exec(file_expect : str, tmp_file : str, name_of_test : str, desc : str, has_failed : bool = True) -> int:
-    p = subprocess.run(["diff", "-u", file_expect,  tmp_file], capture_output=True)
+def verify_exec(file_expect : str, tmp_file : str,
+                         name_of_test : str, desc : str, has_failed : bool = True) -> int:
+    p = subprocess.run(["diff", "-u", "-I", "Ticks*", file_expect,  tmp_file], capture_output=True)
 
     # Si les fichiers sont identiques ou qu'on a un random seed et pas d'erreur fatale
     if p.returncode == 0 or (RS != "" and not has_failed):
@@ -64,14 +83,15 @@ def verify_exec(file_expect : str, tmp_file : str, name_of_test : str, desc : st
     return 1
 
 
-def test(args : list[str]) -> int:
-    file_expect = args[0]
-    arguments = args[1]
-    name_of_test = args[2]
-    desc = args[3]
+def test(arg : Test) -> int:
+    file_expect = arg.file_expect
+    arguments = arg.line_to_execute
+    name_of_test = arg.name
+    desc = arg.description
     tmp_file= HOME_USER + "/" + file_expect
     failed = exec_nachos(arguments, tmp_file)
-    return verify_exec(TEST_DIR + "/" +  file_expect, tmp_file, name_of_test, desc, failed)
+    return verify_exec(TEST_DIR + "/" +  file_expect, tmp_file,
+                         name_of_test, desc, failed)
 
 def generate(args : list[str]) -> int:
     file_expect = args[0]
@@ -105,106 +125,174 @@ if __name__ == "__main__":
     else:
         RS = ""
 
-    file_to_check=["test_putchar_user_mode_result_expected.txt",
-                   "test_putString_user_mode_expect.txt",
-                   "test_putStringError_user_mode_expect.txt",
-                   "test_getString_expected.txt",
-                   "test_getInt_positive_integer_expected.txt",
-                   "test_getInt_negative_integer_expected.txt",
-                   "test_getInt_positive_integer_overflow_expected.txt",
-                   "test_getInt_negative_integer_overflow_expected.txt",
-                   "test_getInt_erno_not_integer_value_expected.txt",
-                   "test_getString_erno_negative_size.txt",
-                   "test_lot_of_thread_from_different_functions.txt",
-                   "test_one_thread_join_an_other_without_corner_case.txt",
-                   "simple_sleep.txt",
-                   "simple_sleep_until.txt",
-                   "test_multiplethread_use_putString.txt",
-                   "test_autoexit.txt",
-                   "test_autoexit2.txt",
-                   "test_Semaphore_value_1_user.txt",
-                   "test_Semaphore_2.txt"
-                ]
+    all_test : list[Test] = []
 
-    # la ligne de commande pour nachos
-    arguments=[f"./nachos-step{CURRENT_STEP} -x ./putChar",
-               f"./nachos-step{CURRENT_STEP} -x ./putString",
-               f"./nachos-step{CURRENT_STEP} -x ./putStringError",
-               f'echo "Bob" | ./nachos-step{CURRENT_STEP} -x ./getString',
-               f'echo "5" | ./nachos-step{CURRENT_STEP} -x ./getInt',
-               f'echo "-5" | ./nachos-step{CURRENT_STEP} -x ./getInt',
-               f'echo "9999999999" | ./nachos-step{CURRENT_STEP} -x ./getInt',
-               f'echo "-9999999999" | ./nachos-step{CURRENT_STEP} -x ./getInt',
-               f'echo "ab1c" | ./nachos-step{CURRENT_STEP} -x ./getInt',
-               f"./nachos-step{CURRENT_STEP} -x ./getErrno",
-               f"./nachos-step{CURRENT_STEP} {RS} -x ./makethreads",
-               f"./nachos-step{CURRENT_STEP} -x ./testJoin",
-               f"./nachos-step{CURRENT_STEP} -x ./simpleSleep",
-               f"./nachos-step{CURRENT_STEP} -x ./simpleSleepUntil",
-               f"./nachos-step{CURRENT_STEP} {RS} -x ./multi_thread_putString",
-               f"./nachos-step{CURRENT_STEP} {RS} -x ./testAutoExit",
-               f"./nachos-step{CURRENT_STEP} {RS} -x ./testAutoExit2",
-               f"./nachos-step{CURRENT_STEP} {RS} -x ./testThreadSemaphore",
-               f"./nachos-step{CURRENT_STEP} {RS} -x ./testThreadSemaphore2"
-            ]
+    all_test.append(Test(
+                         file_expect="test_putchar_user_mode_result_expected.txt",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./putChar",
+                         name= "Test PutChar" ,
+                         description = "Test du syscall PutChar depuis un programme utilisateur dans un cas normal."
+                         )
+                   )
 
-    #le nom du test a affiché en cas d'échec
-    name_of_test=["Test PutChar" ,
-                  "Test PutString normal",
-                  "Test PutString overflow buffer",
-                  "Test GetString avec EOF",
-                  "Test GetInt entier positif",
-                  "Test GetInt entier négatif",
-                  "Test GetInt entier positif overflow",
-                  "Test GetInt entier négatif overflow",
-                  "Test GetInt valeur non numérique",
-                  "Test GetString taille négative",
-                  "Test création de plusieurs threads",
-                  "Test ThreadJoin classique",
-                  "Plusieurs tests du syscall sleep en monothread",
-                  "Plusieurs tests du syscall sleepUntil en monothread",
-                  "Test PutString concurrent",
-                  "Test terminaison automatique des threads 1",
-                  "Test terminaison automatique des threads 2",
-                  "Test Sémaphore initialisée à 1 en mode user",
-                  "Test Augmentation automatique de la taille de la table des sémaphores"
-                ]
+    all_test.append(Test(
+                         file_expect = "test_putStringError_user_mode_expect.txt",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./putStringError",
+                         name = "Test PutString overflow buffer",
+                         description = "Test du syscall PutString depuis un programme utilisateur avec en entrée une chaîne de caractères plus longue que la taille du buffer."
+                         )
+                   )
 
-    test_desc=[
-        "Test du syscall PutChar depuis un programme utilisateur dans un cas normal.",
-        "Test du syscall PutString depuis un programme utilisateur dans un cas normal.",
-        "Test du syscall PutString depuis un programme utilisateur avec en entrée une chaîne de caractères plus longue que la taille du buffer.",
-        "Test du syscall GetString depuis un programme utilisateur dans un cas normal avec EOF.",
-        "Test du syscall GetInt depuis un programme utilisateur avec un entier positif.",
-        "Test du syscall GetInt depuis un programme utilisateur avec un entier négatif.",
-        "Test du syscall GetInt depuis un programme utilisateur avec un entier positif dépassant la valeur maximale.",
-        "Test du syscall GetInt depuis un programme utilisateur avec un entier négatif dépassant la valeur minimale.",
-        "Test du syscall GetInt depuis un programme utilisateur avec une chaîne de caractères non numérique.",
-        "Test du syscall GetString depuis un programme utilisateur avec en paramètre une taille de chaîne négative. Doit échouer, et errno doit être mis à E_INVAL (1).",
-        "Test du lancement de plusieurs threads depuis un programme utilisateur, avec plusieurs niveaux de threads.",
-        "Test du syscall ThreadJoin dans un cas classique sans erreur depuis un programme utilisateur.",
-        "Quelques tests du syscall Sleep dans un contexte mono thread",
-        "Quelques tests du syscall SleepUntil dans un contexte mono thread",
-        "Test de la gestion concurrente des appels PutString depuis plusieurs threads dans un programme utilisateur.",
-        "Test de la terminaison automatique des threads (pas d'appel explicite à ThreadExit) depuis un programme utilisateur.",
-        "Test de la terminaison automatique des threads (pas d'appel explicite à ThreadExit) depuis un programme utilisateur.",
-        "Test pour les sémaphores au niveau utilisateur. Vérifie que les sémaphores permettent à un thread d'en attendre un autre si la sémaphore est initialisée à 1",
-        "Test pour vérifier que la table des sémaphores s'agrandit automatiquement lorsque le nombre de sémaphores créés dépasse la taille initiale."
-    ]
+    all_test.append(Test(
+                         file_expect = "test_getString_expected.txt",
+                         line_to_execute =f'echo "Bob" | ./nachos-step{CURRENT_STEP} -x ./getString',
+                         name = "Test GetString avec EOF",
+                         description = "Test du syscall GetString depuis un programme utilisateur dans un cas normal avec EOF."
+                         )
+                   )
+
+    all_test.append(Test(
+                         file_expect = "test_getInt_positive_integer_expected.txt",
+                         line_to_execute =f'echo "5" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+                         name = "Test GetInt entier positif",
+                         description = "Test du syscall GetInt depuis un programme utilisateur avec un entier positif."
+                         )
+                   )
+
+    all_test.append(Test(
+                         file_expect = "test_getInt_negative_integer_expected.txt",
+                         line_to_execute =f'echo "-5" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+                         name = "Test GetInt entier négatif",
+                         description = "Test du syscall GetInt depuis un programme utilisateur avec un entier négatif."
+                         )
+                   )
+
+    all_test.append(Test(
+                         file_expect = "test_getInt_positive_integer_overflow_expected.txt",
+                         line_to_execute =f'echo "9999999999" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+                         name = "Test GetInt entier positif overflow",
+                         description = "Test du syscall GetInt depuis un programme utilisateur avec un entier positif dépassant la valeur maximale."
+                         )
+                   )
+
+    all_test.append(Test(
+                         file_expect = "test_getInt_negative_integer_overflow_expected.txt",
+                         line_to_execute =f'echo "-9999999999" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+                         name = "Test GetInt entier négatif overflow",
+                         description = "Test du syscall GetInt depuis un programme utilisateur avec un entier négatif dépassant la valeur minimale."
+                         )
+                   )
+
+    all_test.append(Test(
+                         file_expect = "test_getInt_erno_not_integer_value_expected.txt",
+                         line_to_execute =f'echo "ab1c" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+                         name = "Test GetInt valeur non numérique",
+                         description = "Test du syscall GetInt depuis un programme utilisateur avec une chaîne de caractères non numérique."
+                         )
+                   )
+
+    all_test.append(Test(
+                         file_expect = "test_getString_erno_negative_size.txt",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./getErrno",
+                         name = "Test GetString taille négative",
+                         description = "Test du syscall GetString depuis un programme utilisateur avec en paramètre une taille de chaîne négative. Doit échouer, et errno doit être mis à E_INVAL (1)."
+                         )
+                   )
+
+    all_test.append(Test(
+                         file_expect = "test_lot_of_thread_from_different_functions.txt",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -rs 5 -x ./makethreads",
+                         name = "Test création de plusieurs threads",
+                         description = "Test du lancement de plusieurs threads depuis un programme utilisateur, avec plusieurs niveaux de threads."
+                         )
+                   )
+
+    all_test.append(Test(
+                         file_expect = "test_one_thread_join_an_other_without_corner_case.txt",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./testJoin",
+                         name = "Test ThreadJoin classique",
+                         description = "Test du syscall ThreadJoin dans un cas classique sans erreur depuis un programme utilisateur."
+                         )
+                   )
+
+    all_test.append(Test(
+                         file_expect = "simple_sleep.txt",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./simpleSleep",
+                         name = "Plusieurs tests du syscall sleep en monothread",
+                         description = "Quelques tests du syscall Sleep dans un contexte mono thread"
+                         )
+                   )
+
+    all_test.append(Test(
+                         file_expect = "simple_sleep_until.txt",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./simpleSleepUntil",
+                         name = "Plusieurs tests du syscall sleepUntil en monothread",
+                         description = "Quelques tests du syscall SleepUntil dans un contexte mono thread"
+                         )
+                   )
+
+    all_test.append(Test(
+                         file_expect = "test_multiplethread_use_putString.txt",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} {RS} -x ./multi_thread_putString",
+                         name = "Test PutString concurrent",
+                         description = "Test de la gestion concurrente des appels PutString depuis plusieurs threads dans un programme utilisateur."
+                         )
+                   )
+
+    all_test.append(Test(
+                         file_expect = "test_autoexit.txt",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} {RS} -x ./testAutoExit",
+                         name = "Test terminaison automatique des threads 1",
+                         description = "Test de la terminaison automatique des threads (pas d'appel explicite à ThreadExit) depuis un programme utilisateur."
+                         )
+                   )
+
+    all_test.append(Test(
+                         file_expect = "test_autoexit2.txt",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} {RS} -x ./testAutoExit2",
+                         name = "Test terminaison automatique des threads 2",
+                         description = "Test de la terminaison automatique des threads (pas d'appel explicite à ThreadExit) depuis un programme utilisateur."
+                         )
+                   )
+
+    all_test.append(Test(
+                         file_expect = "test_Semaphore_value_1_user.txt",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} {RS} -x ./testThreadSemaphore",
+                         name = "Test Sémaphore initialisée à 1 en mode user",
+                         description = "Test pour les sémaphores au niveau utilisateur. Vérifie que les sémaphores permettent à un thread d'en attendre un autre si la sémaphore est initialisée à 1"
+                         )
+                   )
+
+    all_test.append(Test(
+                        file_expect = "test_Semaphore_2.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./testThreadSemaphore2",
+                        name = "Test Augmentation automatique de la taille de la table des sémaphores",
+                        description = "Test pour vérifier que la table des sémaphores s'agrandit automatiquement lorsque le nombre de sémaphores créés dépasse la taille initiale."
+                        )
+                    )
+
+    all_test.append(Test(
+                        file_expect = "sem_validation.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./testSemValidation",
+                        name = "Vérification du comportement nominal des sémaphores dans un contexte d'utilisation normal",
+                        description = "Test pour vérifier le comportement nominal des sémaphores dans un contexte d'utilisation normal."
+                    )
+                )
+
 
     total : int = 0
 
     if "generate-tests" in sys.argv:
-        for i in range(len(file_to_check)):
-            generate( [TEST_DIR+"/"+file_to_check[i], arguments[i] ])
+        for i in range(len(all_test)):
+            generate( [TEST_DIR+"/"+all_test[i].file_expect, all_test[i].line_to_execute ])
         exit(1)
 
     color = bcolors.FAIL
     exit_code = 1
-    for i in range(len(file_to_check)):
-        total += test([file_to_check[i], arguments[i], name_of_test[i], test_desc[i]])
+    for i in range(len(all_test)):
+        total += test(all_test[i])
     if total == 0:
         color = bcolors.OKGREEN
         exit_code = 0
-    print_line(f" {total} test(s) échoué(s) sur {len(file_to_check)} test(s) ", color, "")
+    print_line(f" {total} test(s) échoué(s) sur {len(all_test)} test(s) ", color, "")
     exit(exit_code)

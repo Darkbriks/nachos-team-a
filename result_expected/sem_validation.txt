@@ -1,0 +1,31 @@
+
+=== Semaphore Validation Tests ===
+
+Test 1: Normal semaphore usage
+PASS: Normal usage works
+
+Test 2: Invalid initial value
+PASS: Rejected negative initial value
+
+Test 3: Use after destroy
+PASS: Rejected destroyed semaphore
+
+Test 5: Multi-threaded usage
+  Main: Creating thread...
+  Main: Sleeping briefly...
+  Thread: Waiting on semaphore...
+  Main: Signaling semaphore
+  PThread: Got semaphore
+  Thread: Released semaphore
+ASS: Multi-threaded test complete
+
+=== All tests completed ===
+Machine halting!
+
+Ticks: total 59385, idle 48700, system 10120, user 565
+Disk I/O: reads 0, writes 0
+Console I/O: reads 0, writes 488
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

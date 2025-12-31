@@ -33,14 +33,14 @@ Numéro d'appel système : `26`
 ## PARAMÈTRES
 
 ### `sem_id`
-Déscripteur du sémaphore sur lequel effectuer l'opération V.
+Descripteur du sémaphore sur lequel effectuer l'opération V.
 
 **Type** : `int`
 **Direction** : IN
 **Registre** : `$4`
 **Contraintes** :
-- Doit être un déscripteur valide retourné par `SemInit()`
-- Doit être dans l'intervalle [0, 15]
+- Doit être un descripteur valide retourné par `SemInit()`
+- Doit être dans l'intervalle [0, maxSemaphores-1] (max 511)
 - Le sémaphore ne doit pas avoir été détruit
 
 ## VALEUR DE RETOUR
@@ -62,14 +62,10 @@ Déscripteur du sémaphore sur lequel effectuer l'opération V.
 ### Localisation du code
 
 - **Stub utilisateur** : `code/test/start.S`
-- **Handler noyau** : `code/userprog/exception.cc:handle_SC_SemPost()`
-- **Implémentation** : 
-  - `code/userprog/addrspace.cc:AddrSpace::SemaphoreV()`
-  - `code/threads/synch.cc:Semaphore::V()`
-
-### Algorithme de validation
-
-Identique à `SemWait()` :
+- **Handler noyau** : `code/userprog/userSem.cc:handle_SC_SemV()`
+- **Implémentation** :
+    - `code/userprog/addrspace.cc:AddrSpace::SemaphorePost()`
+    - `code/threads/synch.cc:Semaphore::V()`
 
 ### Thread-safety
 
@@ -79,6 +75,8 @@ Identique à `SemWait()` :
 - Thread réveillé de manière atomique
 
 ## DÉCISIONS DE CONCEPTION
+
+*TODO*
 
 ## EXEMPLES
 
@@ -256,7 +254,7 @@ Erreur: handle invalide
 ### États de la machine
 
 **Avant l'appel** :
-- `$4` : Déscripteur du sémaphore
+- `$4` : Descripteur du sémaphore
 - Compteur sémaphore : valeur ≥ 0
 - Queue d'attente : 0+ threads bloqués
 
@@ -287,7 +285,7 @@ Erreur: handle invalide
 
 ## FAILLES ET VULNÉRABILITÉS
 
-Aucune vulnérabilité connue a ce jour.
+Aucune vulnérabilité connue à ce jour.
 
 ## BUGS CONNUS
 
@@ -301,14 +299,15 @@ Aucun bug connu à ce jour.
 ## VOIR AUSSI
 
 - [SemInit](./SemInit.md) - Création d'un sémaphore
-- [SemP](SemWait.md) - Opération P (wait) sur un sémaphore
+- [SemWait](SemWait.md) - Opération P (wait) sur un sémaphore
 - [SemDestroy](./SemDestroy.md) - Destruction d'un sémaphore
-- [Vue d'ensemble](./README.md) - Guide complet des sémaphores
+- [SetMaxSemForProcess](./SetMaxSemForProcess.md) - Redimensionnement de la table
+- [Vue d'ensemble](Sync.md) - Guide complet des sémaphores
 
 ## AUTEURS
 
-Antoine, 21 Dec 2025
+Antoine, 31 Dec 2025
 
 ## DERNIÈRE RÉVISION
 
-21 Dec 2025 par Antoine
+31 Dec 2025

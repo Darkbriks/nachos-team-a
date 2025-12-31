@@ -165,7 +165,7 @@ if (result != -1) {
 ## Voir aussi
 
 - [Gestion des erreurs](./errors.md) - Vue d'ensemble du mécanisme errno
-- [Console I/O](./console/README.md) - Appels avec gestion d'erreur
+- [Console I/O](console/Console.md) - Appels avec gestion d'erreur
 - [my_stdlib](../userspace/my_stdlib.md) - Fonctions print_error()
 
 ## Auteurs

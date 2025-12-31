@@ -1,6 +1,6 @@
 # Appels système
 
-[Vue d'ensemble](README.md)
+[Vue d'ensemble](Syscalls.md)
 
 # Gestion des erreurs
 
@@ -35,3 +35,4 @@
     - [SemP](sync/SemWait.md)
     - [SemV](sync/SemPost.md)
     - [SemDestroy](./sync/SemDestroy.md)
+    - [SetMaxSemForProcess](./sync/SetMaxSemForProcess.md)

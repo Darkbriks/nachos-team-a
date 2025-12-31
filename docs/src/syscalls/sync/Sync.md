@@ -1,7 +1,5 @@
 # Vue d'ensemble - Synchronisation par sémaphores
 
-> Mettre a jour la doc
-
 Les appels système de sémaphores permettent la synchronisation entre threads utilisateur au sein d'un même processus. NachOS fournit une implémentation sécurisée basée sur des descripteurs.
 
 ## Opérations disponibles
@@ -10,6 +8,7 @@ Les appels système de sémaphores permettent la synchronisation entre threads u
 - **[SemP](SemWait.md)** : Opération P (wait/acquire) sur un sémaphore
 - **[SemV](SemPost.md)** : Opération V (signal/release) sur un sémaphore
 - **[SemDestroy](./SemDestroy.md)** : Détruit un sémaphore
+- **[SetMaxSemForProcess](./SetMaxSemForProcess.md)** : Redimensionne la table de sémaphores
 
 ## Architecture
 
@@ -22,21 +21,32 @@ Les sémaphores utilisent une table de descripteurs au niveau de chaque processu
 - **Validation stricte** : chaque descripteur est vérifié avant utilisation
 - **Nettoyage automatique** : libération à la terminaison du processus
 
-### Limites actuelles
+### Limites et dimensionnement
 
-| Paramètre | Valeur | Configurable |
-|-----------|--------|--------------|
-| **Sémaphores par processus** | 16 | Non (actuellement) |
-| **Partage inter-threads** | Oui | - |
-| **Partage inter-processus** | Non | - |
+| Paramètre                   | Valeur   | Configurable       |
+|-----------------------------|----------|--------------------|
+| **Taille initiale table**   | 16       | Non (compile-time) |
+| **Taille maximale table**   | 512      | Non (compile-time) |
+| **Auto-expansion**          | Oui (×2) | -                  |
+| **Partage inter-threads**   | Oui      | -                  |
+| **Partage inter-processus** | Non      | -                  |
 
-> **Note** : Il devrait être possible dans le futur de spécifier la taille de la table de sémaphores lors de la création du processus, permettant d'éliminer l'overhead si aucune synchronisation n'est requise.
+### Gestion dynamique de la table
+
+La table de sémaphores s'adapte automatiquement aux besoins :
+
+1. **Taille initiale** : 16 slots (défini par `INITIAL_SEMAPHORE_TABLE_SIZE`)
+2. **Auto-expansion** : Si `SemInit()` est appelé et la table est pleine, elle double automatiquement
+3. **Taille maximale** : 512 slots (défini par `MAX_SEMAPHORES_PER_PROCESS`)
+4. **Pré-allocation** : `SetMaxSemForProcess()` permet de dimensionner manuellement
+
+> **Note** : Le facteur d'expansion (×2) est susceptible d'évoluer dans les versions futures.
 
 ## Cycle de vie d'un sémaphore
 
 ```
 ┌─────────────┐
-│  SemInit()  │  Retourne handle (0-15)
+│  SemInit()  │  Retourne handle (0 à maxSemaphores-1)
 └──────┬──────┘
        │
        ▼
@@ -61,12 +71,13 @@ Les sémaphores utilisent une table de descripteurs au niveau de chaque processu
 
 Tous les appels système de sémaphores retournent un code d'erreur et définissent `errno` en cas d'échec.
 
-| Appel        | Retour succès      | Retour erreur | Définit errno |
-|--------------|--------------------|---------------|---------------|
-| SemInit      | descripteur (0-15) | -1            | Oui           |
-| SemP         | 0                  | -1            | Oui           |
-| SemV         | 0                  | -1            | Oui           |
-| SemDestroy   | 0                  | -1            | Oui           |
+| Appel                      | Succès      | Échec  | Codes errno possibles |
+|----------------------------|-------------|--------|-----------------------|
+| `SemInit(value)`           | handle (≥0) | -1     | `E_INVAL`, `E_FTABLE` |
+| `SemP(sem_id)`             | 0           | -1     | `E_NOENT`             |
+| `SemV(sem_id)`             | 0           | -1     | `E_NOENT`             |
+| `SemDestroy(sem_id)`       | 0           | -1     | `E_NOENT`             |
+| `SetMaxSemForProcess(max)` | 0           | -1     | `E_INVAL`             |
 
 ## Thread-safety
 
@@ -150,12 +161,13 @@ Les sémaphores sont locaux à un processus.
 
 ## Performances
 
-| Opération    | Complexité temporelle | Notes                          |
-|--------------|----------------------|--------------------------------|
-| `SemInit`    | O(1)                 | Allocation bitmap              |
-| `SemP`       | O(1)*                | *Bloquant si compteur = 0      |
-| `SemV`       | O(1)                 | Réveil thread O(1)             |
-| `SemDestroy` | O(1)                 | Libération bitmap              |
+| Opération                    | Complexité temporelle | Notes                     |
+|------------------------------|-----------------------|---------------------------|
+| `SemInit` (liste non pleine) | O(1)                  | Allocation O(1)           |
+| `SemInit` (liste pleine)     | O(n)                  | Réallocation O(n)         |
+| `SemP`                       | O(1)*                 | *Bloquant si compteur = 0 |
+| `SemV`                       | O(1)                  | Réveil thread O(1)        |
+| `SemDestroy`                 | O(1)                  | Libération bitmap         |
 
 ## Voir aussi
 
@@ -163,8 +175,8 @@ Les sémaphores sont locaux à un processus.
 
 ## Auteurs
 
-Antoine, 21 Dec 2025
+Antoine, 25 Dec 2025
 
 ## Dernière révision
 
-21 Dec 2025 par Antoine
+25 Dec 2025 par Antoine
