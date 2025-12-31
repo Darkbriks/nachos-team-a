@@ -167,3 +167,46 @@ void handle_SC_PthreadDetach(){
     const int tid = machine->ReadRegister(4);
     RETURN(do_PthreadDetach(tid) );
 }
+
+void handle_SC_Pthread_attr_init() {
+    const int attr_ptr = machine->ReadRegister(4);
+    if (attr_ptr <= 0) { RETURN(-E_INVAL); }
+
+    posix_thread_attr_t attr;
+    posix_thread_attr_init(&attr);
+
+    for (unsigned int i = 0; i < sizeof(posix_thread_attr_t); i++) {
+        if (!machine->WriteMem(attr_ptr + i, 1, reinterpret_cast<char*>(&attr)[i])) {
+            RETURN(-E_FAULT);
+        }
+    }
+    RETURN(0);
+}
+
+void handle_SC_Pthread_attr_destroy() {
+    RETURN(0);
+}
+
+void handle_SC_Pthread_attr_setdetachstate() {
+    const int attr_ptr = machine->ReadRegister(4);
+    const int detachstate = machine->ReadRegister(5);
+
+    if (attr_ptr <= 0) { RETURN(-E_INVAL); }
+    if (detachstate != JOINABLE && detachstate != DETACHED) { RETURN(-E_INVAL); }
+    if (!machine->WriteMem(attr_ptr, sizeof(int), detachstate)) { RETURN(-E_FAULT); }
+
+    RETURN(0);
+}
+
+void handle_SC_Pthread_attr_getdetachstate() {
+    const int attr_ptr = machine->ReadRegister(4);
+    const int result_ptr = machine->ReadRegister(5);
+
+    if (attr_ptr <= 0 || result_ptr <= 0) { RETURN(-E_INVAL); }
+
+    int detachstate;
+    if (!machine->ReadMem(attr_ptr, sizeof(int), &detachstate)) { RETURN(-E_FAULT); }
+    if (!machine->WriteMem(result_ptr, sizeof(int), detachstate)) { RETURN(-E_FAULT); }
+
+    RETURN(0);
+}

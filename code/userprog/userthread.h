@@ -46,6 +46,11 @@ void handle_SC_PthreadExit();
 void handle_SC_PthreadJoin();
 void handle_SC_PthreadDetach();
 
+void handle_SC_Pthread_attr_init();
+void handle_SC_Pthread_attr_destroy();
+void handle_SC_Pthread_attr_setdetachstate();
+void handle_SC_Pthread_attr_getdetachstate();
+
 class Param{
     private:
         ptr_32 function ;

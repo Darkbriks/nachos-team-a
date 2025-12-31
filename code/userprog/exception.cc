@@ -119,8 +119,10 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(PthreadJoin)
         CASE_HANDLER(PthreadDetach)
 
-        // TODO : SC_Pthread_attr_init, SC_Pthread_attr_destroy,
-        // SC_Pthread_attr_setdetachstate, SC_Pthread_attr_getdetachstate
+        CASE_HANDLER(Pthread_attr_init)
+        CASE_HANDLER(Pthread_attr_destroy)
+        CASE_HANDLER(Pthread_attr_setdetachstate)
+        CASE_HANDLER(Pthread_attr_getdetachstate)
 
         CASE_HANDLER(Sleep)
         CASE_HANDLER(SleepUntil)
