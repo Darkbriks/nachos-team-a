@@ -60,6 +60,9 @@ static void ReadAtVirtual( OpenFile *executable, int virtualaddr,int numBytes, i
     // if ( goodTranslation < 0){
     //     ASSERT(FALSE);
     // }
+    // Don't remove these lines
+    machine->pageTable = pageTable;
+    machine->pageTableSize = numPages;
     char tmp[numBytes + 1];
     int maxSize = executable->ReadAt(tmp, numBytes,  position);
     for (int i = 0; i < maxSize; i++){ 
@@ -124,9 +127,6 @@ AddrSpace::AddrSpace(OpenFile *executable) {
     // and the stack segment
     bzero(machine->mainMemory, size);
 
-    // Don't remove these lines
-    machine->pageTable = pageTable;
-    machine->pageTableSize = size;
 
     // then, copy in the code and data segments into memory
     if (noffH.code.size > 0) {
