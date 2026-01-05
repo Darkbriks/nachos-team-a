@@ -160,6 +160,14 @@ if __name__ == "__main__":
                    )
 
     all_test.append(Test(
+                         file_expect = "test_putStringTooManyChars_user_mode_expect.txt",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./putStringTooManyChars",
+                         name = "Test PutString number of characters greater than the maximum value",
+                         description = "Test du syscall PutString depuis un programme utilisateur avec en entrée une chaîne de caractères plus longue que le nombre de charactères maximum."
+                         )
+                   )
+
+    all_test.append(Test(
                          file_expect = "test_putInt.txt",
                          line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./putInt",
                          name = "Test PutInt",
