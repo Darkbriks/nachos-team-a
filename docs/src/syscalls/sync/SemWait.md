@@ -13,7 +13,7 @@ int SemWait(int sem_id);
 
 `SemWait` effectue l'opération P (Proberen) sur le sémaphore identifié par `sem_id`. Cette opération décrémente le compteur du sémaphore et bloque le thread appelant si le compteur devient négatif.
 
-Numéro d'appel système : `25`
+Numéro d'appel système : `30`
 
 ### Comportement nominal
 
@@ -271,4 +271,4 @@ Antoine, 31 Dec 2025
 
 ## DERNIÈRE RÉVISION
 
-31 Dec 2025
+5 Jan 2026

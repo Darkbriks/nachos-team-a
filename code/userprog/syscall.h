@@ -50,24 +50,25 @@
 #define SC_PthreadExit 18
 #define SC_PthreadJoin 19
 #define SC_PthreadDetach 20
+#define SC_PthreadSelf 21
 
 /* --- Pthread attributes --- */
-#define SC_Pthread_attr_init 21
-#define SC_Pthread_attr_destroy 22
-#define SC_Pthread_attr_setdetachstate 23
-#define SC_Pthread_attr_getdetachstate 24
+#define SC_Pthread_attr_init 22
+#define SC_Pthread_attr_destroy 23
+#define SC_Pthread_attr_setdetachstate 24
+#define SC_Pthread_attr_getdetachstate 25
 
 /* --- Time --- */
-#define SC_Sleep 25
-#define SC_SleepUntil 26
-#define SC_GetCurrentTick 27
+#define SC_Sleep 26
+#define SC_SleepUntil 27
+#define SC_GetCurrentTick 28
 
 /* --- Semaphores --- */
-#define SC_SemInit 28
-#define SC_SemWait 29
-#define SC_SemPost 30
-#define SC_SemDestroy 31
-#define SC_SetMaxSemForProcess 32
+#define SC_SemInit 29
+#define SC_SemWait 30
+#define SC_SemPost 31
+#define SC_SemDestroy 32
+#define SC_SetMaxSemForProcess 33
 
 /* ============================================================
  * ERROR CODES
@@ -330,6 +331,13 @@ int PthreadJoin(posix_thread_t thread, void **retval);
  * @return 0 on success, -1 on error (check errno)
  */
 int PthreadDetach(posix_thread_t thread);
+
+/**
+ * @brief Get the TID of the current thread
+ *
+ * @return The TID on success ( >= 0 ), -1 on error (check errno)
+ */
+int PthreadSelf();
 
 /* -------------------------------------------------------------
  * POSIX THREAD ATTRIBUTES OPERATIONS

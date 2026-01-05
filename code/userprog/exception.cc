@@ -118,6 +118,7 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER_RETURN(PthreadExit)
         CASE_HANDLER(PthreadJoin)
         CASE_HANDLER(PthreadDetach)
+        CASE_HANDLER(PthreadSelf)
 
         CASE_HANDLER(Pthread_attr_init)
         CASE_HANDLER(Pthread_attr_destroy)

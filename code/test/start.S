@@ -345,6 +345,26 @@ PthreadDetach_ok:
     j      $31
     .end PthreadDetach
 
+/* PthreadSelf : with error handling */
+    .globl PthreadSelf
+    .ent	PthreadSelf
+PthreadSelf:
+    addiu $2,$0,SC_PthreadSelf
+    syscall
+    bgez  $2,PthreadSelf_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+PthreadSelf_ok:
+    sw     $0,errno
+    j      $31
+    .end PthreadSelf
+
+
 /* Pthread_attr_init : with error handling */
     .globl Pthread_attr_init
     .ent	Pthread_attr_init

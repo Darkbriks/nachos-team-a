@@ -17,29 +17,40 @@ NachOS implémente un ensemble simplifié d'appels système inspiré de UNIX/POS
 Les appels système sont identifiés par des numéros définis dans `syscall.h` :
 
 ```c
-#define SC_Halt           0
-#define SC_Exit           1
-#define SC_Exec           2
-#define SC_Join           3
-#define SC_Create         4
-#define SC_Open           5
-#define SC_Read           6
-#define SC_Write          7
-#define SC_Close          8
-#define SC_Fork           9
-#define SC_Yield          10
-#define SC_PutChar        11
-#define SC_PutString      12
-#define SC_GetChar        13
-#define SC_GetString      14
-#define SC_PutInt         15
-#define SC_GetInt         16
-#define SC_CreateThread   17
-#define SC_ExitThread     18
-#define SC_JoinThread     19
-#define SC_Sleep          20
-#define SC_SleepUntil     21
-#define SC_GetCurrentTick 22
+#define SC_Halt 0
+#define SC_Exit 1
+#define SC_Exec 2
+#define SC_Join 3
+#define SC_Create 4
+#define SC_Open 5
+#define SC_Read 6
+#define SC_Write 7
+#define SC_Close 8
+#define SC_Fork 9
+#define SC_Yield 10
+#define SC_PutChar 11
+#define SC_PutString 12
+#define SC_GetChar 13
+#define SC_GetString 14
+#define SC_PutInt 15
+#define SC_GetInt 16
+#define SC_PthreadCreate 17
+#define SC_PthreadExit 18
+#define SC_PthreadJoin 19
+#define SC_PthreadDetach 20
+#define SC_PthreadSelf 21
+#define SC_Pthread_attr_init 22
+#define SC_Pthread_attr_destroy 23
+#define SC_Pthread_attr_setdetachstate 24
+#define SC_Pthread_attr_getdetachstate 25
+#define SC_Sleep 26
+#define SC_SleepUntil 27
+#define SC_GetCurrentTick 28
+#define SC_SemInit 29
+#define SC_SemWait 30
+#define SC_SemPost 31
+#define SC_SemDestroy 32
+#define SC_SetMaxSemForProcess 33
 ```
 
 ## Limitations connues
@@ -120,4 +131,4 @@ Antoine, 20 Dec 2025
 
 ## Dernière révision
 
-20 Dec 2025 par Antoine
+5 Jan 2026

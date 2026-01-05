@@ -141,6 +141,12 @@ int do_PthreadDetach(posix_thread_t tid) {
     return 0;
 }
 
+void do_PthreadSelf(){
+    Thread* thread = currentThread;
+    if (!thread) { RETURN(-E_NOSPC);}
+    RETURN(currentThread->getTID());
+}
+
 void handle_SC_PthreadCreate(){
     const int thread_ptr = machine->ReadRegister(4);
     const int attr_ptr = machine->ReadRegister(5);
@@ -166,6 +172,10 @@ void handle_SC_PthreadJoin(){
 void handle_SC_PthreadDetach(){
     const int tid = machine->ReadRegister(4);
     RETURN(do_PthreadDetach(tid) );
+}
+
+void handle_SC_PthreadSelf(){
+    do_PthreadSelf();
 }
 
 void handle_SC_Pthread_attr_init() {

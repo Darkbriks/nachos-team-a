@@ -1,14 +1,11 @@
 #include "syscall.h"
 
 void super_fun_2(void *arg) {
-    PutString("f2 : arg address = ", 18); PutInt((int) arg); PutChar('\n');
     PutString("f2 : arg value = ", 16); PutInt(*(int *) arg); PutChar('\n');
 }
 
 void super_fun_1(void *arg) {
     int tmp = *(int *) arg;
-
-    PutString("f1 : arg address = ", 18); PutInt((int) &tmp); PutChar('\n');
     PutString("f1 : arg value = ", 16); PutInt(tmp); PutChar('\n');
 
     for (int i = 0; i < tmp + 1; i++) {

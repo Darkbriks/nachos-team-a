@@ -5,7 +5,7 @@
 #include "linked_list.h"
 #include "system.h"
 
-#define MAX_THREAD 10 // TODO check for user's max process
+#define MAX_THREAD 30 // TODO check for user's max process
 #define MAX_PROCESS 15 // TODO PUT it in User
 
 

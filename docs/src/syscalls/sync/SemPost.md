@@ -13,7 +13,7 @@ int SemPost(int sem_id);
 
 `SemPost` effectue l'opération V (Verhogen) sur le sémaphore identifié par `sem_id`. Cette opération incrémente le compteur du sémaphore et réveille un thread bloqué en attente sur `SemWait()` si la queue n'est pas vide.
 
-Numéro d'appel système : `26`
+Numéro d'appel système : `31`
 
 ### Comportement nominal
 
@@ -310,4 +310,4 @@ Antoine, 31 Dec 2025
 
 ## DERNIÈRE RÉVISION
 
-31 Dec 2025
+5 Jan 2026

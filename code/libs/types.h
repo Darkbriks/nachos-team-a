@@ -59,4 +59,11 @@ typedef int32_t  intptr_t;
 #define JOINABLE 0
 #define DETACHED 1
 
+/* ============================================================
+ * Semaphore macros
+ * ============================================================
+ */
+
+typedef int sem_t;
+
 #endif /* NACHOS_LIB_TYPES_H */

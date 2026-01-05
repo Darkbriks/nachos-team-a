@@ -1,5 +1,6 @@
 #ifndef EXCEPTION_H
 #define EXCEPTION_H
+#include "system.h"
 
 #define RETURN(value) \
         machine->WriteRegister(2, (int)(value)); \

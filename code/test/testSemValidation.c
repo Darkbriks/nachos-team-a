@@ -1,8 +1,9 @@
 #include "syscall.h"
+#include "types.h"
 
 // Test 1: Normal semaphore usage
 void test_normal_usage() {
-    int sem;
+    sem_t sem;
     PutString("Test 1: Normal semaphore usage\n", 35);
 
     sem = SemInit(1);
@@ -33,7 +34,7 @@ void test_normal_usage() {
 
 // Test 2: Invalid initial value
 void test_invalid_init() {
-    int sem;
+    sem_t sem;
     PutString("Test 2: Invalid initial value\n", 32);
 
     sem = SemInit(-5);
@@ -48,7 +49,7 @@ void test_invalid_init() {
 
 // Test 3: Using destroyed semaphore (should fail)
 void test_use_after_destroy() {
-    int sem;
+    sem_t sem;
     PutString("Test 3: Use after destroy\n", 28);
     sem = SemInit(1);
     SemDestroy(sem);
@@ -62,7 +63,7 @@ void test_use_after_destroy() {
 
 // Test 4: Multi-threaded synchronization
 void* thread_func(void *arg) {
-    int sem = (int)(void *)arg;
+    sem_t sem = (int)(void *)arg;
     PutString("  Thread: Waiting on semaphore...\n", 36);
     SemWait(sem);
     PutString("  Thread: Got semaphore\n", 27);
@@ -72,7 +73,7 @@ void* thread_func(void *arg) {
 }
 
 void test_threading() {
-    int sem;
+    sem_t sem;
     PutString("Test 5: Multi-threaded usage\n", 31);
 
     sem = SemInit(0);

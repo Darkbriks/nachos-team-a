@@ -2,6 +2,7 @@
 
 - [Introduction](./Introduction.md)
 - [Table des matières](./SUMMARY.md)
+- [Headers du projet](./Headers.md)
 - [Syscalls List](./syscalls/SUMMARY.md)
   - [Syscall Overview](syscalls/Syscalls.md)
   - [Console](./syscalls/console/SUMMARY.md)

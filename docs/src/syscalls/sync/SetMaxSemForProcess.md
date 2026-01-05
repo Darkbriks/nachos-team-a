@@ -13,7 +13,7 @@ int SetMaxSemForProcess(unsigned int maxSemaphores);
 
 `SetMaxSemForProcess` permet de redimensionner explicitement la table de sémaphores du processus courant. Cette fonction est utile pour pré-allouer une table de grande taille si le nombre de sémaphores nécessaires est connu à l'avance, évitant ainsi les réallocations dynamiques.
 
-Numéro d'appel système : `28`
+Numéro d'appel système : `33`
 
 ### Comportement nominal
 
@@ -213,4 +213,4 @@ Antoine, 25 Dec 2025
 
 ## DERNIÈRE RÉVISION
 
-25 Dec 2025 par Antoine
+5 Jan 2026

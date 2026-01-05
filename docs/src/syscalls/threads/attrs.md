@@ -65,6 +65,8 @@ Pthread_attr_destroy(&attr)
 
 Initialise un objet d'attributs avec les valeurs par défaut.
 
+**Numéro d'appel système** : `SC_Pthread_attr_init` (22)
+
 ### Synopsis
 
 ```c
@@ -109,6 +111,8 @@ Pthread_attr_destroy(&attr);
 ## Pthread_attr_destroy
 
 Détruit un objet d'attributs.
+
+**Numéro d'appel système** : `SC_Pthread_attr_destroy` (23)
 
 ### Synopsis
 
@@ -157,6 +161,8 @@ int Pthread_attr_setdetachstate(pthread_attr_t *attr, int detachstate);
 ### Description
 
 Configure si les threads créés avec cet attribut seront joinables ou détachés.
+
+**Numéro d'appel système** : `SC_Pthread_attr_setdetachestate` (24)
 
 ### Paramètres
 
@@ -209,6 +215,8 @@ int Pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate);
 ### Description
 
 Récupère la valeur de l'attribut `detachstate`.
+
+**Numéro d'appel système** : `SC_Pthread_attr_getdetachestate` (25)
 
 ### Paramètres
 

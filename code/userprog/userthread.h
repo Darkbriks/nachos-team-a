@@ -45,6 +45,7 @@ void handle_SC_PthreadCreate();
 void handle_SC_PthreadExit();
 void handle_SC_PthreadJoin();
 void handle_SC_PthreadDetach();
+void handle_SC_PthreadSelf();
 
 void handle_SC_Pthread_attr_init();
 void handle_SC_Pthread_attr_destroy();

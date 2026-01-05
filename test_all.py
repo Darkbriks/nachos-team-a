@@ -374,6 +374,13 @@ if __name__ == "__main__":
                         description = "Test pour vérifier la gestion des erreurs lors de l'appel à threadJoin."
                     )
                 )
+    all_test.append(Test(
+                        file_expect ="test_producteurs_consommateurs.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./producteur_consommateur",
+                        name = "Test Producteur consommateur ",
+                        description = "Test pour vérifier cohérence dans le cas d'un producteur/consommateur sur une liste partagée"
+                    )
+                )
 
 
     total : int = 0

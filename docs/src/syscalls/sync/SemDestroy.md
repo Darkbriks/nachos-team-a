@@ -13,7 +13,7 @@ int SemDestroy(int sem_id);
 
 `SemDestroy` détruit le sémaphore identifié par `sem_id`, libère ses ressources kernel et invalide le descripteur.
 
-Numéro d'appel système : `27`
+Numéro d'appel système : `32`
 
 ### Comportement nominal
 
@@ -252,4 +252,4 @@ Antoine, 31 Dec 2025
 
 ## DERNIÈRE RÉVISION
 
-31 Dec 2025
+5 Jan 2026

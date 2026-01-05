@@ -13,7 +13,7 @@ int SemInit(int value);
 
 `SemInit` crée un nouveau sémaphore avec une valeur initiale spécifiée et retourne un descripteur permettant de l'identifier. Le sémaphore peut ensuite être utilisé pour la synchronisation entre threads du même processus.
 
-Numéro d'appel système : `24`
+Numéro d'appel système : `29`
 
 ### Comportement nominal
 
@@ -311,4 +311,4 @@ Antoine, 25 Dec 2025
 
 ## DERNIÈRE RÉVISION
 
-25 Dec 2025 par Antoine
+5 Jan 2026
