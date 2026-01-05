@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../theme/custom-c9a1a890.css">
+        <link rel="stylesheet" href="../../theme/callouts-599be5a1.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-41a6da63.js";
+            window.path_to_searchindex_js = "../../searchindex-de3fa5b3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-0649e8f2.js"></script>
+        <script src="../../toc-9ab82147.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -187,7 +188,7 @@ int SetMaxSemForProcess(unsigned int maxSemaphores);
 </code></pre>
 <h2 id="description"><a class="header" href="#description">DESCRIPTION</a></h2>
 <p><code>SetMaxSemForProcess</code> permet de redimensionner explicitement la table de sémaphores du processus courant. Cette fonction est utile pour pré-allouer une table de grande taille si le nombre de sémaphores nécessaires est connu à l’avance, évitant ainsi les réallocations dynamiques.</p>
-<p>Numéro d’appel système : <code>28</code></p>
+<p>Numéro d’appel système : <code>33</code></p>
 <h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
 <ul>
 <li>Réalloue la table de sémaphores à la taille spécifiée</li>
@@ -299,13 +300,13 @@ int main() {
     SetMaxSemForProcess(1);
     
     // sem1 (handle 0) est toujours valide
-    if (SemP(sem1) == 0) {
+    if (SemWait(sem1) == 0) {
         PutString("sem1 OK\n", 9);
-        SemV(sem1);
+        SemPost(sem1);
     }
     
     // sem2 (handle 1) est PERDU
-    if (SemP(sem2) &lt; 0) {
+    if (SemWait(sem2) &lt; 0) {
         PutString("sem2 perdu!\n", 13);
     }
     
@@ -356,7 +357,7 @@ int main() {
 <h2 id="auteurs"><a class="header" href="#auteurs">AUTEURS</a></h2>
 <p>Antoine, 25 Dec 2025</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">DERNIÈRE RÉVISION</a></h2>
-<p>25 Dec 2025 par Antoine</p>
+<p>5 Jan 2026</p>
 
                     </main>
 

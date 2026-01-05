@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../theme/custom-c9a1a890.css">
+        <link rel="stylesheet" href="../theme/callouts-599be5a1.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-41a6da63.js";
+            window.path_to_searchindex_js = "../searchindex-de3fa5b3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-0649e8f2.js"></script>
+        <script src="../toc-9ab82147.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -191,29 +192,40 @@
 <h2 id="organisation-des-appels-système"><a class="header" href="#organisation-des-appels-système">Organisation des appels système</a></h2>
 <h3 id="par-numéro-sc_"><a class="header" href="#par-numéro-sc_">Par numéro (SC_*)</a></h3>
 <p>Les appels système sont identifiés par des numéros définis dans <code>syscall.h</code> :</p>
-<pre><code class="language-c">#define SC_Halt           0
-#define SC_Exit           1
-#define SC_Exec           2
-#define SC_Join           3
-#define SC_Create         4
-#define SC_Open           5
-#define SC_Read           6
-#define SC_Write          7
-#define SC_Close          8
-#define SC_Fork           9
-#define SC_Yield          10
-#define SC_PutChar        11
-#define SC_PutString      12
-#define SC_GetChar        13
-#define SC_GetString      14
-#define SC_PutInt         15
-#define SC_GetInt         16
-#define SC_CreateThread   17
-#define SC_ExitThread     18
-#define SC_JoinThread     19
-#define SC_Sleep          20
-#define SC_SleepUntil     21
-#define SC_GetCurrentTick 22
+<pre><code class="language-c">#define SC_Halt 0
+#define SC_Exit 1
+#define SC_Exec 2
+#define SC_Join 3
+#define SC_Create 4
+#define SC_Open 5
+#define SC_Read 6
+#define SC_Write 7
+#define SC_Close 8
+#define SC_Fork 9
+#define SC_Yield 10
+#define SC_PutChar 11
+#define SC_PutString 12
+#define SC_GetChar 13
+#define SC_GetString 14
+#define SC_PutInt 15
+#define SC_GetInt 16
+#define SC_PthreadCreate 17
+#define SC_PthreadExit 18
+#define SC_PthreadJoin 19
+#define SC_PthreadDetach 20
+#define SC_PthreadSelf 21
+#define SC_Pthread_attr_init 22
+#define SC_Pthread_attr_destroy 23
+#define SC_Pthread_attr_setdetachstate 24
+#define SC_Pthread_attr_getdetachstate 25
+#define SC_Sleep 26
+#define SC_SleepUntil 27
+#define SC_GetCurrentTick 28
+#define SC_SemInit 29
+#define SC_SemWait 30
+#define SC_SemPost 31
+#define SC_SemDestroy 32
+#define SC_SetMaxSemForProcess 33
 </code></pre>
 <h2 id="limitations-connues"><a class="header" href="#limitations-connues">Limitations connues</a></h2>
 <h3 id="thread-safety-partielle"><a class="header" href="#thread-safety-partielle">Thread-safety partielle</a></h3>
@@ -274,7 +286,7 @@ Programme utilisateur
 <h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
 <p>Antoine, 20 Dec 2025</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
-<p>20 Dec 2025 par Antoine</p>
+<p>5 Jan 2026</p>
 
                     </main>
 

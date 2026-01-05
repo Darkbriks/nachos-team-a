@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>SemDestroy - NachOS Manual</title>
+        <title>Threads Overview - NachOS Manual</title>
 
 
         <!-- Custom HTML head -->
@@ -179,230 +179,295 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="semdestroy"><a class="header" href="#semdestroy">SemDestroy</a></h1>
-<p><code>SemDestroy</code> - Détruit un sémaphore et libère ses ressources</p>
-<h2 id="synopsis"><a class="header" href="#synopsis">SYNOPSIS</a></h2>
+                        <h1 id="threads-utilisateur"><a class="header" href="#threads-utilisateur">Threads utilisateur</a></h1>
+<p>Cette page documente le système de threads utilisateur de NachOS et l’API pthread simplifiée.</p>
+<h2 id="vue-densemble"><a class="header" href="#vue-densemble">Vue d’ensemble</a></h2>
+<p>NachOS implémente un modèle de threads 1:1 où chaque thread utilisateur est directement supporté par un thread noyau (kernel thread). L’API est inspirée de POSIX pthreads.</p>
+<div class="callout callout-future">
+    
+<div class="callout-title">Évolution prévue</div>
+
+    
+<div class="callout-content">
+        
+<p>Dans une version future, il est envisagé de faire évoluer l'architecture vers un modèle plus proche de Linux :</p>
+
+        
+<ul>
+            
+<li>Bibliothèque pthread entièrement en espace utilisateur</li>
+
+            
+<li>Syscalls bas niveau</li>
+
+            
+<li>Allocation dynamique des stacks</li>
+
+        </ul>
+
+    </div>
+
+</div>
+
+<h2 id="api-rapide"><a class="header" href="#api-rapide">API rapide</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Fonction</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="./PthreadCreate.html">PthreadCreate</a></td><td>Créer un nouveau thread</td></tr>
+<tr><td><a href="./PthreadExit.html">PthreadExit</a></td><td>Terminer le thread courant</td></tr>
+<tr><td><a href="./PthreadJoin.html">PthreadJoin</a></td><td>Attendre la terminaison d’un thread</td></tr>
+<tr><td><a href="./PthreadDetach.html">PthreadDetach</a></td><td>Détacher un thread</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="attributs-de-création"><a class="header" href="#attributs-de-création">Attributs de création</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Fonction</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="./attrs.html#pthread_attr_init">Pthread_attr_init</a></td><td>Initialiser les attributs</td></tr>
+<tr><td><a href="./attrs.html#pthread_attr_destroy">Pthread_attr_destroy</a></td><td>Détruire les attributs</td></tr>
+<tr><td><a href="./attrs.html#pthread_attr_setdetachstate">Pthread_attr_setdetachstate</a></td><td>Définir l’état de détachement</td></tr>
+<tr><td><a href="./attrs.html#pthread_attr_getdetachstate">Pthread_attr_getdetachstate</a></td><td>Obtenir l’état de détachement</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="exemple-minimal"><a class="header" href="#exemple-minimal">Exemple minimal</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
-int SemDestroy(int sem_id);
-</code></pre>
-<h2 id="description"><a class="header" href="#description">DESCRIPTION</a></h2>
-<p><code>SemDestroy</code> détruit le sémaphore identifié par <code>sem_id</code>, libère ses ressources kernel et invalide le descripteur.</p>
-<p>Numéro d’appel système : <code>32</code></p>
-<h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
-<ul>
-<li>Vérifie la validité du handle <code>sem_id</code></li>
-<li>Marque le descripteur comme invalide</li>
-<li>Libère l’objet <code>Semaphore</code> kernel (destructeur appelé)</li>
-<li>Libère le slot dans la table de descripteurs (BitMap)</li>
-<li>Le handle peut être réutilisé par un futur <code>SemInit()</code></li>
-</ul>
-<h3 id="cas-particuliers"><a class="header" href="#cas-particuliers">Cas particuliers</a></h3>
-<ul>
-<li><strong>Descripteur invalide</strong> : Retourne -1</li>
-<li><strong>Double-free</strong> : Retourne -1</li>
-<li><strong>Threads bloqués</strong> : <strong>UNDEFINED BEHAVIOR</strong> - Ne pas détruire un sémaphore avec threads en attente</li>
-<li><strong>Nettoyage automatique</strong> : Si non détruit explicitement, libération automatique à la terminaison du processus</li>
-</ul>
-<h2 id="paramètres"><a class="header" href="#paramètres">PARAMÈTRES</a></h2>
-<h3 id="sem_id"><a class="header" href="#sem_id"><code>sem_id</code></a></h3>
-<p>Descripteur du sémaphore à détruire.</p>
-<p><strong>Type</strong> : <code>int</code>
-<strong>Direction</strong> : IN
-<strong>Registre</strong> : <code>$4</code>
-<strong>Contraintes</strong> :</p>
-<ul>
-<li>Doit être un handle valide retourné par <code>SemInit()</code></li>
-<li>Doit être dans l’intervalle [0, maxSemaphores-1] (max 511)</li>
-<li>Le sémaphore ne doit pas déjà être détruit</li>
-<li><strong>IMPORTANT</strong> : Aucun thread ne doit être bloqué sur ce sémaphore</li>
-</ul>
-<h2 id="valeur-de-retour"><a class="header" href="#valeur-de-retour">VALEUR DE RETOUR</a></h2>
-<p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
-<p><strong>En cas de succès</strong> : <code>0</code></p>
-<p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="implémentation"><a class="header" href="#implémentation">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
-<ul>
-<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
-<li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SemDestroy()</code></li>
-<li><strong>Implémentation</strong> : <code>code/userprog/addrspace.cc:AddrSpace::SemaphoreDestroy()</code></li>
-</ul>
-<h3 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h3>
-<p><strong>Garanties</strong> :</p>
-<ul>
-<li>Destruction atomique : pas de race condition entre threads</li>
-<li>Double-free impossible : flag <code>valid</code> protège</li>
-<li>Pas de corruption de la table</li>
-</ul>
-<p><strong>Limitation</strong> : Aucune vérification que des threads sont bloqués sur le sémaphore. Responsabilité de l’appelant.</p>
-<h2 id="décisions-de-conception"><a class="header" href="#décisions-de-conception">DÉCISIONS DE CONCEPTION</a></h2>
-<h3 id="pourquoi-nettoyage-automatique-"><a class="header" href="#pourquoi-nettoyage-automatique-">Pourquoi nettoyage automatique ?</a></h3>
-<p><strong>Robustesse</strong> : Évite les fuites mémoire si l’utilisateur oublie de détruire.</p>
-<p><strong>Pattern RAII</strong> : Ressource liée à la durée de vie du processus (<code>AddrSpace</code>).</p>
-<p><strong>Coût</strong> : Néant - le destructeur <code>~AddrSpace()</code> est appelé de toute façon.</p>
-<h2 id="exemples"><a class="header" href="#exemples">EXEMPLES</a></h2>
-<h3 id="exemple-1--utilisation-normale"><a class="header" href="#exemple-1--utilisation-normale">Exemple 1 : Utilisation normale</a></h3>
-<pre><code class="language-c">#include "syscall.h"
+void *my_thread(void *arg) {
+    int id = (int)(long)arg;
+    PutString("Hello from thread ", 18);
+    PutInt(id);
+    PutChar('\n');
+    return (void *)(long)(id * 2);
+}
 
 int main() {
-    int sem = SemInit(1);
-    if (sem &lt; 0) {
-        Exit(-1);
+    posix_thread_t tid;
+    void *retval;
+    
+    // Créer un thread
+    if (PthreadCreate(&amp;tid, 0, my_thread, (void *)42) != 0) {
+        PutString("Error creating thread\n", 22);
+        return 1;
     }
     
-    // Utiliser le sémaphore
-    SemWait(sem);
-    PutString("Section critique\n", 18);
-    SemPost(sem);
+    // Attendre sa terminaison
+    PthreadJoin(tid, &amp;retval);
     
-    // Nettoyer
-    if (SemDestroy(sem) == 0) {
-        PutString("Sémaphore détruit\n", 19);
-    }
+    PutString("Thread returned: ", 17);
+    PutInt((int)(long)retval);  // Affiche 84
+    PutChar('\n');
     
     return 0;
 }
 </code></pre>
-<h3 id="exemple-2--détection-de-double-free"><a class="header" href="#exemple-2--détection-de-double-free">Exemple 2 : Détection de double-free</a></h3>
-<pre><code class="language-c">#include "syscall.h"
+<h2 id="limitations-connues"><a class="header" href="#limitations-connues">Limitations connues</a></h2>
+<div class="callout callout-limitation">
+    
+<div class="callout-title">Allocation de stack statique</div>
 
-int main() {
-    int sem = SemInit(0);
     
-    // Première destruction : OK
-    if (SemDestroy(sem) == 0) {
-        PutString("Première destruction OK\n", 25);
-    }
+<div class="callout-content">
+        
+<p>Les stacks des threads sont allouées statiquement en fonction du TID :</p>
+
+        
+<pre><code>stack_top = numPages * PageSize - (TID + 1) * stackSize</code></pre>
+
+    </div>
+
+</div>
+
+<div class="callout callout-limitation">
     
-    // Deuxième destruction : ERREUR
-    if (SemDestroy(sem) &lt; 0) {
-        PutString("Erreur: déjà détruit\n", 22);
-    }
+<div class="callout-title">Nombre maximum de threads</div>
+
     
+<div class="callout-content">
+        
+<p>Maximum <code>MAX_THREAD</code> (10 par défaut) threads par processus.</p>
+
+        
+<p>Configurable dans <code>code/userprog/process.h</code>.</p>
+
+    </div>
+
+</div>
+
+<div class="callout callout-limitation">
+    
+<div class="callout-title">Taille de stack fixe</div>
+
+    
+<div class="callout-content">
+        
+<p>Chaque thread dispose de 2 pages (256 octets) de stack.</p>
+
+        
+<p>Pas de détection de stack overflow ni de guard pages.</p>
+
+    </div>
+
+</div>
+
+<div class="callout callout-fixme">
+    
+<div class="callout-title">errno non thread-safe</div>
+
+    
+<div class="callout-content">
+        
+<p>La variable <code>errno</code> est globale et partagée entre tous les threads.</p>
+
+        
+<p>Voir <a href="../errors.html#errno-global---non-thread-safe">Gestion des erreurs</a> pour plus de détails.</p>
+
+    </div>
+
+</div>
+
+<h2 id="modèle-mémoire"><a class="header" href="#modèle-mémoire">Modèle mémoire</a></h2>
+<p>Tous les threads d’un processus partagent le même espace d’adressage (<code>AddrSpace</code>), incluant :</p>
+<ul>
+<li><strong>Code</strong> : segment <code>.text</code> (lecture seule)</li>
+<li><strong>Données</strong> : segments <code>.data</code> et <code>.bss</code></li>
+<li><strong>Tas</strong> : variables dynamiques</li>
+<li><strong>Variables globales</strong> : partagées entre tous les threads</li>
+</ul>
+<p>Chaque thread possède :</p>
+<ul>
+<li><strong>Stack privée</strong> : variables locales, frames d’appel</li>
+<li><strong>Registres</strong> : sauvegardés/restaurés lors des context switches</li>
+<li><strong>TID</strong> : identifiant unique au sein du processus</li>
+</ul>
+<div class="callout callout-warning">
+    
+<div class="callout-title">Race conditions</div>
+
+    
+<div class="callout-content">
+        
+<p>Les variables globales sont partagées sans protection. Utilisez des <a href="../sync/Sync.html">sémaphores</a> pour synchroniser les accès.</p>
+
+    </div>
+
+</div>
+
+<h2 id="layout-mémoire"><a class="header" href="#layout-mémoire">Layout mémoire</a></h2>
+<pre><code>Espace d'adressage (numPages * PageSize)
+┌────────────────────────────┐ ← numPages * PageSize
+│      Stack main (TID 0)    │
+├────────────────────────────┤ ← numPages * PageSize - stackSize
+│      Stack thread 1        │
+├────────────────────────────┤ ← numPages * PageSize - 2 * stackSize
+│      Stack thread 2        │
+├────────────────────────────┤
+│           ...              │
+├────────────────────────────┤
+│     (espace libre)         │
+├────────────────────────────┤
+│           Tas              │
+├────────────────────────────┤
+│      .bss (données)        │
+├────────────────────────────┤
+│      .data (données)       │
+├────────────────────────────┤
+│      .text (code)          │
+└────────────────────────────┘ ← 0
+</code></pre>
+<h2 id="terminaison"><a class="header" href="#terminaison">Terminaison</a></h2>
+<h3 id="terminaison-explicite"><a class="header" href="#terminaison-explicite">Terminaison explicite</a></h3>
+<p>Un thread peut terminer explicitement avec <code>PthreadExit()</code> :</p>
+<pre><code class="language-c">void *my_thread(void *arg) {
+    // ... travail ...
+    PthreadExit((void *)42);
+    // Code jamais atteint
+}
+</code></pre>
+<h3 id="terminaison-implicite"><a class="header" href="#terminaison-implicite">Terminaison implicite</a></h3>
+<p>Si la fonction du thread retourne normalement, <code>PthreadExit()</code> est appelé automatiquement avec la valeur de retour :</p>
+<pre><code class="language-c">void *my_thread(void *arg) {
+    return (void *)42;  // Équivalent à PthreadExit((void *)42)
+}
+</code></pre>
+<div class="callout callout-note">
+    
+<div class="callout-title">Mécanisme interne</div>
+
+    
+<div class="callout-content">
+        
+<p>Le stub <code>PthreadCreate</code> dans <code>start.S</code> configure le registre <code>$ra</code> 
+        pour pointer vers <code>PthreadExit_wrapper</code>, qui appelle <code>PthreadExit</code> avec la valeur 
+        de retour en <code>$v0</code>.</p>
+
+    </div>
+
+</div>
+
+<h3 id="terminaison-du-processus"><a class="header" href="#terminaison-du-processus">Terminaison du processus</a></h3>
+<div class="callout callout-warning">
+    
+<div class="callout-title">Attente des threads</div>
+
+    
+<div class="callout-content">
+        
+<p>Le thread principal attend automatiquement la terminaison de tous les threads enfants avant de terminer le processus.</p>
+
+    </div>
+
+</div>
+
+<pre><code class="language-c">int main() {
+    posix_thread_t t1, t2;
+    
+    PthreadCreate(&amp;t1, 0, worker, 0);
+    PthreadCreate(&amp;t2, 0, worker, 0);
+
+    // Le thread principal attend t1 et t2 avant de terminer
     return 0;
 }
 </code></pre>
-<p><strong>Sortie attendue</strong> :</p>
-<pre><code>Première destruction OK
-Erreur: déjà détruit
-</code></pre>
-<h3 id="exemple-3--incorrect---destruction-avec-threads-bloqués"><a class="header" href="#exemple-3--incorrect---destruction-avec-threads-bloqués">Exemple 3 : INCORRECT - Destruction avec threads bloqués</a></h3>
-<pre><code class="language-c">#include "syscall.h"
+<h2 id="voir-aussi"><a class="header" href="#voir-aussi">Voir aussi</a></h2>
+<div class="callout callout-see-also">
+    
+<div class="callout-title">Voir aussi</div>
 
-int sem;
+    
+<div class="callout-content">
+<ul>
+<li><a href="./PthreadCreate.html">PthreadCreate</a> - Création de thread</li>
+<li><a href="./PthreadJoin.html">PthreadJoin</a> - Attente de terminaison</li>
+<li><a href="./attrs.html">Attributs de thread</a> - Configuration des threads</li>
+<li><a href="../sync/Sync.html">Sémaphores</a> - Synchronisation entre threads</li>
+<li><a href="../errors.html">Gestion des erreurs</a> - errno et codes d’erreur</li>
+</ul>
+</div>
 
-void blocked_thread(void *arg) {
-    PutString("Thread: attente sémaphore...\n", 30);
-    SemWait(sem);  // Bloque ici indéfiniment
-    PutString("Thread: réveillé\n", 18);  // Jamais atteint
-    ExitThread();
-}
+</div>
 
-int main() {
-    sem = SemInit(0);
-    
-    int tid = CreateThread(blocked_thread, 0);
-    Sleep(50);  // Laisser le thread bloquer
-    
-    // ⚠️ DANGER : Détruire le sémaphore avec thread bloqué
-    SemDestroy(sem);
-    
-    // Comportement indéfini : le thread bloqué peut crasher
-    
-    JoinThread(tid);  // Peut ne jamais retourner
-    return 0;
-}
-</code></pre>
-<p><strong>Comportement</strong> : UNDEFINED - Le thread bloqué peut :</p>
-<ul>
-<li>Crasher (segfault en accédant au sémaphore libéré)</li>
-<li>Rester bloqué indéfiniment</li>
-<li>Corrompre la mémoire</li>
-</ul>
-<p><strong>Solution</strong> : Toujours signaler les threads bloqués avant destruction :</p>
-<pre><code class="language-c">SemPost(sem);  // Réveiller le thread
-JoinThread(tid);  // Attendre terminaison
-SemDestroy(sem);  // Maintenant sûr
-</code></pre>
-<h3 id="exemple-4--nettoyage-automatique"><a class="header" href="#exemple-4--nettoyage-automatique">Exemple 4 : Nettoyage automatique</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-int main() {
-    int sem = SemInit(1);
-    
-    SemWait(sem);
-    PutString("Travail...\n", 12);
-    SemPost(sem);
-    
-    // Terminer SANS détruire explicitement
-    // → Nettoyage automatique dans ~AddrSpace()
-    
-    return 0;  // Pas de fuite mémoire
-}
-</code></pre>
-<h2 id="comportement-détaillé"><a class="header" href="#comportement-détaillé">COMPORTEMENT DÉTAILLÉ</a></h2>
-<h3 id="états-de-la-machine"><a class="header" href="#états-de-la-machine">États de la machine</a></h3>
-<p><strong>Avant l’appel</strong> :</p>
-<ul>
-<li><code>$4</code> : Handle du sémaphore</li>
-<li><code>semaphoreTable[handle].valid</code> : true</li>
-<li><code>semaphoreBitmap-&gt;Test(handle)</code> : true</li>
-<li>Objet <code>Semaphore</code> existe en mémoire kernel</li>
-</ul>
-<p><strong>Pendant l’appel</strong> :</p>
-<ul>
-<li>Validations effectuées</li>
-<li><code>valid</code> flag mis à false</li>
-<li>Destructeur <code>~Semaphore()</code> appelé</li>
-<li>BitMap mis à jour : slot marqué libre</li>
-</ul>
-<p><strong>Après l’appel</strong> :</p>
-<ul>
-<li><code>$2</code> : 0 (succès) ou -1 (erreur)</li>
-<li><code>semaphoreTable[handle].valid</code> : false</li>
-<li><code>semaphoreTable[handle].semaphore</code> : nullptr</li>
-<li><code>semaphoreBitmap-&gt;Test(handle)</code> : false</li>
-<li>Handle réutilisable par <code>SemInit()</code></li>
-</ul>
-<h2 id="notes"><a class="header" href="#notes">NOTES</a></h2>
-<ul>
-<li><strong>Ordre de destruction</strong> : Pas d’ordre imposé, mais recommandé de détruire en ordre inverse de création (style LIFO/RAII)</li>
-<li><strong>Nettoyage automatique</strong> : Même si non détruit, pas de fuite à la terminaison du processus</li>
-<li><strong>Handle réutilisable</strong> : Après destruction, le handle peut être réalloué immédiatement</li>
-<li><strong>Pas de vérification threads bloqués</strong> : Responsabilité de l’appelant</li>
-</ul>
-<h2 id="failles-et-vulnérabilités"><a class="header" href="#failles-et-vulnérabilités">FAILLES ET VULNÉRABILITÉS</a></h2>
-<p>Aucune vulnérabilité connue à ce jour.</p>
-<h2 id="bugs-connus"><a class="header" href="#bugs-connus">BUGS CONNUS</a></h2>
-<p>Aucun bug connu à ce jour.</p>
-<h2 id="historique-des-versions"><a class="header" href="#historique-des-versions">HISTORIQUE DES VERSIONS</a></h2>
-<ul>
-<li><strong>v1.0</strong> : Implémentation initiale avec adresses</li>
-<li><strong>v2.0</strong> : Modification avec table de descripteurs</li>
-</ul>
-<h2 id="voir-aussi"><a class="header" href="#voir-aussi">VOIR AUSSI</a></h2>
-<ul>
-<li><a href="./SemInit.html">SemInit</a> - Création d’un sémaphore</li>
-<li><a href="./SemWait.html">SemWait</a> - Opération P (wait) sur un sémaphore</li>
-<li><a href="./SemPost.html">SemPost</a> - Opération V (signal) sur un sémaphore</li>
-<li><a href="./SetMaxSemForProcess.html">SetMaxSemForProcess</a> - Redimensionnement de la table</li>
-<li><a href="Sync.html">Vue d’ensemble</a> - Guide complet des sémaphores</li>
-</ul>
-<h2 id="auteurs"><a class="header" href="#auteurs">AUTEURS</a></h2>
+<h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
 <p>Antoine, 31 Dec 2025</p>
-<h2 id="dernière-révision"><a class="header" href="#dernière-révision">DERNIÈRE RÉVISION</a></h2>
-<p>5 Jan 2026</p>
+<h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
+<p>31 Dec 2025</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../syscalls/sync/SemPost.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../syscalls/threads/SUMMARY.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../syscalls/sync/SetMaxSemForProcess.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../syscalls/threads/PthreadCreate.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -412,11 +477,11 @@ int main() {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../syscalls/sync/SemPost.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../syscalls/threads/SUMMARY.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../syscalls/sync/SetMaxSemForProcess.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../syscalls/threads/PthreadCreate.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

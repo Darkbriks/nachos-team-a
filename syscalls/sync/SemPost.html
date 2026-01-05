@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>SemP - NachOS Manual</title>
+        <title>SemPost - NachOS Manual</title>
 
 
         <!-- Custom HTML head -->
@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../theme/custom-c9a1a890.css">
+        <link rel="stylesheet" href="../../theme/callouts-599be5a1.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-41a6da63.js";
+            window.path_to_searchindex_js = "../../searchindex-de3fa5b3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-0649e8f2.js"></script>
+        <script src="../../toc-9ab82147.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,33 +179,34 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="semp"><a class="header" href="#semp">SemP</a></h1>
-<p><code>SemP</code> - Opération P (wait/acquire) sur un sémaphore</p>
+                        <h1 id="sempost"><a class="header" href="#sempost">SemPost</a></h1>
+<p><code>SemPost</code> - Opération V (signal/release) sur un sémaphore</p>
 <h2 id="synopsis"><a class="header" href="#synopsis">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
-int SemP(int sem_id);
+int SemPost(int sem_id);
 </code></pre>
 <h2 id="description"><a class="header" href="#description">DESCRIPTION</a></h2>
-<p><code>SemP</code> effectue l’opération P (Proberen) sur le sémaphore identifié par <code>sem_id</code>. Cette opération décrémente le compteur du sémaphore et bloque le thread appelant si le compteur devient négatif.</p>
-<p>Numéro d’appel système : <code>25</code></p>
+<p><code>SemPost</code> effectue l’opération V (Verhogen) sur le sémaphore identifié par <code>sem_id</code>. Cette opération incrémente le compteur du sémaphore et réveille un thread bloqué en attente sur <code>SemWait()</code> si la queue n’est pas vide.</p>
+<p>Numéro d’appel système : <code>31</code></p>
 <h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
 <ul>
-<li>Vérifie la validité du descripteur <code>sem_id</code></li>
-<li>Si compteur &gt; 0 : décrémente et retourne immédiatement</li>
-<li>Si compteur = 0 : bloque le thread en attente d’un <code>SemV()</code></li>
+<li>Vérifie la validité du handle <code>sem_id</code></li>
+<li>Incrémente le compteur du sémaphore de manière atomique</li>
+<li>Si des threads sont bloqués en <code>SemWait()</code> : en réveille un</li>
+<li>Retourne immédiatement (opération non-bloquante)</li>
 <li>L’opération est atomique et thread-safe</li>
 </ul>
 <h3 id="cas-particuliers"><a class="header" href="#cas-particuliers">Cas particuliers</a></h3>
 <ul>
 <li><strong>Handle invalide</strong> : Retourne -1</li>
 <li><strong>Sémaphore détruit</strong> : Retourne -1</li>
-<li><strong>Blocage indéfini</strong> : Si aucun <code>SemV()</code> n’est appelé, le thread reste bloqué (pas de timeout)</li>
-<li><strong>Interruptions</strong> : Le blocage n’est pas interruptible</li>
+<li><strong>Queue vide</strong> : Compteur simplement incrémenté, pas de réveil</li>
+<li><strong>Overflow</strong> : Compteur peut croître indéfiniment (pas de limite supérieure)</li>
 </ul>
 <h2 id="paramètres"><a class="header" href="#paramètres">PARAMÈTRES</a></h2>
 <h3 id="sem_id"><a class="header" href="#sem_id"><code>sem_id</code></a></h3>
-<p>Descripteur du sémaphore sur lequel effectuer l’opération P.</p>
+<p>Descripteur du sémaphore sur lequel effectuer l’opération V.</p>
 <p><strong>Type</strong> : <code>int</code>
 <strong>Direction</strong> : IN
 <strong>Registre</strong> : <code>$4</code>
@@ -233,134 +235,166 @@ int SemP(int sem_id);
 <h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
-<li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SemP()</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SemPost()</code></li>
 <li><strong>Implémentation</strong> :
 <ul>
-<li><code>code/userprog/addrspace.cc:AddrSpace::SemaphoreWait()</code></li>
-<li><code>code/threads/synch.cc:Semaphore::P()</code></li>
+<li><code>code/userprog/addrspace.cc:AddrSpace::SemaphorePost()</code></li>
+<li><code>code/threads/synch.cc:Semaphore::V()</code></li>
 </ul>
 </li>
 </ul>
 <h3 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h3>
-<p><strong>Sémaphore interne</strong> : <code>Semaphore::P()</code> utilise son propre lock interne :</p>
+<p><strong>Sémaphore interne</strong> : Désactivation des interruptions assure atomicité :</p>
 <ul>
-<li>Lock sémaphore acquis</li>
-<li>Si <code>value &gt; 0</code> : décrémente et retourne</li>
-<li>Sinon : thread ajouté à la queue, mis en sommeil</li>
-<li>Lock sémaphore libéré</li>
+<li>Pas de race condition entre V() concurrent</li>
+<li>Pas de corruption de la queue d’attente</li>
+<li>Thread réveillé de manière atomique</li>
 </ul>
 <h2 id="décisions-de-conception"><a class="header" href="#décisions-de-conception">DÉCISIONS DE CONCEPTION</a></h2>
 <p><em>TODO</em></p>
 <h2 id="exemples"><a class="header" href="#exemples">EXEMPLES</a></h2>
-<h3 id="exemple-1--mutex-basique"><a class="header" href="#exemple-1--mutex-basique">Exemple 1 : Mutex basique</a></h3>
+<h3 id="exemple-1--libération-de-mutex"><a class="header" href="#exemple-1--libération-de-mutex">Exemple 1 : Libération de mutex</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
 int mutex;
-int shared_counter = 0;
 
-void increment_thread(void *arg) {
-    for (int i = 0; i &lt; 1000; i++) {
-        // Entrer en section critique
-        if (SemP(mutex) &lt; 0) {
-            PutString("Erreur SemP\n", 13);
-            ExitThread();
-        }
-        
-        shared_counter++;
-        
-        // Sortir de section critique
-        SemV(mutex);
-    }
-    ExitThread();
+void critical_section() {
+    SemWait(mutex);
+    
+    PutString("Dans section critique\n", 23);
+    
+    SemPost(mutex);  // Libérer le mutex
 }
 
 int main() {
     mutex = SemInit(1);
     
-    int tid1 = CreateThread(increment_thread, 0);
-    int tid2 = CreateThread(increment_thread, 0);
-    
-    JoinThread(tid1);
-    JoinThread(tid2);
-    
-    PutString("Counter: ", 9);
-    PutInt(shared_counter);  // Devrait être 2000
-    PutChar('\n');
+    critical_section();
+    critical_section();
     
     SemDestroy(mutex);
     return 0;
 }
 </code></pre>
-<h3 id="exemple-2--rendez-vous-entre-threads"><a class="header" href="#exemple-2--rendez-vous-entre-threads">Exemple 2 : Rendez-vous entre threads</a></h3>
+<h3 id="exemple-2--signaler-terminaison"><a class="header" href="#exemple-2--signaler-terminaison">Exemple 2 : Signaler terminaison</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
-int rdv1, rdv2;
+int done;
 
-void thread_A(void *arg) {
-    PutString("A: Phase 1\n", 12);
-    Sleep(50);
+void worker_thread(void *arg) {
+    PutString("Worker: calcul en cours...\n", 28);
     
-    SemV(rdv1);  // Signaler à B
-    SemP(rdv2);  // Attendre B
+    // Simuler travail intensif
+    for (int i = 0; i &lt; 1000000; i++) {
+        // computation
+    }
     
-    PutString("A: Phase 2\n", 12);
-    ExitThread();
-}
-
-void thread_B(void *arg) {
-    PutString("B: Phase 1\n", 12);
-    Sleep(100);
+    PutString("Worker: terminé\n", 17);
     
-    SemV(rdv2);  // Signaler à A
-    SemP(rdv1);  // Attendre A
-    
-    PutString("B: Phase 2\n", 12);
+    SemPost(done);  // Signaler terminaison
     ExitThread();
 }
 
 int main() {
-    rdv1 = SemInit(0);
-    rdv2 = SemInit(0);
+    done = SemInit(0);
     
-    int ta = CreateThread(thread_A, 0);
-    int tb = CreateThread(thread_B, 0);
+    int tid = CreateThread(worker_thread, 0);
     
-    JoinThread(ta);
-    JoinThread(tb);
+    PutString("Main: attente worker...\n", 25);
+    SemWait(done);  // Bloque jusqu'au signal
+    PutString("Main: worker terminé!\n", 23);
     
-    SemDestroy(rdv1);
-    SemDestroy(rdv2);
+    JoinThread(tid);
+    SemDestroy(done);
     return 0;
 }
 </code></pre>
-<p><strong>Sortie garantie</strong> :</p>
-<pre><code>A: Phase 1
-B: Phase 1
-A: Phase 2   (ou B: Phase 2)
-B: Phase 2   (ou A: Phase 2)
+<h3 id="exemple-3--barrière-de-synchronisation"><a class="header" href="#exemple-3--barrière-de-synchronisation">Exemple 3 : Barrière de synchronisation</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+#define NUM_THREADS 5
+
+int barrier;
+int count = 0;
+int mutex;
+
+void barrier_thread(void *arg) {
+    int id = (int)arg;
+    
+    PutString("Thread ", 7);
+    PutInt(id);
+    PutString(": phase 1\n", 11);
+    
+    // Arriver à la barrière
+    SemWait(mutex);
+    count++;
+    if (count == NUM_THREADS) {
+        // Dernier thread : réveiller tous les autres
+        for (int i = 0; i &lt; NUM_THREADS - 1; i++) {
+            SemPost(barrier);
+        }
+    }
+    SemPost(mutex);
+    
+    if (count &lt; NUM_THREADS) {
+        SemWait(barrier);  // Attendre les autres
+    }
+    
+    PutString("Thread ", 7);
+    PutInt(id);
+    PutString(": phase 2\n", 11);
+    
+    ExitThread();
+}
+
+int main() {
+    barrier = SemInit(0);
+    mutex = SemInit(1);
+    
+    for (int i = 0; i &lt; NUM_THREADS; i++) {
+        CreateThread(barrier_thread, (void*)i);
+    }
+    
+    Sleep(500);
+    
+    SemDestroy(barrier);
+    SemDestroy(mutex);
+    return 0;
+}
 </code></pre>
-<h3 id="exemple-3--gestion-derreur"><a class="header" href="#exemple-3--gestion-derreur">Exemple 3 : Gestion d’erreur</a></h3>
+<p><strong>Sortie</strong> (ordre des threads peut varier) :</p>
+<pre><code>Thread 0: phase 1
+Thread 1: phase 1
+Thread 2: phase 1
+Thread 3: phase 1
+Thread 4: phase 1
+Thread 0: phase 2
+Thread 1: phase 2
+Thread 2: phase 2
+Thread 3: phase 2
+Thread 4: phase 2
+</code></pre>
+<h3 id="exemple-4--gestion-derreur"><a class="header" href="#exemple-4--gestion-derreur">Exemple 4 : Gestion d’erreur</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
 int main() {
-    int sem = SemInit(1);
+    int sem = SemInit(0);
     
-    // Utilisation normale
-    if (SemP(sem) == 0) {
-        PutString("P réussi\n", 10);
-        SemV(sem);
+    // V() sur sémaphore valide
+    if (SemPost(sem) == 0) {
+        PutString("V réussi\n", 10);
     }
     
     // Détruire le sémaphore
     SemDestroy(sem);
     
-    // Tenter d'utiliser un handle détruit
-    if (SemP(sem) &lt; 0) {
+    // Tenter V() sur sémaphore détruit
+    if (SemPost(sem) &lt; 0) {
         PutString("Erreur: sémaphore détruit\n", 27);
     }
     
-    // Tenter d'utiliser un handle invalide
-    if (SemP(999) &lt; 0) {
+    // Tenter V() sur handle invalide
+    if (SemPost(999) &lt; 0) {
         PutString("Erreur: handle invalide\n", 25);
     }
     
@@ -368,7 +402,7 @@ int main() {
 }
 </code></pre>
 <p><strong>Sortie attendue</strong> :</p>
-<pre><code>P réussi
+<pre><code>V réussi
 Erreur: sémaphore détruit
 Erreur: handle invalide
 </code></pre>
@@ -376,34 +410,37 @@ Erreur: handle invalide
 <h3 id="états-de-la-machine"><a class="header" href="#états-de-la-machine">États de la machine</a></h3>
 <p><strong>Avant l’appel</strong> :</p>
 <ul>
-<li><code>$4</code> : Handle du sémaphore</li>
-<li>Thread : état RUNNING</li>
-<li>Compteur sémaphore : valeur quelconque ≥ 0</li>
+<li><code>$4</code> : Descripteur du sémaphore</li>
+<li>Compteur sémaphore : valeur ≥ 0</li>
+<li>Queue d’attente : 0+ threads bloqués</li>
 </ul>
-<p><strong>Pendant l’appel (cas non-bloquant)</strong> :</p>
+<p><strong>Pendant l’appel (queue vide)</strong> :</p>
 <ul>
-<li>Validation du descripteur</li>
-<li>Lock sémaphore acquis</li>
-<li>Compteur décrémenté</li>
-<li>Lock sémaphore libéré</li>
+<li>Validation du handle</li>
+<li>Interruptions désactivées</li>
+<li>Compteur incrémenté</li>
+<li>Interruptions réactivées</li>
 </ul>
-<p><strong>Pendant l’appel (cas bloquant)</strong> :</p>
+<p><strong>Pendant l’appel (queue non-vide)</strong> :</p>
 <ul>
-<li>Validation du descripteur</li>
-<li>Lock sémaphore acquis</li>
-<li>Thread ajouté à la queue d’attente</li>
-<li>Thread mis en état BLOCKED</li>
-<li>Lock sémaphore libéré</li>
-<li>Thread reste bloqué jusqu’à <code>SemV()</code></li>
+<li>Validation du handle</li>
+<li>Interruptions désactivées</li>
+<li>Thread retiré de la queue</li>
+<li>Thread mis en état READY</li>
+<li>Compteur incrémenté</li>
+<li>Interruptions réactivées</li>
 </ul>
 <p><strong>Après l’appel</strong> :</p>
 <ul>
 <li><code>$2</code> : 0 (succès) ou -1 (erreur)</li>
-<li><code>errno</code> : 0 ou E_NOENT</li>
+<li>Thread appelant continue son exécution</li>
+<li>Thread réveillé (si applicable) : en état READY, sera schedulé plus tard</li>
 </ul>
 <h2 id="notes"><a class="header" href="#notes">NOTES</a></h2>
 <ul>
-<li><strong>Atomicité</strong> : P() est atomique, pas de race condition possible</li>
+<li><strong>Toujours retourne immédiatement</strong> : <code>SemPost()</code> ne bloque jamais</li>
+<li><strong>Pas de limite supérieure</strong> : Compteur peut croître indéfiniment</li>
+<li><strong>Sémaphore détruit avec threads en attente</strong> : Undefined behavior</li>
 </ul>
 <h2 id="failles-et-vulnérabilités"><a class="header" href="#failles-et-vulnérabilités">FAILLES ET VULNÉRABILITÉS</a></h2>
 <p>Aucune vulnérabilité connue à ce jour.</p>
@@ -417,25 +454,25 @@ Erreur: handle invalide
 <h2 id="voir-aussi"><a class="header" href="#voir-aussi">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="./SemInit.html">SemInit</a> - Création d’un sémaphore</li>
-<li><a href="./SemV.html">SemV</a> - Opération V (signal) sur un sémaphore</li>
+<li><a href="SemWait.html">SemWait</a> - Opération P (wait) sur un sémaphore</li>
 <li><a href="./SemDestroy.html">SemDestroy</a> - Destruction d’un sémaphore</li>
 <li><a href="./SetMaxSemForProcess.html">SetMaxSemForProcess</a> - Redimensionnement de la table</li>
 <li><a href="Sync.html">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
 <h2 id="auteurs"><a class="header" href="#auteurs">AUTEURS</a></h2>
-<p>Antoine, 25 Dec 2025</p>
+<p>Antoine, 31 Dec 2025</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">DERNIÈRE RÉVISION</a></h2>
-<p>25 Dec 2025 par Antoine</p>
+<p>5 Jan 2026</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../syscalls/sync/SemInit.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../syscalls/sync/SemWait.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../syscalls/sync/SemV.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../syscalls/sync/SemDestroy.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -445,11 +482,11 @@ Erreur: handle invalide
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../syscalls/sync/SemInit.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../syscalls/sync/SemWait.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../syscalls/sync/SemV.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../syscalls/sync/SemDestroy.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

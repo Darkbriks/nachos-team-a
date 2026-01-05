@@ -29,6 +29,7 @@
 
         <!-- Custom theme stylesheets -->
         <link rel="stylesheet" href="../../theme/custom-c9a1a890.css">
+        <link rel="stylesheet" href="../../theme/callouts-599be5a1.css">
 
 
         <!-- Provide site root and default themes to javascript -->
@@ -36,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-41a6da63.js";
+            window.path_to_searchindex_js = "../../searchindex-de3fa5b3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-0649e8f2.js"></script>
+        <script src="../../toc-9ab82147.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -183,8 +184,8 @@
 <h2 id="opérations-disponibles"><a class="header" href="#opérations-disponibles">Opérations disponibles</a></h2>
 <ul>
 <li><strong><a href="./SemInit.html">SemInit</a></strong> : Crée et initialise un nouveau sémaphore</li>
-<li><strong><a href="./SemP.html">SemP</a></strong> : Opération P (wait/acquire) sur un sémaphore</li>
-<li><strong><a href="./SemV.html">SemV</a></strong> : Opération V (signal/release) sur un sémaphore</li>
+<li><strong><a href="SemWait.html">SemWait</a></strong> : Opération P (wait/acquire) sur un sémaphore</li>
+<li><strong><a href="SemPost.html">SemPost</a></strong> : Opération V (signal/release) sur un sémaphore</li>
 <li><strong><a href="./SemDestroy.html">SemDestroy</a></strong> : Détruit un sémaphore</li>
 <li><strong><a href="./SetMaxSemForProcess.html">SetMaxSemForProcess</a></strong> : Redimensionne la table de sémaphores</li>
 </ul>
@@ -235,7 +236,7 @@
 └────┬────────┬───┘    │
      │        │        │
      │        │        │
-  SemP()   SemV()      │ Utilisation répétée
+ SemWait() SemPost()   │ Utilisation répétée
      │        │        │
      │        │        │
      └────────┘────────┘
@@ -254,8 +255,8 @@
 </thead>
 <tbody>
 <tr><td><code>SemInit(value)</code></td><td>handle (≥0)</td><td>-1</td><td><code>E_INVAL</code>, <code>E_FTABLE</code></td></tr>
-<tr><td><code>SemP(sem_id)</code></td><td>0</td><td>-1</td><td><code>E_NOENT</code></td></tr>
-<tr><td><code>SemV(sem_id)</code></td><td>0</td><td>-1</td><td><code>E_NOENT</code></td></tr>
+<tr><td><code>SemWait(sem_id)</code></td><td>0</td><td>-1</td><td><code>E_NOENT</code></td></tr>
+<tr><td><code>SemPost(sem_id)</code></td><td>0</td><td>-1</td><td><code>E_NOENT</code></td></tr>
 <tr><td><code>SemDestroy(sem_id)</code></td><td>0</td><td>-1</td><td><code>E_NOENT</code></td></tr>
 <tr><td><code>SetMaxSemForProcess(max)</code></td><td>0</td><td>-1</td><td><code>E_INVAL</code></td></tr>
 </tbody>
@@ -270,8 +271,8 @@
 </ul>
 <p><strong>Comportement</strong> :</p>
 <ul>
-<li><code>SemP()</code> bloque le thread appelant si le compteur est à 0</li>
-<li><code>SemV()</code> réveille un thread bloqué en attente (aucune garentie sur le thread reveillé)</li>
+<li><code>SemWait()</code> bloque le thread appelant si le compteur est à 0</li>
+<li><code>SemPost()</code> réveille un thread bloqué en attente (aucune garentie sur le thread reveillé)</li>
 </ul>
 <h2 id="exemple-complet"><a class="header" href="#exemple-complet">Exemple complet</a></h2>
 <pre><code class="language-c">#include "syscall.h"
@@ -282,9 +283,9 @@ int mutex_id;
 
 void increment_thread(void *arg) {
     for (int i = 0; i &lt; 1000; i++) {
-        SemP(mutex_id);      // Entrer en section critique
+        SemWait(mutex_id);      // Entrer en section critique
         counter++;
-        SemV(mutex_id);      // Sortir de section critique
+        SemPost(mutex_id);      // Sortir de section critique
     }
     ExitThread();
 }
@@ -318,7 +319,7 @@ int main() {
 </code></pre>
 <h2 id="limitations-connues"><a class="header" href="#limitations-connues">Limitations connues</a></h2>
 <h3 id="1-pas-de-timeout"><a class="header" href="#1-pas-de-timeout">1. Pas de timeout</a></h3>
-<p><code>SemP()</code> peut bloquer indéfiniment si <code>SemV()</code> n’est jamais appelé.</p>
+<p><code>SemWait()</code> peut bloquer indéfiniment si <code>SemPost()</code> n’est jamais appelé.</p>
 <p><strong>Impact</strong> : Impossible d’implémenter des locks avec timeout.</p>
 <h3 id="2-limite-de-16-sémaphores"><a class="header" href="#2-limite-de-16-sémaphores">2. Limite de 16 sémaphores</a></h3>
 <p>Maximum 16 sémaphores actifs par processus.</p>
@@ -336,8 +337,8 @@ int main() {
 <tbody>
 <tr><td><code>SemInit</code> (liste non pleine)</td><td>O(1)</td><td>Allocation O(1)</td></tr>
 <tr><td><code>SemInit</code> (liste pleine)</td><td>O(n)</td><td>Réallocation O(n)</td></tr>
-<tr><td><code>SemP</code></td><td>O(1)*</td><td>*Bloquant si compteur = 0</td></tr>
-<tr><td><code>SemV</code></td><td>O(1)</td><td>Réveil thread O(1)</td></tr>
+<tr><td><code>SemWait</code></td><td>O(1)</td><td>Bloquant si compteur = 0</td></tr>
+<tr><td><code>SemPost</code></td><td>O(1)</td><td>Réveil thread O(1)</td></tr>
 <tr><td><code>SemDestroy</code></td><td>O(1)</td><td>Libération bitmap</td></tr>
 </tbody>
 </table>

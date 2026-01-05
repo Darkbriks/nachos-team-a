@@ -1,0 +1,227 @@
+/* Base pour tous les callouts */
+.callout {
+    margin: 1.5em 0;
+    padding: 1em 1.2em;
+    border-left: 4px solid;
+    border-radius: 4px;
+    position: relative;
+}
+
+.callout-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-weight: bold;
+    font-size: 1.05em;
+    margin-bottom: 0.5em;
+}
+
+.callout-title::before {
+    font-size: 1.2em;
+}
+
+.callout-content {
+    margin-left: 0.2em;
+}
+
+.callout-content p:last-child {
+    margin-bottom: 0;
+}
+
+/* ============================================================
+ * NOTE - Information complémentaire
+ * ============================================================
+ */
+.callout-note {
+    border-left-color: #3498db;
+    background: linear-gradient(to right, rgba(52, 152, 219, 0.1), transparent);
+}
+
+.callout-note .callout-title {
+    color: #2980b9;
+}
+
+.callout-note .callout-title::before {
+    content: "Info : ";
+}
+
+/* ============================================================
+ * TIP - Conseil, astuce
+ * ============================================================
+ */
+.callout-tip {
+    border-left-color: #27ae60;
+    background: linear-gradient(to right, rgba(39, 174, 96, 0.1), transparent);
+}
+
+.callout-tip .callout-title {
+    color: #1e8449;
+}
+
+.callout-tip .callout-title::before {
+    content: "Astuce : ";
+}
+
+/* ============================================================
+ * WARNING - Avertissement
+ * ============================================================
+ */
+.callout-warning {
+    border-left-color: #f39c12;
+    background: linear-gradient(to right, rgba(243, 156, 18, 0.1), transparent);
+}
+
+.callout-warning .callout-title {
+    color: #d68910;
+}
+
+.callout-warning .callout-title::before {
+    content: "Attention : ";
+}
+
+/* ============================================================
+ * DANGER - Danger critique
+ * ============================================================
+ */
+.callout-danger {
+    border-left-color: #e74c3c;
+    background: linear-gradient(to right, rgba(231, 76, 60, 0.12), transparent);
+}
+
+.callout-danger .callout-title {
+    color: #c0392b;
+}
+
+.callout-danger .callout-title::before {
+    content: "Danger : ";
+}
+
+/* ============================================================
+ * TODO - À faire
+ * ============================================================
+ */
+.callout-todo {
+    border-left-color: #9b59b6;
+    background: linear-gradient(to right, rgba(155, 89, 182, 0.1), transparent);
+}
+
+.callout-todo .callout-title {
+    color: #8e44ad;
+}
+
+.callout-todo .callout-title::before {
+    content: "À faire : ";
+}
+
+/* ============================================================
+ * FIXME - À corriger
+ * ============================================================
+ */
+.callout-fixme {
+    border-left-color: #e67e22;
+    background: linear-gradient(to right, rgba(230, 126, 34, 0.1), transparent);
+}
+
+.callout-fixme .callout-title {
+    color: #d35400;
+}
+
+.callout-fixme .callout-title::before {
+    content: "À corriger : ";
+}
+
+/* ============================================================
+ * DEPRECATED - Obsolète
+ * ============================================================
+ */
+.callout-deprecated {
+    border-left-color: #7f8c8d;
+    background: linear-gradient(to right, rgba(127, 140, 141, 0.1), transparent);
+}
+
+.callout-deprecated .callout-title {
+    color: #566573;
+}
+
+.callout-deprecated .callout-title::before {
+    content: "Déprécié : ";
+}
+
+/* ============================================================
+ * FUTURE - Évolution prévue
+ * ============================================================
+ */
+.callout-future {
+    border-left-color: #00bcd4;
+    background: linear-gradient(to right, rgba(0, 188, 212, 0.1), transparent);
+}
+
+.callout-future .callout-title {
+    color: #00838f;
+}
+
+.callout-future .callout-title::before {
+    content: "Futur : ";
+}
+
+/* ============================================================
+ * LIMITATION - Limite connue
+ * ============================================================
+ */
+.callout-limitation {
+    border-left-color: #ff9800;
+    background: linear-gradient(to right, rgba(255, 152, 0, 0.1), transparent);
+}
+
+.callout-limitation .callout-title {
+    color: #e65100;
+}
+
+.callout-limitation .callout-title::before {
+    content: "Limitation : ";
+}
+
+/* ============================================================
+ * SECURITY - Sécurité
+ * ============================================================
+ */
+.callout-security {
+    border-left-color: #673ab7;
+    background: linear-gradient(to right, rgba(103, 58, 183, 0.08), transparent);
+}
+
+.callout-security .callout-title {
+    color: #512da8;
+}
+
+.callout-security .callout-title::before {
+    content: "Sécurité : ";
+}
+
+/* ============================================================
+ * SEE-ALSO - Voir aussi (références)
+ * ============================================================
+ */
+.callout-see-also {
+    border-left-color: #607d8b;
+    background: linear-gradient(to right, rgba(96, 125, 139, 0.08), transparent);
+}
+
+.callout-see-also .callout-title {
+    color: #455a64;
+}
+
+/* ============================================================
+ * Blocs de code dans les callouts
+ * ============================================================
+ */
+.callout pre {
+    margin: 0.8em 0;
+    border-radius: 4px;
+}
+
+.callout code {
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+}
