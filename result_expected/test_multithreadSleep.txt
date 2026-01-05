@@ -13,16 +13,16 @@ hrMTead 2: Woke up after 2000 ticks
 Thread 2: Slept for 2062 ticks (expected ~2000)
 ain: Created thread with ID 6
 hrMead 4: Woke up after 4000 ticks
-Thread 4: Slept for 4062 ticks (expected ~4000)
+Thread 4: Slept for 4072 ticks (expected ~4000)
 hread 3: Woke up after 3000 ticks
-Thread 3: Slept for 3138 ticks (expected ~3000)
+Thread 3: Slept for 3148 ticks (expected ~3000)
 ain thread finished.
 hread 5: Starting sleep test
 Thread 5: Woke up after 5000 ticks
-Thread 5: Slept for 5123 ticks (expected ~5000)
+Thread 5: Slept for 5073 ticks (expected ~5000)
 Machine halting!
 
-Ticks: total 112189, idle 82724, system 16700, user 12765
+Ticks: total 112099, idle 82684, system 16650, user 12765
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 791
 Paging: faults 0

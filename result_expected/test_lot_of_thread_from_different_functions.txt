@@ -9,7 +9,7 @@ f2 : arg value = 8
 f2 : arg value = 1
 Machine halting!
 
-Ticks: total 22293, idle 16682, system 4500, user 1111
+Ticks: total 22203, idle 16682, system 4410, user 1111
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 171
 Paging: faults 0

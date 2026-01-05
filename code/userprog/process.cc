@@ -38,7 +38,7 @@ Process::Process(OpenFile * executable, char * status_code){
     threads_bitmap = new BitMap(MAX_THREAD);
 
     threadNumber = 0; // The main thread
-    Thread * firstThread = CreateThread((char *) "main");
+    Thread * firstThread = CreateThread(executable ? (char *) "main" : (char *) "kernel");
     if (executable != nullptr){
         this->space = new AddrSpace(executable);
 
@@ -134,6 +134,6 @@ Thread* Process::CreateThread(char * name) {
     threadNumber++;
     all_threads_addr->AddInList(newThread);
     threadNumberLock->Release();
-    DEBUG('t', "Process: Added thread, now %d threads\n", threadNumber);
+    DEBUG('t', "Process %p : Added thread, now %d threads we create %d with name %s\n", this, threadNumber, newThread->getTID(), newThread->getName());
     return newThread;
 }

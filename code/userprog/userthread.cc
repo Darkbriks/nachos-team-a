@@ -84,7 +84,6 @@ void do_PthreadExit(void *retval) {
     thread->setReturnValue(retval);
     thread->setStatus(TERMINATED);
 
-    thread->Joiner();
     thread->getProcess()->ThreadTerminated(thread);
 
     if (thread->isDetached()) {
@@ -92,6 +91,7 @@ void do_PthreadExit(void *retval) {
     }
 
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
+    thread->Joiner();
     thread->Sleep();
 
     (void)interrupt->SetLevel(oldLevel);
@@ -106,12 +106,13 @@ int do_PthreadJoin(posix_thread_t tid, int retval_ptr) {
     if (other_thread->isDetached()) { return -E_INVAL; }
     if (other_thread->hasJoiner()) { return -E_INVAL; }
 
+
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
     currentThread->setJoin(other_thread);
     other_thread->setJoiner(currentThread);
+    (void)interrupt->SetLevel(oldLevel);
 
-    //if (!other_thread->isTerminated()) {
-        other_thread->Join();
-    //}
+    other_thread->Join();
 
     if (retval_ptr >= 0) {
         void* retval = other_thread->getReturnValue();
