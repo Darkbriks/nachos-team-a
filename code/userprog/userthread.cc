@@ -16,7 +16,7 @@ static void StartUserThread(const int f) {
     // Initialize the stack pointer with 2 pages below the main thread stack
     // TODO: Fix this when step 4 is done
     const unsigned int numPages = currentThread->getAddrSpace()->GetNumPages();
-    const unsigned int stackSize = 2 * PageSize; // User Thread or AddrSpace defined stack size ?
+    const unsigned int stackSize = 6 * PageSize; // User Thread or AddrSpace defined stack size ?
     const int stackAddr = static_cast<int>(numPages * PageSize - (currentThread->getTID() + 1) * stackSize);
 
     if (stackAddr < 0) {

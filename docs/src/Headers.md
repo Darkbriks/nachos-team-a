@@ -26,6 +26,39 @@ Les headers définis dans `code/userprog/process.h` :
 
 ---
 
+## Définitions
+
+Les headers définis dans `code/userprog/addrspace.h` :
+
+```c
+#define UserStackSize 16384 
+#define INITIAL_SEMAPHORE_TABLE_SIZE 16
+#define MAX_SEMAPHORES_PER_PROCESS 512 
+```
+
+
+---
+
+### UserStackSize
+
+**Description** : Indique le nombre d'octets disponible pour la stack des codes utilisateurs 
+
+---
+
+### INITIAL_SEMAPHORE_TABLE_SIZE 
+
+
+**Description** : Indique le nombre maximum de sémaphores pouvant être créés par défaut. Peut être réajusté via un syscall.
+
+---
+
+### MAX_SEMAPHORES_PER_PROCESS
+
+
+**Description** : Indique le nombre maximum de sémaphores pouvant être créés par défaut pour un processus. 
+
+---
+
 ## Auteurs
 
 Tommy , 5 Jan 2026

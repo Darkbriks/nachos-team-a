@@ -17,7 +17,7 @@
 #include "filesys.h"
 #include "translate.h"
 
-#define UserStackSize 8192 // increase this as necessary!
+#define UserStackSize 16384 // increase this as necessary!
 #define INITIAL_SEMAPHORE_TABLE_SIZE 16
 #define MAX_SEMAPHORES_PER_PROCESS 512 // Arbitrary limit, can be adjusted as needed
 

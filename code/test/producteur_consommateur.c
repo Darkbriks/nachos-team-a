@@ -2,7 +2,7 @@
 #include "nos_stdlib.h"
 #include "syscall.h"
 
-#define SIZE_LIST 71
+#define SIZE_LIST 100
 
 typedef struct {
     sem_t resource;
@@ -18,7 +18,7 @@ typedef struct {
     producteurs_consommateur_t producteurs_consommateur;
 } donnees_thread_t;
 
-void consommateur(void *args) {
+void *consommateur(void *args) {
     donnees_thread_t *d = args;
     int i, valeur;
     for (i=0; i < d->iterations; i++) {
@@ -31,8 +31,9 @@ void consommateur(void *args) {
         }
         valeur = d->donnee[d->nb_data_dispo];
         d->nb_data_dispo--;
-        if (d->nb_data_dispo < -1){
+        if (d->nb_data_dispo < -1 || d->nb_data_dispo > SIZE_LIST){
             printf_simple("ERREUR");
+            Halt();
         }
         if (valeur != d->donnee[d->nb_data_dispo + 1]){
             printf_simple("LECTURE INCOHERENTE !!!\n");
@@ -43,18 +44,29 @@ void consommateur(void *args) {
         }
         SemPost(d->producteurs_consommateur.resource);
     }
+    return NULL;
 }
 
-void producteurs(void *args) {
+void * producteurs(void *args) {
     donnees_thread_t *d = args;
     int i, valeur;
     
     for (i=0; i < d->iterations; i++) {
 
         SemWait(d->producteurs_consommateur.resource);
+        while (d->nb_data_dispo >= SIZE_LIST - 1){
+            printf_simple("attend\n");
+            SemPost(d->producteurs_consommateur.resource);
+            Sleep(300);
+            SemWait(d->producteurs_consommateur.resource);
+        }
         valeur = PthreadSelf() * 30 + i;
 
         d->nb_data_dispo++;
+        if (d->nb_data_dispo < 0 || d->nb_data_dispo >= SIZE_LIST){
+            printf_simple("ERREUR\n");
+            Halt();
+        }
         d->donnee[d->nb_data_dispo] = valeur;
         if (valeur != d->donnee[d->nb_data_dispo]){
             printf_simple("REDACTION INCOHERENTE !!!\n");
@@ -63,12 +75,13 @@ void producteurs(void *args) {
         SemPost(d->producteurs_consommateur.resource);
         SemPost(d->producteurs_consommateur.empty_list);
     }
+    return NULL;
 }
 
 
 
 int main(int argc, char *argv[]) {
-    posix_thread_t threads[100];
+    posix_thread_t threads[20];
     donnees_thread_t donnees_thread;
     int i, nb_consommateurs, nb_producteurs;
     void *resultat;
@@ -86,10 +99,10 @@ int main(int argc, char *argv[]) {
     unsigned int index = 0;
 
     for (i=0; i<nb_producteurs; i++){
-        PthreadCreate(&threads[index ++], NULL, (void *) (void *)producteurs, &donnees_thread);
+        PthreadCreate(&threads[index ++], NULL, producteurs, &donnees_thread);
     } 
     for (i=0; i<nb_consommateurs; i++){
-        if ( PthreadCreate(&threads[index ++], NULL, (void *)(void *)consommateur, &donnees_thread) != 0){
+        if ( PthreadCreate(&threads[index ++], NULL, consommateur, &donnees_thread) != 0){
             print_error("ça a pas crée le thread\n");
         }
     }
