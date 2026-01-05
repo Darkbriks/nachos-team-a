@@ -165,7 +165,7 @@ Les sémaphores sont locaux à un processus.
 |------------------------------|-----------------------|---------------------------|
 | `SemInit` (liste non pleine) | O(1)                  | Allocation O(1)           |
 | `SemInit` (liste pleine)     | O(n)                  | Réallocation O(n)         |
-| `SemWait`                    | O(1)*                 | *Bloquant si compteur = 0 |
+| `SemWait`                    | O(1)                  | Bloquant si compteur = 0  |
 | `SemPost`                    | O(1)                  | Réveil thread O(1)        |
 | `SemDestroy`                 | O(1)                  | Libération bitmap         |
 
