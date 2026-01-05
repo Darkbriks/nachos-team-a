@@ -12,13 +12,14 @@
 // This defines *all* of the global data structures used by Nachos.
 // These are all initialized and de-allocated by this file.
 
-Thread *currentThread;       // the thread we are running now
-Thread *threadToBeDestroyed; // the thread that just finished
-Scheduler *scheduler;        // the ready list
-Interrupt *interrupt;        // interrupt status
-Statistics *stats;           // performance metrics
-Timer *timer;                // the hardware timer device,
-                             // for invoking context switches
+FrameProvider* frameProvider; // Physical memory frame provider
+Thread *currentThread;        // the thread we are running now
+Thread *threadToBeDestroyed;  // the thread that just finished
+Scheduler *scheduler;         // the ready list
+Interrupt *interrupt;         // interrupt status
+Statistics *stats;            // performance metrics
+Timer *timer;                 // the hardware timer device,
+                              // for invoking context switches
 
 #ifdef FILESYS_NEEDED
 FileSystem *fileSystem;
@@ -150,6 +151,8 @@ void Initialize(int argc, char **argv) {
     interrupt->Enable();
     CallOnUserAbort(Cleanup); // if user hits ctl-C
 
+    frameProvider = new FrameProvider();
+
 #ifdef USER_PROGRAM
     machine = new Machine(debugUserProg); // this must come first
     synchConsole = new SynchConsole(NULL, NULL); // this must come first
@@ -194,6 +197,7 @@ void Cleanup() {
     delete timer;
     delete scheduler;
     delete interrupt;
+    delete frameProvider;
 
     Exit(0);
 }

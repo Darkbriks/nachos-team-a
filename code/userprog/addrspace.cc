@@ -19,6 +19,7 @@
 
 #include "bitmap_thread_safe.h"
 #include "copyright.h"
+#include "frameprovider.h"
 #include "noff.h"
 #include "synch.h"
 #include "system.h"
@@ -113,8 +114,13 @@ AddrSpace::AddrSpace(OpenFile *executable) {
     // first, set up the translation
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++) {
-        pageTable[i].virtualPage = i; // for now, virtual page # = phys page #
-        pageTable[i].physicalPage = i + 1;
+        int physPage = frameProvider->GetEmptyFrame();
+        if (physPage == -1) {
+            DEBUG('a', "AddrSpace::AddrSpace: Unable to allocate frame for page %d\n", i);
+            ASSERT(FALSE); // TODO: Handle this properly
+        }
+        pageTable[i].virtualPage = i;
+        pageTable[i].physicalPage = physPage;
         pageTable[i].valid = TRUE;
         pageTable[i].use = FALSE;
         pageTable[i].dirty = FALSE;
@@ -122,11 +128,6 @@ AddrSpace::AddrSpace(OpenFile *executable) {
                                        // a separate page, we could set its
                                        // pages to be read-only
     }
-
-    // zero out the entire address space, to zero the unitialized data segment
-    // and the stack segment
-    bzero(machine->mainMemory, size);
-
 
     // then, copy in the code and data segments into memory
     if (noffH.code.size > 0) {
@@ -152,6 +153,12 @@ AddrSpace::AddrSpace(OpenFile *executable) {
 //----------------------------------------------------------------------
 
 AddrSpace::~AddrSpace() {
+    for (unsigned int i = 0; i < numPages; i++) {
+        if (pageTable[i].valid) {
+            frameProvider->ReleaseFrame(pageTable[i].physicalPage);
+        }
+    }
+
     // LB: Missing [] for delete
     // delete pageTable;
     delete[] pageTable;

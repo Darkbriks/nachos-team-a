@@ -9,6 +9,7 @@
 #define SYSTEM_H
 
 #include "copyright.h"
+#include "frameprovider.h"
 #include "interrupt.h"
 #include "scheduler.h"
 #include "stats.h"
@@ -24,12 +25,13 @@ extern void Initialize(int argc, char **argv); // Initialization,
 extern void Cleanup();                         // Cleanup, called when
                                                // Nachos is done.
 
-extern Thread *currentThread;       // the thread holding the CPU
-extern Thread *threadToBeDestroyed; // the thread that just finished
-extern Scheduler *scheduler;        // the ready list
-extern Interrupt *interrupt;        // interrupt status
-extern Statistics *stats;           // performance metrics
-extern Timer *timer;                // the hardware alarm clock
+extern FrameProvider* frameProvider; // Physical memory frame provider
+extern Thread *currentThread;        // the thread holding the CPU
+extern Thread *threadToBeDestroyed;  // the thread that just finished
+extern Scheduler *scheduler;         // the ready list
+extern Interrupt *interrupt;         // interrupt status
+extern Statistics *stats;            // performance metrics
+extern Timer *timer;                 // the hardware alarm clock
 
 #ifdef USER_PROGRAM
 #include "machine.h"
