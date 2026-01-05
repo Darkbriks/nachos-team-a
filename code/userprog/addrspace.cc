@@ -44,6 +44,28 @@ static void SwapHeader(NoffHeader *noffH) {
     noffH->uninitData.virtualAddr = WordToHost(noffH->uninitData.virtualAddr);
     noffH->uninitData.inFileAddr = WordToHost(noffH->uninitData.inFileAddr);
 }
+//
+// static int findGoodTranslation(TranslationEntry *pageTable,unsigned numPages, unsigned int virtualaddr){
+//     for (unsigned int cur = 0; cur < numPages; cur ++){
+//         if ( pageTable[cur].virtualPage == virtualaddr){
+//             return cur;
+//         }
+//     }
+//     return -1;
+// }
+//
+static void ReadAtVirtual( OpenFile *executable, int virtualaddr,int numBytes, int position, TranslationEntry *pageTable,unsigned int numPages){
+
+    // int goodTranslation = findGoodTranslation(pageTable, numPages, position - virtualaddr);
+    // if ( goodTranslation < 0){
+    //     ASSERT(FALSE);
+    // }
+    char tmp[numBytes + 1];
+    int maxSize = executable->ReadAt(tmp, numBytes,  position);
+    for (int i = 0; i < maxSize; i++){ 
+        machine->WriteMem(virtualaddr + i , 1, tmp[i]);
+    }
+}
 
 //----------------------------------------------------------------------
 // AddrSpace::AddrSpace
@@ -65,6 +87,7 @@ AddrSpace::AddrSpace(OpenFile *executable) {
     unsigned int i, size;
 
     executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
+    // ReadAtVirtual(executable, (int) (int *)&noffH, sizeof(noffH), 0, 0,1 );
     if ((noffH.noffMagic != NOFFMAGIC) &&
         (WordToHost(noffH.noffMagic) == NOFFMAGIC))
         SwapHeader(&noffH);
@@ -88,7 +111,7 @@ AddrSpace::AddrSpace(OpenFile *executable) {
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++) {
         pageTable[i].virtualPage = i; // for now, virtual page # = phys page #
-        pageTable[i].physicalPage = i;
+        pageTable[i].physicalPage = i + 1;
         pageTable[i].valid = TRUE;
         pageTable[i].use = FALSE;
         pageTable[i].dirty = FALSE;
@@ -101,18 +124,23 @@ AddrSpace::AddrSpace(OpenFile *executable) {
     // and the stack segment
     bzero(machine->mainMemory, size);
 
+    // Don't remove these lines
+    machine->pageTable = pageTable;
+    machine->pageTableSize = size;
+
     // then, copy in the code and data segments into memory
     if (noffH.code.size > 0) {
         DEBUG('a', "Initializing code segment, at 0x%x, size %d\n",
               noffH.code.virtualAddr, noffH.code.size);
-        executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]),
-                           noffH.code.size, noffH.code.inFileAddr);
+        // executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]),
+        //                    noffH.code.size, noffH.code.inFileAddr);
+        ReadAtVirtual(executable, noffH.code.virtualAddr, noffH.code.size, noffH.code.inFileAddr, pageTable, numPages);
     }
     if (noffH.initData.size > 0) {
         DEBUG('a', "Initializing data segment, at 0x%x, size %d\n",
               noffH.initData.virtualAddr, noffH.initData.size);
-        executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]),
-                           noffH.initData.size, noffH.initData.inFileAddr);
+        // executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]), noffH.initData.size, noffH.initData.inFileAddr);
+        ReadAtVirtual(executable, noffH.initData.virtualAddr, noffH.initData.size, noffH.initData.inFileAddr, pageTable, numPages);
     }
 
     AllocateSemaphoreTable(INITIAL_SEMAPHORE_TABLE_SIZE);
