@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-de3fa5b3.js";
+            window.path_to_searchindex_js = "searchindex-f0a209c1.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-9ab82147.js"></script>
@@ -192,6 +192,22 @@
 <hr>
 <h3 id="max_process"><a class="header" href="#max_process">MAX_PROCESS</a></h3>
 <p><strong>Description</strong> : Indique le nombre maximum de processus dans la machine ( actif ou non )</p>
+<hr>
+<h2 id="définitions-1"><a class="header" href="#définitions-1">Définitions</a></h2>
+<p>Les headers définis dans <code>code/userprog/addrspace.h</code> :</p>
+<pre><code class="language-c">#define UserStackSize 16384 
+#define INITIAL_SEMAPHORE_TABLE_SIZE 16
+#define MAX_SEMAPHORES_PER_PROCESS 512 
+</code></pre>
+<hr>
+<h3 id="userstacksize"><a class="header" href="#userstacksize">UserStackSize</a></h3>
+<p><strong>Description</strong> : Indique le nombre d’octets disponible pour la stack des codes utilisateurs</p>
+<hr>
+<h3 id="initial_semaphore_table_size"><a class="header" href="#initial_semaphore_table_size">INITIAL_SEMAPHORE_TABLE_SIZE</a></h3>
+<p><strong>Description</strong> : Indique le nombre maximum de sémaphores pouvant être créés par défaut. Peut être réajusté via un syscall.</p>
+<hr>
+<h3 id="max_semaphores_per_process"><a class="header" href="#max_semaphores_per_process">MAX_SEMAPHORES_PER_PROCESS</a></h3>
+<p><strong>Description</strong> : Indique le nombre maximum de sémaphores pouvant être créés par défaut pour un processus.</p>
 <hr>
 <h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
 <p>Tommy , 5 Jan 2026</p>
