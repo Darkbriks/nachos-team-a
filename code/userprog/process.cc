@@ -4,6 +4,7 @@
 #include "bitmap_thread_safe.h"
 #include "bitmap.h"
 #include "thread.h"
+#include "../threads/system.h"
 
 
 BitMapThreadSafe* Process::all_process = new BitMapThreadSafe(MAX_PROCESS);
@@ -34,6 +35,7 @@ Process::Process(OpenFile * executable, char * status_code){
     threadNumberLock = new Lock("thread number lock");
     threadExitSemaphore = new Semaphore("thread exit semaphore", 0);
     all_threads_addr = new LinkedList<Thread>();
+    threads_bitmap = new BitMap(MAX_THREAD);
 
     threadNumber = 0; // The main thread
     Thread * firstThread = CreateThread((char *) "main");
@@ -52,17 +54,33 @@ Process::~Process(){
     delete threadNumberLock;
     delete threadExitSemaphore;
     delete all_threads_addr;
+    delete threads_bitmap;
+}
+
+void Process::ThreadTerminated(Thread* thread){
+    threadNumberLock->Acquire();
+    const unsigned int remainingThreads = --threadNumber;
+    threadNumberLock->Release();
+
+    DEBUG('t', "Process: Thread %d terminated, now %d threads still running\n", thread->getTID(), remainingThreads);
+
+    threadExitSemaphore->V();
 }
 
 void Process::RemoveThread(Thread * thread) {
+    // ThreadTerminated must be called before, so threadNumber is already decreased
     threadNumberLock->Acquire();
-    const unsigned int remainingThreads = --threadNumber;
     all_threads_addr->RemoveInList(thread);
+    const unsigned int remainingThreads = threadNumber;
     threadNumberLock->Release();
 
     DEBUG('t', "Process: Removed thread %d, now %d threads\n", thread->getTID(), remainingThreads);
 
-    threadExitSemaphore->V();
+    if (thread != currentThread) {
+        delete thread;
+    } else {
+        threadToBeDestroyed = thread;
+    }
 
     if (remainingThreads == 0) {
         DEBUG('t', "Process: Last thread terminated, deleting AddrSpace\n");
@@ -86,6 +104,17 @@ void Process::WaitForAllThreadsTerminate() {
     }
     threadNumberLock->Release();
 
+    // Now, all child threads are finished,
+    // we can clear the thread list except the main thread
+    threadNumberLock->Acquire();
+    while (!all_threads_addr->IsEmpty()) {
+        Thread* thread = all_threads_addr->RemoveFront();
+        if (thread != mainThread) {
+            delete thread;
+        }
+    }
+    threadNumberLock->Release();
+
     DEBUG('t', "Process: All child threads finished\n");
 }
 
@@ -97,8 +126,10 @@ Thread * Process::FindThread(unsigned int TID){
     return all_threads_addr->FindInList( std::function<bool (Thread *, unsigned int)> (search), TID );
 }
 
-Thread* Process::CreateThread(char * name){
-    Thread * newThread = new Thread(name, this);
+Thread* Process::CreateThread(char * name) {
+    const posix_thread_t tid = threads_bitmap->Find();
+    if (tid == static_cast<posix_thread_t>(-1)) { return nullptr; }
+    Thread * newThread = new Thread(name, this, tid);
     threadNumberLock->Acquire();
     threadNumber++;
     all_threads_addr->AddInList(newThread);
@@ -106,4 +137,3 @@ Thread* Process::CreateThread(char * name){
     DEBUG('t', "Process: Added thread, now %d threads\n", threadNumber);
     return newThread;
 }
-

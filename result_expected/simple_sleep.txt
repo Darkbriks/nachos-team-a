@@ -1,6 +1,6 @@
 === Test Sleep syscall : simple sleep ===
 Main: Woke up after 5000 ticks
-Main: Slept for 5053 ticks (expected ~5000)
+Main: Slept for 5073 ticks (expected ~5000)
 === Test Sleep syscall : long sleep ===
 Main: Woke up after 50000 ticks
 Main: Slept for 50043 ticks (expected ~50000)
@@ -13,7 +13,7 @@ Main: Time after invalid sleep call
 Main: Slept for 38 ticks (expected as low as possible)
 Machine halting!
 
-Ticks: total 128437, idle 109730, system 11050, user 7657
+Ticks: total 128457, idle 109750, system 11050, user 7657
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 547
 Paging: faults 0

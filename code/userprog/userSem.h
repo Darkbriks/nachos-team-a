@@ -3,8 +3,8 @@
 #include "exception.h"
 
 void handle_SC_SemInit();
-void handle_SC_SemP();
-void handle_SC_SemV();
+void handle_SC_SemWait();
+void handle_SC_SemPost();
 void handle_SC_SemDestroy();
 void handle_SC_SetMaxSemForProcess();
 

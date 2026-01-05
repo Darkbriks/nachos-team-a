@@ -25,9 +25,14 @@ USERPROG_NOPROGRAM=
 # IMPORTANT: the 4 original user programs (halt, ...) cannot have extra
 #  sources and will always be linked only with start.S (USERPROG_LIBS
 #  and ..._EXTRA_SOURCES are ignored for them)
-USERPROG_LIBS=start.S libgcc.c ../my_stdlib/my_stdlib.c
+USERPROG_LIBS=start.S                     \
+              libgcc.c                    \
+              ../libs/stdlib/nos_stdlib.c \
+              ../libs/stdlib/nos_string.c \
 
-AUTOLOAD_CPPFLAGS=-DCHANGED -I$(topsrc_dir)/my_stdlib
+AUTOLOAD_CPPFLAGS=-DCHANGED               \
+    -I$(topsrc_dir)/libs                  \
+    -I$(topsrc_dir)/libs/stdlib           \
 
 # each program 'p' can specify extra sources in 'p'_EXTRA_SOURCES
 # => declare here program sources to add in addition to

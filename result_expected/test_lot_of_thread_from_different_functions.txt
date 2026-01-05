@@ -1,20 +1,17 @@
-7968
-27972
-2
-7
-7976
-7980
-976
-2
-77984987988
-7980
-4
-
+f1 : arg value = 0
+f1 : arg value = 1
+f1 : arg value = 2
+f2 : arg value = 0
+f2 : arg value = 4
+f2 : arg value = 2
+f2 : arg value = 2
+f2 : arg value = 8
+f2 : arg value = 1
 Machine halting!
 
-Ticks: total 8994, idle 3999, system 2760, user 2235
+Ticks: total 22293, idle 16682, system 4500, user 1111
 Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 51
+Console I/O: reads 0, writes 171
 Paging: faults 0
 Network I/O: packets received 0, sent 0
 

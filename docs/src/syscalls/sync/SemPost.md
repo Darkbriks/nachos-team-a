@@ -1,25 +1,25 @@
-# SemV
+# SemPost
 
-`SemV` - Opération V (signal/release) sur un sémaphore
+`SemPost` - Opération V (signal/release) sur un sémaphore
 
 ## SYNOPSIS
 ```c
 #include "syscall.h"
 
-int SemV(int sem_id);
+int SemPost(int sem_id);
 ```
 
 ## DESCRIPTION
 
-`SemV` effectue l'opération V (Verhogen) sur le sémaphore identifié par `sem_id`. Cette opération incrémente le compteur du sémaphore et réveille un thread bloqué en attente sur `SemP()` si la queue n'est pas vide.
+`SemPost` effectue l'opération V (Verhogen) sur le sémaphore identifié par `sem_id`. Cette opération incrémente le compteur du sémaphore et réveille un thread bloqué en attente sur `SemWait()` si la queue n'est pas vide.
 
-Numéro d'appel système : `26`
+Numéro d'appel système : `31`
 
 ### Comportement nominal
 
 - Vérifie la validité du handle `sem_id`
 - Incrémente le compteur du sémaphore de manière atomique
-- Si des threads sont bloqués en `SemP()` : en réveille un
+- Si des threads sont bloqués en `SemWait()` : en réveille un
 - Retourne immédiatement (opération non-bloquante)
 - L'opération est atomique et thread-safe
 
@@ -62,10 +62,10 @@ Descripteur du sémaphore sur lequel effectuer l'opération V.
 ### Localisation du code
 
 - **Stub utilisateur** : `code/test/start.S`
-- **Handler noyau** : `code/userprog/userSem.cc:handle_SC_SemV()`
+- **Handler noyau** : `code/userprog/userSem.cc:handle_SC_SemPost()`
 - **Implémentation** :
-  - `code/userprog/addrspace.cc:AddrSpace::SemaphorePost()`
-  - `code/threads/synch.cc:Semaphore::V()`
+    - `code/userprog/addrspace.cc:AddrSpace::SemaphorePost()`
+    - `code/threads/synch.cc:Semaphore::V()`
 
 ### Thread-safety
 
@@ -88,11 +88,11 @@ Descripteur du sémaphore sur lequel effectuer l'opération V.
 int mutex;
 
 void critical_section() {
-    SemP(mutex);
+    SemWait(mutex);
     
     PutString("Dans section critique\n", 23);
     
-    SemV(mutex);  // Libérer le mutex
+    SemPost(mutex);  // Libérer le mutex
 }
 
 int main() {
@@ -123,7 +123,7 @@ void worker_thread(void *arg) {
     
     PutString("Worker: terminé\n", 17);
     
-    SemV(done);  // Signaler terminaison
+    SemPost(done);  // Signaler terminaison
     ExitThread();
 }
 
@@ -133,7 +133,7 @@ int main() {
     int tid = CreateThread(worker_thread, 0);
     
     PutString("Main: attente worker...\n", 25);
-    SemP(done);  // Bloque jusqu'au signal
+    SemWait(done);  // Bloque jusqu'au signal
     PutString("Main: worker terminé!\n", 23);
     
     JoinThread(tid);
@@ -161,18 +161,18 @@ void barrier_thread(void *arg) {
     PutString(": phase 1\n", 11);
     
     // Arriver à la barrière
-    SemP(mutex);
+    SemWait(mutex);
     count++;
     if (count == NUM_THREADS) {
         // Dernier thread : réveiller tous les autres
         for (int i = 0; i < NUM_THREADS - 1; i++) {
-            SemV(barrier);
+            SemPost(barrier);
         }
     }
-    SemV(mutex);
+    SemPost(mutex);
     
     if (count < NUM_THREADS) {
-        SemP(barrier);  // Attendre les autres
+        SemWait(barrier);  // Attendre les autres
     }
     
     PutString("Thread ", 7);
@@ -221,7 +221,7 @@ int main() {
     int sem = SemInit(0);
     
     // V() sur sémaphore valide
-    if (SemV(sem) == 0) {
+    if (SemPost(sem) == 0) {
         PutString("V réussi\n", 10);
     }
     
@@ -229,12 +229,12 @@ int main() {
     SemDestroy(sem);
     
     // Tenter V() sur sémaphore détruit
-    if (SemV(sem) < 0) {
+    if (SemPost(sem) < 0) {
         PutString("Erreur: sémaphore détruit\n", 27);
     }
     
     // Tenter V() sur handle invalide
-    if (SemV(999) < 0) {
+    if (SemPost(999) < 0) {
         PutString("Erreur: handle invalide\n", 25);
     }
     
@@ -279,7 +279,7 @@ Erreur: handle invalide
 
 ## NOTES
 
-- **Toujours retourne immédiatement** : `SemV()` ne bloque jamais
+- **Toujours retourne immédiatement** : `SemPost()` ne bloque jamais
 - **Pas de limite supérieure** : Compteur peut croître indéfiniment
 - **Sémaphore détruit avec threads en attente** : Undefined behavior
 
@@ -299,15 +299,15 @@ Aucun bug connu à ce jour.
 ## VOIR AUSSI
 
 - [SemInit](./SemInit.md) - Création d'un sémaphore
-- [SemP](./SemP.md) - Opération P (wait) sur un sémaphore
+- [SemWait](SemWait.md) - Opération P (wait) sur un sémaphore
 - [SemDestroy](./SemDestroy.md) - Destruction d'un sémaphore
 - [SetMaxSemForProcess](./SetMaxSemForProcess.md) - Redimensionnement de la table
 - [Vue d'ensemble](Sync.md) - Guide complet des sémaphores
 
 ## AUTEURS
 
-Antoine, 25 Dec 2025
+Antoine, 31 Dec 2025
 
 ## DERNIÈRE RÉVISION
 
-25 Dec 2025 par Antoine
+5 Jan 2026

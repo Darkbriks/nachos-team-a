@@ -13,13 +13,13 @@ void handle_SC_SemInit() {
     RETURN(handle == -1 ? -E_FTABLE : handle);
 }
 
-void handle_SC_SemP() {
+void handle_SC_SemWait() {
     int handle = machine->ReadRegister(4);
     int success = currentThread->getAddrSpace()->SemaphoreWait(handle);
     RETURN(success == 0 ? 0 : -E_NOENT);
 }
 
-void handle_SC_SemV() {
+void handle_SC_SemPost() {
     int handle = machine->ReadRegister(4);
     int success = currentThread->getAddrSpace()->SemaphorePost(handle);
     RETURN(success == 0 ? 0 : -E_NOENT);

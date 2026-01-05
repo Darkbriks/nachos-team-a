@@ -2,11 +2,11 @@
 #define USER_IO
 #include "exception.h"
 
-void handler_SC_putChar();
-void handler_SC_putString();
-void handler_SC_getChar();
-void handler_SC_getString();
-void handler_SC_PutInt();
-void handler_SC_GetInt();
+void handle_SC_PutChar();
+void handle_SC_PutString();
+void handle_SC_GetChar();
+void handle_SC_GetString();
+void handle_SC_PutInt();
+void handle_SC_GetInt();
 
 #endif // USER_IO

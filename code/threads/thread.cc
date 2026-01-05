@@ -21,10 +21,65 @@
 #include "synch.h"
 #include "system.h"
 
+#include "syscall.h"
+
 #define STACK_FENCEPOST                                                        \
     0xdeadbeef // this is put at the top of the
                // execution stack, for detecting
                // stack overflows
+
+/**
+ *@brief Initialize thread attributes object with default values.
+ *
+ * @param attr Pointer to the thread attributes object to initialize.
+ * @return int 0 on success, -E_INVAL if attr is nullptr.
+ */
+int posix_thread_attr_init(posix_thread_attr_t *attr) {
+    if (attr == nullptr) { return -E_INVAL; }
+    attr->detachstate = JOINABLE;
+    return 0;
+}
+
+/**
+ *@brief Destroy thread attributes object.
+ *
+ * @param attr Pointer to the thread attributes object to destroy.
+ * @return int 0 on success, -E_INVAL if attr is nullptr.
+ */
+int posix_thread_attr_destroy(posix_thread_attr_t *attr) {
+    if (attr == nullptr) { return -E_INVAL; }
+    // No dynamic resources to free for now
+    return 0;
+}
+
+/**
+ *@brief Set the detach state attribute in the thread attributes object.
+ *
+ * @param attr Pointer to the thread attributes object.
+ * @param detachstate Desired detach state (JOINABLE or DETACHED).
+ * @return int 0 on success, -E_INVAL if attr is nullptr or detachstate is invalid.
+ */
+int posix_thread_attr_setdetachstate(posix_thread_attr_t *attr, int detachstate) {
+    if (attr == nullptr) { return -E_INVAL; }
+    if (detachstate != JOINABLE && detachstate != DETACHED) {
+        return -E_INVAL;
+    }
+    attr->detachstate = static_cast<posix_thread_detachstate_t>(detachstate);
+    return 0;
+}
+
+/**
+ *@brief Get the detach state attribute from the thread attributes object.
+ *
+ * @param attr Pointer to the thread attributes object.
+ * @param detachstate Pointer to store the retrieved detach state.
+ * @return int 0 on success, -E_INVAL if attr or detachstate is nullptr.
+ */
+int posix_thread_attr_getdetachstate(const posix_thread_attr_t *attr, int *detachstate) {
+    if (attr == nullptr || detachstate == nullptr) { return -E_INVAL; }
+    *detachstate = static_cast<int>(attr->detachstate);
+    return 0;
+}
 
 //----------------------------------------------------------------------
 // Thread::Thread
@@ -34,25 +89,13 @@
 //      "threadName" is an arbitrary string, useful for debugging.
 //----------------------------------------------------------------------
 
-unsigned int Thread::currentThreadId = 0;
-Lock *Thread::threadIdLock = new Lock("threadIdLock");
-
-Thread::Thread(const char *threadName, Process *p) {
-    TID = GetAndIncrementThreadId();
-    name = new char[MAX_STRING_SIZE];
+Thread::Thread(const char *threadName, Process *p, posix_thread_t tid) :
+                stackTop(NULL), process(p), TID(tid), joiner(nullptr),
+                join(nullptr), waitTime(0), flags(new BitMap(THREAD_FLAG_SIZE)),
+                retval(nullptr), stack(NULL), status(JUST_CREATED), name(new char[MAX_STRING_SIZE]) {
     snprintf(const_cast<char *>(name), MAX_STRING_SIZE - 1, "%s_%d", threadName, TID);
-
-    this->process = p;
-
-    joiner = nullptr;
-    join = nullptr;
     sem = new Semaphore(name, 0);
 
-    waitTime = 0;
-
-    stackTop = NULL;
-    stack = NULL;
-    status = JUST_CREATED;
 #ifdef USER_PROGRAM
     // FBT: Need to initialize special registers of simulator to 0
     // in particular LoadReg or it could crash when switching
@@ -79,6 +122,7 @@ Thread::~Thread() {
 
     delete name;
     delete sem;
+    delete flags;
     ASSERT(this != currentThread);
     if (stack != NULL)
         DeallocBoundedArray((char *)stack, StackSize * sizeof(int));
@@ -91,16 +135,20 @@ AddrSpace * Thread::getAddrSpace(){
     return nullptr;
 }
 
-void Thread::Joiner(){
-    if (joiner == nullptr){
-        return;
+void Thread::setDetached(const bool d){
+    if (d){
+        flags->Mark(DETACHED_FLAG_POS);
+    } else {
+        flags->Clear(DETACHED_FLAG_POS);
     }
-    joiner->sem->V();
+}
+
+void Thread::Joiner(){
+    sem->V();
 }
 
 void Thread::Join(){
     sem->P();
-
 }
 
 //----------------------------------------------------------------------
@@ -411,14 +459,6 @@ void Thread::StackAllocate(VoidFunctionPtr func, int arg) {
     machineState[InitialPCState] = (int)func;
     machineState[InitialArgState] = arg;
     machineState[WhenDonePCState] = (int)ThreadFinish;
-}
-
-unsigned int Thread::GetAndIncrementThreadId(){
-    threadIdLock->Acquire();
-    const unsigned int id = currentThreadId;
-    currentThreadId++;
-    threadIdLock->Release();
-    return id;
 }
 
 #ifdef USER_PROGRAM

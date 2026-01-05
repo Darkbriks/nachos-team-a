@@ -41,6 +41,8 @@
 #include "synch.h"
 #include "utility.h"
 
+#include "bitmap.h"
+
 #ifdef USER_PROGRAM
 #include "addrspace.h"
 #include "machine.h"
@@ -55,10 +57,28 @@
 // WATCH OUT IF THIS ISN'T BIG ENOUGH!!!!!
 #define StackSize (4 * 1024) // in words
 
+#define DETACHED_FLAG_POS 0
+
+#define THREAD_FLAG_SIZE 1
+
 class Process;
 
+typedef unsigned int posix_thread_t;
+
+typedef enum : unsigned char { JOINABLE = 0, DETACHED = 1 } posix_thread_detachstate_t;
+
+typedef struct {
+    posix_thread_detachstate_t detachstate;
+    // Add more attributes as needed
+} posix_thread_attr_t;
+
+int posix_thread_attr_init(posix_thread_attr_t *attr);
+int posix_thread_attr_destroy(posix_thread_attr_t *attr);
+int posix_thread_attr_setdetachstate(posix_thread_attr_t *attr, int detachstate);
+int posix_thread_attr_getdetachstate(const posix_thread_attr_t *attr, int *detachstate);
+
 // Thread state
-enum ThreadStatus { JUST_CREATED, RUNNING, READY, BLOCKED };
+enum ThreadStatus { JUST_CREATED, RUNNING, READY, BLOCKED, TERMINATED };
 
 // external function, dummy routine whose sole job is to call Thread::Print
 extern void ThreadPrint(int arg);
@@ -93,10 +113,10 @@ class Thread {
 
         long long waitTime; // Used to wake up sleeping threads
 
-        static unsigned int currentThreadId;
-        static Lock *threadIdLock;
+        BitMap* flags;
+        void* retval;
 
-        Thread(const char *debugName, Process *p); // initialize a Thread
+        Thread(const char *debugName, Process *p, posix_thread_t tid);
 
     public:
         Thread() = delete; // explicitly disable the default constructor
@@ -117,6 +137,13 @@ class Thread {
         void setJoiner(Thread *thread) {joiner = thread;}
         void setJoin(Thread *thread) {join = thread;}
         void setStatus(ThreadStatus st) { status = st; }
+
+        bool isDetached() const { return flags->Test(DETACHED_FLAG_POS); }
+        bool isTerminated() const { return status == TERMINATED; }
+        void *getReturnValue() const { return retval; }
+
+        void setDetached(bool d);
+        void setReturnValue(void *val) { retval = val; }
 
         // basic thread operations
         void Joiner();
@@ -142,8 +169,6 @@ class Thread {
         void StackAllocate(VoidFunctionPtr func, int arg);
         // Allocate a stack for thread.
         // Used internally by Fork()
-
-        static unsigned int GetAndIncrementThreadId();
 
 #ifdef USER_PROGRAM
         // A thread running a user program actually has *two* sets of CPU registers

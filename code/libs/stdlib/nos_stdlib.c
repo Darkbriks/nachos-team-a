@@ -1,37 +1,91 @@
-#include "my_stdlib.h"
+#include "nos_stdlib.h"
+#include "nos_string.h"
 
+#ifndef NOT_YET_IMPLEMENTED
+#define NOT_YET_IMPLEMENTED(func) PutString("Function " #func " is not yet implemented.\n", 39);
+#endif
 
+void printf_simple(char* buf) {
+    // TODO: Add support for format specifiers
+    // TODO: Add buffering to optimize syscall number
+    if (buf) { PutString(buf, strlen(buf)); }
+}
 
-int close(int fd){Halt();}
-int open(char * name, int mode){Halt();}
-int write(int fd, char *buf, size_t size){Halt();}
-ssize_t read(int fd, char *buf, size_t size){Halt();}
+void print_error(char* msg) {
+    int err = GetLastError();
+    // TODO: Optimize syscall number by using buffered and formattted output
+    if (msg) { printf_simple(msg); }
+    PutString(" (errno=", 8);
+    PutInt(err);
+    PutString(")\n", 2);
+}
 
-void * malloc(unsigned int size){Halt();}
-int free(void * ptr){Halt();}
+char* itoa(int value, char* str, int base) {
+    static const char digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    char* ptr = str;
+    int negative = 0;
+    long val = value; // long to avoid overflow when value is INT_MIN
 
-void my_printf(char *buf){
-    if (buf){
-        PutString(buf, my_strlen(buf));
+    if (base < 2 || base > 36) { *str = '\0'; return str; }
+    if (value < 0 && base == 10) { negative = 1; val = -val; }
+
+    do {
+        long tmp_value = val;
+        val /= base;
+        *ptr++ = digits[tmp_value - val * base];
+    } while (val);
+
+    if (negative) { *ptr++ = '-'; }
+
+    *ptr-- = '\0';
+
+    char* reverse_ptr = str;
+    while (reverse_ptr < ptr) {
+        char tmp_char = *ptr;
+        *ptr-- = *reverse_ptr;
+        *reverse_ptr++ = tmp_char;
     }
+
+    return str;
 }
 
-void my_scanf(char *format, ...){}
+int atoi(const char* str, int base) {
+    if (base < 2 || base > 36) { return 0; }
 
-unsigned int my_strlen(char *str){
-    unsigned int result = 0;
-    while(str[result] != '\0'){result++;}
-    return result;
+    int result = 0;
+    int negative = 0;
+    size_t i = 0;
+
+    if (str[0] == '-') { negative = 1; i++; }
+
+    for (; str[i] != '\0'; i++) {
+        char c = str[i];
+        int digit;
+
+        if (c >= '0' && c <= '9') { digit = c - '0'; }
+        else if (c >= 'A' && c <= 'Z') { digit = c - 'A' + 10; }
+        else if (c >= 'a' && c <= 'z') { digit = c - 'a' + 10; }
+        else { break; }
+
+        if (digit >= base) { break; }
+
+        result = result * base + digit;
+    }
+
+    return negative ? -result : result;
 }
 
-void print_error(const char *msg) {
-    my_printf((char *) msg);
-    my_printf(" (errno=");
-    PutInt(GetLastError());
-    my_printf(")\n");
-}
+//int close(int){Halt();}
+//int open(char *, int){Halt();}
+//int write(int fd, char *buf, size_t size){Halt();}
+//ssize_t read(int fd, char *buf, size_t size){Halt();}
 
-void my_memcpy(void *dest, void *src, size_t size){
+//void * malloc(unsigned int){Halt();}
+//int free(void *){Halt();}
+
+//void my_scanf(char *format, ...){}
+
+/*void my_memcpy(void *dest, void *src, size_t size){
     unsigned int i;
     for (i = 0; i + sizeof(uint64_t) <= size; i += sizeof(uint64_t)){
         *((uint64_t *)((char*)dest + i)) = * ((uint64_t *)((char*)src + i));
@@ -41,13 +95,9 @@ void my_memcpy(void *dest, void *src, size_t size){
     for (; i < size; i++){
         *((uint8_t *)((char*)dest + i)) = *((uint8_t *)((char*) src+ i));
     }
-}
+}*/
 
-void my_strcpy(char * dest, char *src){
-    my_memcpy(dest, src, my_strlen(src));
-}
-
-IOBUF_FILE* iobuf_open(char* nom, char mode){
+/*IOBUF_FILE* iobuf_open(char* nom, char mode){
     IOBUF_FILE* f = malloc(sizeof(IOBUF_FILE));
     
     if (mode == 'R'){
@@ -71,17 +121,17 @@ IOBUF_FILE* iobuf_open(char* nom, char mode){
     f->empty = 1;
 
     return f;
-}
+}*/
 
-int iobuf_close(IOBUF_FILE* f) {
+/*int iobuf_close(IOBUF_FILE* f) {
     if (f == NULL) { return -1; }
     if (f->mode == 'W' && f->empty == 0) { iobuf_flush(f); }
     if (close(f->file_descriptor) == -1) { return -1; }
     free(f);
     return 0;
-}
+}*/
 
-int iobuf_read(void* p, unsigned int taille, unsigned int nbelem, IOBUF_FILE * f) {
+/*int iobuf_read(void* p, unsigned int taille, unsigned int nbelem, IOBUF_FILE * f) {
     if (p == NULL || f == NULL || f->mode != 'R') { return -1; }
     const unsigned int total_bytes = taille * nbelem;
     if (total_bytes > f->end_buff - f->start_buff) {
@@ -101,10 +151,10 @@ int iobuf_read(void* p, unsigned int taille, unsigned int nbelem, IOBUF_FILE * f
         f->start_buff += taille;
     }
     return (int)i;
-}
+}*/
 
 // Write use a circular buffer
-int iobuf_write(void* p, unsigned int taille, unsigned int nbelem, IOBUF_FILE * f) {
+/*int iobuf_write(void* p, unsigned int taille, unsigned int nbelem, IOBUF_FILE * f) {
     if (p == NULL || f == NULL || f->mode != 'W') { return -1; }
     unsigned int nbelem_written = 0;
 
@@ -148,7 +198,7 @@ int iobuf_write(void* p, unsigned int taille, unsigned int nbelem, IOBUF_FILE * 
     }
 
     return (int)nbelem_written;
-}
+}*/
 
 // int iobuf_fprintf(IOBUF_FILE* fp, char* format, ...) {
 //     int nbelem_written = 0;
@@ -205,7 +255,7 @@ int iobuf_write(void* p, unsigned int taille, unsigned int nbelem, IOBUF_FILE * 
 // }
 
 
-ssize_t iobuf_flush(IOBUF_FILE* f) {
+/*ssize_t iobuf_flush(IOBUF_FILE* f) {
     if (f == NULL || f->mode != 'W') { return -1; }
     ssize_t bytes_to_write = f->end_buff - f->start_buff;
     if (f->start_buff >= f->end_buff) {
@@ -227,9 +277,9 @@ ssize_t iobuf_flush(IOBUF_FILE* f) {
     }
 
     return rval;
-}
+}*/
 
-ssize_t iobuf_fill(IOBUF_FILE* f) {
+/*ssize_t iobuf_fill(IOBUF_FILE* f) {
     if (f == NULL || f->mode != 'R' || f->end_buff < f->start_buff) { return -1; }
     if (f->start_buff == f->end_buff) {
         f->start_buff = f->buffer;
@@ -246,39 +296,4 @@ ssize_t iobuf_fill(IOBUF_FILE* f) {
     f->end_buff += rval;
 
     return rval;
-}
-
-char *itos(int value, const int base) {
-    const char* digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    int negative = 0;
-
-    if (value < 0) {
-        negative = 1;
-        value = -value;
-    }
-
-    if (base < 1 || base > 36) {
-        return NULL;
-    }
-
-    if (value < base) {
-        char* result = malloc(2 * sizeof(char));
-        result[0] = digits[value];
-        result[1] = '\0';
-        return result;
-    }
-    char* result = itos(value / base, base);
-    size_t len = my_strlen(result);
-    result[len] = digits[value % base];
-    result[len + 1] = '\0';
-
-    if (negative) {
-        char* negative_result = malloc((len + 2) * sizeof(char));
-        negative_result[0] = '-';
-        my_strcpy(negative_result + 1, result);
-        free(result);
-        return negative_result;
-    }
-
-    return result;
-}
+}*/

@@ -1,0 +1,23 @@
+=== Test PthreadExit Return Values ===
+Test 1: Return 0
+Test 1: PASS
+Test 2: Return positive value
+Test 2: PASS
+Test 3: Return negative value
+Test 3: PASS
+Test 4: Explicit PthreadExit
+Test 4: PASS - PthreadExit does not return
+Test 5: PthreadExit in middle of function
+Test 5: PASS
+Test 6: Join with NULL retval pointer
+Test 6: PASS - Join with NULL retval works
+SUCCESS: All exit/return value tests passed
+Machine halting!
+
+Ticks: total 50154, idle 40700, system 8890, user 564
+Disk I/O: reads 0, writes 0
+Console I/O: reads 0, writes 407
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

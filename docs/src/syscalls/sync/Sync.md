@@ -5,8 +5,8 @@ Les appels système de sémaphores permettent la synchronisation entre threads u
 ## Opérations disponibles
 
 - **[SemInit](./SemInit.md)** : Crée et initialise un nouveau sémaphore
-- **[SemP](./SemP.md)** : Opération P (wait/acquire) sur un sémaphore
-- **[SemV](./SemV.md)** : Opération V (signal/release) sur un sémaphore
+- **[SemWait](SemWait.md)** : Opération P (wait/acquire) sur un sémaphore
+- **[SemPost](SemPost.md)** : Opération V (signal/release) sur un sémaphore
 - **[SemDestroy](./SemDestroy.md)** : Détruit un sémaphore
 - **[SetMaxSemForProcess](./SetMaxSemForProcess.md)** : Redimensionne la table de sémaphores
 
@@ -56,7 +56,7 @@ La table de sémaphores s'adapte automatiquement aux besoins :
 └────┬────────┬───┘    │
      │        │        │
      │        │        │
-  SemP()   SemV()      │ Utilisation répétée
+ SemWait() SemPost()   │ Utilisation répétée
      │        │        │
      │        │        │
      └────────┘────────┘
@@ -74,8 +74,8 @@ Tous les appels système de sémaphores retournent un code d'erreur et définiss
 | Appel                      | Succès      | Échec  | Codes errno possibles |
 |----------------------------|-------------|--------|-----------------------|
 | `SemInit(value)`           | handle (≥0) | -1     | `E_INVAL`, `E_FTABLE` |
-| `SemP(sem_id)`             | 0           | -1     | `E_NOENT`             |
-| `SemV(sem_id)`             | 0           | -1     | `E_NOENT`             |
+| `SemWait(sem_id)`          | 0           | -1     | `E_NOENT`             |
+| `SemPost(sem_id)`          | 0           | -1     | `E_NOENT`             |
 | `SemDestroy(sem_id)`       | 0           | -1     | `E_NOENT`             |
 | `SetMaxSemForProcess(max)` | 0           | -1     | `E_INVAL`             |
 
@@ -87,8 +87,8 @@ Tous les appels système de sémaphores retournent un code d'erreur et définiss
 - La table de descripteurs est protégée par un verrou interne
 
 **Comportement** :
-- `SemP()` bloque le thread appelant si le compteur est à 0
-- `SemV()` réveille un thread bloqué en attente (aucune garentie sur le thread reveillé)
+- `SemWait()` bloque le thread appelant si le compteur est à 0
+- `SemPost()` réveille un thread bloqué en attente (aucune garentie sur le thread reveillé)
 
 
 ## Exemple complet
@@ -102,9 +102,9 @@ int mutex_id;
 
 void increment_thread(void *arg) {
     for (int i = 0; i < 1000; i++) {
-        SemP(mutex_id);      // Entrer en section critique
+        SemWait(mutex_id);      // Entrer en section critique
         counter++;
-        SemV(mutex_id);      // Sortir de section critique
+        SemPost(mutex_id);      // Sortir de section critique
     }
     ExitThread();
 }
@@ -141,7 +141,7 @@ int main() {
 
 ### 1. Pas de timeout
 
-`SemP()` peut bloquer indéfiniment si `SemV()` n'est jamais appelé.
+`SemWait()` peut bloquer indéfiniment si `SemPost()` n'est jamais appelé.
 
 **Impact** : Impossible d'implémenter des locks avec timeout.
 
@@ -165,8 +165,8 @@ Les sémaphores sont locaux à un processus.
 |------------------------------|-----------------------|---------------------------|
 | `SemInit` (liste non pleine) | O(1)                  | Allocation O(1)           |
 | `SemInit` (liste pleine)     | O(n)                  | Réallocation O(n)         |
-| `SemP`                       | O(1)*                 | *Bloquant si compteur = 0 |
-| `SemV`                       | O(1)                  | Réveil thread O(1)        |
+| `SemWait`                    | O(1)                  | Bloquant si compteur = 0  |
+| `SemPost`                    | O(1)                  | Réveil thread O(1)        |
 | `SemDestroy`                 | O(1)                  | Libération bitmap         |
 
 ## Voir aussi

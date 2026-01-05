@@ -8,7 +8,7 @@ Main: Woke up at tick 1014437 (expected >= previous tick)
 Main: SleepUntil(-100) failed as expected with errno = 1
 Machine halting!
 
-Ticks: total 1039132, idle 1024171, system 9020, user 5941
+Ticks: total 1039152, idle 1024191, system 9020, user 5941
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 445
 Paging: faults 0

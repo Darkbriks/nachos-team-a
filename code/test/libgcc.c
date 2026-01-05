@@ -3,7 +3,7 @@
  *
  * For reference: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56888#c8
  */
-
+/*
 typedef unsigned int size_t;
 
 void *memset(void *s, int c, size_t n) {
@@ -38,3 +38,4 @@ void *memmove(void *dest, const void *src, size_t n) {
     }
     return dest;
 }
+*/

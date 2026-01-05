@@ -13,7 +13,7 @@ int SemDestroy(int sem_id);
 
 `SemDestroy` détruit le sémaphore identifié par `sem_id`, libère ses ressources kernel et invalide le descripteur.
 
-Numéro d'appel système : `27`
+Numéro d'appel système : `32`
 
 ### Comportement nominal
 
@@ -93,9 +93,9 @@ int main() {
     }
     
     // Utiliser le sémaphore
-    SemP(sem);
+    SemWait(sem);
     PutString("Section critique\n", 18);
-    SemV(sem);
+    SemPost(sem);
     
     // Nettoyer
     if (SemDestroy(sem) == 0) {
@@ -143,7 +143,7 @@ int sem;
 
 void blocked_thread(void *arg) {
     PutString("Thread: attente sémaphore...\n", 30);
-    SemP(sem);  // Bloque ici indéfiniment
+    SemWait(sem);  // Bloque ici indéfiniment
     PutString("Thread: réveillé\n", 18);  // Jamais atteint
     ExitThread();
 }
@@ -171,7 +171,7 @@ int main() {
 
 **Solution** : Toujours signaler les threads bloqués avant destruction :
 ```c
-SemV(sem);  // Réveiller le thread
+SemPost(sem);  // Réveiller le thread
 JoinThread(tid);  // Attendre terminaison
 SemDestroy(sem);  // Maintenant sûr
 ```
@@ -184,9 +184,9 @@ SemDestroy(sem);  // Maintenant sûr
 int main() {
     int sem = SemInit(1);
     
-    SemP(sem);
+    SemWait(sem);
     PutString("Travail...\n", 12);
-    SemV(sem);
+    SemPost(sem);
     
     // Terminer SANS détruire explicitement
     // → Nettoyage automatique dans ~AddrSpace()
@@ -241,15 +241,15 @@ Aucun bug connu à ce jour.
 ## VOIR AUSSI
 
 - [SemInit](./SemInit.md) - Création d'un sémaphore
-- [SemP](./SemP.md) - Opération P (wait) sur un sémaphore
-- [SemV](./SemV.md) - Opération V (signal) sur un sémaphore
+- [SemWait](./SemWait.md) - Opération P (wait) sur un sémaphore
+- [SemPost](./SemPost.md) - Opération V (signal) sur un sémaphore
 - [SetMaxSemForProcess](./SetMaxSemForProcess.md) - Redimensionnement de la table
 - [Vue d'ensemble](Sync.md) - Guide complet des sémaphores
 
 ## AUTEURS
 
-Antoine, 25 Dec 2025
+Antoine, 31 Dec 2025
 
 ## DERNIÈRE RÉVISION
 
-25 Dec 2025 par Antoine
+5 Jan 2026

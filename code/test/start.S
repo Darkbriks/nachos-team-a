@@ -277,17 +277,15 @@ GetInt_ok:
     j      $31
     .end GetInt
 
-/* CreateThread: with error handling and automatic ExitThread */
-    .globl CreateThread
-    .ent	CreateThread
-CreateThread:
-    # Load ExitThread address into $6 
-    la     $6,ExitThread
+/* PthreadCreate: with error handling*/
+    .globl PthreadCreate
+    .ent	PthreadCreate
+PthreadCreate:
+    la $8, PthreadExit_wrapper  # Load address of wrapper
 
-    addiu $2,$0,SC_CreateThread
+    addiu $2,$0,SC_PthreadCreate
     syscall
-
-    bgez  $2,CreateThread_ok
+    bgez  $2,PthreadCreate_ok
     nop
     # Error handling
     subu   $3,$0,$2
@@ -295,18 +293,27 @@ CreateThread:
     addiu  $2,$0,-1
     j      $31
     nop
-CreateThread_ok:
+PthreadCreate_ok:
     sw     $0,errno
     j      $31
-    .end CreateThread
+    .end PthreadCreate
 
-/* ExitThread : with error handling */
-    .globl ExitThread
-    .ent	ExitThread
-ExitThread:
-    addiu $2,$0,SC_ExitThread
+/* PthreadExit : no error handling */
+    .globl PthreadExit
+    .ent	PthreadExit
+PthreadExit:
+    addiu $2,$0,SC_PthreadExit
     syscall
-    bgez  $2,ExitThread_ok
+    j      $31
+    .end PthreadExit
+
+/* PthreadJoin : with error handling */
+    .globl PthreadJoin
+    .ent	PthreadJoin
+PthreadJoin:
+    addiu $2,$0,SC_PthreadJoin
+    syscall
+    bgez  $2,PthreadJoin_ok
     nop
     # Error handling
     subu   $3,$0,$2
@@ -314,18 +321,18 @@ ExitThread:
     addiu  $2,$0,-1
     j      $31
     nop
-ExitThread_ok:
+PthreadJoin_ok:
     sw     $0,errno
     j      $31
-    .end ExitThread
+    .end PthreadJoin
 
-/* JoinThread : with error handling */
-    .globl JoinThread
-    .ent	JoinThread
-JoinThread:
-    addiu $2,$0,SC_JoinThread
+/* PthreadDetach : with error handling */
+    .globl PthreadDetach
+    .ent	PthreadDetach
+PthreadDetach:
+    addiu $2,$0,SC_PthreadDetach
     syscall
-    bgez  $2,JoinThread_ok
+    bgez  $2,PthreadDetach_ok
     nop
     # Error handling
     subu   $3,$0,$2
@@ -333,10 +340,106 @@ JoinThread:
     addiu  $2,$0,-1
     j      $31
     nop
-JoinThread_ok:
+PthreadDetach_ok:
     sw     $0,errno
     j      $31
-    .end JoinThread
+    .end PthreadDetach
+
+/* PthreadSelf : with error handling */
+    .globl PthreadSelf
+    .ent	PthreadSelf
+PthreadSelf:
+    addiu $2,$0,SC_PthreadSelf
+    syscall
+    bgez  $2,PthreadSelf_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+PthreadSelf_ok:
+    sw     $0,errno
+    j      $31
+    .end PthreadSelf
+
+
+/* Pthread_attr_init : with error handling */
+    .globl Pthread_attr_init
+    .ent	Pthread_attr_init
+Pthread_attr_init:
+    addiu $2,$0,SC_Pthread_attr_init
+    syscall
+    bgez  $2,Pthread_attr_init_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+Pthread_attr_init_ok:
+    sw     $0,errno
+    j      $31
+    .end Pthread_attr_init
+
+/* Pthread_attr_destroy : with error handling */
+    .globl Pthread_attr_destroy
+    .ent	Pthread_attr_destroy
+Pthread_attr_destroy:
+    addiu $2,$0,SC_Pthread_attr_destroy
+    syscall
+    bgez  $2,Pthread_attr_destroy_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+Pthread_attr_destroy_ok:
+    sw     $0,errno
+    j      $31
+    .end Pthread_attr_destroy
+
+/* Pthread_attr_setdetachstate : with error handling */
+    .globl Pthread_attr_setdetachstate
+    .ent	Pthread_attr_setdetachstate
+Pthread_attr_setdetachstate:
+    addiu $2,$0,SC_Pthread_attr_setdetachstate
+    syscall
+    bgez  $2,Pthread_attr_setdetachstate_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+Pthread_attr_setdetachstate_ok:
+    sw     $0,errno
+    j      $31
+    .end Pthread_attr_setdetachstate
+
+/* Pthread_attr_getdetachstate : with error handling */
+    .globl Pthread_attr_getdetachstate
+    .ent	Pthread_attr_getdetachstate
+Pthread_attr_getdetachstate:
+    addiu $2,$0,SC_Pthread_attr_getdetachstate
+    syscall
+    bgez  $2,Pthread_attr_getdetachstate_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+Pthread_attr_getdetachstate_ok:
+    sw     $0,errno
+    j      $31
+    .end Pthread_attr_getdetachstate
     
 /* Sleep : with error handling */
     .globl Sleep
@@ -414,13 +517,13 @@ SemInit_ok:
     j      $31
     .end SemInit
 
-/* SemP : with error handling */
-    .globl SemP
-    .ent	SemP
-SemP:
-    addiu $2,$0,SC_SemP
+/* SemWait : with error handling */
+    .globl SemWait
+    .ent	SemWait
+SemWait:
+    addiu $2,$0,SC_SemWait
     syscall
-    bgez  $2,SemP_ok
+    bgez  $2,SemWait_ok
     nop
     # Error handling
     subu   $3,$0,$2
@@ -428,18 +531,18 @@ SemP:
     addiu  $2,$0,-1
     j      $31
     nop
-SemP_ok:
+SemWait_ok:
     sw     $0,errno
     j      $31
-    .end SemP
+    .end SemWait
 
-/* SemV : with error handling */
-    .globl SemV
-    .ent	SemV
-SemV:
-    addiu $2,$0,SC_SemV
+/* SemPost : with error handling */
+    .globl SemPost
+    .ent	SemPost
+SemPost:
+    addiu $2,$0,SC_SemPost
     syscall
-    bgez  $2,SemV_ok
+    bgez  $2,SemPost_ok
     nop
     # Error handling
     subu   $3,$0,$2
@@ -447,10 +550,10 @@ SemV:
     addiu  $2,$0,-1
     j      $31
     nop
-SemV_ok:
+SemPost_ok:
     sw     $0,errno
     j      $31
-    .end SemV
+    .end SemPost
 
 /* SemDestroy : with error handling */
     .globl SemDestroy
@@ -489,6 +592,18 @@ SetMaxSemForProcess_ok:
     sw     $0,errno
     j      $31
     .end SetMaxSemForProcess
+
+/* -------------------------------------------------------------
+ * Posix thread exit wrapper
+ * -------------------------------------------------------------
+ */
+    .globl  PthreadExit_wrapper
+    .ent    PthreadExit_wrapper
+PthreadExit_wrapper:
+    move   $4,$2
+    j     PthreadExit
+    nop
+    .end    PthreadExit_wrapper
 
 /* -------------------------------------------------------------
  * Errno utility functions

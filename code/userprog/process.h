@@ -5,7 +5,7 @@
 #include "linked_list.h"
 #include "system.h"
 
-#define MAX_THREAD 10 // TODO check for user's max process
+#define MAX_THREAD 30 // TODO check for user's max process
 #define MAX_PROCESS 15 // TODO PUT it in User
 
 
@@ -16,16 +16,14 @@ class Process{
 
         static class BitMapThreadSafe *all_process; // TODO put it in USer one day ... I hope but I really don't know
 
-        /*
-         * @deprecated Too much memory for each process, use it if you want to bench
-         */
-        // class BitMap *all_threads;
         AddrSpace *space;
         unsigned int PID;
         Thread * mainThread;
         unsigned int threadNumber;
         Lock *threadNumberLock;
         Semaphore *threadExitSemaphore;
+
+        class BitMap *threads_bitmap;
         LinkedList<Thread> * all_threads_addr;
 
         //User owner; // TODO create User class for multiUser OS 
@@ -43,6 +41,12 @@ class Process{
          * @brief Add a thread for this address space
          */
         Thread* CreateThread(char * name);
+
+        /**
+         * @brief Mark a thread as terminated and decrease the thread count
+         * The thread isn't deleted here, because it can be joined later
+         */
+        void ThreadTerminated(Thread * thread);
 
         /**
          * @brief Remove a thread from this address space

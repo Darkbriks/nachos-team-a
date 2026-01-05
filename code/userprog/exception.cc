@@ -31,6 +31,19 @@
 #include "userSleep.h"
 #include "userSem.h"
 
+#define CASE_HANDLER(syscall_name)                      \
+    case SC_##syscall_name:                             \
+        DEBUG('a', "%s exception.cc\n", #syscall_name); \
+        handle_SC_##syscall_name();                     \
+        break;
+
+#define CASE_HANDLER_RETURN(syscall_name)               \
+    case SC_##syscall_name:                             \
+        DEBUG('a', "%s exception.cc\n", #syscall_name); \
+        handle_SC_##syscall_name();                     \
+        return;
+
+
 //----------------------------------------------------------------------
 // UpdatePC : Increments the Program Counter register in order to resume
 // the user program immediately after the "syscall" instruction.
@@ -67,8 +80,12 @@ static void UpdatePC() {
 //      are in machine.h.
 //----------------------------------------------------------------------
 
+void handle_SC_Halt() {
+    DEBUG('a', "Shutdown, initiated by user program.\n");
+    interrupt->Halt();
+}
 
-void handler_SC_exit() {
+void handle_SC_Exit() {
     const int return_code = machine->ReadRegister(4);
     machine->WriteRegister(2, return_code);
 
@@ -87,99 +104,36 @@ void ExceptionHandler(ExceptionType which) {
     }
 
     switch (type){
-        case SC_Halt:
-            DEBUG('a', "Shutdown, initiated by user program.\n");
-            interrupt->Halt();
-            return; // HALT does not return, so we do not need to UpdatePC
+        CASE_HANDLER_RETURN(Halt)
+        CASE_HANDLER_RETURN(Exit)
 
-        case SC_Exit:
-            DEBUG('a', "Exit, initiated by user program.\n");
-            handler_SC_exit();
-            return; // EXIT does not return, so we do not need to UpdatePC
+        CASE_HANDLER(PutChar)
+        CASE_HANDLER(PutString)
+        CASE_HANDLER(GetChar)
+        CASE_HANDLER(GetString)
+        CASE_HANDLER(PutInt)
+        CASE_HANDLER(GetInt)
 
-        case SC_PutChar:
-            DEBUG('a', "PutChar exception.cc\n");
-            handler_SC_putChar();
-            break;
+        CASE_HANDLER(PthreadCreate)
+        CASE_HANDLER_RETURN(PthreadExit)
+        CASE_HANDLER(PthreadJoin)
+        CASE_HANDLER(PthreadDetach)
+        CASE_HANDLER(PthreadSelf)
 
-        case SC_PutString:
-            DEBUG('a', "PutString exception.cc\n");
-            handler_SC_putString();
-            break;
+        CASE_HANDLER(Pthread_attr_init)
+        CASE_HANDLER(Pthread_attr_destroy)
+        CASE_HANDLER(Pthread_attr_setdetachstate)
+        CASE_HANDLER(Pthread_attr_getdetachstate)
 
-        case SC_GetChar:
-            DEBUG('a', "GetChar exception.cc\n");
-            handler_SC_getChar();
-            break;
-        case SC_GetString:
-            DEBUG('a', "GetString exception.cc\n");
-            handler_SC_getString();
-            break;
+        CASE_HANDLER(Sleep)
+        CASE_HANDLER(SleepUntil)
+        CASE_HANDLER(GetCurrentTick)
 
-        case SC_PutInt:
-            DEBUG('a', "PutInt exception.cc\n");
-            handler_SC_PutInt();
-            break;
-
-        case SC_GetInt:
-            DEBUG('a', "GetInt exception.cc\n");
-            handler_SC_GetInt();
-            break;
-
-        case SC_CreateThread:
-            DEBUG('a', "CreateThread exception.cc\n");
-            handle_SC_CreateThread();
-            break;
-
-        case SC_ExitThread:
-            DEBUG('a', "ExitThread exception.cc\n");
-            do_UserThreadExit();
-            return;
-
-        case SC_JoinThread:
-            DEBUG('a', "JoinThread exception.cc\n");
-            handle_SC_JoinThread();
-            break;
-
-        case SC_Sleep:
-            DEBUG('a', "Sleep exception.cc\n");
-            handle_SC_Sleep();
-            break;
-
-        case SC_SleepUntil:
-            DEBUG('a', "SleepUntil exception.cc\n");
-            handle_SC_SleepUntil();
-            break;
-
-        case SC_GetCurrentTick:
-            DEBUG('a', "GetCurrentTick exception.cc\n");
-            handle_SC_GetCurrentTick();
-            break;
-
-        case SC_SemInit:
-            DEBUG('a', "SemInit  exception.cc\n");
-            handle_SC_SemInit();
-            break;
-
-        case SC_SemP:
-            DEBUG('a', "SemP  exception.cc\n");
-            handle_SC_SemP();
-            break;
-
-        case SC_SemV:
-            DEBUG('a', "SemV  exception.cc\n");
-            handle_SC_SemV();
-            break;
-
-        case SC_SemDestroy:
-            DEBUG('a', "SemDestroy  exception.cc\n");
-            handle_SC_SemDestroy();
-            break;
-
-        case SC_SetMaxSemForProcess:
-            DEBUG('a', "SetMaxSemForProcess  exception.cc\n");
-            handle_SC_SetMaxSemForProcess();
-            break;
+        CASE_HANDLER(SemInit)
+        CASE_HANDLER(SemWait)
+        CASE_HANDLER(SemPost)
+        CASE_HANDLER(SemDestroy)
+        CASE_HANDLER(SetMaxSemForProcess)
 
         default:
             printf("Unknow syscall :%d\n", type);
