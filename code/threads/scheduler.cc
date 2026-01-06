@@ -20,6 +20,7 @@
 
 #include "scheduler.h"
 #include "copyright.h"
+#include "process.h"
 #include "system.h"
 
 //----------------------------------------------------------------------
@@ -114,6 +115,11 @@ void Scheduler::Run(Thread *nextThread) {
     if (threadToBeDestroyed != NULL) {
         delete threadToBeDestroyed;
         threadToBeDestroyed = NULL;
+    }
+
+    if (processToBeDestroyed != NULL) {
+        delete processToBeDestroyed;
+        processToBeDestroyed = NULL;
     }
 
 #ifdef USER_PROGRAM

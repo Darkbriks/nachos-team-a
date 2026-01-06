@@ -28,6 +28,7 @@
 #include "process.h"
 #include "exception.h"
 #include "userIO.h"
+#include "userprocess.h"
 #include "userSleep.h"
 #include "userSem.h"
 
@@ -89,10 +90,20 @@ void handle_SC_Exit() {
     const int return_code = machine->ReadRegister(4);
     machine->WriteRegister(2, return_code);
 
-    // Wait the termination of all threads in the address space before halting the machine
-    if (Process* process = currentThread->getProcess(); process != nullptr) { process->WaitForAllThreadsTerminate(); }
+    Process* process = currentThread->getProcess();
 
-    interrupt->Halt();
+    if (process == nullptr) { currentThread->Finish(); return; }
+
+    DEBUG('p', "Exit: Process %d (thread %d) exiting with code %d\n", process->getPId(), currentThread->getTID(), return_code);
+
+    process->WaitForAllThreadsTerminate();
+
+    ASSERT(processToBeDestroyed == NULL);
+    processToBeDestroyed = process;
+
+    currentThread->Finish();
+
+    ASSERT(FALSE);
 }
 
 void ExceptionHandler(ExceptionType which) {
@@ -134,6 +145,8 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(SemPost)
         CASE_HANDLER(SemDestroy)
         CASE_HANDLER(SetMaxSemForProcess)
+
+        CASE_HANDLER(ForkExec)
 
         default:
             printf("Unknow syscall :%d\n", type);

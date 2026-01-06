@@ -93,7 +93,7 @@ Thread::Thread(const char *threadName, Process *p, posix_thread_t tid) :
                 stackTop(NULL), process(p), TID(tid), joiner(nullptr),
                 join(nullptr), waitTime(0), flags(new BitMap(THREAD_FLAG_SIZE)),
                 retval(nullptr), stack(NULL), status(JUST_CREATED), name(new char[MAX_STRING_SIZE]) {
-    snprintf(const_cast<char *>(name), MAX_STRING_SIZE - 1, "%s_%d", threadName, TID);
+    snprintf(const_cast<char *>(name), MAX_STRING_SIZE - 1, "%s_%d_%d", threadName, process ? process->getPId() : 0, TID);
     sem = new Semaphore(name, 0);
 
 #ifdef USER_PROGRAM
@@ -369,6 +369,11 @@ void SetupThreadState() {
     if (threadToBeDestroyed != NULL) {
         delete threadToBeDestroyed;
         threadToBeDestroyed = NULL;
+    }
+
+    if (processToBeDestroyed != nullptr) {
+        delete processToBeDestroyed;
+        processToBeDestroyed = nullptr;
     }
 
 #ifdef USER_PROGRAM
