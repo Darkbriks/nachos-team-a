@@ -591,7 +591,29 @@ SetMaxSemForProcess:
 SetMaxSemForProcess_ok:
     sw     $0,errno
     j      $31
-    .end SetMaxSemForProcess
+   .end SetMaxSemForProcess
+
+
+ /* Process */
+
+ /* ForkExec : with error handling */
+    .globl ForkExec
+    .ent	ForkExec
+ForkExec:
+    addiu $2,$0,SC_ForkExec
+    syscall
+    bgez  $2,ForkExec_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+ForkExec_ok:
+    sw     $0,errno
+    j      $31
+    .end ForkExec
 
 /* -------------------------------------------------------------
  * Posix thread exit wrapper

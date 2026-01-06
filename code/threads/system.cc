@@ -151,7 +151,7 @@ void Initialize(int argc, char **argv) {
     interrupt->Enable();
     CallOnUserAbort(Cleanup); // if user hits ctl-C
 
-    frameProvider = new FrameProvider();
+    frameProvider = new FrameProvider(nullptr);
 
 #ifdef USER_PROGRAM
     machine = new Machine(debugUserProg); // this must come first
@@ -207,14 +207,15 @@ void Cleanup() {
 // CopyStringFromMachine
 //      Copy a mips string from the user memory to the system memory.
 //----------------------------------------------------------------------
-void copyStringFromMachine(int from, char *to, unsigned size) {
+int copyStringFromMachine(int from, char *to, unsigned size) {
     unsigned i = 0; int ch;
     while (machine->ReadMem(from + i, 1, &ch) && i < size - 1) {
         to[i] = (char)ch;
-        if (to[i] == '\0') { return; }
+        if (to[i] == '\0') { return i; }
         i++;
     }
     to[i] = '\0';
+    return i;
 }
 
 //----------------------------------------------------------------------

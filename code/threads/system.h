@@ -33,6 +33,8 @@ extern Interrupt *interrupt;         // interrupt status
 extern Statistics *stats;            // performance metrics
 extern Timer *timer;                 // the hardware alarm clock
 
+#define MAX_PATH_SIZE 1024
+
 #ifdef USER_PROGRAM
 #include "machine.h"
 #include "synchconsole.h"
@@ -42,7 +44,7 @@ extern Timer *timer;                 // the hardware alarm clock
 extern Machine *machine; // user program memory and registers
 extern SynchConsole *synchConsole; // The only Console
 
-void copyStringFromMachine(int from, char *to, unsigned size);
+int copyStringFromMachine(int from, char *to, unsigned size);
 void copyStringToMachine(char *from, int to, unsigned size);
 #endif
 

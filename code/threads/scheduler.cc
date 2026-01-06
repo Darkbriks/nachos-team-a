@@ -21,7 +21,7 @@
 #include "scheduler.h"
 #include "copyright.h"
 #include "system.h"
-
+#include "process.h"
 //----------------------------------------------------------------------
 // Scheduler::Scheduler
 //      Initialize the list of ready but not running threads to empty.
@@ -97,6 +97,10 @@ void Scheduler::Run(Thread *nextThread) {
 
     DEBUG('t', "Switching from thread \"%s\" to thread \"%s\"\n",
           oldThread->getName(), nextThread->getName());
+    DEBUG('t', "Pointeur process Switching from thread \"0x%x\" to thread \"0x%x\"\n",
+          oldThread->getProcess(), nextThread->getProcess());
+    DEBUG('t', "Adresspace Switching from thread \"0x%x\" to thread \"0x%x\"\n",
+          oldThread->getProcess()->getSpace(), nextThread->getProcess()->getSpace());
 
     // This is a machine-dependent assembly language routine defined
     // in switch.s.  You may have to think
@@ -163,4 +167,5 @@ void Scheduler::WakeUpThreads() {
 void Scheduler::Print() {
     printf("Ready list contents:\n");
     readyList->Mapcar((VoidFunctionPtr)ThreadPrint);
+    printf("\nReady list contents finish \n");
 }

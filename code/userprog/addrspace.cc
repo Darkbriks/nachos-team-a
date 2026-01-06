@@ -63,7 +63,7 @@ static void ReadAtVirtual( OpenFile *executable, int virtualaddr,int numBytes, i
     // }
     // Don't remove these lines
     machine->pageTable = pageTable;
-    machine->pageTableSize = numPages;
+    machine->pageTableSize = numPages; // TODO à voir si il faut remettre * PageSize
     char tmp[numBytes + 1];
     int maxSize = executable->ReadAt(tmp, numBytes,  position);
     for (int i = 0; i < maxSize; i++){ 
@@ -86,11 +86,13 @@ static void ReadAtVirtual( OpenFile *executable, int virtualaddr,int numBytes, i
 //      "executable" is the file containing the object code to load into memory
 //----------------------------------------------------------------------
 
-AddrSpace::AddrSpace(OpenFile *executable) {
+AddrSpace::AddrSpace(OpenFile *executable) : semaphoreTable(nullptr) {
     NoffHeader noffH;
     unsigned int i, size;
+    printf("Pointeur de addrSpace crée 0x%p sur thread %s\n", this, currentThread->getName());
 
     executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
+    DEBUG('a', "AddrSpace bug : 0x%x\n", this->semaphoreTable );
     // ReadAtVirtual(executable, (int) (int *)&noffH, sizeof(noffH), 0, 0,1 );
     if ((noffH.noffMagic != NOFFMAGIC) &&
         (WordToHost(noffH.noffMagic) == NOFFMAGIC))
@@ -128,6 +130,9 @@ AddrSpace::AddrSpace(OpenFile *executable) {
                                        // a separate page, we could set its
                                        // pages to be read-only
     }
+    DEBUG('a', "AddrSpace first virtual = 0x%x and first real is 0x%x\n", pageTable[0].virtualPage, pageTable[0].physicalPage);
+    DEBUG('a', "AddrSpace last virtual = 0x%x and last real is 0x%x\n", pageTable[numPages - 1].virtualPage, pageTable[numPages - 1].physicalPage);
+    DEBUG('a', "AddrSpace bug : 0x%x\n", this->semaphoreTable );
 
     // then, copy in the code and data segments into memory
     if (noffH.code.size > 0) {
@@ -211,7 +216,10 @@ void AddrSpace::InitRegisters() {
 //      For now, nothing!
 //----------------------------------------------------------------------
 
-void AddrSpace::SaveState() {}
+void AddrSpace::SaveState() {
+    pageTable = machine->pageTable;
+    numPages = machine->pageTableSize;
+}
 
 //----------------------------------------------------------------------
 // AddrSpace::RestoreState

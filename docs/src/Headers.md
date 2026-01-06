@@ -59,11 +59,37 @@ Les headers définis dans `code/userprog/addrspace.h` :
 
 ---
 
+## Définitions
+
+Les headers définis dans `code/threads/system.h` :
+
+```c
+#define MAX_PATH_SIZE 1024
+#define MAX_STRING_SIZE 256
+```
+
+
+---
+
+### MAX_PATH_SIZE 
+
+**Description** : Indique le nombre d'octets autorisés pour un chemin de fichier passé au kernel 
+
+---
+
+### MAX_STRING_SIZE 
+
+
+**Description** : Taille du buffer de chaines pour PutString et le nom des Threads 
+
+---
+
+
 ## Auteurs
 
 Tommy , 5 Jan 2026
 
 ## Dernière révision
 
-5 Jan 2026 par Tommy 
+6 Jan 2026 par Tommy 
 

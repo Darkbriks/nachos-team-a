@@ -30,6 +30,7 @@
 #include "userIO.h"
 #include "userSleep.h"
 #include "userSem.h"
+#include "userProcess.h"
 
 #define CASE_HANDLER(syscall_name)                      \
     case SC_##syscall_name:                             \
@@ -134,6 +135,8 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(SemPost)
         CASE_HANDLER(SemDestroy)
         CASE_HANDLER(SetMaxSemForProcess)
+
+        CASE_HANDLER(ForkExec)
 
         default:
             printf("Unknow syscall :%d\n", type);

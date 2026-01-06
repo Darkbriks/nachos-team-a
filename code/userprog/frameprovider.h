@@ -3,8 +3,6 @@
 
 class BitMap;
 
-// TODO: Use Sync Bitmap, or add locks
-
 /**
  * Interface for frame allocation strategies.
  */
@@ -39,6 +37,7 @@ class FrameProvider {
 
     public:
         explicit FrameProvider(IAllocationStrategy* strategy = nullptr);
+        FrameProvider() = delete;
         ~FrameProvider();
 
         /**

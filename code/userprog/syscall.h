@@ -70,6 +70,9 @@
 #define SC_SemDestroy 32
 #define SC_SetMaxSemForProcess 33
 
+/* --- Process --- */
+#define SC_ForkExec 34
+
 /* ============================================================
  * ERROR CODES
  * Returned as negative values by syscalls, stored as positive in errno
@@ -456,6 +459,17 @@ int SemDestroy(int sem_id);
  * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/sync/SetMaxSemForProcess.html">Full documentation</a>
  */
 int SetMaxSemForProcess(unsigned int maxSemaphores);
+
+
+/**
+ * @brief Create a new process and execute the executable file given in parameter
+ *
+ * @param file_name The path ( relative or absolute ) for the executable file
+ * @return errno
+ *
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/process/ForkExec.html">Full documentation</a>
+ */
+int ForkExec(char* file_name);
 
 #endif // IN_USER_MODE
 

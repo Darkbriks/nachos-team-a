@@ -92,12 +92,12 @@ USER_FLAVORS=step4
 # USER_FLAVORS=step2 step5 mynetwork final
 
 # $(eval $(call define-flavor,step2,userprog filesys-stub,synchconsole.cc))
-$(eval $(call define-flavor,step3,userprog filesys-stub,synchconsole.cc userthread.cc process.cc bitmap_thread_safe.cc \
-	userIO.cc userSem.cc userSleep.cc ))
-
+# $(eval $(call define-flavor,step3,userprog filesys-stub,synchconsole.cc userthread.cc process.cc bitmap_thread_safe.cc \
+# 	userIO.cc userSem.cc userSleep.cc ))
+#
 $(eval $(call define-flavor,step4,userprog filesys-stub, \
     bitmap_thread_safe.cc frameprovider.cc process.cc synchconsole.cc \
-    userIO.cc userSem.cc userSleep.cc userthread.cc))
+    userIO.cc userSem.cc userSleep.cc userthread.cc userProcess.cc))
 
 # $(eval $(call define-flavor,step5,userprog filesys,\
 #     synchconsole.cc userthread.cc))

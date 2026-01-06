@@ -30,11 +30,26 @@ void StartProcess(char *filename) {
     }
     Process * newProcess = Process::createProcess(executable);
     if (newProcess == nullptr){
-        ASSERT(FALSE);  // machine->Run never returns;
+        ASSERT(FALSE);  
     }
-    currentThread = newProcess->getMainThread();
-    currentThread->setStatus(RUNNING);
-    machine->Run(); // jump to the user progam
+    // if (currentThread != nullptr && currentThread->getProcess()->getPId() != 0){
+    //     DEBUG('t', "Progtest Manual switch \n");
+    //     IntStatus previous_status = interrupt->SetLevel(IntOff);
+    //     Thread * previous_thread = currentThread;
+    //     scheduler->Run(newProcess->getMainThread());
+    //     // scheduler->Print();
+    //     scheduler->ReadyToRun(previous_thread);
+    //     interrupt->SetLevel(previous_status);
+    // } else {
+        DEBUG('t', "the original switch where you never return\n");
+        if (currentThread->getProcess()->getPId() != 0){
+            scheduler->ReadyToRun(currentThread);
+        }
+        currentThread = newProcess->getMainThread();
+        currentThread->setStatus(RUNNING);
+        // scheduler->Print();
+        machine->Run(); // jump to the user progam
+    // }
     ASSERT(FALSE);  // machine->Run never returns;
     // the address space exits
     // by doing the syscall "exit"
