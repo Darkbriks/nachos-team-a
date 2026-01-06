@@ -98,7 +98,12 @@ void handle_SC_Exit() {
 
     process->WaitForAllThreadsTerminate();
 
-    ASSERT(processToBeDestroyed == NULL);
+    if (Process::isLastActiveProcess()) {
+        delete process;
+        interrupt->Halt();
+    }
+
+    ASSERT(processToBeDestroyed == nullptr);
     processToBeDestroyed = process;
 
     currentThread->Finish();

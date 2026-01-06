@@ -10,10 +10,17 @@ BitMapThreadSafe* Process::all_process = new BitMapThreadSafe(MAX_PROCESS);
 int Process::activeProcessCount = 0;
 Lock* Process::processCountLock = new Lock("process count lock");
 
+bool Process::isLastActiveProcess() {
+    processCountLock->Acquire();
+    const bool result = (activeProcessCount == 1);
+    processCountLock->Release();
+    return result;
+}
+
 Process* Process::createProcess(OpenFile * executable) {
-    char * status_code = new char;
-    Process *result = new Process(executable, status_code);
-    if ( *status_code == -1){
+    const auto status_code = new char;
+    auto* result = new Process(executable, status_code);
+    if (*status_code == -1) {
         delete result;
         result = nullptr;
     }
@@ -22,11 +29,11 @@ Process* Process::createProcess(OpenFile * executable) {
 }
 
 
-Process::Process(OpenFile * executable, char* status_code) {
-    *status_code = 0;
+Process::Process(OpenFile * executable, char* return_code) {
+    *return_code = 0;
 
     const int tmp = all_process->Find();
-    if (tmp == -1) { *status_code = -1; return; }
+    if (tmp == -1) { *return_code = -1; return; }
 
     PID = static_cast<unsigned int>(tmp);
 
@@ -45,12 +52,10 @@ Process::Process(OpenFile * executable, char* status_code) {
     threads_bitmap = new BitMap(MAX_THREAD);
 
     threadNumber = 0; // The main thread
-    Thread * firstThread = CreateThread(executable ? (char *) "main" : (char *) "kernel");
+    Thread * firstThread = CreateThread(executable ? "main" : "kernel");
 
     if (executable != nullptr) {
         this->space = new AddrSpace(executable);
-        space->InitRegisters(); // set the initial register values
-        space->RestoreState();  // load page table register
         delete executable; // close file
     }
 
@@ -71,12 +76,12 @@ Process::~Process() {
     delete all_threads_addr;
     delete threads_bitmap;
 
-    all_process->ClearThreadSafe(PID);
+    all_process->ClearThreadSafe(static_cast<int>(PID));
 
     if (PID > 0) {
         processCountLock->Acquire();
         activeProcessCount--;
-        int remaining = activeProcessCount;
+        const int remaining = activeProcessCount;
         DEBUG('p', "Process %d destroyed, %d active processes remaining\n", PID, remaining);
         processCountLock->Release();
 
@@ -89,7 +94,7 @@ Process::~Process() {
     }
 }
 
-void Process::ThreadTerminated(Thread* thread){
+void Process::ThreadTerminated(Thread* thread) {
     threadNumberLock->Acquire();
     const unsigned int remainingThreads = --threadNumber;
     threadNumberLock->Release();
@@ -99,7 +104,7 @@ void Process::ThreadTerminated(Thread* thread){
     threadExitSemaphore->V();
 }
 
-void Process::RemoveThread(Thread * thread) {
+void Process::RemoveThread(Thread * thread) const {
     // ThreadTerminated must be called before, so threadNumber is already decreased
     threadNumberLock->Acquire();
     all_threads_addr->RemoveInList(thread);
@@ -112,7 +117,7 @@ void Process::RemoveThread(Thread * thread) {
     else { threadToBeDestroyed = thread; }
 }
 
-void Process::WaitForAllThreadsTerminate() {
+void Process::WaitForAllThreadsTerminate() const {
     threadNumberLock->Acquire();
     while (threadNumber > 1) { // Exclude the main thread
         threadNumberLock->Release();
@@ -127,18 +132,18 @@ void Process::WaitForAllThreadsTerminate() {
     DEBUG('t', "Process: All child threads finished\n");
 }
 
-bool search(Thread * T, unsigned int value){
+bool search(Thread * T, const unsigned int value) {
     return T->getTID() == value;
 }
 
-Thread * Process::FindThread(unsigned int TID){
+Thread * Process::FindThread(const unsigned int TID) const {
     return all_threads_addr->FindInList( std::function<bool (Thread *, unsigned int)> (search), TID );
 }
 
-Thread* Process::CreateThread(char * name) {
+Thread* Process::CreateThread(const char * name) {
     const posix_thread_t tid = threads_bitmap->Find();
     if (tid == static_cast<posix_thread_t>(-1)) { return nullptr; }
-    Thread * newThread = new Thread(name, this, tid);
+    auto* newThread = new Thread(name, this, tid);
     threadNumberLock->Acquire();
     threadNumber++;
     all_threads_addr->AddInList(newThread);

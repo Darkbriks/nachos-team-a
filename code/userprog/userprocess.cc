@@ -5,12 +5,12 @@
 #include "exception.h"
 #include "syscall.h"
 
-static void StartProcess(int arg) {
-    Process* process = reinterpret_cast<Process*>(arg);
+static void StartProcess(const int arg) {
+    const auto* process = reinterpret_cast<Process*>(arg);
 
     DEBUG('p', "StartProcess: Starting process %d\n", process->getPId());
 
-    AddrSpace* space = process->getSpace();
+    const AddrSpace* space = process->getSpace();
     ASSERT(space != nullptr);
 
     space->InitRegisters();
@@ -22,7 +22,7 @@ static void StartProcess(int arg) {
 }
 
 void handle_SC_ForkExec() {
-    int filenameAddr = machine->ReadRegister(4);
+    const int filenameAddr = machine->ReadRegister(4);
 
     if (filenameAddr <= 0) { RETURN(-E_FAULT); } // TODO Add more checks (addr is in valid user space, for example)
 
@@ -42,6 +42,8 @@ void handle_SC_ForkExec() {
         delete executable;
         RETURN(-E_NOMEM);
     }
+
+    currentThread->getProcess()->getSpace()->RestoreState();
 
     Thread* mainThread = newProcess->getMainThread();
     ASSERT(mainThread != nullptr);
