@@ -26,6 +26,8 @@
     - [PthreadExit](./threads/PthreadExit.md)
     - [PthreadJoin](./threads/PthreadJoin.md)
     - [PthreadDetach](./threads/PthreadDetach.md)
+    - [SelfThread](./threads/PthreadSelf.md)
+    - [Attributs de thread](./threads/attrs.md)
     
 # Sémaphores
 
@@ -41,5 +43,5 @@
 
 - [Process](./process/SUMMARY.md)
     - [Vue d'ensemble](./process/Process.md)
-    - [SemInit](./process/ExecFork.md)
+    - [ForkExec](./process/ForkExec.md)
 
