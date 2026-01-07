@@ -38,10 +38,10 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-b3c4c08f.js";
+            window.path_to_searchindex_js = "searchindex-5cde7374.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-df646ee4.js"></script>
+        <script src="toc-05ba6630.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -186,6 +186,7 @@
 <ul>
 <li><a href="#nachos">Introduction</a></li>
 <li><a href="#summary">Table des matières</a></li>
+<li><a href="#constantes-du-projet">Constants</a></li>
 <li><a href="#appels-système">Syscalls List</a>
 <ul>
 <li><a href="#vue-densemble-des-appels-système">Syscall Overview</a></li>
@@ -210,7 +211,7 @@
 <li><a href="#attributs-de-thread">Thread Attributes</a></li>
 </ul>
 </li>
-<li><a href="#sémaphores-1">Sémaphores</a>
+<li><a href="#sémaphores-2">Sémaphores</a>
 <ul>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Sémaphores Overview</a></li>
 <li><a href="#seminit">SemInit</a></li>
@@ -230,7 +231,7 @@
 <ul>
 <li><a href="#nachos">Introduction</a></li>
 <li><a href="#summary">Table des matières</a></li>
-<li><a href="#liste-des-headers-importants">Headers du projet</a></li>
+<li><a href="#constantes-du-projet">Constants</a></li>
 <li><a href="#appels-système">Syscalls List</a>
 <ul>
 <li><a href="#vue-densemble-des-appels-système">Syscall Overview</a></li>
@@ -256,7 +257,7 @@
 <li><a href="#attributs-de-thread">Thread Attributes</a></li>
 </ul>
 </li>
-<li><a href="#sémaphores-1">Sémaphores</a>
+<li><a href="#sémaphores-2">Sémaphores</a>
 <ul>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Sémaphores Overview</a></li>
 <li><a href="#seminit">SemInit</a></li>
@@ -272,57 +273,76 @@
 </li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="liste-des-headers-importants"><a class="header" href="#liste-des-headers-importants">Liste des headers importants</a></h1>
-<p>Documentation détaillée de tous les headers utilisés dans NachOS.</p>
-<h2 id="définitions"><a class="header" href="#définitions">Définitions</a></h2>
-<p>Les headers définis dans <code>code/userprog/process.h</code> :</p>
-<pre><code class="language-c">#define MAX_THREAD 30 
-#define MAX_PROCESS 15 
-</code></pre>
+<h1 id="constantes-du-projet"><a class="header" href="#constantes-du-projet">Constantes du projet</a></h1>
+<p>Description des principales constantes utilisées dans le projet Nachos.</p>
 <hr>
+<h2 id="processus-et-threads"><a class="header" href="#processus-et-threads">Processus et Threads</a></h2>
 <h3 id="max_thread"><a class="header" href="#max_thread">MAX_THREAD</a></h3>
-<p><strong>Description</strong> : Indique le nombre maximum de threads rattaché à un processus ( actif ou non )</p>
+<p><strong>Valeur</strong> : <code>30</code></p>
+<p><strong>Description</strong> : Nombre maximum de threads par processus (actifs ou non)</p>
+<p><strong>Fichier</strong> : <code>code/userprog/process.h</code></p>
 <hr>
 <h3 id="max_process"><a class="header" href="#max_process">MAX_PROCESS</a></h3>
-<p><strong>Description</strong> : Indique le nombre maximum de processus dans la machine ( actif ou non ). Nécessite suffisament de pages physiques</p>
-<hr>
-<h2 id="définitions-1"><a class="header" href="#définitions-1">Définitions</a></h2>
-<p>Les headers définis dans <code>code/userprog/addrspace.h</code> :</p>
-<pre><code class="language-c">#define UserStackSize 16384 
-#define INITIAL_SEMAPHORE_TABLE_SIZE 16
-#define MAX_SEMAPHORES_PER_PROCESS 512 
-</code></pre>
+<p><strong>Valeur</strong> : <code>15</code></p>
+<p><strong>Description</strong> : Nombre maximum de processus dans la machine (actifs ou non)</p>
+<p><strong>Fichier</strong> : <code>code/userprog/process.h</code></p>
 <hr>
 <h3 id="userstacksize"><a class="header" href="#userstacksize">UserStackSize</a></h3>
-<p><strong>Description</strong> : Indique le nombre d’octets disponible pour la stack des codes utilisateurs</p>
+<p><strong>Valeur</strong> : <code>16384</code></p>
+<p><strong>Description</strong> : Taille en octets de la pile pour les programmes utilisateur</p>
+<p><strong>Fichier</strong> : <code>code/userprog/addrspace.h</code></p>
 <hr>
+<h2 id="sémaphores"><a class="header" href="#sémaphores">Sémaphores</a></h2>
 <h3 id="initial_semaphore_table_size"><a class="header" href="#initial_semaphore_table_size">INITIAL_SEMAPHORE_TABLE_SIZE</a></h3>
-<p><strong>Description</strong> : Indique le nombre maximum de sémaphores pouvant être créés par défaut. Peut être réajusté via un syscall.</p>
+<p><strong>Valeur</strong> : <code>16</code></p>
+<p><strong>Description</strong> : Taille initiale de la table de sémaphores par processus (peut s’étendre dynamiquement)</p>
+<p><strong>Fichier</strong> : <code>code/userprog/addrspace.h</code></p>
 <hr>
 <h3 id="max_semaphores_per_process"><a class="header" href="#max_semaphores_per_process">MAX_SEMAPHORES_PER_PROCESS</a></h3>
-<p><strong>Description</strong> : Indique le nombre maximum de sémaphores pouvant être créés par défaut pour un processus.</p>
+<p><strong>Valeur</strong> : <code>512</code></p>
+<p><strong>Description</strong> : Nombre maximum de sémaphores par processus</p>
+<p><strong>Fichier</strong> : <code>code/userprog/addrspace.h</code></p>
 <hr>
-<h2 id="définitions-2"><a class="header" href="#définitions-2">Définitions</a></h2>
-<p>Les headers définis dans <code>code/machine/machine.h</code> :</p>
-<pre><code class="language-c">#define NumPhysPages 8192
-#define MemorySize (NumPhysPages * PageSize)
-#define TLBSize 4
-</code></pre>
+<h2 id="mémoire"><a class="header" href="#mémoire">Mémoire</a></h2>
+<h3 id="pagesize"><a class="header" href="#pagesize">PageSize</a></h3>
+<p><strong>Valeur</strong> : <code>SectorSize = 128</code> octets</p>
+<p><strong>Description</strong> : Taille d’une page mémoire</p>
+<p><strong>Fichier</strong> : <code>code/machine/machine.h</code></p>
 <hr>
 <h3 id="numphyspages"><a class="header" href="#numphyspages">NumPhysPages</a></h3>
-<p><strong>Description</strong> : Indique le nombre de pages physiques allouées pour la VM nachos</p>
+<p><strong>Valeur</strong> : <code>8192</code></p>
+<p><strong>Description</strong> : Nombre de pages physiques disponibles dans la machine</p>
+<p><strong>Fichier</strong> : <code>code/machine/machine.h</code></p>
 <hr>
 <h3 id="memorysize"><a class="header" href="#memorysize">MemorySize</a></h3>
-<p><strong>Description</strong> : Le nombre total d’octets disponible pour Nachos</p>
+<p><strong>Valeur</strong> : <code>NumPhysPages * PageSize = 8192 * 128 = 1 048 576</code> octets</p>
+<p><strong>Description</strong> : Taille totale de la mémoire physique</p>
+<p><strong>Fichier</strong> : <code>code/machine/machine.h</code></p>
 <hr>
 <h3 id="tlbsize"><a class="header" href="#tlbsize">TLBSize</a></h3>
-<p><strong>Description</strong> :  TODO</p>
+<p><strong>Valeur</strong> : <code>4</code></p>
+<p><strong>Fichier</strong> : <code>code/machine/machine.h</code></p>
 <hr>
+<h2 id="console-io"><a class="header" href="#console-io">Console I/O</a></h2>
+<h3 id="max_string_size"><a class="header" href="#max_string_size">MAX_STRING_SIZE</a></h3>
+<p><strong>Valeur</strong> : <code>256</code></p>
+<p><strong>Description</strong> : Taille maximale d’une chaîne de caractères pour GetString (buffer interne)</p>
+<p><strong>Fichier</strong> : <code>code/threads/system.h</code></p>
+<hr>
+<h3 id="max_put_string"><a class="header" href="#max_put_string">MAX_PUT_STRING</a></h3>
+<p><strong>Valeur</strong> : <code>8192</code></p>
+<p><strong>Description</strong> : Nombre maximum d’octets pouvant être écrits en une seule fois avec PutString</p>
+<p><strong>Fichier</strong> : <code>code/userprog/exception.h</code></p>
+<hr>
+<h3 id="max_path_size"><a class="header" href="#max_path_size">MAX_PATH_SIZE</a></h3>
+<p><strong>Valeur</strong> : <code>1024</code></p>
+<p><strong>Description</strong> : Longueur maximale d’un chemin de fichier</p>
+<p><strong>Fichier</strong> : <code>code/threads/system.h</code></p>
 <hr>
 <h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
-<p>Tommy , 5 Jan 2026</p>
+<p>Tommy, 05 Jan 2026<br>Antoine, 07 Jan 2026</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
-<p>7 Jan 2026 par Tommy</p>
+<p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="appels-système"><a class="header" href="#appels-système">Appels système</a></h1>
 <p><a href="#vue-densemble-des-appels-système">Vue d’ensemble</a></p>
@@ -331,7 +351,7 @@
 <li><a href="#gestion-des-erreurs-3">Gestion des erreurs</a></li>
 <li><a href="#liste-des-codes-errno">Liste des codes errno</a></li>
 </ul>
-<h1 id="console-io"><a class="header" href="#console-io">Console I/O</a></h1>
+<h1 id="console-io-1"><a class="header" href="#console-io-1">Console I/O</a></h1>
 <ul>
 <li><a href="#console">Console</a>
 <ul>
@@ -357,9 +377,9 @@
 </ul>
 </li>
 </ul>
-<h1 id="sémaphores"><a class="header" href="#sémaphores">Sémaphores</a></h1>
+<h1 id="sémaphores-1"><a class="header" href="#sémaphores-1">Sémaphores</a></h1>
 <ul>
-<li><a href="#sémaphores-1">Sémaphores</a>
+<li><a href="#sémaphores-2">Sémaphores</a>
 <ul>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a></li>
 <li><a href="#seminit">SemInit</a></li>
@@ -418,6 +438,7 @@
 #define SC_SemPost 31
 #define SC_SemDestroy 32
 #define SC_SetMaxSemForProcess 33
+#define SC_ForkExec 34
 </code></pre>
 <h2 id="limitations-connues"><a class="header" href="#limitations-connues">Limitations connues</a></h2>
 <h3 id="thread-safety-partielle"><a class="header" href="#thread-safety-partielle">Thread-safety partielle</a></h3>
@@ -476,9 +497,10 @@ Programme utilisateur
 <li><a href="#liste-des-codes-errno">Liste des codes errno</a> - Tous les codes d’erreur</li>
 </ul>
 <h2 id="auteurs-1"><a class="header" href="#auteurs-1">Auteurs</a></h2>
-<p>Antoine, 20 Dec 2025</p>
+<p>Antoine, 07 Jan 2026
+Tommy, 05 Jan 2026</p>
 <h2 id="dernière-révision-1"><a class="header" href="#dernière-révision-1">Dernière révision</a></h2>
-<p>5 Jan 2026</p>
+<p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="console"><a class="header" href="#console">Console</a></h1>
 <ul>
@@ -3609,7 +3631,7 @@ int main() {
 <h2 id="dernière-révision-14"><a class="header" href="#dernière-révision-14">Dernière révision</a></h2>
 <p>31 Dec 2025</p>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="sémaphores-1"><a class="header" href="#sémaphores-1">Sémaphores</a></h1>
+<h1 id="sémaphores-2"><a class="header" href="#sémaphores-2">Sémaphores</a></h1>
 <ul>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a></li>
 </ul>
@@ -5289,7 +5311,7 @@ int main() {
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="liste-des-codes-errno"><a class="header" href="#liste-des-codes-errno">Liste des codes errno</a></h1>
 <p>Documentation détaillée de tous les codes d’erreur utilisés dans NachOS.</p>
-<h2 id="définitions-3"><a class="header" href="#définitions-3">Définitions</a></h2>
+<h2 id="définitions"><a class="header" href="#définitions">Définitions</a></h2>
 <p>Les codes d’erreur sont définis dans <code>code/userprog/syscall.h</code> :</p>
 <pre><code class="language-c">#define E_SUCCESS       0   /* No error */
 #define E_INVAL         1   /* Invalid argument */
