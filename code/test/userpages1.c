@@ -6,22 +6,19 @@
 /* Simple test of automatic thread termination */
 void thread_func(void *arg) {
     for (int i = 0; i < NB_ITER; i+= 1){
-        PutChar('F' + (int) arg);
+        PutChar('L' + (int) arg);
     }
 }
 
 int main() {
 
-    posix_thread_t tid1, tid2;
-    PthreadCreate(&tid1, NULL, (void *(*)(void *))thread_func, (void *)0);
-    PthreadCreate(&tid2, NULL, (void *(*)(void *))thread_func, (void *)1);
-
-    for (int i =0 ; i < NB_ITER; i+= 1){
-        PutChar('E');
+    posix_thread_t tids[NB_ITER];
+    for (int i = 0; i < NB_ITER; i++){
+        PthreadCreate(&tids[i], NULL, (void *(*)(void *))thread_func, (void *)i);
+        PthreadJoin(tids[i], NULL);
     }
-    PthreadJoin(tid1, NULL);
-    PthreadJoin(tid2, NULL);
 
-    PutChar('H');
+    PutChar('C');
+
     PutChar('\n');
 }
