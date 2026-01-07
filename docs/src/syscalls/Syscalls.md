@@ -51,6 +51,7 @@ Les appels système sont identifiés par des numéros définis dans `syscall.h` 
 #define SC_SemPost 31
 #define SC_SemDestroy 32
 #define SC_SetMaxSemForProcess 33
+#define SC_ForkExec 34
 ```
 
 ## Limitations connues
@@ -127,8 +128,9 @@ Programme utilisateur
 
 ## Auteurs
 
-Antoine, 20 Dec 2025
+Antoine, 07 Jan 2026
+Tommy, 05 Jan 2026
 
 ## Dernière révision
 
-5 Jan 2026
+07 Jan 2026

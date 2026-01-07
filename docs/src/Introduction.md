@@ -6,6 +6,7 @@ Documentation du noyau et des bibliothèques utilisateur de NachOS Team-A.
 
 - [Introduction](./Introduction.md)
 - [Table des matières](./SUMMARY.md)
+- [Constants](./Constants.md)
 - [Syscalls List](./syscalls/SUMMARY.md)
     - [Syscall Overview](syscalls/Syscalls.md)
     - [Console](./syscalls/console/SUMMARY.md)

@@ -155,7 +155,7 @@ void Initialize(int argc, char **argv) {
     interrupt->Enable();
     CallOnUserAbort(Cleanup); // if user hits ctl-C
 
-    frameProvider = new FrameProvider();
+    frameProvider = new FrameProvider(nullptr);
 
 #ifdef USER_PROGRAM
     machine = new Machine(debugUserProg); // this must come first
