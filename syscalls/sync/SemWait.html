@@ -37,7 +37,7 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-80abcad7.js";
+            window.path_to_searchindex_js = "../../searchindex-a687bfd5.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc-9ab82147.js"></script>
@@ -180,14 +180,14 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="semwait"><a class="header" href="#semwait">SemWait</a></h1>
-<p><code>SemWait</code> - Opération P (wait/acquire) sur un sémaphore</p>
+<p><code>SemWait</code> - Opération Wait (P/acquire) sur un sémaphore</p>
 <h2 id="synopsis"><a class="header" href="#synopsis">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int SemWait(int sem_id);
 </code></pre>
 <h2 id="description"><a class="header" href="#description">DESCRIPTION</a></h2>
-<p><code>SemWait</code> effectue l’opération P (Proberen) sur le sémaphore identifié par <code>sem_id</code>. Cette opération décrémente le compteur du sémaphore et bloque le thread appelant si le compteur devient négatif.</p>
+<p><code>SemWait</code> effectue l’opération Wait (Proberen) sur le sémaphore identifié par <code>sem_id</code>. Cette opération décrémente le compteur du sémaphore et bloque le thread appelant si le compteur devient négatif.</p>
 <p>Numéro d’appel système : <code>30</code></p>
 <h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
 <ul>
@@ -334,7 +334,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<p><strong>Sortie garantie</strong> :</p>
+<p><strong>Sortie</strong> :</p>
 <pre><code>A: Phase 1
 B: Phase 1
 A: Phase 2   (ou B: Phase 2)
@@ -348,7 +348,7 @@ int main() {
     
     // Utilisation normale
     if (SemWait(sem) == 0) {
-        PutString("P réussi\n", 10);
+        PutString("Wait réussi\n", 10);
         SemPost(sem);
     }
     
@@ -369,7 +369,7 @@ int main() {
 }
 </code></pre>
 <p><strong>Sortie attendue</strong> :</p>
-<pre><code>P réussi
+<pre><code>Wait réussi
 Erreur: sémaphore détruit
 Erreur: handle invalide
 </code></pre>
@@ -424,9 +424,10 @@ Erreur: handle invalide
 <li><a href="Sync.html">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
 <h2 id="auteurs"><a class="header" href="#auteurs">AUTEURS</a></h2>
-<p>Antoine, 31 Dec 2025</p>
+<p>Antoine, 07 Jan 2026
+Tommy, 05 Jan 2026</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">DERNIÈRE RÉVISION</a></h2>
-<p>5 Jan 2026</p>
+<p>07 Jan 2026</p>
 
                     </main>
 

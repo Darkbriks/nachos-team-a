@@ -37,7 +37,7 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-80abcad7.js";
+            window.path_to_searchindex_js = "../../searchindex-a687bfd5.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc-9ab82147.js"></script>
@@ -192,7 +192,7 @@ int SetMaxSemForProcess(unsigned int maxSemaphores);
 <h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
 <ul>
 <li>Réalloue la table de sémaphores à la taille spécifiée</li>
-<li>Préserve les sémaphores existants (si agrandissement)</li>
+<li>Préserve les sémaphores existants en cas d’agrandissement (aucune garantie en cas de réduction)</li>
 <li>Initialise les nouveaux slots comme invalides</li>
 <li>Met à jour le BitMap de tracking</li>
 </ul>
@@ -352,12 +352,14 @@ int main() {
 <h2 id="voir-aussi"><a class="header" href="#voir-aussi">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="./SemInit.html">SemInit</a> - Création d’un sémaphore (déclenche auto-expansion si nécessaire)</li>
+<li><a href="./SemDestroy.html">SemDestroy</a> - Destruction d’un sémaphore</li>
 <li><a href="Sync.html">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
 <h2 id="auteurs"><a class="header" href="#auteurs">AUTEURS</a></h2>
-<p>Antoine, 25 Dec 2025</p>
+<p>Antoine, 07 Jan 2026
+Tommy, 05 Jan 2026</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">DERNIÈRE RÉVISION</a></h2>
-<p>5 Jan 2026</p>
+<p>07 Jan 2026</p>
 
                     </main>
 

@@ -37,7 +37,7 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-80abcad7.js";
+            window.path_to_searchindex_js = "../../searchindex-a687bfd5.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc-9ab82147.js"></script>
@@ -184,8 +184,8 @@
 <h2 id="opérations-disponibles"><a class="header" href="#opérations-disponibles">Opérations disponibles</a></h2>
 <ul>
 <li><strong><a href="./SemInit.html">SemInit</a></strong> : Crée et initialise un nouveau sémaphore</li>
-<li><strong><a href="SemWait.html">SemWait</a></strong> : Opération P (wait/acquire) sur un sémaphore</li>
-<li><strong><a href="SemPost.html">SemPost</a></strong> : Opération V (signal/release) sur un sémaphore</li>
+<li><strong><a href="SemWait.html">SemWait</a></strong> : Opération Wait (P/acquire) sur un sémaphore</li>
+<li><strong><a href="SemPost.html">SemPost</a></strong> : Opération Post (V/signal/release) sur un sémaphore</li>
 <li><strong><a href="./SemDestroy.html">SemDestroy</a></strong> : Détruit un sémaphore</li>
 <li><strong><a href="./SetMaxSemForProcess.html">SetMaxSemForProcess</a></strong> : Redimensionne la table de sémaphores</li>
 </ul>
@@ -265,7 +265,7 @@
 <h2 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h2>
 <p><strong>Garanti</strong> :</p>
 <ul>
-<li>Les opérations P() et V() sont atomiques et thread-safe</li>
+<li>Les opérations Wait() et Post() sont atomiques et thread-safe</li>
 <li>Plusieurs threads peuvent utiliser le même sémaphore simultanément</li>
 <li>La table de descripteurs est protégée par un verrou interne</li>
 </ul>
@@ -318,16 +318,29 @@ int main() {
 }
 </code></pre>
 <h2 id="limitations-connues"><a class="header" href="#limitations-connues">Limitations connues</a></h2>
-<h3 id="1-pas-de-timeout"><a class="header" href="#1-pas-de-timeout">1. Pas de timeout</a></h3>
-<p><code>SemWait()</code> peut bloquer indéfiniment si <code>SemPost()</code> n’est jamais appelé.</p>
-<p><strong>Impact</strong> : Impossible d’implémenter des locks avec timeout.</p>
-<h3 id="2-limite-de-16-sémaphores"><a class="header" href="#2-limite-de-16-sémaphores">2. Limite de 16 sémaphores</a></h3>
-<p>Maximum 16 sémaphores actifs par processus.</p>
-<p><strong>Impact</strong> : Applications complexes peuvent manquer de descripteurs.</p>
-<p><strong>Note</strong> : Configuration dynamique de la taille de la table envisagée.</p>
-<h3 id="3-pas-de-partage-inter-processus"><a class="header" href="#3-pas-de-partage-inter-processus">3. Pas de partage inter-processus</a></h3>
-<p>Les sémaphores sont locaux à un processus.</p>
-<p><strong>Impact</strong> : Impossible de synchroniser des processus différents.</p>
+<div class="callout callout-limitation">
+    
+<div class="callout-title">Pas de timeout</div>
+
+    
+<div class="callout-content">
+        Actuellement, l'appel système `SemWait()` ne supporte pas de mécanisme de timeout.
+        `SemWait()` peut bloquer indéfiniment si aucun autre thread n'appelle `SemPost()` sur le même sémaphore.
+    </div>
+
+</div>
+
+<div class="callout callout-limitation">
+    
+<div class="callout-title">Usage limité aux threads d'un même processus</div>
+
+    
+<div class="callout-content">
+        Les sémaphores ne peuvent pas être utilisés pour la synchronisation entre processus distincts.
+    </div>
+
+</div>
+
 <h2 id="performances"><a class="header" href="#performances">Performances</a></h2>
 <div class="table-wrapper">
 <table>
@@ -346,11 +359,17 @@ int main() {
 <h2 id="voir-aussi"><a class="header" href="#voir-aussi">Voir aussi</a></h2>
 <ul>
 <li><a href="../errors.html">Gestion des erreurs</a> - Codes d’erreur système</li>
+<li><a href="../threads/Threads.html">Threads</a> - Création et gestion de threads</li>
+<li><a href="./SemInit.html">Initialisation des sémaphores</a> - Créer un sémaphore</li>
+<li><a href="./SemWait.html">Opération Wait</a> - Attendre un sémaphore</li>
+<li><a href="./SemPost.html">Opération Post</a> - Signaler un sémaphore</li>
+<li><a href="./SemDestroy.html">Destruction des sémaphores</a> - Libérer un sémaphore</li>
+<li><a href="./SetMaxSemForProcess.html">Redimensionnement de la table</a> - Ajuster la taille maximale</li>
 </ul>
 <h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
-<p>Antoine, 25 Dec 2025</p>
+<p>Antoine, 07 Jan 2026</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
-<p>25 Dec 2025 par Antoine</p>
+<p>07 Jan 2026</p>
 
                     </main>
 

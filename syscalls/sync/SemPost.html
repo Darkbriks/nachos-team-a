@@ -37,7 +37,7 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-80abcad7.js";
+            window.path_to_searchindex_js = "../../searchindex-a687bfd5.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc-9ab82147.js"></script>
@@ -180,14 +180,14 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="sempost"><a class="header" href="#sempost">SemPost</a></h1>
-<p><code>SemPost</code> - Opération V (signal/release) sur un sémaphore</p>
+<p><code>SemPost</code> - Opération Post (V/signal/release) sur un sémaphore</p>
 <h2 id="synopsis"><a class="header" href="#synopsis">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int SemPost(int sem_id);
 </code></pre>
 <h2 id="description"><a class="header" href="#description">DESCRIPTION</a></h2>
-<p><code>SemPost</code> effectue l’opération V (Verhogen) sur le sémaphore identifié par <code>sem_id</code>. Cette opération incrémente le compteur du sémaphore et réveille un thread bloqué en attente sur <code>SemWait()</code> si la queue n’est pas vide.</p>
+<p><code>SemPost</code> effectue l’opération Post (Verhogen) sur le sémaphore identifié par <code>sem_id</code>. Cette opération incrémente le compteur du sémaphore et réveille un thread bloqué en attente sur <code>SemWait()</code> si la queue n’est pas vide.</p>
 <p>Numéro d’appel système : <code>31</code></p>
 <h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
 <ul>
@@ -206,7 +206,7 @@ int SemPost(int sem_id);
 </ul>
 <h2 id="paramètres"><a class="header" href="#paramètres">PARAMÈTRES</a></h2>
 <h3 id="sem_id"><a class="header" href="#sem_id"><code>sem_id</code></a></h3>
-<p>Descripteur du sémaphore sur lequel effectuer l’opération V.</p>
+<p>Descripteur du sémaphore sur lequel effectuer l’opération Post.</p>
 <p><strong>Type</strong> : <code>int</code>
 <strong>Direction</strong> : IN
 <strong>Registre</strong> : <code>$4</code>
@@ -244,11 +244,8 @@ int SemPost(int sem_id);
 </li>
 </ul>
 <h3 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h3>
-<p><strong>Sémaphore interne</strong> : Désactivation des interruptions assure atomicité :</p>
 <ul>
-<li>Pas de race condition entre V() concurrent</li>
-<li>Pas de corruption de la queue d’attente</li>
-<li>Thread réveillé de manière atomique</li>
+<li>L’opération <code>SemPost()</code> est thread-safe</li>
 </ul>
 <h2 id="décisions-de-conception"><a class="header" href="#décisions-de-conception">DÉCISIONS DE CONCEPTION</a></h2>
 <p><em>TODO</em></p>
@@ -362,7 +359,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<p><strong>Sortie</strong> (ordre des threads peut varier) :</p>
+<p><strong>Sortie</strong> (l’ordre des threads peut varier) :</p>
 <pre><code>Thread 0: phase 1
 Thread 1: phase 1
 Thread 2: phase 1
@@ -382,7 +379,7 @@ int main() {
     
     // V() sur sémaphore valide
     if (SemPost(sem) == 0) {
-        PutString("V réussi\n", 10);
+        PutString("Post réussi\n", 10);
     }
     
     // Détruire le sémaphore
@@ -402,7 +399,7 @@ int main() {
 }
 </code></pre>
 <p><strong>Sortie attendue</strong> :</p>
-<pre><code>V réussi
+<pre><code>Post réussi
 Erreur: sémaphore détruit
 Erreur: handle invalide
 </code></pre>
@@ -438,7 +435,7 @@ Erreur: handle invalide
 </ul>
 <h2 id="notes"><a class="header" href="#notes">NOTES</a></h2>
 <ul>
-<li><strong>Toujours retourne immédiatement</strong> : <code>SemPost()</code> ne bloque jamais</li>
+<li><strong>Retourne immédiatement</strong> : <code>SemPost()</code> ne bloque jamais</li>
 <li><strong>Pas de limite supérieure</strong> : Compteur peut croître indéfiniment</li>
 <li><strong>Sémaphore détruit avec threads en attente</strong> : Undefined behavior</li>
 </ul>
@@ -460,9 +457,10 @@ Erreur: handle invalide
 <li><a href="Sync.html">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
 <h2 id="auteurs"><a class="header" href="#auteurs">AUTEURS</a></h2>
-<p>Antoine, 31 Dec 2025</p>
+<p>Antoine, 07 Jan 2026
+Tommy, 05 Jan 2026</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">DERNIÈRE RÉVISION</a></h2>
-<p>5 Jan 2026</p>
+<p>07 Jan 2026</p>
 
                     </main>
 

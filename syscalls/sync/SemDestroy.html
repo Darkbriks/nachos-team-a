@@ -37,7 +37,7 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-80abcad7.js";
+            window.path_to_searchindex_js = "../../searchindex-a687bfd5.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc-9ab82147.js"></script>
@@ -229,18 +229,19 @@ int SemDestroy(int sem_id);
 <li><strong>Implémentation</strong> : <code>code/userprog/addrspace.cc:AddrSpace::SemaphoreDestroy()</code></li>
 </ul>
 <h3 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h3>
-<p><strong>Garanties</strong> :</p>
-<ul>
-<li>Destruction atomique : pas de race condition entre threads</li>
-<li>Double-free impossible : flag <code>valid</code> protège</li>
-<li>Pas de corruption de la table</li>
-</ul>
-<p><strong>Limitation</strong> : Aucune vérification que des threads sont bloqués sur le sémaphore. Responsabilité de l’appelant.</p>
+<p>Destruction atomique : pas de race condition entre threads</p>
+<div class="callout callout-limitation">
+    
+<div class="callout-title">Limitation</div>
+
+    
+<div class="callout-content">
+        <strong>Attention :</strong> Détruire un sémaphore avec des threads bloqués entraîne un comportement indéfini.
+    </div>
+
+</div>
+
 <h2 id="décisions-de-conception"><a class="header" href="#décisions-de-conception">DÉCISIONS DE CONCEPTION</a></h2>
-<h3 id="pourquoi-nettoyage-automatique-"><a class="header" href="#pourquoi-nettoyage-automatique-">Pourquoi nettoyage automatique ?</a></h3>
-<p><strong>Robustesse</strong> : Évite les fuites mémoire si l’utilisateur oublie de détruire.</p>
-<p><strong>Pattern RAII</strong> : Ressource liée à la durée de vie du processus (<code>AddrSpace</code>).</p>
-<p><strong>Coût</strong> : Néant - le destructeur <code>~AddrSpace()</code> est appelé de toute façon.</p>
 <h2 id="exemples"><a class="header" href="#exemples">EXEMPLES</a></h2>
 <h3 id="exemple-1--utilisation-normale"><a class="header" href="#exemple-1--utilisation-normale">Exemple 1 : Utilisation normale</a></h3>
 <pre><code class="language-c">#include "syscall.h"
@@ -325,22 +326,6 @@ int main() {
 JoinThread(tid);  // Attendre terminaison
 SemDestroy(sem);  // Maintenant sûr
 </code></pre>
-<h3 id="exemple-4--nettoyage-automatique"><a class="header" href="#exemple-4--nettoyage-automatique">Exemple 4 : Nettoyage automatique</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-int main() {
-    int sem = SemInit(1);
-    
-    SemWait(sem);
-    PutString("Travail...\n", 12);
-    SemPost(sem);
-    
-    // Terminer SANS détruire explicitement
-    // → Nettoyage automatique dans ~AddrSpace()
-    
-    return 0;  // Pas de fuite mémoire
-}
-</code></pre>
 <h2 id="comportement-détaillé"><a class="header" href="#comportement-détaillé">COMPORTEMENT DÉTAILLÉ</a></h2>
 <h3 id="états-de-la-machine"><a class="header" href="#états-de-la-machine">États de la machine</a></h3>
 <p><strong>Avant l’appel</strong> :</p>
@@ -367,7 +352,7 @@ int main() {
 </ul>
 <h2 id="notes"><a class="header" href="#notes">NOTES</a></h2>
 <ul>
-<li><strong>Ordre de destruction</strong> : Pas d’ordre imposé, mais recommandé de détruire en ordre inverse de création (style LIFO/RAII)</li>
+<li><strong>Ordre de destruction</strong> : Pas d’ordre imposé</li>
 <li><strong>Nettoyage automatique</strong> : Même si non détruit, pas de fuite à la terminaison du processus</li>
 <li><strong>Handle réutilisable</strong> : Après destruction, le handle peut être réalloué immédiatement</li>
 <li><strong>Pas de vérification threads bloqués</strong> : Responsabilité de l’appelant</li>
@@ -390,9 +375,10 @@ int main() {
 <li><a href="Sync.html">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
 <h2 id="auteurs"><a class="header" href="#auteurs">AUTEURS</a></h2>
-<p>Antoine, 31 Dec 2025</p>
+<p>Antoine, 07 Jan 2026
+Tommy, 05 Jan 2026</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">DERNIÈRE RÉVISION</a></h2>
-<p>5 Jan 2026</p>
+<p>07 Jan 2026</p>
 
                     </main>
 

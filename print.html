@@ -38,7 +38,7 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-80abcad7.js";
+            window.path_to_searchindex_js = "searchindex-a687bfd5.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-9ab82147.js"></script>
@@ -3376,8 +3376,8 @@ int main() {
 <h2 id="opérations-disponibles"><a class="header" href="#opérations-disponibles">Opérations disponibles</a></h2>
 <ul>
 <li><strong><a href="#seminit">SemInit</a></strong> : Crée et initialise un nouveau sémaphore</li>
-<li><strong><a href="#semwait">SemWait</a></strong> : Opération P (wait/acquire) sur un sémaphore</li>
-<li><strong><a href="#sempost">SemPost</a></strong> : Opération V (signal/release) sur un sémaphore</li>
+<li><strong><a href="#semwait">SemWait</a></strong> : Opération Wait (P/acquire) sur un sémaphore</li>
+<li><strong><a href="#sempost">SemPost</a></strong> : Opération Post (V/signal/release) sur un sémaphore</li>
 <li><strong><a href="#semdestroy">SemDestroy</a></strong> : Détruit un sémaphore</li>
 <li><strong><a href="#setmaxsemforprocess">SetMaxSemForProcess</a></strong> : Redimensionne la table de sémaphores</li>
 </ul>
@@ -3457,7 +3457,7 @@ int main() {
 <h2 id="thread-safety-10"><a class="header" href="#thread-safety-10">Thread-safety</a></h2>
 <p><strong>Garanti</strong> :</p>
 <ul>
-<li>Les opérations P() et V() sont atomiques et thread-safe</li>
+<li>Les opérations Wait() et Post() sont atomiques et thread-safe</li>
 <li>Plusieurs threads peuvent utiliser le même sémaphore simultanément</li>
 <li>La table de descripteurs est protégée par un verrou interne</li>
 </ul>
@@ -3510,16 +3510,29 @@ int main() {
 }
 </code></pre>
 <h2 id="limitations-connues-2"><a class="header" href="#limitations-connues-2">Limitations connues</a></h2>
-<h3 id="1-pas-de-timeout"><a class="header" href="#1-pas-de-timeout">1. Pas de timeout</a></h3>
-<p><code>SemWait()</code> peut bloquer indéfiniment si <code>SemPost()</code> n’est jamais appelé.</p>
-<p><strong>Impact</strong> : Impossible d’implémenter des locks avec timeout.</p>
-<h3 id="2-limite-de-16-sémaphores"><a class="header" href="#2-limite-de-16-sémaphores">2. Limite de 16 sémaphores</a></h3>
-<p>Maximum 16 sémaphores actifs par processus.</p>
-<p><strong>Impact</strong> : Applications complexes peuvent manquer de descripteurs.</p>
-<p><strong>Note</strong> : Configuration dynamique de la taille de la table envisagée.</p>
-<h3 id="3-pas-de-partage-inter-processus"><a class="header" href="#3-pas-de-partage-inter-processus">3. Pas de partage inter-processus</a></h3>
-<p>Les sémaphores sont locaux à un processus.</p>
-<p><strong>Impact</strong> : Impossible de synchroniser des processus différents.</p>
+<div class="callout callout-limitation">
+    
+<div class="callout-title">Pas de timeout</div>
+
+    
+<div class="callout-content">
+        Actuellement, l'appel système `SemWait()` ne supporte pas de mécanisme de timeout.
+        `SemWait()` peut bloquer indéfiniment si aucun autre thread n'appelle `SemPost()` sur le même sémaphore.
+    </div>
+
+</div>
+
+<div class="callout callout-limitation">
+    
+<div class="callout-title">Usage limité aux threads d'un même processus</div>
+
+    
+<div class="callout-content">
+        Les sémaphores ne peuvent pas être utilisés pour la synchronisation entre processus distincts.
+    </div>
+
+</div>
+
 <h2 id="performances-6"><a class="header" href="#performances-6">Performances</a></h2>
 <div class="table-wrapper">
 <table>
@@ -3538,11 +3551,17 @@ int main() {
 <h2 id="voir-aussi-14"><a class="header" href="#voir-aussi-14">Voir aussi</a></h2>
 <ul>
 <li><a href="#gestion-des-erreurs-3">Gestion des erreurs</a> - Codes d’erreur système</li>
+<li><a href="#threads-utilisateur">Threads</a> - Création et gestion de threads</li>
+<li><a href="#seminit">Initialisation des sémaphores</a> - Créer un sémaphore</li>
+<li><a href="#semwait">Opération Wait</a> - Attendre un sémaphore</li>
+<li><a href="#sempost">Opération Post</a> - Signaler un sémaphore</li>
+<li><a href="#semdestroy">Destruction des sémaphores</a> - Libérer un sémaphore</li>
+<li><a href="#setmaxsemforprocess">Redimensionnement de la table</a> - Ajuster la taille maximale</li>
 </ul>
 <h2 id="auteurs-14"><a class="header" href="#auteurs-14">Auteurs</a></h2>
-<p>Antoine, 25 Dec 2025</p>
+<p>Antoine, 07 Jan 2026</p>
 <h2 id="dernière-révision-14"><a class="header" href="#dernière-révision-14">Dernière révision</a></h2>
-<p>25 Dec 2025 par Antoine</p>
+<p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="seminit"><a class="header" href="#seminit">SemInit</a></h1>
 <p><code>SemInit</code> - Crée et initialise un nouveau sémaphore</p>
@@ -3820,19 +3839,20 @@ int main() {
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
 <h2 id="auteurs-15"><a class="header" href="#auteurs-15">AUTEURS</a></h2>
-<p>Antoine, 25 Dec 2025</p>
+<p>Antoine, 25 Dec 2025
+Tommy, 5 Jan 2026</p>
 <h2 id="dernière-révision-15"><a class="header" href="#dernière-révision-15">DERNIÈRE RÉVISION</a></h2>
 <p>5 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="semwait"><a class="header" href="#semwait">SemWait</a></h1>
-<p><code>SemWait</code> - Opération P (wait/acquire) sur un sémaphore</p>
+<p><code>SemWait</code> - Opération Wait (P/acquire) sur un sémaphore</p>
 <h2 id="synopsis-12"><a class="header" href="#synopsis-12">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int SemWait(int sem_id);
 </code></pre>
 <h2 id="description-12"><a class="header" href="#description-12">DESCRIPTION</a></h2>
-<p><code>SemWait</code> effectue l’opération P (Proberen) sur le sémaphore identifié par <code>sem_id</code>. Cette opération décrémente le compteur du sémaphore et bloque le thread appelant si le compteur devient négatif.</p>
+<p><code>SemWait</code> effectue l’opération Wait (Proberen) sur le sémaphore identifié par <code>sem_id</code>. Cette opération décrémente le compteur du sémaphore et bloque le thread appelant si le compteur devient négatif.</p>
 <p>Numéro d’appel système : <code>30</code></p>
 <h3 id="comportement-nominal-11"><a class="header" href="#comportement-nominal-11">Comportement nominal</a></h3>
 <ul>
@@ -3979,7 +3999,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<p><strong>Sortie garantie</strong> :</p>
+<p><strong>Sortie</strong> :</p>
 <pre><code>A: Phase 1
 B: Phase 1
 A: Phase 2   (ou B: Phase 2)
@@ -3993,7 +4013,7 @@ int main() {
     
     // Utilisation normale
     if (SemWait(sem) == 0) {
-        PutString("P réussi\n", 10);
+        PutString("Wait réussi\n", 10);
         SemPost(sem);
     }
     
@@ -4014,7 +4034,7 @@ int main() {
 }
 </code></pre>
 <p><strong>Sortie attendue</strong> :</p>
-<pre><code>P réussi
+<pre><code>Wait réussi
 Erreur: sémaphore détruit
 Erreur: handle invalide
 </code></pre>
@@ -4069,19 +4089,20 @@ Erreur: handle invalide
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
 <h2 id="auteurs-16"><a class="header" href="#auteurs-16">AUTEURS</a></h2>
-<p>Antoine, 31 Dec 2025</p>
+<p>Antoine, 07 Jan 2026
+Tommy, 05 Jan 2026</p>
 <h2 id="dernière-révision-16"><a class="header" href="#dernière-révision-16">DERNIÈRE RÉVISION</a></h2>
-<p>5 Jan 2026</p>
+<p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="sempost"><a class="header" href="#sempost">SemPost</a></h1>
-<p><code>SemPost</code> - Opération V (signal/release) sur un sémaphore</p>
+<p><code>SemPost</code> - Opération Post (V/signal/release) sur un sémaphore</p>
 <h2 id="synopsis-13"><a class="header" href="#synopsis-13">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int SemPost(int sem_id);
 </code></pre>
 <h2 id="description-13"><a class="header" href="#description-13">DESCRIPTION</a></h2>
-<p><code>SemPost</code> effectue l’opération V (Verhogen) sur le sémaphore identifié par <code>sem_id</code>. Cette opération incrémente le compteur du sémaphore et réveille un thread bloqué en attente sur <code>SemWait()</code> si la queue n’est pas vide.</p>
+<p><code>SemPost</code> effectue l’opération Post (Verhogen) sur le sémaphore identifié par <code>sem_id</code>. Cette opération incrémente le compteur du sémaphore et réveille un thread bloqué en attente sur <code>SemWait()</code> si la queue n’est pas vide.</p>
 <p>Numéro d’appel système : <code>31</code></p>
 <h3 id="comportement-nominal-12"><a class="header" href="#comportement-nominal-12">Comportement nominal</a></h3>
 <ul>
@@ -4100,7 +4121,7 @@ int SemPost(int sem_id);
 </ul>
 <h2 id="paramètres-13"><a class="header" href="#paramètres-13">PARAMÈTRES</a></h2>
 <h3 id="sem_id-1"><a class="header" href="#sem_id-1"><code>sem_id</code></a></h3>
-<p>Descripteur du sémaphore sur lequel effectuer l’opération V.</p>
+<p>Descripteur du sémaphore sur lequel effectuer l’opération Post.</p>
 <p><strong>Type</strong> : <code>int</code>
 <strong>Direction</strong> : IN
 <strong>Registre</strong> : <code>$4</code>
@@ -4138,11 +4159,8 @@ int SemPost(int sem_id);
 </li>
 </ul>
 <h3 id="thread-safety-13"><a class="header" href="#thread-safety-13">Thread-safety</a></h3>
-<p><strong>Sémaphore interne</strong> : Désactivation des interruptions assure atomicité :</p>
 <ul>
-<li>Pas de race condition entre V() concurrent</li>
-<li>Pas de corruption de la queue d’attente</li>
-<li>Thread réveillé de manière atomique</li>
+<li>L’opération <code>SemPost()</code> est thread-safe</li>
 </ul>
 <h2 id="décisions-de-conception-8"><a class="header" href="#décisions-de-conception-8">DÉCISIONS DE CONCEPTION</a></h2>
 <p><em>TODO</em></p>
@@ -4256,7 +4274,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<p><strong>Sortie</strong> (ordre des threads peut varier) :</p>
+<p><strong>Sortie</strong> (l’ordre des threads peut varier) :</p>
 <pre><code>Thread 0: phase 1
 Thread 1: phase 1
 Thread 2: phase 1
@@ -4276,7 +4294,7 @@ int main() {
     
     // V() sur sémaphore valide
     if (SemPost(sem) == 0) {
-        PutString("V réussi\n", 10);
+        PutString("Post réussi\n", 10);
     }
     
     // Détruire le sémaphore
@@ -4296,7 +4314,7 @@ int main() {
 }
 </code></pre>
 <p><strong>Sortie attendue</strong> :</p>
-<pre><code>V réussi
+<pre><code>Post réussi
 Erreur: sémaphore détruit
 Erreur: handle invalide
 </code></pre>
@@ -4332,7 +4350,7 @@ Erreur: handle invalide
 </ul>
 <h2 id="notes-8"><a class="header" href="#notes-8">NOTES</a></h2>
 <ul>
-<li><strong>Toujours retourne immédiatement</strong> : <code>SemPost()</code> ne bloque jamais</li>
+<li><strong>Retourne immédiatement</strong> : <code>SemPost()</code> ne bloque jamais</li>
 <li><strong>Pas de limite supérieure</strong> : Compteur peut croître indéfiniment</li>
 <li><strong>Sémaphore détruit avec threads en attente</strong> : Undefined behavior</li>
 </ul>
@@ -4354,9 +4372,10 @@ Erreur: handle invalide
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
 <h2 id="auteurs-17"><a class="header" href="#auteurs-17">AUTEURS</a></h2>
-<p>Antoine, 31 Dec 2025</p>
+<p>Antoine, 07 Jan 2026
+Tommy, 05 Jan 2026</p>
 <h2 id="dernière-révision-17"><a class="header" href="#dernière-révision-17">DERNIÈRE RÉVISION</a></h2>
-<p>5 Jan 2026</p>
+<p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="semdestroy"><a class="header" href="#semdestroy">SemDestroy</a></h1>
 <p><code>SemDestroy</code> - Détruit un sémaphore et libère ses ressources</p>
@@ -4408,18 +4427,19 @@ int SemDestroy(int sem_id);
 <li><strong>Implémentation</strong> : <code>code/userprog/addrspace.cc:AddrSpace::SemaphoreDestroy()</code></li>
 </ul>
 <h3 id="thread-safety-14"><a class="header" href="#thread-safety-14">Thread-safety</a></h3>
-<p><strong>Garanties</strong> :</p>
-<ul>
-<li>Destruction atomique : pas de race condition entre threads</li>
-<li>Double-free impossible : flag <code>valid</code> protège</li>
-<li>Pas de corruption de la table</li>
-</ul>
-<p><strong>Limitation</strong> : Aucune vérification que des threads sont bloqués sur le sémaphore. Responsabilité de l’appelant.</p>
+<p>Destruction atomique : pas de race condition entre threads</p>
+<div class="callout callout-limitation">
+    
+<div class="callout-title">Limitation</div>
+
+    
+<div class="callout-content">
+        <strong>Attention :</strong> Détruire un sémaphore avec des threads bloqués entraîne un comportement indéfini.
+    </div>
+
+</div>
+
 <h2 id="décisions-de-conception-9"><a class="header" href="#décisions-de-conception-9">DÉCISIONS DE CONCEPTION</a></h2>
-<h3 id="pourquoi-nettoyage-automatique-"><a class="header" href="#pourquoi-nettoyage-automatique-">Pourquoi nettoyage automatique ?</a></h3>
-<p><strong>Robustesse</strong> : Évite les fuites mémoire si l’utilisateur oublie de détruire.</p>
-<p><strong>Pattern RAII</strong> : Ressource liée à la durée de vie du processus (<code>AddrSpace</code>).</p>
-<p><strong>Coût</strong> : Néant - le destructeur <code>~AddrSpace()</code> est appelé de toute façon.</p>
 <h2 id="exemples-13"><a class="header" href="#exemples-13">EXEMPLES</a></h2>
 <h3 id="exemple-1--utilisation-normale"><a class="header" href="#exemple-1--utilisation-normale">Exemple 1 : Utilisation normale</a></h3>
 <pre><code class="language-c">#include "syscall.h"
@@ -4504,22 +4524,6 @@ int main() {
 JoinThread(tid);  // Attendre terminaison
 SemDestroy(sem);  // Maintenant sûr
 </code></pre>
-<h3 id="exemple-4--nettoyage-automatique"><a class="header" href="#exemple-4--nettoyage-automatique">Exemple 4 : Nettoyage automatique</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-int main() {
-    int sem = SemInit(1);
-    
-    SemWait(sem);
-    PutString("Travail...\n", 12);
-    SemPost(sem);
-    
-    // Terminer SANS détruire explicitement
-    // → Nettoyage automatique dans ~AddrSpace()
-    
-    return 0;  // Pas de fuite mémoire
-}
-</code></pre>
 <h2 id="comportement-détaillé-8"><a class="header" href="#comportement-détaillé-8">COMPORTEMENT DÉTAILLÉ</a></h2>
 <h3 id="états-de-la-machine-9"><a class="header" href="#états-de-la-machine-9">États de la machine</a></h3>
 <p><strong>Avant l’appel</strong> :</p>
@@ -4546,7 +4550,7 @@ int main() {
 </ul>
 <h2 id="notes-9"><a class="header" href="#notes-9">NOTES</a></h2>
 <ul>
-<li><strong>Ordre de destruction</strong> : Pas d’ordre imposé, mais recommandé de détruire en ordre inverse de création (style LIFO/RAII)</li>
+<li><strong>Ordre de destruction</strong> : Pas d’ordre imposé</li>
 <li><strong>Nettoyage automatique</strong> : Même si non détruit, pas de fuite à la terminaison du processus</li>
 <li><strong>Handle réutilisable</strong> : Après destruction, le handle peut être réalloué immédiatement</li>
 <li><strong>Pas de vérification threads bloqués</strong> : Responsabilité de l’appelant</li>
@@ -4569,9 +4573,10 @@ int main() {
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
 <h2 id="auteurs-18"><a class="header" href="#auteurs-18">AUTEURS</a></h2>
-<p>Antoine, 31 Dec 2025</p>
+<p>Antoine, 07 Jan 2026
+Tommy, 05 Jan 2026</p>
 <h2 id="dernière-révision-18"><a class="header" href="#dernière-révision-18">DERNIÈRE RÉVISION</a></h2>
-<p>5 Jan 2026</p>
+<p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="setmaxsemforprocess"><a class="header" href="#setmaxsemforprocess">SetMaxSemForProcess</a></h1>
 <p><code>SetMaxSemForProcess</code> - Définit la taille maximale de la table de sémaphores du processus</p>
@@ -4586,7 +4591,7 @@ int SetMaxSemForProcess(unsigned int maxSemaphores);
 <h3 id="comportement-nominal-14"><a class="header" href="#comportement-nominal-14">Comportement nominal</a></h3>
 <ul>
 <li>Réalloue la table de sémaphores à la taille spécifiée</li>
-<li>Préserve les sémaphores existants (si agrandissement)</li>
+<li>Préserve les sémaphores existants en cas d’agrandissement (aucune garantie en cas de réduction)</li>
 <li>Initialise les nouveaux slots comme invalides</li>
 <li>Met à jour le BitMap de tracking</li>
 </ul>
@@ -4746,12 +4751,14 @@ int main() {
 <h2 id="voir-aussi-19"><a class="header" href="#voir-aussi-19">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#seminit">SemInit</a> - Création d’un sémaphore (déclenche auto-expansion si nécessaire)</li>
+<li><a href="#semdestroy">SemDestroy</a> - Destruction d’un sémaphore</li>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
 <h2 id="auteurs-19"><a class="header" href="#auteurs-19">AUTEURS</a></h2>
-<p>Antoine, 25 Dec 2025</p>
+<p>Antoine, 07 Jan 2026
+Tommy, 05 Jan 2026</p>
 <h2 id="dernière-révision-19"><a class="header" href="#dernière-révision-19">DERNIÈRE RÉVISION</a></h2>
-<p>5 Jan 2026</p>
+<p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="gestion-des-erreurs-3"><a class="header" href="#gestion-des-erreurs-3">Gestion des erreurs</a></h1>
 <p>Ce document décrit le mécanisme de gestion des erreurs dans NachOS et l’utilisation de la variable globale <code>errno</code>.</p>
