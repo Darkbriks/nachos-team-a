@@ -38,7 +38,7 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-a687bfd5.js";
+            window.path_to_searchindex_js = "searchindex-e327c86e.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-9ab82147.js"></script>
@@ -2511,24 +2511,6 @@ int main() {
     return 0;
 }
 </code></pre>
-<h2 id="comportement-du-thread-principal"><a class="header" href="#comportement-du-thread-principal">Comportement du thread principal</a></h2>
-<div class="callout callout-danger">
-    
-<div class="callout-title">Ne pas appeler PthreadExit depuis main</div>
-
-    
-<div class="callout-content">
-        
-<p>Le thread principal ne doit pas appeler <code>PthreadExit</code>. 
-        Utilisez plutôt <code>Exit()</code> ou un simple <code>return</code>.</p>
-
-        
-<p>Si le thread principal termine avant les threads enfants, le comportement est indéfini.</p>
-
-    </div>
-
-</div>
-
 <h2 id="libération-des-ressources"><a class="header" href="#libération-des-ressources">Libération des ressources</a></h2>
 <h3 id="thread-joinable"><a class="header" href="#thread-joinable">Thread joinable</a></h3>
 <p>Les ressources (objet <code>Thread</code>) sont conservées jusqu’au <code>PthreadJoin</code>. La valeur de retour est stockée pour être récupérée.</p>
@@ -2553,9 +2535,9 @@ int main() {
 </div>
 
 <h2 id="auteurs-10"><a class="header" href="#auteurs-10">Auteurs</a></h2>
-<p>Antoine, 31 Dec 2025</p>
+<p>Antoine, 07 Jan 2026</p>
 <h2 id="dernière-révision-10"><a class="header" href="#dernière-révision-10">Dernière révision</a></h2>
-<p>31 Dec 2025</p>
+<p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="pthreadjoin"><a class="header" href="#pthreadjoin">PthreadJoin</a></h1>
 <p><code>PthreadJoin</code> - Attend la terminaison d’un thread</p>
