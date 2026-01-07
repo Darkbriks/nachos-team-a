@@ -27,5 +27,8 @@
     - [SemPost](syscalls/sync/SemPost.md)
     - [SemDestroy](./syscalls/sync/SemDestroy.md)
     - [SetMaxSemForProcess](./syscalls/sync/SetMaxSemForProcess.md)
+  - [Process](./syscalls/process/Summary.md)
+    - [Process Overview](syscalls/process/Process.md)
+    - [ForkExec](syscalls/process/ForkExec.md)
   - [Error Handling](./syscalls/errors.md)
   - [Errno Codes](./syscalls/errno.md)

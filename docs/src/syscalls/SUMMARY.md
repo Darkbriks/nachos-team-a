@@ -36,3 +36,10 @@
     - [SemPost](sync/SemPost.md)
     - [SemDestroy](./sync/SemDestroy.md)
     - [SetMaxSemForProcess](./sync/SetMaxSemForProcess.md)
+
+# Process
+
+- [Process](./process/SUMMARY.md)
+    - [Vue d'ensemble](./process/Process.md)
+    - [SemInit](./process/ExecFork.md)
+
