@@ -199,17 +199,6 @@ int main() {
 }
 ```
 
-## Comportement du thread principal
-
-<div class="callout callout-danger">
-    <div class="callout-title">Ne pas appeler PthreadExit depuis main</div>
-    <div class="callout-content">
-        <p>Le thread principal ne doit pas appeler <code>PthreadExit</code>. 
-        Utilisez plutôt <code>Exit()</code> ou un simple <code>return</code>.</p>
-        <p>Si le thread principal termine avant les threads enfants, le comportement est indéfini.</p>
-    </div>
-</div>
-
 ## Libération des ressources
 
 ### Thread joinable
@@ -239,8 +228,8 @@ L'appel est thread-safe. Chaque thread ne peut appeler `PthreadExit` que pour lu
 
 ## Auteurs
 
-Antoine, 31 Dec 2025
+Antoine, 07 Jan 2026
 
 ## Dernière révision
 
-31 Dec 2025
+07 Jan 2026
