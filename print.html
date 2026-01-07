@@ -38,10 +38,10 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-5cde7374.js";
+            window.path_to_searchindex_js = "searchindex-67fb30d6.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-05ba6630.js"></script>
+        <script src="toc-7ee5f6f6.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -221,6 +221,12 @@
 <li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a></li>
 </ul>
 </li>
+<li><a href="#process-1">Process</a>
+<ul>
+<li><a href="#vue-densemble---process">Process Overview</a></li>
+<li><a href="#forkexec">ForkExec</a></li>
+</ul>
+</li>
 <li><a href="#gestion-des-erreurs-3">Error Handling</a></li>
 <li><a href="#liste-des-codes-errno">Errno Codes</a></li>
 </ul>
@@ -265,6 +271,12 @@
 <li><a href="#sempost">SemPost</a></li>
 <li><a href="#semdestroy">SemDestroy</a></li>
 <li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a></li>
+</ul>
+</li>
+<li><a href="#process-1">Process</a>
+<ul>
+<li><a href="#vue-densemble---process">Process Overview</a></li>
+<li><a href="#forkexec">ForkExec</a></li>
 </ul>
 </li>
 <li><a href="#gestion-des-erreurs-3">Error Handling</a></li>
@@ -387,6 +399,15 @@
 <li><a href="#sempost">SemPost</a></li>
 <li><a href="#semdestroy">SemDestroy</a></li>
 <li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a></li>
+</ul>
+</li>
+</ul>
+<h1 id="process"><a class="header" href="#process">Process</a></h1>
+<ul>
+<li><a href="syscalls/process/SUMMARY.html">Process</a>
+<ul>
+<li><a href="#vue-densemble---process">Vue d’ensemble</a></li>
+<li><a href="syscalls/process/ExecFork.html">SemInit</a></li>
 </ul>
 </li>
 </ul>
@@ -5033,6 +5054,124 @@ Tommy, 05 Jan 2026</p>
 <h2 id="dernière-révision-20"><a class="header" href="#dernière-révision-20">DERNIÈRE RÉVISION</a></h2>
 <p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="process-1"><a class="header" href="#process-1">Process</a></h1>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="vue-densemble---process"><a class="header" href="#vue-densemble---process">Vue d’ensemble - Process</a></h1>
+<div class="callout-todo"> TODO j'ai la flemme </div>
+
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="forkexec"><a class="header" href="#forkexec">ForkExec</a></h1>
+<p><code>ForkExec</code> - Crée un nouveau process utilisateur</p>
+<h2 id="synopsis-17"><a class="header" href="#synopsis-17">Synopsis</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+int ForkExec(char* file_name);
+</code></pre>
+<h2 id="description-17"><a class="header" href="#description-17">Description</a></h2>
+<p><code>ForkExec</code> crée un nouveau process qui va éxècuter l’éxècutable dont le nom est donné en paramètre</p>
+<p><strong>Numéro d’appel système</strong> : <code>SC_ForkExec</code> (34)</p>
+<h3 id="comportement-nominal-16"><a class="header" href="#comportement-nominal-16">Comportement nominal</a></h3>
+<ol>
+<li>Allocation d’un PID unique via <code>processs_bitmap</code></li>
+<li>Création d’un objet <code>Process</code> noyau</li>
+<li>Création de son <code>AddrSpace</code></li>
+<li>Création du thread principal du <code>Process</code> avec l’éxècutable donné comme paramétre</li>
+<li>Retour immédiat (le nouveau process s’exécute de manière asynchrone)</li>
+</ol>
+<h2 id="paramètres-17"><a class="header" href="#paramètres-17">Paramètres</a></h2>
+<h3 id="file_name"><a class="header" href="#file_name"><code>file_name</code></a></h3>
+<p>Argument passé à <code>start_routine</code>.</p>
+<p><strong>Type</strong> : <code>char *</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> : Le fichier doit exister et être éxècutable.</p>
+<h2 id="valeur-de-retour-17"><a class="header" href="#valeur-de-retour-17">Valeur de retour</a></h2>
+<p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Valeur</th><th>Signification</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0</code></td><td>Succès</td></tr>
+<tr><td><code>-1</code></td><td>Erreur (consulter <code>errno</code>)</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="codes-derreur-14"><a class="header" href="#codes-derreur-14">Codes d’erreur</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td><code>E_INVAL</code></td><td><code>start_routine</code> invalide ou écriture mémoire échouée</td></tr>
+<tr><td>2</td><td><code>E_FAULT</code></td><td>Adresse <code>process</code> invalide</td></tr>
+<tr><td>7</td><td><code>E_NOMEM</code></td><td>Plus de TID disponibles (limite atteinte)</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="implémentation-17"><a class="header" href="#implémentation-17">Implémentation</a></h2>
+<h3 id="localisation-du-code-17"><a class="header" href="#localisation-du-code-17">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/userprocess.cc:handle_SC_ForkExec()</code></li>
+<li><strong>Implémentation</strong> : <code>code/userprog/userprocess.cc:handle_SC_ForkExec()</code></li>
+<li><strong>Démarrage process</strong> : <code>code/userprog/userprocess.cc:StartProcess()</code></li>
+</ul>
+<h3 id="flux-dexécution-5"><a class="header" href="#flux-dexécution-5">Flux d’exécution</a></h3>
+<pre><code>ForkExec(&amp;tid, attr, func, arg)
+        │
+        ▼
+    start.S: ForkExec
+        │ charge $8 = PprocessExit_wrapper
+        ▼
+    syscall SC_ForkExec
+        │
+        ▼
+    handle_SC_ForkExec()
+        │ lit $4, $5, $6, $7, $8
+        ▼
+    do_ForkExec()
+        │ ├─ valide le fichier (éxècutable)
+        │ ├─ crée Process via Process::createProcess(éxècutable)
+        │ ├─ lit/initialise contexte d'éxècution
+        │ └─ mainThread-&gt;Fork(StartProcess, newProcess)
+        ▼
+    [scheduler active le nouveau process]
+        │
+        ▼
+    StartProcess(param)
+        │ ├─ initialilse registres et adresses virtuelles
+        │ └─ machine-&gt;Run()
+        ▼
+    [exécution de main()]
+</code></pre>
+<h2 id="exemples-16"><a class="header" href="#exemples-16">Exemples</a></h2>
+<h3 id="exemple-1--création-simple-de-deux-processus"><a class="header" href="#exemple-1--création-simple-de-deux-processus">Exemple 1 : Création simple de deux processus</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main(){
+    ForkExec("./userpages0");
+    ForkExec("./userpages1");
+    PutString("All processes launched.\n", 26);
+    return 0;
+}
+</code></pre>
+<h2 id="limitations-1"><a class="header" href="#limitations-1">Limitations</a></h2>
+<div class="callout callout-limitation">
+    
+<div class="callout-title">Limite de processs</div>
+
+    
+<div class="callout-content">
+        Maximum <code>MAX_PROCESS</code> processs en même temps vivant sur la machine. Au-delà, <code>E_NOMEM</code> est retourné.
+    </div>
+
+</div>
+
+<h2 id="auteurs-21"><a class="header" href="#auteurs-21">Auteurs</a></h2>
+<p>Tommy, 7 Jan 2026</p>
+<h2 id="dernière-révision-21"><a class="header" href="#dernière-révision-21">Dernière révision</a></h2>
+<p>7 Jan 2026</p>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="gestion-des-erreurs-3"><a class="header" href="#gestion-des-erreurs-3">Gestion des erreurs</a></h1>
 <p>Ce document décrit le mécanisme de gestion des erreurs dans NachOS et l’utilisation de la variable globale <code>errno</code>.</p>
 <h2 id="vue-densemble-2"><a class="header" href="#vue-densemble-2">Vue d’ensemble</a></h2>
@@ -5141,7 +5280,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<h2 id="codes-derreur-14"><a class="header" href="#codes-derreur-14">Codes d’erreur</a></h2>
+<h2 id="codes-derreur-15"><a class="header" href="#codes-derreur-15">Codes d’erreur</a></h2>
 <p>Voir <a href="#liste-des-codes-errno">Liste des codes errno</a> pour la documentation complète de chaque code.</p>
 <h3 id="codes-principaux"><a class="header" href="#codes-principaux">Codes principaux</a></h3>
 <div class="table-wrapper">
@@ -5304,9 +5443,9 @@ int main() {
 <li><a href="#vue-densemble---console-io">Console I/O Overview</a> - Appels système avec gestion errno</li>
 <li><a href="userspace/my_stdlib.html">my_stdlib</a> - Fonctions utilitaires pour errno</li>
 </ul>
-<h2 id="auteurs-21"><a class="header" href="#auteurs-21">Auteurs</a></h2>
+<h2 id="auteurs-22"><a class="header" href="#auteurs-22">Auteurs</a></h2>
 <p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision-21"><a class="header" href="#dernière-révision-21">Dernière révision</a></h2>
+<h2 id="dernière-révision-22"><a class="header" href="#dernière-révision-22">Dernière révision</a></h2>
 <p>20 Dec 2025 par Antoine</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="liste-des-codes-errno"><a class="header" href="#liste-des-codes-errno">Liste des codes errno</a></h1>
@@ -5437,9 +5576,9 @@ if (result != -1) {
 <li><a href="#vue-densemble---console-io">Console I/O</a> - Appels avec gestion d’erreur</li>
 <li><a href="userspace/my_stdlib.html">my_stdlib</a> - Fonctions print_error()</li>
 </ul>
-<h2 id="auteurs-22"><a class="header" href="#auteurs-22">Auteurs</a></h2>
+<h2 id="auteurs-23"><a class="header" href="#auteurs-23">Auteurs</a></h2>
 <p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision-22"><a class="header" href="#dernière-révision-22">Dernière révision</a></h2>
+<h2 id="dernière-révision-23"><a class="header" href="#dernière-révision-23">Dernière révision</a></h2>
 <p>20 Dec 2025 par Antoine</p>
 
                     </main>
