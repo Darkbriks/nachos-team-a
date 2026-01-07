@@ -38,10 +38,10 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-e327c86e.js";
+            window.path_to_searchindex_js = "searchindex-b3c4c08f.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-9ab82147.js"></script>
+        <script src="toc-df646ee4.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -252,6 +252,7 @@
 <li><a href="#pthreadexit">ExitThread</a></li>
 <li><a href="#pthreadjoin">JoinThread</a></li>
 <li><a href="#pthreaddetach">DetachThread</a></li>
+<li><a href="#pthreadself">SelfThread</a></li>
 <li><a href="#attributs-de-thread">Thread Attributes</a></li>
 </ul>
 </li>
@@ -1769,6 +1770,7 @@ RETURN(0);  // Succès même si WriteMem a échoué !
 <li><a href="#pthreadexit">ExitThread</a></li>
 <li><a href="#pthreadjoin">JoinThread</a></li>
 <li><a href="#pthreaddetach">DetachThread</a></li>
+<li><a href="#pthreadself">SelfThread</a></li>
 <li><a href="#attributs-de-thread">Thread Attributes</a></li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
@@ -3000,6 +3002,273 @@ int main() {
 <h2 id="dernière-révision-12"><a class="header" href="#dernière-révision-12">Dernière révision</a></h2>
 <p>31 Dec 2025</p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="pthreadself"><a class="header" href="#pthreadself">PthreadSelf</a></h1>
+<p><code>PthreadSelf</code> - Obtient l’identifiant du thread courant</p>
+<h2 id="synopsis-10"><a class="header" href="#synopsis-10">Synopsis</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+posix_thread_t PthreadSelf(void);
+</code></pre>
+<h2 id="description-10"><a class="header" href="#description-10">Description</a></h2>
+<p><code>PthreadSelf</code> retourne l’identifiant unique (TID) du thread appelant. Chaque thread dans un processus possède un TID unique attribué lors de sa création.</p>
+<p><strong>Numéro d’appel système</strong> : <code>SC_PthreadSelf</code> (21)</p>
+<h3 id="comportement-nominal-10"><a class="header" href="#comportement-nominal-10">Comportement nominal</a></h3>
+<ol>
+<li>Récupération du pointeur vers le thread courant (<code>currentThread</code>)</li>
+<li>Extraction du TID via <code>currentThread-&gt;getTID()</code></li>
+<li>Retour immédiat du TID dans le registre <code>$2</code></li>
+</ol>
+<div class="callout callout-note">
+    
+<div class="callout-title">Thread principal</div>
+
+    
+<div class="callout-content">
+        Le thread principal d'un processus possède toujours le TID 0.
+    </div>
+
+</div>
+
+<h2 id="paramètres-10"><a class="header" href="#paramètres-10">Paramètres</a></h2>
+<p>Cette fonction ne prend aucun paramètre.</p>
+<h2 id="valeur-de-retour-10"><a class="header" href="#valeur-de-retour-10">Valeur de retour</a></h2>
+<p><strong>Type</strong> : <code>posix_thread_t</code> (registre <code>$2</code>)</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Valeur</th><th>Signification</th></tr>
+</thead>
+<tbody>
+<tr><td><code>&gt;= 0</code></td><td>TID du thread courant (succès)</td></tr>
+<tr><td><code>-1</code></td><td>Erreur (consulter <code>errno</code>)</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="codes-derreur-10"><a class="header" href="#codes-derreur-10">Codes d’erreur</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
+</thead>
+<tbody>
+<tr><td>9</td><td><code>E_NOSPC</code></td><td>Pointeur de thread courant invalide (ne devrait jamais arriver)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="callout callout-note">
+    
+<div class="callout-title">Fiabilité</div>
+
+    
+<div class="callout-content">
+        En pratique, <code>PthreadSelf</code> ne devrait jamais échouer dans un système correctement configuré,
+        car <code>currentThread</code> est toujours valide pendant l'exécution d'un thread.
+    </div>
+
+</div>
+
+<h2 id="implémentation-10"><a class="header" href="#implémentation-10">Implémentation</a></h2>
+<h3 id="localisation-du-code-10"><a class="header" href="#localisation-du-code-10">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S:351</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/userthread.cc:handle_SC_PthreadSelf()</code></li>
+<li><strong>Implémentation</strong> : <code>code/userprog/userthread.cc:do_PthreadSelf()</code></li>
+</ul>
+<h3 id="flux-dexécution-4"><a class="header" href="#flux-dexécution-4">Flux d’exécution</a></h3>
+<pre><code>PthreadSelf()
+    │
+    ▼
+start.S: PthreadSelf
+    │ charge $2 = SC_PthreadSelf
+    ▼
+syscall SC_PthreadSelf
+    │
+    ▼
+handle_SC_PthreadSelf()
+    │
+    ▼
+do_PthreadSelf()
+    │ ├─ récupère currentThread
+    │ ├─ vérifie validité (protection)
+    │ └─ retourne currentThread-&gt;getTID()
+    ▼
+[registre $2 contient le TID]
+</code></pre>
+<h2 id="exemples-10"><a class="header" href="#exemples-10">Exemples</a></h2>
+<h3 id="exemple-1--affichage-du-tid"><a class="header" href="#exemple-1--affichage-du-tid">Exemple 1 : Affichage du TID</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+void *worker(void *arg) {
+    posix_thread_t my_tid = PthreadSelf();
+
+    PutString("Thread TID=", 11);
+    PutInt(my_tid);
+    PutString(" is running\n", 12);
+
+    return 0;
+}
+
+int main() {
+    posix_thread_t tid1, tid2;
+    posix_thread_t main_tid = PthreadSelf();
+
+    PutString("Main thread TID=", 16);
+    PutInt(main_tid);
+    PutChar('\n');
+
+    PthreadCreate(&amp;tid1, 0, worker, 0);
+    PthreadCreate(&amp;tid2, 0, worker, 0);
+
+    PthreadJoin(tid1, 0);
+    PthreadJoin(tid2, 0);
+
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie attendue</strong> :</p>
+<pre><code>Main thread TID=0
+Thread TID=1 is running
+Thread TID=2 is running
+</code></pre>
+<h3 id="exemple-2--comparaison-de-tid"><a class="header" href="#exemple-2--comparaison-de-tid">Exemple 2 : Comparaison de TID</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+posix_thread_t global_tid;
+
+void *compare_thread(void *arg) {
+    posix_thread_t my_tid = PthreadSelf();
+
+    if (my_tid == global_tid) {
+        PutString("TID matches!\n", 13);
+    } else {
+        PutString("TID mismatch!\n", 14);
+    }
+
+    return 0;
+}
+
+int main() {
+    PthreadCreate(&amp;global_tid, 0, compare_thread, 0);
+    PthreadJoin(global_tid, 0);
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-3--thread-local-storage-simulé"><a class="header" href="#exemple-3--thread-local-storage-simulé">Exemple 3 : Thread-local storage simulé</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+#define MAX_THREADS 10
+
+int thread_data[MAX_THREADS];
+
+void set_thread_data(int value) {
+    posix_thread_t tid = PthreadSelf();
+    if (tid &gt;= 0 &amp;&amp; tid &lt; MAX_THREADS) {
+        thread_data[tid] = value;
+    }
+}
+
+int get_thread_data(void) {
+    posix_thread_t tid = PthreadSelf();
+    if (tid &gt;= 0 &amp;&amp; tid &lt; MAX_THREADS) {
+        return thread_data[tid];
+    }
+    return -1;
+}
+
+void *worker(void *arg) {
+    int value = (int)(long)arg;
+    set_thread_data(value);
+
+    PutString("Thread ", 7);
+    PutInt(PthreadSelf());
+    PutString(" stored value: ", 15);
+    PutInt(get_thread_data());
+    PutChar('\n');
+
+    return 0;
+}
+
+int main() {
+    posix_thread_t tid1, tid2;
+
+    PthreadCreate(&amp;tid1, 0, worker, (void *)42);
+    PthreadCreate(&amp;tid2, 0, worker, (void *)99);
+
+    PthreadJoin(tid1, 0);
+    PthreadJoin(tid2, 0);
+
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie attendue</strong> :</p>
+<pre><code>Thread 1 stored value: 42
+Thread 2 stored value: 99
+</code></pre>
+<h3 id="exemple-4--gestion-derreur-1"><a class="header" href="#exemple-4--gestion-derreur-1">Exemple 4 : Gestion d’erreur</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    posix_thread_t tid = PthreadSelf();
+
+    if (tid &lt; 0) {
+        int err = GetLastError();
+        PutString("PthreadSelf failed with errno=", 30);
+        PutInt(err);
+        PutChar('\n');
+        return 1;
+    }
+
+    PutString("Current TID: ", 13);
+    PutInt(tid);
+    PutChar('\n');
+
+    return 0;
+}
+</code></pre>
+<h2 id="cas-dusage"><a class="header" href="#cas-dusage">Cas d’usage</a></h2>
+<h3 id="identification-de-thread"><a class="header" href="#identification-de-thread">Identification de thread</a></h3>
+<p><code>PthreadSelf</code> est particulièrement utile pour :</p>
+<ul>
+<li>Distinguer le thread principal des threads secondaires</li>
+<li>Implémenter un système de logging par thread</li>
+<li>Créer des structures de données thread-local</li>
+<li>Déboguer des problèmes de concurrence</li>
+</ul>
+<h3 id="comparaison-avec-pthread_equal"><a class="header" href="#comparaison-avec-pthread_equal">Comparaison avec pthread_equal</a></h3>
+<p>Contrairement à POSIX qui fournit <code>pthread_equal()</code> pour comparer des TID, Nachos utilise des entiers simples, donc la comparaison directe avec <code>==</code> est possible.</p>
+<h2 id="thread-safety-10"><a class="header" href="#thread-safety-10">Thread-safety</a></h2>
+<p>L’appel est thread-safe. Chaque thread obtient son propre TID unique, et <code>currentThread</code> est toujours valide dans le contexte d’un thread en cours d’exécution.</p>
+<div class="callout callout-note">
+    
+<div class="callout-title">Macro RETURN</div>
+
+    
+<div class="callout-content">
+        L'implémentation utilise la macro <code>RETURN()</code> qui écrit directement
+        dans le registre <code>$2</code> et gère la convention d'appel système.
+    </div>
+
+</div>
+
+<h2 id="voir-aussi-13"><a class="header" href="#voir-aussi-13">Voir aussi</a></h2>
+<div class="callout callout-see-also">
+    
+<div class="callout-content">
+<ul>
+<li><a href="#pthreadcreate">PthreadCreate</a> - Créer un nouveau thread</li>
+<li><a href="#pthreadexit">PthreadExit</a> - Terminer un thread</li>
+<li><a href="#pthreadjoin">PthreadJoin</a> - Attendre un thread</li>
+<li><a href="#pthreaddetach">PthreadDetach</a> - Détacher un thread</li>
+</ul>
+</div>
+
+</div>
+
+<h2 id="auteurs-13"><a class="header" href="#auteurs-13">Auteurs</a></h2>
+<p>Alioune Badara DIENE, 7 Jan 2026</p>
+<h2 id="dernière-révision-13"><a class="header" href="#dernière-révision-13">Dernière révision</a></h2>
+<p>7 Jan 2026</p>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="attributs-de-thread"><a class="header" href="#attributs-de-thread">Attributs de thread</a></h1>
 <p>Cette page documente les fonctions de gestion des attributs de thread (<code>pthread_attr_*</code>).</p>
 <h2 id="vue-densemble-1"><a class="header" href="#vue-densemble-1">Vue d’ensemble</a></h2>
@@ -3075,15 +3344,15 @@ Pthread_attr_destroy(&amp;attr)
 <h2 id="pthread_attr_init"><a class="header" href="#pthread_attr_init">Pthread_attr_init</a></h2>
 <p>Initialise un objet d’attributs avec les valeurs par défaut.</p>
 <p><strong>Numéro d’appel système</strong> : <code>SC_Pthread_attr_init</code> (22)</p>
-<h3 id="synopsis-10"><a class="header" href="#synopsis-10">Synopsis</a></h3>
+<h3 id="synopsis-11"><a class="header" href="#synopsis-11">Synopsis</a></h3>
 <pre><code class="language-c">int Pthread_attr_init(pthread_attr_t *attr);
 </code></pre>
-<h3 id="description-10"><a class="header" href="#description-10">Description</a></h3>
+<h3 id="description-11"><a class="header" href="#description-11">Description</a></h3>
 <p>Initialise <code>attr</code> avec les valeurs par défaut :</p>
 <ul>
 <li><code>detachstate</code> = <code>JOINABLE</code></li>
 </ul>
-<h3 id="paramètres-10"><a class="header" href="#paramètres-10">Paramètres</a></h3>
+<h3 id="paramètres-11"><a class="header" href="#paramètres-11">Paramètres</a></h3>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3094,7 +3363,7 @@ Pthread_attr_destroy(&amp;attr)
 </tbody>
 </table>
 </div>
-<h3 id="valeur-de-retour-10"><a class="header" href="#valeur-de-retour-10">Valeur de retour</a></h3>
+<h3 id="valeur-de-retour-11"><a class="header" href="#valeur-de-retour-11">Valeur de retour</a></h3>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3312,14 +3581,14 @@ int main() {
     return 0;
 }
 </code></pre>
-<h2 id="implémentation-10"><a class="header" href="#implémentation-10">Implémentation</a></h2>
-<h3 id="localisation-du-code-10"><a class="header" href="#localisation-du-code-10">Localisation du code</a></h3>
+<h2 id="implémentation-11"><a class="header" href="#implémentation-11">Implémentation</a></h2>
+<h3 id="localisation-du-code-11"><a class="header" href="#localisation-du-code-11">Localisation du code</a></h3>
 <ul>
 <li><strong>Définition structure</strong> : <code>code/threads/thread.h</code> (<code>posix_thread_attr_t</code>)</li>
 <li><strong>Fonctions noyau</strong> : <code>code/threads/thread.cc</code> (<code>posix_thread_attr_*</code>)</li>
 <li><strong>Stubs utilisateur</strong> : <code>code/test/start.S</code></li>
 </ul>
-<h2 id="voir-aussi-13"><a class="header" href="#voir-aussi-13">Voir aussi</a></h2>
+<h2 id="voir-aussi-14"><a class="header" href="#voir-aussi-14">Voir aussi</a></h2>
 <div class="callout callout-see-also">
     
 <div class="callout-title">Voir aussi</div>
@@ -3335,9 +3604,9 @@ int main() {
 
 </div>
 
-<h2 id="auteurs-13"><a class="header" href="#auteurs-13">Auteurs</a></h2>
+<h2 id="auteurs-14"><a class="header" href="#auteurs-14">Auteurs</a></h2>
 <p>Antoine, 31 Dec 2025</p>
-<h2 id="dernière-révision-13"><a class="header" href="#dernière-révision-13">Dernière révision</a></h2>
+<h2 id="dernière-révision-14"><a class="header" href="#dernière-révision-14">Dernière révision</a></h2>
 <p>31 Dec 2025</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="sémaphores-1"><a class="header" href="#sémaphores-1">Sémaphores</a></h1>
@@ -3436,7 +3705,7 @@ int main() {
 </tbody>
 </table>
 </div>
-<h2 id="thread-safety-10"><a class="header" href="#thread-safety-10">Thread-safety</a></h2>
+<h2 id="thread-safety-11"><a class="header" href="#thread-safety-11">Thread-safety</a></h2>
 <p><strong>Garanti</strong> :</p>
 <ul>
 <li>Les opérations Wait() et Post() sont atomiques et thread-safe</li>
@@ -3530,7 +3799,7 @@ int main() {
 </tbody>
 </table>
 </div>
-<h2 id="voir-aussi-14"><a class="header" href="#voir-aussi-14">Voir aussi</a></h2>
+<h2 id="voir-aussi-15"><a class="header" href="#voir-aussi-15">Voir aussi</a></h2>
 <ul>
 <li><a href="#gestion-des-erreurs-3">Gestion des erreurs</a> - Codes d’erreur système</li>
 <li><a href="#threads-utilisateur">Threads</a> - Création et gestion de threads</li>
@@ -3540,22 +3809,22 @@ int main() {
 <li><a href="#semdestroy">Destruction des sémaphores</a> - Libérer un sémaphore</li>
 <li><a href="#setmaxsemforprocess">Redimensionnement de la table</a> - Ajuster la taille maximale</li>
 </ul>
-<h2 id="auteurs-14"><a class="header" href="#auteurs-14">Auteurs</a></h2>
+<h2 id="auteurs-15"><a class="header" href="#auteurs-15">Auteurs</a></h2>
 <p>Antoine, 07 Jan 2026</p>
-<h2 id="dernière-révision-14"><a class="header" href="#dernière-révision-14">Dernière révision</a></h2>
+<h2 id="dernière-révision-15"><a class="header" href="#dernière-révision-15">Dernière révision</a></h2>
 <p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="seminit"><a class="header" href="#seminit">SemInit</a></h1>
 <p><code>SemInit</code> - Crée et initialise un nouveau sémaphore</p>
-<h2 id="synopsis-11"><a class="header" href="#synopsis-11">SYNOPSIS</a></h2>
+<h2 id="synopsis-12"><a class="header" href="#synopsis-12">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int SemInit(int value);
 </code></pre>
-<h2 id="description-11"><a class="header" href="#description-11">DESCRIPTION</a></h2>
+<h2 id="description-12"><a class="header" href="#description-12">DESCRIPTION</a></h2>
 <p><code>SemInit</code> crée un nouveau sémaphore avec une valeur initiale spécifiée et retourne un descripteur permettant de l’identifier. Le sémaphore peut ensuite être utilisé pour la synchronisation entre threads du même processus.</p>
 <p>Numéro d’appel système : <code>29</code></p>
-<h3 id="comportement-nominal-10"><a class="header" href="#comportement-nominal-10">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-11"><a class="header" href="#comportement-nominal-11">Comportement nominal</a></h3>
 <ul>
 <li>Alloue un nouveau descripteur dans la table de sémaphores du processus</li>
 <li>Initialise le compteur interne du sémaphore à <code>value</code></li>
@@ -3571,7 +3840,7 @@ int SemInit(int value);
 <li><strong>value &lt; 0</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
 <li><strong>Table pleine et expansion impossible</strong> : Retourne -1, <code>errno = E_FTABLE</code> (maximum 512 sémaphores atteint)</li>
 </ul>
-<h2 id="paramètres-11"><a class="header" href="#paramètres-11">PARAMÈTRES</a></h2>
+<h2 id="paramètres-12"><a class="header" href="#paramètres-12">PARAMÈTRES</a></h2>
 <h3 id="value"><a class="header" href="#value"><code>value</code></a></h3>
 <p>Valeur initiale du compteur du sémaphore.</p>
 <p><strong>Type</strong> : <code>int</code>
@@ -3582,11 +3851,11 @@ int SemInit(int value);
 <li>Doit être ≥ 0</li>
 <li>Représente le nombre de threads pouvant exécuter <code>SemWait()</code> simultanément sans bloquer</li>
 </ul>
-<h2 id="valeur-de-retour-11"><a class="header" href="#valeur-de-retour-11">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-12"><a class="header" href="#valeur-de-retour-12">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <p><strong>En cas de succès</strong> : Handle du sémaphore (0 à <code>maxSemaphores - 1</code>)</p>
 <p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="codes-derreur-10"><a class="header" href="#codes-derreur-10">CODES D’ERREUR</a></h2>
+<h2 id="codes-derreur-11"><a class="header" href="#codes-derreur-11">CODES D’ERREUR</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3598,8 +3867,8 @@ int SemInit(int value);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-11"><a class="header" href="#implémentation-11">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-11"><a class="header" href="#localisation-du-code-11">Localisation du code</a></h3>
+<h2 id="implémentation-12"><a class="header" href="#implémentation-12">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-12"><a class="header" href="#localisation-du-code-12">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SemInit()</code></li>
@@ -3628,7 +3897,7 @@ int SemInit(int value);
 <li>Enregistrement dans la table</li>
 <li>Marquage du slot comme utilisé</li>
 </ol>
-<h3 id="thread-safety-11"><a class="header" href="#thread-safety-11">Thread-safety</a></h3>
+<h3 id="thread-safety-12"><a class="header" href="#thread-safety-12">Thread-safety</a></h3>
 <p><strong>Garanties</strong> :</p>
 <ul>
 <li>Plusieurs threads peuvent appeler <code>SemInit</code> simultanément</li>
@@ -3645,7 +3914,7 @@ int SemInit(int value);
 </ul>
 <h3 id="pourquoi-lauto-expansion-"><a class="header" href="#pourquoi-lauto-expansion-">Pourquoi l’auto-expansion ?</a></h3>
 <p><em>TODO</em></p>
-<h2 id="exemples-10"><a class="header" href="#exemples-10">EXEMPLES</a></h2>
+<h2 id="exemples-11"><a class="header" href="#exemples-11">EXEMPLES</a></h2>
 <h3 id="exemple-1--créer-un-mutex"><a class="header" href="#exemple-1--créer-un-mutex">Exemple 1 : Créer un mutex</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -3812,7 +4081,7 @@ int main() {
 <li><strong>v2.0</strong> : Modification avec table de descripteurs (taille fixe 16)</li>
 <li><strong>v2.1</strong> : Auto-expansion de la table (taille initiale 16, max 512)</li>
 </ul>
-<h2 id="voir-aussi-15"><a class="header" href="#voir-aussi-15">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-16"><a class="header" href="#voir-aussi-16">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#semwait">SemWait</a> - Opération P (wait) sur un sémaphore</li>
 <li><a href="#sempost">SemPost</a> - Opération V (signal) sur un sémaphore</li>
@@ -3820,23 +4089,23 @@ int main() {
 <li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a> - Redimensionnement manuel de la table</li>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
-<h2 id="auteurs-15"><a class="header" href="#auteurs-15">AUTEURS</a></h2>
+<h2 id="auteurs-16"><a class="header" href="#auteurs-16">AUTEURS</a></h2>
 <p>Antoine, 25 Dec 2025
 Tommy, 5 Jan 2026</p>
-<h2 id="dernière-révision-15"><a class="header" href="#dernière-révision-15">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-16"><a class="header" href="#dernière-révision-16">DERNIÈRE RÉVISION</a></h2>
 <p>5 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="semwait"><a class="header" href="#semwait">SemWait</a></h1>
 <p><code>SemWait</code> - Opération Wait (P/acquire) sur un sémaphore</p>
-<h2 id="synopsis-12"><a class="header" href="#synopsis-12">SYNOPSIS</a></h2>
+<h2 id="synopsis-13"><a class="header" href="#synopsis-13">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int SemWait(int sem_id);
 </code></pre>
-<h2 id="description-12"><a class="header" href="#description-12">DESCRIPTION</a></h2>
+<h2 id="description-13"><a class="header" href="#description-13">DESCRIPTION</a></h2>
 <p><code>SemWait</code> effectue l’opération Wait (Proberen) sur le sémaphore identifié par <code>sem_id</code>. Cette opération décrémente le compteur du sémaphore et bloque le thread appelant si le compteur devient négatif.</p>
 <p>Numéro d’appel système : <code>30</code></p>
-<h3 id="comportement-nominal-11"><a class="header" href="#comportement-nominal-11">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-12"><a class="header" href="#comportement-nominal-12">Comportement nominal</a></h3>
 <ul>
 <li>Vérifie la validité du descripteur <code>sem_id</code></li>
 <li>Si compteur &gt; 0 : décrémente et retourne immédiatement</li>
@@ -3850,7 +4119,7 @@ int SemWait(int sem_id);
 <li><strong>Blocage indéfini</strong> : Si aucun <code>SemPost()</code> n’est appelé, le thread reste bloqué (pas de timeout)</li>
 <li><strong>Interruptions</strong> : Le blocage n’est pas interruptible</li>
 </ul>
-<h2 id="paramètres-12"><a class="header" href="#paramètres-12">PARAMÈTRES</a></h2>
+<h2 id="paramètres-13"><a class="header" href="#paramètres-13">PARAMÈTRES</a></h2>
 <h3 id="sem_id"><a class="header" href="#sem_id"><code>sem_id</code></a></h3>
 <p>Descripteur du sémaphore sur lequel effectuer l’opération P.</p>
 <p><strong>Type</strong> : <code>int</code>
@@ -3862,11 +4131,11 @@ int SemWait(int sem_id);
 <li>Doit être dans l’intervalle [0, maxSemaphores-1] (max 511)</li>
 <li>Le sémaphore ne doit pas avoir été détruit</li>
 </ul>
-<h2 id="valeur-de-retour-12"><a class="header" href="#valeur-de-retour-12">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-13"><a class="header" href="#valeur-de-retour-13">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <p><strong>En cas de succès</strong> : <code>0</code></p>
 <p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="codes-derreur-11"><a class="header" href="#codes-derreur-11">CODES D’ERREUR</a></h2>
+<h2 id="codes-derreur-12"><a class="header" href="#codes-derreur-12">CODES D’ERREUR</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3877,8 +4146,8 @@ int SemWait(int sem_id);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-12"><a class="header" href="#implémentation-12">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-12"><a class="header" href="#localisation-du-code-12">Localisation du code</a></h3>
+<h2 id="implémentation-13"><a class="header" href="#implémentation-13">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-13"><a class="header" href="#localisation-du-code-13">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SemWait()</code></li>
@@ -3889,7 +4158,7 @@ int SemWait(int sem_id);
 </ul>
 </li>
 </ul>
-<h3 id="thread-safety-12"><a class="header" href="#thread-safety-12">Thread-safety</a></h3>
+<h3 id="thread-safety-13"><a class="header" href="#thread-safety-13">Thread-safety</a></h3>
 <p><strong>Sémaphore interne</strong> : <code>Semaphore::P()</code> utilise son propre lock interne :</p>
 <ul>
 <li>Lock sémaphore acquis</li>
@@ -3899,7 +4168,7 @@ int SemWait(int sem_id);
 </ul>
 <h2 id="décisions-de-conception-7"><a class="header" href="#décisions-de-conception-7">DÉCISIONS DE CONCEPTION</a></h2>
 <p><em>TODO</em></p>
-<h2 id="exemples-11"><a class="header" href="#exemples-11">EXEMPLES</a></h2>
+<h2 id="exemples-12"><a class="header" href="#exemples-12">EXEMPLES</a></h2>
 <h3 id="exemple-1--mutex-basique"><a class="header" href="#exemple-1--mutex-basique">Exemple 1 : Mutex basique</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -4062,7 +4331,7 @@ Erreur: handle invalide
 <li><strong>v1.0</strong> : Implémentation initiale avec adresses</li>
 <li><strong>v2.0</strong> : Modification avec table de descripteurs</li>
 </ul>
-<h2 id="voir-aussi-16"><a class="header" href="#voir-aussi-16">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-17"><a class="header" href="#voir-aussi-17">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#seminit">SemInit</a> - Création d’un sémaphore</li>
 <li><a href="#sempost">SemPost</a> - Opération V (signal) sur un sémaphore</li>
@@ -4070,23 +4339,23 @@ Erreur: handle invalide
 <li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a> - Redimensionnement de la table</li>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
-<h2 id="auteurs-16"><a class="header" href="#auteurs-16">AUTEURS</a></h2>
+<h2 id="auteurs-17"><a class="header" href="#auteurs-17">AUTEURS</a></h2>
 <p>Antoine, 07 Jan 2026
 Tommy, 05 Jan 2026</p>
-<h2 id="dernière-révision-16"><a class="header" href="#dernière-révision-16">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-17"><a class="header" href="#dernière-révision-17">DERNIÈRE RÉVISION</a></h2>
 <p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="sempost"><a class="header" href="#sempost">SemPost</a></h1>
 <p><code>SemPost</code> - Opération Post (V/signal/release) sur un sémaphore</p>
-<h2 id="synopsis-13"><a class="header" href="#synopsis-13">SYNOPSIS</a></h2>
+<h2 id="synopsis-14"><a class="header" href="#synopsis-14">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int SemPost(int sem_id);
 </code></pre>
-<h2 id="description-13"><a class="header" href="#description-13">DESCRIPTION</a></h2>
+<h2 id="description-14"><a class="header" href="#description-14">DESCRIPTION</a></h2>
 <p><code>SemPost</code> effectue l’opération Post (Verhogen) sur le sémaphore identifié par <code>sem_id</code>. Cette opération incrémente le compteur du sémaphore et réveille un thread bloqué en attente sur <code>SemWait()</code> si la queue n’est pas vide.</p>
 <p>Numéro d’appel système : <code>31</code></p>
-<h3 id="comportement-nominal-12"><a class="header" href="#comportement-nominal-12">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-13"><a class="header" href="#comportement-nominal-13">Comportement nominal</a></h3>
 <ul>
 <li>Vérifie la validité du handle <code>sem_id</code></li>
 <li>Incrémente le compteur du sémaphore de manière atomique</li>
@@ -4101,7 +4370,7 @@ int SemPost(int sem_id);
 <li><strong>Queue vide</strong> : Compteur simplement incrémenté, pas de réveil</li>
 <li><strong>Overflow</strong> : Compteur peut croître indéfiniment (pas de limite supérieure)</li>
 </ul>
-<h2 id="paramètres-13"><a class="header" href="#paramètres-13">PARAMÈTRES</a></h2>
+<h2 id="paramètres-14"><a class="header" href="#paramètres-14">PARAMÈTRES</a></h2>
 <h3 id="sem_id-1"><a class="header" href="#sem_id-1"><code>sem_id</code></a></h3>
 <p>Descripteur du sémaphore sur lequel effectuer l’opération Post.</p>
 <p><strong>Type</strong> : <code>int</code>
@@ -4113,11 +4382,11 @@ int SemPost(int sem_id);
 <li>Doit être dans l’intervalle [0, maxSemaphores-1] (max 511)</li>
 <li>Le sémaphore ne doit pas avoir été détruit</li>
 </ul>
-<h2 id="valeur-de-retour-13"><a class="header" href="#valeur-de-retour-13">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-14"><a class="header" href="#valeur-de-retour-14">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <p><strong>En cas de succès</strong> : <code>0</code></p>
 <p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="codes-derreur-12"><a class="header" href="#codes-derreur-12">CODES D’ERREUR</a></h2>
+<h2 id="codes-derreur-13"><a class="header" href="#codes-derreur-13">CODES D’ERREUR</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4128,8 +4397,8 @@ int SemPost(int sem_id);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-13"><a class="header" href="#implémentation-13">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-13"><a class="header" href="#localisation-du-code-13">Localisation du code</a></h3>
+<h2 id="implémentation-14"><a class="header" href="#implémentation-14">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-14"><a class="header" href="#localisation-du-code-14">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SemPost()</code></li>
@@ -4140,13 +4409,13 @@ int SemPost(int sem_id);
 </ul>
 </li>
 </ul>
-<h3 id="thread-safety-13"><a class="header" href="#thread-safety-13">Thread-safety</a></h3>
+<h3 id="thread-safety-14"><a class="header" href="#thread-safety-14">Thread-safety</a></h3>
 <ul>
 <li>L’opération <code>SemPost()</code> est thread-safe</li>
 </ul>
 <h2 id="décisions-de-conception-8"><a class="header" href="#décisions-de-conception-8">DÉCISIONS DE CONCEPTION</a></h2>
 <p><em>TODO</em></p>
-<h2 id="exemples-12"><a class="header" href="#exemples-12">EXEMPLES</a></h2>
+<h2 id="exemples-13"><a class="header" href="#exemples-13">EXEMPLES</a></h2>
 <h3 id="exemple-1--libération-de-mutex"><a class="header" href="#exemple-1--libération-de-mutex">Exemple 1 : Libération de mutex</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -4268,7 +4537,7 @@ Thread 2: phase 2
 Thread 3: phase 2
 Thread 4: phase 2
 </code></pre>
-<h3 id="exemple-4--gestion-derreur-1"><a class="header" href="#exemple-4--gestion-derreur-1">Exemple 4 : Gestion d’erreur</a></h3>
+<h3 id="exemple-4--gestion-derreur-2"><a class="header" href="#exemple-4--gestion-derreur-2">Exemple 4 : Gestion d’erreur</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
 int main() {
@@ -4345,7 +4614,7 @@ Erreur: handle invalide
 <li><strong>v1.0</strong> : Implémentation initiale avec adresses</li>
 <li><strong>v2.0</strong> : Modification avec table de descripteurs</li>
 </ul>
-<h2 id="voir-aussi-17"><a class="header" href="#voir-aussi-17">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-18"><a class="header" href="#voir-aussi-18">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#seminit">SemInit</a> - Création d’un sémaphore</li>
 <li><a href="#semwait">SemWait</a> - Opération P (wait) sur un sémaphore</li>
@@ -4353,23 +4622,23 @@ Erreur: handle invalide
 <li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a> - Redimensionnement de la table</li>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
-<h2 id="auteurs-17"><a class="header" href="#auteurs-17">AUTEURS</a></h2>
+<h2 id="auteurs-18"><a class="header" href="#auteurs-18">AUTEURS</a></h2>
 <p>Antoine, 07 Jan 2026
 Tommy, 05 Jan 2026</p>
-<h2 id="dernière-révision-17"><a class="header" href="#dernière-révision-17">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-18"><a class="header" href="#dernière-révision-18">DERNIÈRE RÉVISION</a></h2>
 <p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="semdestroy"><a class="header" href="#semdestroy">SemDestroy</a></h1>
 <p><code>SemDestroy</code> - Détruit un sémaphore et libère ses ressources</p>
-<h2 id="synopsis-14"><a class="header" href="#synopsis-14">SYNOPSIS</a></h2>
+<h2 id="synopsis-15"><a class="header" href="#synopsis-15">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int SemDestroy(int sem_id);
 </code></pre>
-<h2 id="description-14"><a class="header" href="#description-14">DESCRIPTION</a></h2>
+<h2 id="description-15"><a class="header" href="#description-15">DESCRIPTION</a></h2>
 <p><code>SemDestroy</code> détruit le sémaphore identifié par <code>sem_id</code>, libère ses ressources kernel et invalide le descripteur.</p>
 <p>Numéro d’appel système : <code>32</code></p>
-<h3 id="comportement-nominal-13"><a class="header" href="#comportement-nominal-13">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-14"><a class="header" href="#comportement-nominal-14">Comportement nominal</a></h3>
 <ul>
 <li>Vérifie la validité du handle <code>sem_id</code></li>
 <li>Marque le descripteur comme invalide</li>
@@ -4384,7 +4653,7 @@ int SemDestroy(int sem_id);
 <li><strong>Threads bloqués</strong> : <strong>UNDEFINED BEHAVIOR</strong> - Ne pas détruire un sémaphore avec threads en attente</li>
 <li><strong>Nettoyage automatique</strong> : Si non détruit explicitement, libération automatique à la terminaison du processus</li>
 </ul>
-<h2 id="paramètres-14"><a class="header" href="#paramètres-14">PARAMÈTRES</a></h2>
+<h2 id="paramètres-15"><a class="header" href="#paramètres-15">PARAMÈTRES</a></h2>
 <h3 id="sem_id-2"><a class="header" href="#sem_id-2"><code>sem_id</code></a></h3>
 <p>Descripteur du sémaphore à détruire.</p>
 <p><strong>Type</strong> : <code>int</code>
@@ -4397,18 +4666,18 @@ int SemDestroy(int sem_id);
 <li>Le sémaphore ne doit pas déjà être détruit</li>
 <li><strong>IMPORTANT</strong> : Aucun thread ne doit être bloqué sur ce sémaphore</li>
 </ul>
-<h2 id="valeur-de-retour-14"><a class="header" href="#valeur-de-retour-14">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-15"><a class="header" href="#valeur-de-retour-15">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <p><strong>En cas de succès</strong> : <code>0</code></p>
 <p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="implémentation-14"><a class="header" href="#implémentation-14">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-14"><a class="header" href="#localisation-du-code-14">Localisation du code</a></h3>
+<h2 id="implémentation-15"><a class="header" href="#implémentation-15">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-15"><a class="header" href="#localisation-du-code-15">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SemDestroy()</code></li>
 <li><strong>Implémentation</strong> : <code>code/userprog/addrspace.cc:AddrSpace::SemaphoreDestroy()</code></li>
 </ul>
-<h3 id="thread-safety-14"><a class="header" href="#thread-safety-14">Thread-safety</a></h3>
+<h3 id="thread-safety-15"><a class="header" href="#thread-safety-15">Thread-safety</a></h3>
 <p>Destruction atomique : pas de race condition entre threads</p>
 <div class="callout callout-limitation">
     
@@ -4422,7 +4691,7 @@ int SemDestroy(int sem_id);
 </div>
 
 <h2 id="décisions-de-conception-9"><a class="header" href="#décisions-de-conception-9">DÉCISIONS DE CONCEPTION</a></h2>
-<h2 id="exemples-13"><a class="header" href="#exemples-13">EXEMPLES</a></h2>
+<h2 id="exemples-14"><a class="header" href="#exemples-14">EXEMPLES</a></h2>
 <h3 id="exemple-1--utilisation-normale"><a class="header" href="#exemple-1--utilisation-normale">Exemple 1 : Utilisation normale</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -4546,7 +4815,7 @@ SemDestroy(sem);  // Maintenant sûr
 <li><strong>v1.0</strong> : Implémentation initiale avec adresses</li>
 <li><strong>v2.0</strong> : Modification avec table de descripteurs</li>
 </ul>
-<h2 id="voir-aussi-18"><a class="header" href="#voir-aussi-18">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-19"><a class="header" href="#voir-aussi-19">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#seminit">SemInit</a> - Création d’un sémaphore</li>
 <li><a href="#semwait">SemWait</a> - Opération P (wait) sur un sémaphore</li>
@@ -4554,23 +4823,23 @@ SemDestroy(sem);  // Maintenant sûr
 <li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a> - Redimensionnement de la table</li>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
-<h2 id="auteurs-18"><a class="header" href="#auteurs-18">AUTEURS</a></h2>
+<h2 id="auteurs-19"><a class="header" href="#auteurs-19">AUTEURS</a></h2>
 <p>Antoine, 07 Jan 2026
 Tommy, 05 Jan 2026</p>
-<h2 id="dernière-révision-18"><a class="header" href="#dernière-révision-18">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-19"><a class="header" href="#dernière-révision-19">DERNIÈRE RÉVISION</a></h2>
 <p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="setmaxsemforprocess"><a class="header" href="#setmaxsemforprocess">SetMaxSemForProcess</a></h1>
 <p><code>SetMaxSemForProcess</code> - Définit la taille maximale de la table de sémaphores du processus</p>
-<h2 id="synopsis-15"><a class="header" href="#synopsis-15">SYNOPSIS</a></h2>
+<h2 id="synopsis-16"><a class="header" href="#synopsis-16">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int SetMaxSemForProcess(unsigned int maxSemaphores);
 </code></pre>
-<h2 id="description-15"><a class="header" href="#description-15">DESCRIPTION</a></h2>
+<h2 id="description-16"><a class="header" href="#description-16">DESCRIPTION</a></h2>
 <p><code>SetMaxSemForProcess</code> permet de redimensionner explicitement la table de sémaphores du processus courant. Cette fonction est utile pour pré-allouer une table de grande taille si le nombre de sémaphores nécessaires est connu à l’avance, évitant ainsi les réallocations dynamiques.</p>
 <p>Numéro d’appel système : <code>33</code></p>
-<h3 id="comportement-nominal-14"><a class="header" href="#comportement-nominal-14">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-15"><a class="header" href="#comportement-nominal-15">Comportement nominal</a></h3>
 <ul>
 <li>Réalloue la table de sémaphores à la taille spécifiée</li>
 <li>Préserve les sémaphores existants en cas d’agrandissement (aucune garantie en cas de réduction)</li>
@@ -4583,7 +4852,7 @@ int SetMaxSemForProcess(unsigned int maxSemaphores);
 <li><strong>maxSemaphores &gt; MAX_SEMAPHORES_PER_PROCESS (512)</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
 <li><strong>Réduction de taille</strong> : Les sémaphores au-delà de la nouvelle limite sont perdus (non recommandé)</li>
 </ul>
-<h2 id="paramètres-15"><a class="header" href="#paramètres-15">PARAMÈTRES</a></h2>
+<h2 id="paramètres-16"><a class="header" href="#paramètres-16">PARAMÈTRES</a></h2>
 <h3 id="maxsemaphores"><a class="header" href="#maxsemaphores"><code>maxSemaphores</code></a></h3>
 <p>Nouvelle taille de la table de sémaphores.</p>
 <p><strong>Type</strong> : <code>unsigned int</code>
@@ -4594,24 +4863,24 @@ int SetMaxSemForProcess(unsigned int maxSemaphores);
 <li>Doit être &gt; 0</li>
 <li>Doit être ≤ 512 (<code>MAX_SEMAPHORES_PER_PROCESS</code>)</li>
 </ul>
-<h2 id="valeur-de-retour-15"><a class="header" href="#valeur-de-retour-15">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-16"><a class="header" href="#valeur-de-retour-16">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <p><strong>En cas de succès</strong> : <code>0</code></p>
 <p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="implémentation-15"><a class="header" href="#implémentation-15">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-15"><a class="header" href="#localisation-du-code-15">Localisation du code</a></h3>
+<h2 id="implémentation-16"><a class="header" href="#implémentation-16">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-16"><a class="header" href="#localisation-du-code-16">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SetMaxSemForProcess()</code></li>
 <li><strong>Implémentation</strong> : <code>code/userprog/addrspace.cc:AddrSpace::AllocateSemaphoreTable()</code></li>
 </ul>
-<h3 id="thread-safety-15"><a class="header" href="#thread-safety-15">Thread-safety</a></h3>
+<h3 id="thread-safety-16"><a class="header" href="#thread-safety-16">Thread-safety</a></h3>
 <p><em>TODO</em></p>
 <h2 id="décisions-de-conception-10"><a class="header" href="#décisions-de-conception-10">DÉCISIONS DE CONCEPTION</a></h2>
 <h3 id="pourquoi-permettre-le-redimensionnement-manuel-"><a class="header" href="#pourquoi-permettre-le-redimensionnement-manuel-">Pourquoi permettre le redimensionnement manuel ?</a></h3>
 <p><strong>Optimisation</strong> : Évite les réallocations multiples si le nombre de sémaphores est connu à l’avance.</p>
 <p><strong>Contrôle mémoire</strong> : Permet de limiter l’utilisation mémoire en spécifiant une taille exacte.</p>
-<h2 id="exemples-14"><a class="header" href="#exemples-14">EXEMPLES</a></h2>
+<h2 id="exemples-15"><a class="header" href="#exemples-15">EXEMPLES</a></h2>
 <h3 id="exemple-1--pré-allocation-pour-application-intensive"><a class="header" href="#exemple-1--pré-allocation-pour-application-intensive">Exemple 1 : Pré-allocation pour application intensive</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -4730,16 +4999,16 @@ int main() {
 <ul>
 <li><strong>v1.0</strong> : Implémentation initiale</li>
 </ul>
-<h2 id="voir-aussi-19"><a class="header" href="#voir-aussi-19">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-20"><a class="header" href="#voir-aussi-20">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#seminit">SemInit</a> - Création d’un sémaphore (déclenche auto-expansion si nécessaire)</li>
 <li><a href="#semdestroy">SemDestroy</a> - Destruction d’un sémaphore</li>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
-<h2 id="auteurs-19"><a class="header" href="#auteurs-19">AUTEURS</a></h2>
+<h2 id="auteurs-20"><a class="header" href="#auteurs-20">AUTEURS</a></h2>
 <p>Antoine, 07 Jan 2026
 Tommy, 05 Jan 2026</p>
-<h2 id="dernière-révision-19"><a class="header" href="#dernière-révision-19">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-20"><a class="header" href="#dernière-révision-20">DERNIÈRE RÉVISION</a></h2>
 <p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="gestion-des-erreurs-3"><a class="header" href="#gestion-des-erreurs-3">Gestion des erreurs</a></h1>
@@ -4850,7 +5119,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<h2 id="codes-derreur-13"><a class="header" href="#codes-derreur-13">Codes d’erreur</a></h2>
+<h2 id="codes-derreur-14"><a class="header" href="#codes-derreur-14">Codes d’erreur</a></h2>
 <p>Voir <a href="#liste-des-codes-errno">Liste des codes errno</a> pour la documentation complète de chaque code.</p>
 <h3 id="codes-principaux"><a class="header" href="#codes-principaux">Codes principaux</a></h3>
 <div class="table-wrapper">
@@ -5007,15 +5276,15 @@ int main() {
     return 0;
 }
 </code></pre>
-<h2 id="voir-aussi-20"><a class="header" href="#voir-aussi-20">Voir aussi</a></h2>
+<h2 id="voir-aussi-21"><a class="header" href="#voir-aussi-21">Voir aussi</a></h2>
 <ul>
 <li><a href="#liste-des-codes-errno">Liste des codes errno</a> - Documentation détaillée de chaque code</li>
 <li><a href="#vue-densemble---console-io">Console I/O Overview</a> - Appels système avec gestion errno</li>
 <li><a href="userspace/my_stdlib.html">my_stdlib</a> - Fonctions utilitaires pour errno</li>
 </ul>
-<h2 id="auteurs-20"><a class="header" href="#auteurs-20">Auteurs</a></h2>
+<h2 id="auteurs-21"><a class="header" href="#auteurs-21">Auteurs</a></h2>
 <p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision-20"><a class="header" href="#dernière-révision-20">Dernière révision</a></h2>
+<h2 id="dernière-révision-21"><a class="header" href="#dernière-révision-21">Dernière révision</a></h2>
 <p>20 Dec 2025 par Antoine</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="liste-des-codes-errno"><a class="header" href="#liste-des-codes-errno">Liste des codes errno</a></h1>
@@ -5140,15 +5409,15 @@ if (result != -1) {
 <li>Thread déjà terminé</li>
 <li>TID jamais créé</li>
 </ul>
-<h2 id="voir-aussi-21"><a class="header" href="#voir-aussi-21">Voir aussi</a></h2>
+<h2 id="voir-aussi-22"><a class="header" href="#voir-aussi-22">Voir aussi</a></h2>
 <ul>
 <li><a href="#gestion-des-erreurs-3">Gestion des erreurs</a> - Vue d’ensemble du mécanisme errno</li>
 <li><a href="#vue-densemble---console-io">Console I/O</a> - Appels avec gestion d’erreur</li>
 <li><a href="userspace/my_stdlib.html">my_stdlib</a> - Fonctions print_error()</li>
 </ul>
-<h2 id="auteurs-21"><a class="header" href="#auteurs-21">Auteurs</a></h2>
+<h2 id="auteurs-22"><a class="header" href="#auteurs-22">Auteurs</a></h2>
 <p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision-21"><a class="header" href="#dernière-révision-21">Dernière révision</a></h2>
+<h2 id="dernière-révision-22"><a class="header" href="#dernière-révision-22">Dernière révision</a></h2>
 <p>20 Dec 2025 par Antoine</p>
 
                     </main>
