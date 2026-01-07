@@ -8,4 +8,5 @@
 - [ExitThread](PthreadExit.md)
 - [JoinThread](PthreadJoin.md)
 - [DetachThread](PthreadDetach.md)
+- [SelfThread](PthreadSelf.md)
 - [Thread Attributes](attrs.md)

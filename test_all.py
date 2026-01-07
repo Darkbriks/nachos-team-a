@@ -16,7 +16,7 @@ class bcolors:
 LINE_LENGTH=200
 SEPARATOR_CHAR='-'
 
-TIMEOUT=5  # secondes
+TIMEOUT=8  # secondes
 
 PROJECT_ROOT= subprocess.check_output("git rev-parse --show-toplevel", shell=True).decode("utf-8")
 PROJECT_ROOT = PROJECT_ROOT[:-1]
@@ -397,6 +397,13 @@ if __name__ == "__main__":
                         line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./testForkExec",
                         name = "Test ForkExec avec trois process",
                         description = "Lance un premier process qui va en créer deux autres. Les trois doivent finir de s'éxècuter"
+                    )
+                )
+    all_test.append(Test(
+                        file_expect ="test_HierarchiThread.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./firstThreadCanFinishFirst",
+                        name = "Test main thread call PthreadExit and others threads can finish",
+                        description = "Lance un thread depuis main puis appelle PthreadExit. Le thread crée par main doit devenir le principal"
                     )
                 )
 

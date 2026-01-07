@@ -97,6 +97,19 @@ Process::~Process() {
 void Process::ThreadTerminated(Thread* thread) {
     threadNumberLock->Acquire();
     const unsigned int remainingThreads = --threadNumber;
+    if (threadNumber == 0){
+        if (Process::isLastActiveProcess()) {
+            delete currentThread->getProcess();
+            interrupt->Halt();
+        }
+
+        ASSERT(processToBeDestroyed == nullptr);
+        processToBeDestroyed = currentThread->getProcess();
+
+        currentThread->Finish();
+
+        ASSERT(FALSE);
+    }
     threadNumberLock->Release();
 
     DEBUG('t', "Process: Thread %d terminated, now %d threads still running\n", thread->getTID(), remainingThreads);

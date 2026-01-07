@@ -19,6 +19,7 @@
     - [ExitThread](syscalls/threads/PthreadExit.md)
     - [JoinThread](syscalls/threads/PthreadJoin.md)
     - [DetachThread](syscalls/threads/PthreadDetach.md)
+    - [SelfThread](syscalls/threads/PthreadSelf.md)
     - [Thread Attributes](./syscalls/threads/attrs.md)
   - [Sémaphores](./syscalls/sync/SUMMARY.md)
     - [Sémaphores Overview](syscalls/sync/Sync.md)
