@@ -38,7 +38,7 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-f0a209c1.js";
+            window.path_to_searchindex_js = "searchindex-80abcad7.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-9ab82147.js"></script>
@@ -283,7 +283,7 @@
 <p><strong>Description</strong> : Indique le nombre maximum de threads rattaché à un processus ( actif ou non )</p>
 <hr>
 <h3 id="max_process"><a class="header" href="#max_process">MAX_PROCESS</a></h3>
-<p><strong>Description</strong> : Indique le nombre maximum de processus dans la machine ( actif ou non )</p>
+<p><strong>Description</strong> : Indique le nombre maximum de processus dans la machine ( actif ou non ). Nécessite suffisament de pages physiques</p>
 <hr>
 <h2 id="définitions-1"><a class="header" href="#définitions-1">Définitions</a></h2>
 <p>Les headers définis dans <code>code/userprog/addrspace.h</code> :</p>
@@ -301,10 +301,27 @@
 <h3 id="max_semaphores_per_process"><a class="header" href="#max_semaphores_per_process">MAX_SEMAPHORES_PER_PROCESS</a></h3>
 <p><strong>Description</strong> : Indique le nombre maximum de sémaphores pouvant être créés par défaut pour un processus.</p>
 <hr>
+<h2 id="définitions-2"><a class="header" href="#définitions-2">Définitions</a></h2>
+<p>Les headers définis dans <code>code/machine/machine.h</code> :</p>
+<pre><code class="language-c">#define NumPhysPages 8192
+#define MemorySize (NumPhysPages * PageSize)
+#define TLBSize 4
+</code></pre>
+<hr>
+<h3 id="numphyspages"><a class="header" href="#numphyspages">NumPhysPages</a></h3>
+<p><strong>Description</strong> : Indique le nombre de pages physiques allouées pour la VM nachos</p>
+<hr>
+<h3 id="memorysize"><a class="header" href="#memorysize">MemorySize</a></h3>
+<p><strong>Description</strong> : Le nombre total d’octets disponible pour Nachos</p>
+<hr>
+<h3 id="tlbsize"><a class="header" href="#tlbsize">TLBSize</a></h3>
+<p><strong>Description</strong> :  TODO</p>
+<hr>
+<hr>
 <h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
 <p>Tommy , 5 Jan 2026</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
-<p>5 Jan 2026 par Tommy</p>
+<p>7 Jan 2026 par Tommy</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="appels-système"><a class="header" href="#appels-système">Appels système</a></h1>
 <p><a href="#vue-densemble-des-appels-système">Vue d’ensemble</a></p>
@@ -5014,7 +5031,7 @@ int main() {
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="liste-des-codes-errno"><a class="header" href="#liste-des-codes-errno">Liste des codes errno</a></h1>
 <p>Documentation détaillée de tous les codes d’erreur utilisés dans NachOS.</p>
-<h2 id="définitions-2"><a class="header" href="#définitions-2">Définitions</a></h2>
+<h2 id="définitions-3"><a class="header" href="#définitions-3">Définitions</a></h2>
 <p>Les codes d’erreur sont définis dans <code>code/userprog/syscall.h</code> :</p>
 <pre><code class="language-c">#define E_SUCCESS       0   /* No error */
 #define E_INVAL         1   /* Invalid argument */
