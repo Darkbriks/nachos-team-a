@@ -105,6 +105,7 @@ void handle_SC_Exit() {
 
     ASSERT(processToBeDestroyed == nullptr);
     processToBeDestroyed = process;
+    process->AncestorSigChild();
 
     currentThread->Finish();
 
@@ -152,6 +153,7 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(SetMaxSemForProcess)
 
         CASE_HANDLER(ForkExec)
+        CASE_HANDLER(ForkJoin)
 
         default:
             printf("Unknow syscall :%d\n", type);

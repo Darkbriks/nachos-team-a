@@ -9,12 +9,32 @@
 BitMapThreadSafe* Process::all_process = new BitMapThreadSafe(MAX_PROCESS);
 int Process::activeProcessCount = 0;
 Lock* Process::processCountLock = new Lock("process count lock");
+LinkedList<Process>* Process::all_process_addr = new LinkedList<Process>();
 
 bool Process::isLastActiveProcess() {
     processCountLock->Acquire();
     const bool result = (activeProcessCount == 1);
     processCountLock->Release();
     return result;
+}
+
+bool Process::doesProcessExist(int PID){
+    return all_process->Test(PID);
+}
+
+bool searchProcess(Process* P, const unsigned int value) {
+    return P->getPId() == value;
+}
+
+Process* Process::FindProcessByPID(const unsigned int PID) {
+    if ( ! doesProcessExist(PID) ){
+        return nullptr;
+    }
+    return all_process_addr->FindInList( std::function<bool (Process*, unsigned int)> (searchProcess), PID );
+}
+
+unsigned int Process::getCurrentNumberOfProcess(){
+    return all_process->NumClearThreadSafe() - MAX_PROCESS;
 }
 
 Process* Process::createProcess(OpenFile * executable) {
@@ -39,6 +59,7 @@ Process::Process(OpenFile * executable, char* return_code) {
 
     if (PID > 0) {
         processCountLock->Acquire();
+        all_process_addr->AddInList(this);
         activeProcessCount++;
         DEBUG('p', "Process %d created, now %d active processes\n", PID, activeProcessCount);
         processCountLock->Release();
@@ -60,6 +81,25 @@ Process::Process(OpenFile * executable, char* return_code) {
     }
 
     mainThread = firstThread;
+    ancestor = currentThread ? currentThread->getProcess() : nullptr;
+    if (ancestor != nullptr ){
+        DEBUG('p', "Process %d have process %d for ancestor\n", PID, ancestor->getPId());
+    } else {
+        DEBUG('p', "Process %d don't have process for ancestor\n", PID);
+    }
+    ancestorSem = new Semaphore("Child sem for join between process", 0);
+}
+
+void Process::AncestorWait(){
+    ancestorSem->P();
+}
+
+void Process::AncestorSigChild(){
+    ancestorSem->V();
+}
+
+void Process::WaitForChild(Process* child){
+    child->AncestorWait();
 }
 
 Process::~Process() {
@@ -81,8 +121,10 @@ Process::~Process() {
     if (PID > 0) {
         processCountLock->Acquire();
         activeProcessCount--;
+        all_process_addr->RemoveInList(this);
         const int remaining = activeProcessCount;
         DEBUG('p', "Process %d destroyed, %d active processes remaining\n", PID, remaining);
+        delete ancestorSem;
         processCountLock->Release();
 
         if (remaining == 0) {

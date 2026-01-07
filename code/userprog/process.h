@@ -17,6 +17,7 @@ class Process {
         static class BitMapThreadSafe *all_process; // TODO put it in USer one day ... I hope but I really don't know
         static int activeProcessCount;
         static Lock *processCountLock;
+        static LinkedList<Process>* all_process_addr;
 
         AddrSpace *space;
         unsigned int PID;
@@ -24,6 +25,8 @@ class Process {
         unsigned int threadNumber;
         Lock *threadNumberLock;
         Semaphore *threadExitSemaphore;
+        Semaphore *ancestorSem;
+        Process *ancestor;
 
         class BitMap* threads_bitmap;
         LinkedList<Thread>* all_threads_addr;
@@ -34,12 +37,17 @@ class Process {
         ~Process();
 
         static bool isLastActiveProcess();
+        static bool doesProcessExist(int PID);
+        static unsigned int getCurrentNumberOfProcess();
+        static Process* FindProcessByPID(const unsigned int PID); 
+
         static Process* createProcess(OpenFile* executable);
 
         [[nodiscard]] unsigned int getPId() const { return PID; }
         [[nodiscard]] AddrSpace* getSpace() const { return space; }
         [[nodiscard]] Thread* getMainThread() const { return mainThread; }
         [[nodiscard]] unsigned int GetThreadNumber() const { return threadNumber; }
+        [[nodiscard]] Process* getAncestor() const { return ancestor; }
 
         /**
          * @brief Add a thread for this address space
@@ -70,6 +78,10 @@ class Process {
          * @result nullptr if the thread isn't find else a pointer on the thread
          */
         [[nodiscard]] Thread* FindThread(unsigned int TID) const;
+
+        void AncestorWait();
+        void AncestorSigChild();
+        void WaitForChild(Process* child);
 };
 
 #endif // PROCESS_H

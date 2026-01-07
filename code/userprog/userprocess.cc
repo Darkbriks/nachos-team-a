@@ -51,5 +51,28 @@ void handle_SC_ForkExec() {
     mainThread->Fork(StartProcess, reinterpret_cast<int>(newProcess));
 
     DEBUG('p', "ForkExec: Successfully launched process %d from '%s'\n", newProcess->getPId(), filename);
-    RETURN(0);
+    RETURN(newProcess->getPId());
+}
+
+void handle_SC_ForkJoin() {
+    const int PID_to_wait = machine->ReadRegister(4);
+    if (PID_to_wait < 0){
+        RETURN(-E_INVAL);
+    }
+    if ( (unsigned int) PID_to_wait == currentThread->getProcess()->getPId() ){
+        DEBUG('p', "ForkJoin: process %d try to wait himself\n", PID_to_wait); 
+        RETURN(-E_INVAL);
+    }
+    Process* child = Process::FindProcessByPID(PID_to_wait);
+    if ( child == nullptr ){
+        DEBUG('p', "ForkJoin: process %d try to wait a process who doesn't exist %d\n",currentThread->getProcess()->getPId(), PID_to_wait); 
+        RETURN(-E_INVAL);
+    }
+    if ( child->getAncestor() != currentThread->getProcess()){
+        DEBUG('p', "ForkJoin: process %d try to wait a process who is not his child %d\n",currentThread->getProcess()->getPId(), PID_to_wait); 
+        RETURN(-E_INVAL);
+    }
+
+    DEBUG('p', "ForkJoin: process %d wait for process %d\n",currentThread->getProcess()->getPId(), PID_to_wait); 
+    currentThread->getProcess()->WaitForChild(child);
 }
