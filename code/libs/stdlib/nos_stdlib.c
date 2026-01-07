@@ -20,6 +20,36 @@ void print_error(char* msg) {
     PutString(")\n", 2);
 }
 
+int scanf_simple(char *format, void *result){
+    char tmp[255];
+    int i;
+    switch (format[1]){
+        case 'd':
+            if ( ( i = GetString(tmp, 255) )<  0 ){
+                return -1;
+            }
+            *((int *) result) = (int) atoi(tmp, 10);   
+            return i;
+
+        case 's':
+            if ( ( i = GetString((char *) result, 255) )<  0 ){
+                return -1;
+            }
+            ((char *)result)[i] = 0;
+            return i;
+
+        case 'c':
+            if ( ( i = GetString(tmp, 255) ) != 1 ){
+                return -1;
+            }
+            *((char *) result) = tmp[0];
+            return 1;
+        default:
+            return -1;
+    }
+    return 0;
+}
+
 char* itoa(int value, char* str, int base) {
     static const char digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     char* ptr = str;
