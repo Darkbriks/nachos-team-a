@@ -1,6 +1,6 @@
 # SemPost
 
-`SemPost` - Opération V (signal/release) sur un sémaphore
+`SemPost` - Opération Post (V/signal/release) sur un sémaphore
 
 ## SYNOPSIS
 ```c
@@ -11,7 +11,7 @@ int SemPost(int sem_id);
 
 ## DESCRIPTION
 
-`SemPost` effectue l'opération V (Verhogen) sur le sémaphore identifié par `sem_id`. Cette opération incrémente le compteur du sémaphore et réveille un thread bloqué en attente sur `SemWait()` si la queue n'est pas vide.
+`SemPost` effectue l'opération Post (Verhogen) sur le sémaphore identifié par `sem_id`. Cette opération incrémente le compteur du sémaphore et réveille un thread bloqué en attente sur `SemWait()` si la queue n'est pas vide.
 
 Numéro d'appel système : `31`
 
@@ -33,7 +33,7 @@ Numéro d'appel système : `31`
 ## PARAMÈTRES
 
 ### `sem_id`
-Descripteur du sémaphore sur lequel effectuer l'opération V.
+Descripteur du sémaphore sur lequel effectuer l'opération Post.
 
 **Type** : `int`
 **Direction** : IN
@@ -69,10 +69,7 @@ Descripteur du sémaphore sur lequel effectuer l'opération V.
 
 ### Thread-safety
 
-**Sémaphore interne** : Désactivation des interruptions assure atomicité :
-- Pas de race condition entre V() concurrent
-- Pas de corruption de la queue d'attente
-- Thread réveillé de manière atomique
+- L'opération `SemPost()` est thread-safe
 
 ## DÉCISIONS DE CONCEPTION
 
@@ -198,7 +195,7 @@ int main() {
 }
 ```
 
-**Sortie** (ordre des threads peut varier) :
+**Sortie** (l'ordre des threads peut varier) :
 ```
 Thread 0: phase 1
 Thread 1: phase 1
@@ -222,7 +219,7 @@ int main() {
     
     // V() sur sémaphore valide
     if (SemPost(sem) == 0) {
-        PutString("V réussi\n", 10);
+        PutString("Post réussi\n", 10);
     }
     
     // Détruire le sémaphore
@@ -244,7 +241,7 @@ int main() {
 
 **Sortie attendue** :
 ```
-V réussi
+Post réussi
 Erreur: sémaphore détruit
 Erreur: handle invalide
 ```
@@ -279,7 +276,7 @@ Erreur: handle invalide
 
 ## NOTES
 
-- **Toujours retourne immédiatement** : `SemPost()` ne bloque jamais
+- **Retourne immédiatement** : `SemPost()` ne bloque jamais
 - **Pas de limite supérieure** : Compteur peut croître indéfiniment
 - **Sémaphore détruit avec threads en attente** : Undefined behavior
 
@@ -306,8 +303,9 @@ Aucun bug connu à ce jour.
 
 ## AUTEURS
 
-Antoine, 31 Dec 2025
+Antoine, 07 Jan 2026
+Tommy, 05 Jan 2026
 
 ## DERNIÈRE RÉVISION
 
-5 Jan 2026
+07 Jan 2026

@@ -62,22 +62,16 @@ Descripteur du sémaphore à détruire.
 
 ### Thread-safety
 
-**Garanties** :
-- Destruction atomique : pas de race condition entre threads
-- Double-free impossible : flag `valid` protège
-- Pas de corruption de la table
+Destruction atomique : pas de race condition entre threads
 
-**Limitation** : Aucune vérification que des threads sont bloqués sur le sémaphore. Responsabilité de l'appelant.
+<div class="callout callout-limitation">
+    <div class="callout-title">Limitation</div>
+    <div class="callout-content">
+        <strong>Attention :</strong> Détruire un sémaphore avec des threads bloqués entraîne un comportement indéfini.
+    </div>
+</div>
 
 ## DÉCISIONS DE CONCEPTION
-
-### Pourquoi nettoyage automatique ?
-
-**Robustesse** : Évite les fuites mémoire si l'utilisateur oublie de détruire.
-
-**Pattern RAII** : Ressource liée à la durée de vie du processus (`AddrSpace`).
-
-**Coût** : Néant - le destructeur `~AddrSpace()` est appelé de toute façon.
 
 ## EXEMPLES
 
@@ -176,25 +170,6 @@ JoinThread(tid);  // Attendre terminaison
 SemDestroy(sem);  // Maintenant sûr
 ```
 
-### Exemple 4 : Nettoyage automatique
-
-```c
-#include "syscall.h"
-
-int main() {
-    int sem = SemInit(1);
-    
-    SemWait(sem);
-    PutString("Travail...\n", 12);
-    SemPost(sem);
-    
-    // Terminer SANS détruire explicitement
-    // → Nettoyage automatique dans ~AddrSpace()
-    
-    return 0;  // Pas de fuite mémoire
-}
-```
-
 ## COMPORTEMENT DÉTAILLÉ
 
 ### États de la machine
@@ -220,7 +195,7 @@ int main() {
 
 ## NOTES
 
-- **Ordre de destruction** : Pas d'ordre imposé, mais recommandé de détruire en ordre inverse de création (style LIFO/RAII)
+- **Ordre de destruction** : Pas d'ordre imposé
 - **Nettoyage automatique** : Même si non détruit, pas de fuite à la terminaison du processus
 - **Handle réutilisable** : Après destruction, le handle peut être réalloué immédiatement
 - **Pas de vérification threads bloqués** : Responsabilité de l'appelant
@@ -248,8 +223,9 @@ Aucun bug connu à ce jour.
 
 ## AUTEURS
 
-Antoine, 31 Dec 2025
+Antoine, 07 Jan 2026
+Tommy, 05 Jan 2026
 
 ## DERNIÈRE RÉVISION
 
-5 Jan 2026
+07 Jan 2026

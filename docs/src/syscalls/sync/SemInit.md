@@ -308,6 +308,7 @@ Aucun bug connu à ce jour.
 ## AUTEURS
 
 Antoine, 25 Dec 2025
+Tommy, 5 Jan 2026
 
 ## DERNIÈRE RÉVISION
 

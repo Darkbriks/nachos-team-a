@@ -1,6 +1,6 @@
 # SemWait
 
-`SemWait` - Opération P (wait/acquire) sur un sémaphore
+`SemWait` - Opération Wait (P/acquire) sur un sémaphore
 
 ## SYNOPSIS
 ```c
@@ -11,7 +11,7 @@ int SemWait(int sem_id);
 
 ## DESCRIPTION
 
-`SemWait` effectue l'opération P (Proberen) sur le sémaphore identifié par `sem_id`. Cette opération décrémente le compteur du sémaphore et bloque le thread appelant si le compteur devient négatif.
+`SemWait` effectue l'opération Wait (Proberen) sur le sémaphore identifié par `sem_id`. Cette opération décrémente le compteur du sémaphore et bloque le thread appelant si le compteur devient négatif.
 
 Numéro d'appel système : `30`
 
@@ -167,7 +167,7 @@ int main() {
 }
 ```
 
-**Sortie garantie** :
+**Sortie** :
 ```
 A: Phase 1
 B: Phase 1
@@ -185,7 +185,7 @@ int main() {
     
     // Utilisation normale
     if (SemWait(sem) == 0) {
-        PutString("P réussi\n", 10);
+        PutString("Wait réussi\n", 10);
         SemPost(sem);
     }
     
@@ -208,7 +208,7 @@ int main() {
 
 **Sortie attendue** :
 ```
-P réussi
+Wait réussi
 Erreur: sémaphore détruit
 Erreur: handle invalide
 ```
@@ -267,8 +267,9 @@ Aucun bug connu à ce jour.
 
 ## AUTEURS
 
-Antoine, 31 Dec 2025
+Antoine, 07 Jan 2026
+Tommy, 05 Jan 2026
 
 ## DERNIÈRE RÉVISION
 
-5 Jan 2026
+07 Jan 2026

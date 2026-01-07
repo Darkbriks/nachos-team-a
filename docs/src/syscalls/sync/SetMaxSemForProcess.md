@@ -18,7 +18,7 @@ Numéro d'appel système : `33`
 ### Comportement nominal
 
 - Réalloue la table de sémaphores à la taille spécifiée
-- Préserve les sémaphores existants (si agrandissement)
+- Préserve les sémaphores existants en cas d'agrandissement (aucune garantie en cas de réduction)
 - Initialise les nouveaux slots comme invalides
 - Met à jour le BitMap de tracking
 
@@ -205,12 +205,14 @@ Aucun bug connu à ce jour.
 ## VOIR AUSSI
 
 - [SemInit](./SemInit.md) - Création d'un sémaphore (déclenche auto-expansion si nécessaire)
+- [SemDestroy](./SemDestroy.md) - Destruction d'un sémaphore
 - [Vue d'ensemble](Sync.md) - Guide complet des sémaphores
 
 ## AUTEURS
 
-Antoine, 25 Dec 2025
+Antoine, 07 Jan 2026
+Tommy, 05 Jan 2026
 
 ## DERNIÈRE RÉVISION
 
-5 Jan 2026
+07 Jan 2026

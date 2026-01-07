@@ -5,8 +5,8 @@ Les appels système de sémaphores permettent la synchronisation entre threads u
 ## Opérations disponibles
 
 - **[SemInit](./SemInit.md)** : Crée et initialise un nouveau sémaphore
-- **[SemWait](SemWait.md)** : Opération P (wait/acquire) sur un sémaphore
-- **[SemPost](SemPost.md)** : Opération V (signal/release) sur un sémaphore
+- **[SemWait](SemWait.md)** : Opération Wait (P/acquire) sur un sémaphore
+- **[SemPost](SemPost.md)** : Opération Post (V/signal/release) sur un sémaphore
 - **[SemDestroy](./SemDestroy.md)** : Détruit un sémaphore
 - **[SetMaxSemForProcess](./SetMaxSemForProcess.md)** : Redimensionne la table de sémaphores
 
@@ -82,7 +82,7 @@ Tous les appels système de sémaphores retournent un code d'erreur et définiss
 ## Thread-safety
 
 **Garanti** :
-- Les opérations P() et V() sont atomiques et thread-safe
+- Les opérations Wait() et Post() sont atomiques et thread-safe
 - Plusieurs threads peuvent utiliser le même sémaphore simultanément
 - La table de descripteurs est protégée par un verrou interne
 
@@ -139,25 +139,20 @@ int main() {
 
 ## Limitations connues
 
-### 1. Pas de timeout
+<div class="callout callout-limitation">
+    <div class="callout-title">Pas de timeout</div>
+    <div class="callout-content">
+        Actuellement, l'appel système `SemWait()` ne supporte pas de mécanisme de timeout.
+        `SemWait()` peut bloquer indéfiniment si aucun autre thread n'appelle `SemPost()` sur le même sémaphore.
+    </div>
+</div>
 
-`SemWait()` peut bloquer indéfiniment si `SemPost()` n'est jamais appelé.
-
-**Impact** : Impossible d'implémenter des locks avec timeout.
-
-### 2. Limite de 16 sémaphores
-
-Maximum 16 sémaphores actifs par processus.
-
-**Impact** : Applications complexes peuvent manquer de descripteurs.
-
-**Note** : Configuration dynamique de la taille de la table envisagée.
-
-### 3. Pas de partage inter-processus
-
-Les sémaphores sont locaux à un processus.
-
-**Impact** : Impossible de synchroniser des processus différents.
+<div class="callout callout-limitation">
+    <div class="callout-title">Usage limité aux threads d'un même processus</div>
+    <div class="callout-content">
+        Les sémaphores ne peuvent pas être utilisés pour la synchronisation entre processus distincts.
+    </div>
+</div>
 
 ## Performances
 
@@ -172,11 +167,17 @@ Les sémaphores sont locaux à un processus.
 ## Voir aussi
 
 - [Gestion des erreurs](../errors.md) - Codes d'erreur système
+- [Threads](../threads/Threads.md) - Création et gestion de threads
+- [Initialisation des sémaphores](./SemInit.md) - Créer un sémaphore
+- [Opération Wait](./SemWait.md) - Attendre un sémaphore
+- [Opération Post](./SemPost.md) - Signaler un sémaphore
+- [Destruction des sémaphores](./SemDestroy.md) - Libérer un sémaphore
+- [Redimensionnement de la table](./SetMaxSemForProcess.md) - Ajuster la taille maximale
 
 ## Auteurs
 
-Antoine, 25 Dec 2025
+Antoine, 07 Jan 2026
 
 ## Dernière révision
 
-25 Dec 2025 par Antoine
+07 Jan 2026
