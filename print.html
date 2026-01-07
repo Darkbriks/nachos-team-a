@@ -38,10 +38,10 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-67fb30d6.js";
+            window.path_to_searchindex_js = "searchindex-d48ae5be.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-7ee5f6f6.js"></script>
+        <script src="toc-1ca3ff59.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -209,6 +209,7 @@
 <li><a href="#pthreadjoin">JoinThread</a></li>
 <li><a href="#pthreaddetach">DetachThread</a></li>
 <li><a href="#attributs-de-thread">Thread Attributes</a></li>
+<li><a href="#pthreadself">SelfThread</a></li>
 </ul>
 </li>
 <li><a href="#sémaphores-2">Sémaphores</a>
@@ -221,16 +222,16 @@
 <li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a></li>
 </ul>
 </li>
-<li><a href="#process-1">Process</a>
+<li><a href="#sémaphores-3">Process</a>
 <ul>
 <li><a href="#vue-densemble---process">Process Overview</a></li>
 <li><a href="#forkexec">ForkExec</a></li>
 </ul>
 </li>
-<li><a href="#gestion-des-erreurs-3">Error Handling</a></li>
-<li><a href="#liste-des-codes-errno">Errno Codes</a></li>
 </ul>
 </li>
+<li><a href="#gestion-des-erreurs-3">Error Handling</a></li>
+<li><a href="#liste-des-codes-errno">Errno Codes</a></li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="summary"><a class="header" href="#summary">Summary</a></h1>
@@ -238,9 +239,9 @@
 <li><a href="#nachos">Introduction</a></li>
 <li><a href="#summary">Table des matières</a></li>
 <li><a href="#constantes-du-projet">Constants</a></li>
-<li><a href="#appels-système">Syscalls List</a>
+<li><a href="#appels-système">Syscalls List</a></li>
+<li><a href="#vue-densemble-des-appels-système">Syscall Overview</a>
 <ul>
-<li><a href="#vue-densemble-des-appels-système">Syscall Overview</a></li>
 <li><a href="#console">Console</a>
 <ul>
 <li><a href="#vue-densemble---console-io">Console Overview</a></li>
@@ -273,16 +274,16 @@
 <li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a></li>
 </ul>
 </li>
-<li><a href="#process-1">Process</a>
+<li><a href="#sémaphores-3">Process</a>
 <ul>
 <li><a href="#vue-densemble---process">Process Overview</a></li>
 <li><a href="#forkexec">ForkExec</a></li>
 </ul>
 </li>
-<li><a href="#gestion-des-erreurs-3">Error Handling</a></li>
-<li><a href="#liste-des-codes-errno">Errno Codes</a></li>
 </ul>
 </li>
+<li><a href="#gestion-des-erreurs-3">Error Handling</a></li>
+<li><a href="#liste-des-codes-errno">Errno Codes</a></li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="constantes-du-projet"><a class="header" href="#constantes-du-projet">Constantes du projet</a></h1>
@@ -386,6 +387,8 @@
 <li><a href="#pthreadexit">PthreadExit</a></li>
 <li><a href="#pthreadjoin">PthreadJoin</a></li>
 <li><a href="#pthreaddetach">PthreadDetach</a></li>
+<li><a href="#pthreadself">SelfThread</a></li>
+<li><a href="#attributs-de-thread">Attributs de thread</a></li>
 </ul>
 </li>
 </ul>
@@ -404,10 +407,10 @@
 </ul>
 <h1 id="process"><a class="header" href="#process">Process</a></h1>
 <ul>
-<li><a href="syscalls/process/SUMMARY.html">Process</a>
+<li><a href="#sémaphores-3">Process</a>
 <ul>
 <li><a href="#vue-densemble---process">Vue d’ensemble</a></li>
-<li><a href="syscalls/process/ExecFork.html">SemInit</a></li>
+<li><a href="#forkexec">ForkExec</a></li>
 </ul>
 </li>
 </ul>
@@ -5054,7 +5057,14 @@ Tommy, 05 Jan 2026</p>
 <h2 id="dernière-révision-20"><a class="header" href="#dernière-révision-20">DERNIÈRE RÉVISION</a></h2>
 <p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="process-1"><a class="header" href="#process-1">Process</a></h1>
+<h1 id="sémaphores-3"><a class="header" href="#sémaphores-3">Sémaphores</a></h1>
+<ul>
+<li><a href="#vue-densemble---process">Vue d’ensemble</a></li>
+</ul>
+<h1 id="appels-système-sur-les-process"><a class="header" href="#appels-système-sur-les-process">Appels système sur les Process</a></h1>
+<ul>
+<li><a href="#forkexec">ForkExec</a></li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="vue-densemble---process"><a class="header" href="#vue-densemble---process">Vue d’ensemble - Process</a></h1>
 <div class="callout-todo"> TODO j'ai la flemme </div>
