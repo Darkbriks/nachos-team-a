@@ -612,6 +612,25 @@ ForkExec_ok:
     j      $31
     .end ForkExec
 
+/* Sbrk : with error handling */
+    .globl Sbrk
+    .ent	Sbrk
+Sbrk:
+    addiu $2,$0,SC_Sbrk
+    syscall
+    bgez  $2,Sbrk_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+Sbrk_ok:
+    sw     $0,errno
+    j      $31
+    .end Sbrk
+
 /* -------------------------------------------------------------
  * Posix thread exit wrapper
  * -------------------------------------------------------------

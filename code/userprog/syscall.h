@@ -73,6 +73,9 @@
 /* --- Process Management --- */
 #define SC_ForkExec 34
 
+/* --- Memory Management --- */
+#define SC_Sbrk 35
+
 /* ============================================================
  * ERROR CODES
  * Returned as negative values by syscalls, stored as positive in errno
@@ -471,6 +474,21 @@ int SetMaxSemForProcess(unsigned int maxSemaphores);
  * @return Process ID on success, negative error code on failure
  */
 int ForkExec(char *name);
+
+/* -------------------------------------------------------------
+ * MEMORY MANAGEMENT
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/memory/Memory.html">Full documentation</a>
+ * -------------------------------------------------------------
+ */
+
+/**
+ * @brief Change the size of the data segment (heap)
+ * @param n Number of pages to increase (can be 0 to query current brk)
+ * @return Pointer to the start of newly allocated memory, or -1 on error
+ *
+ * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/memory/Sbrk.html">Full documentation</a>
+ */
+int Sbrk(int n);
 
 #endif // IN_USER_MODE
 

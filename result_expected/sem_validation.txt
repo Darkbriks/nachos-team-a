@@ -15,9 +15,9 @@ Test 5: Multi-threaded usage
   Main: Sleeping briefly...
   Thread: Waiting on semaphore...
   Main: Signaling semaphore
-  PThread: Got semaphore
+  Thread: Got semaphore
   Thread: Released semaphore
-ASS: Multi-threaded test complete
+PASS: Multi-threaded test complete
 
 === All tests completed ===
 Machine halting!

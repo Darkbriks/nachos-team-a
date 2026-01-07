@@ -79,11 +79,30 @@ AddrSpace::AddrSpace(OpenFile *executable) {
     }
     ASSERT(noffH.noffMagic == NOFFMAGIC);
 
-    // how big is address space?
-    unsigned int size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize; // we need to increase the size
-    // to leave room for the stack
-    numPages = divRoundUp(size, PageSize);
-    size = numPages * PageSize;
+    // Calculate end of static data (code + data + bss)
+    unsigned int endOfStaticData = 0;
+
+    if (noffH.uninitData.size > 0) { endOfStaticData = noffH.uninitData.virtualAddr + noffH.uninitData.size; }
+    else if (noffH.initData.size > 0) { endOfStaticData = noffH.initData.virtualAddr + noffH.initData.size; }
+    else { endOfStaticData = noffH.code.virtualAddr + noffH.code.size; }
+
+    heapStart = divRoundUp(endOfStaticData, PageSize) * PageSize;
+    brk = heapStart;
+
+    DEBUG('a', "AddrSpace: End of static data at 0x%x, heap starts at 0x%x\n", endOfStaticData, heapStart);
+
+    const unsigned int staticPages = divRoundUp(endOfStaticData, PageSize);
+    constexpr unsigned int heapPages = INITIAL_HEAP_PAGES;
+    constexpr unsigned int stackPages = divRoundUp(UserStackSize, PageSize);
+
+    numPages = staticPages + heapPages + stackPages;
+    maxPages = staticPages + MAX_HEAP_PAGES + stackPages;
+    stackLimit = (staticPages + MAX_HEAP_PAGES) * PageSize;
+
+    DEBUG('a', "AddrSpace: staticPages=%u, heapPages=%u, stackPages=%u, total=%u, max=%u\n", staticPages, heapPages, stackPages, numPages, maxPages);
+    DEBUG('a', "AddrSpace: stackLimit=0x%x\n", stackLimit);
+
+    const unsigned int size = numPages * PageSize;
 
     ASSERT(numPages <= NumPhysPages); // check we're not trying
     // to run anything too big --
@@ -92,21 +111,32 @@ AddrSpace::AddrSpace(OpenFile *executable) {
 
     DEBUG('a', "Initializing address space, num pages %d, size %d\n", numPages, size);
     // first, set up the translation
-    pageTable = new TranslationEntry[numPages];
+    pageTable = new TranslationEntry[maxPages];
+
+    // Initialize all entries as invalid first
+    for (unsigned int i = 0; i < maxPages; i++) {
+        pageTable[i].virtualPage = i;
+        pageTable[i].physicalPage = 0;
+        pageTable[i].valid = FALSE;
+        pageTable[i].use = FALSE;
+        pageTable[i].dirty = FALSE;
+        pageTable[i].readOnly = FALSE;
+    }
+
+    // Allocate frames for initial pages (static + initial heap + stack)
     for (unsigned int i = 0; i < numPages; i++) {
         const int physPage = frameProvider->GetEmptyFrame();
         if (physPage == -1) {
             DEBUG('a', "AddrSpace::AddrSpace: Unable to allocate frame for page %d\n", i);
+            for (unsigned int j = 0; j < i; j++) {
+                if (pageTable[j].valid) {
+                    frameProvider->ReleaseFrame(static_cast<int>(pageTable[j].physicalPage));
+                }
+            }
             ASSERT(FALSE); // TODO: Handle this properly
         }
-        pageTable[i].virtualPage = i;
         pageTable[i].physicalPage = physPage;
         pageTable[i].valid = TRUE;
-        pageTable[i].use = FALSE;
-        pageTable[i].dirty = FALSE;
-        pageTable[i].readOnly = FALSE; // if the code segment was entirely on
-                                       // a separate page, we could set its
-                                       // pages to be read-only
     }
 
     // then, copy in the code and data segments into memory
@@ -118,6 +148,9 @@ AddrSpace::AddrSpace(OpenFile *executable) {
         DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", noffH.initData.virtualAddr, noffH.initData.size);
         ReadAtVirtual(executable, noffH.initData.virtualAddr, noffH.initData.size, noffH.initData.inFileAddr, pageTable, numPages);
     }
+
+    brk = heapStart + (heapPages * PageSize);
+    DEBUG('a', "AddrSpace: Initial brk set to 0x%x (%u heap pages)\n", brk, heapPages);
 
     AllocateSemaphoreTable(INITIAL_SEMAPHORE_TABLE_SIZE);
 }
@@ -199,6 +232,61 @@ void AddrSpace::RestoreState() const {
     machine->pageTableSize = numPages;
 }
 
+int AddrSpace::Sbrk(const int n) {
+    if (n == 0) { return static_cast<int>(brk); }
+
+    if (n < 0) {
+        DEBUG('a', "AddrSpace::Sbrk: Shrinking heap not supported (n=%d)\n", n);
+        return -1;
+    }
+
+    const auto pagesNeeded = static_cast<unsigned int>(n);
+    const unsigned int newBrk = brk + (pagesNeeded * PageSize);
+
+    if (newBrk > stackLimit) {
+        DEBUG('a', "AddrSpace::Sbrk: Heap would collide with stack (newBrk=0x%x > stackLimit=0x%x)\n", newBrk, stackLimit);
+        return -1;
+    }
+
+    if (frameProvider->NumAvailFrame() < static_cast<int>(pagesNeeded)) {
+        DEBUG('a', "AddrSpace::Sbrk: Not enough frames (need %u, have %d)\n", pagesNeeded, frameProvider->NumAvailFrame());
+        return -1;
+    }
+
+    const unsigned int startPage = brk / PageSize;
+    const unsigned int endPage = startPage + pagesNeeded;
+
+    DEBUG('a', "AddrSpace::Sbrk: Allocating pages %u to %u (brk: 0x%x -> 0x%x)\n", startPage, endPage - 1, brk, newBrk);
+
+    for (unsigned int i = startPage; i < endPage; i++) {
+        if (pageTable[i].valid) { continue; }
+
+        const int physPage = frameProvider->GetEmptyFrame();
+        if (physPage == -1) {
+            DEBUG('a', "AddrSpace::Sbrk: Failed to allocate frame for page %u\n", i);
+            return -1;
+        }
+
+        pageTable[i].virtualPage = i;
+        pageTable[i].physicalPage = physPage;
+        pageTable[i].valid = TRUE;
+        pageTable[i].use = FALSE;
+        pageTable[i].dirty = FALSE;
+        pageTable[i].readOnly = FALSE;
+    }
+
+    const unsigned int oldBrk = brk;
+    brk = newBrk;
+
+    if (endPage > numPages) { numPages = endPage; }
+
+    machine->pageTableSize = numPages;
+
+    DEBUG('a', "AddrSpace::Sbrk: Success, returning 0x%x (new brk=0x%x, numPages=%u)\n", oldBrk, brk, numPages);
+
+    return static_cast<int>(oldBrk);
+}
+
 int AddrSpace::SemaphoreCreate(const int initialValue) {
     int semId = semaphoreBitmap->Find();
     if (semId == -1) {
@@ -216,7 +304,7 @@ int AddrSpace::SemaphoreCreate(const int initialValue) {
     return semId;
 }
 
-int AddrSpace::SemaphoreWait(const int semId) {
+int AddrSpace::SemaphoreWait(const int semId) const {
     Semaphore* sem = GetSemaphore(semId);
     if (sem == nullptr) {
         return -1;
@@ -226,7 +314,7 @@ int AddrSpace::SemaphoreWait(const int semId) {
     return 0;
 }
 
-int AddrSpace::SemaphorePost(const int semId) {
+int AddrSpace::SemaphorePost(const int semId) const {
     Semaphore* sem = GetSemaphore(semId);
     if (sem == nullptr) {
         return -1;
@@ -236,7 +324,7 @@ int AddrSpace::SemaphorePost(const int semId) {
     return 0;
 }
 
-int AddrSpace::SemaphoreDestroy(const int semId) {
+int AddrSpace::SemaphoreDestroy(const int semId) const {
     const Semaphore* sem = GetSemaphore(semId);
     if (sem == nullptr) {
         return -1;
@@ -297,4 +385,10 @@ int AddrSpace::AllocateSemaphoreTable(const unsigned int maxSem) {
 
     this->maxSemaphores = maxSem;
     return 0;
+}
+
+bool AddrSpace::ExtendPageTable(const unsigned int newNumPages) const {
+    if (newNumPages <= maxPages) { return true; }
+    DEBUG('a', "AddrSpace::ExtendPageTable: Cannot extend beyond maxPages (%u)\n", maxPages);
+    return false;
 }

@@ -28,6 +28,7 @@
 #include "process.h"
 #include "exception.h"
 #include "userIO.h"
+#include "userSbrk.h"
 #include "userprocess.h"
 #include "userSleep.h"
 #include "userSem.h"
@@ -152,6 +153,8 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(SetMaxSemForProcess)
 
         CASE_HANDLER(ForkExec)
+
+        CASE_HANDLER(Sbrk);
 
         default:
             printf("Unknow syscall :%d\n", type);

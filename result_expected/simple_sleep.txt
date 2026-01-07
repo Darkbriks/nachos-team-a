@@ -1,6 +1,6 @@
 === Test Sleep syscall : simple sleep ===
 Main: Woke up after 5000 ticks
-Main: Slept for 5073 ticks (expected ~5000)
+Main: Slept for 5113 ticks (expected ~5000)
 === Test Sleep syscall : long sleep ===
 Main: Woke up after 50000 ticks
 Main: Slept for 50043 ticks (expected ~50000)

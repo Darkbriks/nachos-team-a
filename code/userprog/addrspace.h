@@ -21,6 +21,9 @@
 #define INITIAL_SEMAPHORE_TABLE_SIZE 16
 #define MAX_SEMAPHORES_PER_PROCESS 512 // Arbitrary limit, can be adjusted as needed
 
+#define INITIAL_HEAP_PAGES 2
+#define MAX_HEAP_PAGES  256
+
 class BitMapThreadSafe;
 class Process;
 
@@ -43,22 +46,46 @@ class AddrSpace {
 
         [[nodiscard]] unsigned int GetNumPages() const { return numPages; }
 
+        /**
+         * @brief Extend the heap by n pages
+         *
+         * @param n Number of pages to allocate (can be 0 to query current brk)
+         * @return Pointer to the start of newly allocated memory, or -1 on error
+         *
+         * Error cases:
+         *   - Not enough physical frames available
+         *   - Heap would collide with stack area
+         *   - n is negative
+         */
+        int Sbrk(int n);
+
+        [[nodiscard]] unsigned int GetBrk() const { return brk; }
+        [[nodiscard]] unsigned int GetHeapStart() const { return heapStart; }
+        [[nodiscard]] unsigned int GetHeapSize() const { return brk - heapStart; }
+
         int SemaphoreCreate(int initialValue);
-        int SemaphoreWait(int semId);
-        int SemaphorePost(int semId);
-        int SemaphoreDestroy(int semId);
+        [[nodiscard]] int SemaphoreWait(int semId) const;
+        [[nodiscard]] int SemaphorePost(int semId) const;
+        [[nodiscard]] int SemaphoreDestroy(int semId) const;
 
         int AllocateSemaphoreTable(unsigned int maxSem);
 
     private:
         TranslationEntry *pageTable; // Assume linear page table translation for now!
         unsigned int numPages; // Number of pages in the virtual address space
+        unsigned int maxPages;
+
+        unsigned int heapStart = 0;
+        unsigned int brk = 0;
+        unsigned int stackLimit = 0;
 
         unsigned int maxSemaphores = 0;
         BitMapThreadSafe* semaphoreBitmap = nullptr;
         semaphore_descriptor* semaphoreTable = nullptr;
 
         [[nodiscard]] class Semaphore* GetSemaphore(int semId)const;
+
+        [[nodiscard]] bool ExtendPageTable(unsigned int newNumPages) const;
 };
 
 #endif // ADDRSPACE_H
