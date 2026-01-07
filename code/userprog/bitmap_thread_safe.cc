@@ -45,7 +45,6 @@ int BitMapThreadSafe::NumClearThreadSafe(){
 }
 
 BitMapThreadSafe::~BitMapThreadSafe(){
-    BitMap::~BitMap();
     delete semaphore;
 }
 

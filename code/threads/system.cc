@@ -7,19 +7,22 @@
 
 #include "system.h"
 #include "copyright.h"
+#include "frameprovider.h"
 #include "process.h"
+#include "thread.h"
 
 // This defines *all* of the global data structures used by Nachos.
 // These are all initialized and de-allocated by this file.
 
-FrameProvider* frameProvider; // Physical memory frame provider
-Thread *currentThread;        // the thread we are running now
-Thread *threadToBeDestroyed;  // the thread that just finished
-Scheduler *scheduler;         // the ready list
-Interrupt *interrupt;         // interrupt status
-Statistics *stats;            // performance metrics
-Timer *timer;                 // the hardware timer device,
-                              // for invoking context switches
+FrameProvider* frameProvider;  // Physical memory frame provider
+Thread *currentThread;         // the thread we are running now
+Thread *threadToBeDestroyed;   // the thread that just finished
+Process *processToBeDestroyed; // the process that just finished
+Scheduler *scheduler;          // the ready list
+Interrupt *interrupt;          // interrupt status
+Statistics *stats;             // performance metrics
+Timer *timer;                  // the hardware timer device,
+                               // for invoking context switches
 
 #ifdef FILESYS_NEEDED
 FileSystem *fileSystem;
@@ -135,6 +138,7 @@ void Initialize(int argc, char **argv) {
         timer = new Timer(TimerInterruptHandler, 0, randomYield);
 
     threadToBeDestroyed = NULL;
+	processToBeDestroyed = NULL;
 
     // We didn't explicitly allocate the current thread we are running in.
     // But if it ever tries to give up the CPU, we better have a Thread

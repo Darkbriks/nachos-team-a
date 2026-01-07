@@ -22,7 +22,7 @@ Les headers définis dans `code/userprog/process.h` :
 ### MAX_PROCESS
 
 
-**Description** : Indique le nombre maximum de processus dans la machine ( actif ou non ) 
+**Description** : Indique le nombre maximum de processus dans la machine ( actif ou non ). Nécessite suffisament de pages physiques
 
 ---
 
@@ -59,11 +59,45 @@ Les headers définis dans `code/userprog/addrspace.h` :
 
 ---
 
+## Définitions
+
+Les headers définis dans `code/machine/machine.h` :
+
+```c
+#define NumPhysPages 8192
+#define MemorySize (NumPhysPages * PageSize)
+#define TLBSize 4
+```
+
+---
+
+### NumPhysPages
+
+**Description** : Indique le nombre de pages physiques allouées pour la VM nachos 
+
+---
+
+### MemorySize
+
+
+**Description** : Le nombre total d'octets disponible pour Nachos
+
+---
+
+### TLBSize
+
+
+**Description** :  TODO
+
+---
+
+---
+
 ## Auteurs
 
 Tommy , 5 Jan 2026
 
 ## Dernière révision
 
-5 Jan 2026 par Tommy 
+7 Jan 2026 par Tommy 
 

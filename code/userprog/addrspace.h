@@ -31,17 +31,17 @@ struct semaphore_descriptor {
 
 class AddrSpace {
     public:
-        AddrSpace(OpenFile *executable); // Create an address space,
+        explicit AddrSpace(OpenFile *executable); // Create an address space,
         // initializing it with the program
         // stored in the file "executable"
         ~AddrSpace(); // De-allocate an address space
 
-        void InitRegisters(); // Initialize user-level CPU registers, before jumping to user code
+        void InitRegisters() const; // Initialize user-level CPU registers, before jumping to user code
 
         void SaveState();    // Save/restore address space-specific
-        void RestoreState(); // info on a context switch
+        void RestoreState() const; // info on a context switch
 
-        unsigned int GetNumPages() const { return numPages; }
+        [[nodiscard]] unsigned int GetNumPages() const { return numPages; }
 
         int SemaphoreCreate(int initialValue);
         int SemaphoreWait(int semId);
@@ -54,11 +54,11 @@ class AddrSpace {
         TranslationEntry *pageTable; // Assume linear page table translation for now!
         unsigned int numPages; // Number of pages in the virtual address space
 
-        unsigned int maxSemaphores;
-        BitMapThreadSafe* semaphoreBitmap;
-        semaphore_descriptor* semaphoreTable;
+        unsigned int maxSemaphores = 0;
+        BitMapThreadSafe* semaphoreBitmap = nullptr;
+        semaphore_descriptor* semaphoreTable = nullptr;
 
-        class Semaphore* GetSemaphore(int semId);
+        [[nodiscard]] class Semaphore* GetSemaphore(int semId)const;
 };
 
 #endif // ADDRSPACE_H

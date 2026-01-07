@@ -24,8 +24,6 @@
 #include "synch.h"
 #include "system.h"
 
-#include <strings.h> /* for bzero */
-#include "process.h"
 //----------------------------------------------------------------------
 // SwapHeader
 //      Do little endian to big endian conversion on the bytes in the
@@ -33,39 +31,25 @@
 //      endian machine, and we're now running on a big endian machine.
 //----------------------------------------------------------------------
 
-static void SwapHeader(NoffHeader *noffH) {
-    noffH->noffMagic = WordToHost(noffH->noffMagic);
-    noffH->code.size = WordToHost(noffH->code.size);
-    noffH->code.virtualAddr = WordToHost(noffH->code.virtualAddr);
-    noffH->code.inFileAddr = WordToHost(noffH->code.inFileAddr);
-    noffH->initData.size = WordToHost(noffH->initData.size);
-    noffH->initData.virtualAddr = WordToHost(noffH->initData.virtualAddr);
-    noffH->initData.inFileAddr = WordToHost(noffH->initData.inFileAddr);
-    noffH->uninitData.size = WordToHost(noffH->uninitData.size);
-    noffH->uninitData.virtualAddr = WordToHost(noffH->uninitData.virtualAddr);
-    noffH->uninitData.inFileAddr = WordToHost(noffH->uninitData.inFileAddr);
+static void SwapHeader(NoffHeader* noffH) {
+    noffH->noffMagic = static_cast<int>(WordToHost(noffH->noffMagic));
+    noffH->code.size = static_cast<int>(WordToHost(noffH->code.size));
+    noffH->code.virtualAddr = static_cast<int>(WordToHost(noffH->code.virtualAddr));
+    noffH->code.inFileAddr = static_cast<int>(WordToHost(noffH->code.inFileAddr));
+    noffH->initData.size = static_cast<int>(WordToHost(noffH->initData.size));
+    noffH->initData.virtualAddr = static_cast<int>(WordToHost(noffH->initData.virtualAddr));
+    noffH->initData.inFileAddr = static_cast<int>(WordToHost(noffH->initData.inFileAddr));
+    noffH->uninitData.size = static_cast<int>(WordToHost(noffH->uninitData.size));
+    noffH->uninitData.virtualAddr = static_cast<int>(WordToHost(noffH->uninitData.virtualAddr));
+    noffH->uninitData.inFileAddr = static_cast<int>(WordToHost(noffH->uninitData.inFileAddr));
 }
-//
-// static int findGoodTranslation(TranslationEntry *pageTable,unsigned numPages, unsigned int virtualaddr){
-//     for (unsigned int cur = 0; cur < numPages; cur ++){
-//         if ( pageTable[cur].virtualPage == virtualaddr){
-//             return cur;
-//         }
-//     }
-//     return -1;
-// }
-//
-static void ReadAtVirtual( OpenFile *executable, int virtualaddr,int numBytes, int position, TranslationEntry *pageTable,unsigned int numPages){
 
-    // int goodTranslation = findGoodTranslation(pageTable, numPages, position - virtualaddr);
-    // if ( goodTranslation < 0){
-    //     ASSERT(FALSE);
-    // }
+static void ReadAtVirtual(OpenFile* executable, const int virtualaddr, const int numBytes, const int position, TranslationEntry* pageTable, const unsigned int numPages) {
     // Don't remove these lines
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
     char tmp[numBytes + 1];
-    int maxSize = executable->ReadAt(tmp, numBytes,  position);
+    const int maxSize = executable->ReadAt(tmp, numBytes,  position);
     for (int i = 0; i < maxSize; i++){ 
         machine->WriteMem(virtualaddr + i , 1, tmp[i]);
     }
@@ -88,18 +72,15 @@ static void ReadAtVirtual( OpenFile *executable, int virtualaddr,int numBytes, i
 
 AddrSpace::AddrSpace(OpenFile *executable) {
     NoffHeader noffH;
-    unsigned int i, size;
 
-    executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
-    // ReadAtVirtual(executable, (int) (int *)&noffH, sizeof(noffH), 0, 0,1 );
-    if ((noffH.noffMagic != NOFFMAGIC) &&
-        (WordToHost(noffH.noffMagic) == NOFFMAGIC))
+    executable->ReadAt(reinterpret_cast<char *>(&noffH), sizeof(noffH), 0);
+    if ((noffH.noffMagic != NOFFMAGIC) && (WordToHost(noffH.noffMagic) == NOFFMAGIC)) {
         SwapHeader(&noffH);
+    }
     ASSERT(noffH.noffMagic == NOFFMAGIC);
 
     // how big is address space?
-    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size +
-           UserStackSize; // we need to increase the size
+    unsigned int size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize; // we need to increase the size
     // to leave room for the stack
     numPages = divRoundUp(size, PageSize);
     size = numPages * PageSize;
@@ -109,12 +90,11 @@ AddrSpace::AddrSpace(OpenFile *executable) {
     // at least until we have
     // virtual memory
 
-    DEBUG('a', "Initializing address space, num pages %d, size %d\n", numPages,
-          size);
+    DEBUG('a', "Initializing address space, num pages %d, size %d\n", numPages, size);
     // first, set up the translation
     pageTable = new TranslationEntry[numPages];
-    for (i = 0; i < numPages; i++) {
-        int physPage = frameProvider->GetEmptyFrame();
+    for (unsigned int i = 0; i < numPages; i++) {
+        const int physPage = frameProvider->GetEmptyFrame();
         if (physPage == -1) {
             DEBUG('a', "AddrSpace::AddrSpace: Unable to allocate frame for page %d\n", i);
             ASSERT(FALSE); // TODO: Handle this properly
@@ -131,16 +111,11 @@ AddrSpace::AddrSpace(OpenFile *executable) {
 
     // then, copy in the code and data segments into memory
     if (noffH.code.size > 0) {
-        DEBUG('a', "Initializing code segment, at 0x%x, size %d\n",
-              noffH.code.virtualAddr, noffH.code.size);
-        // executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]),
-        //                    noffH.code.size, noffH.code.inFileAddr);
+        DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", noffH.code.virtualAddr, noffH.code.size);
         ReadAtVirtual(executable, noffH.code.virtualAddr, noffH.code.size, noffH.code.inFileAddr, pageTable, numPages);
     }
     if (noffH.initData.size > 0) {
-        DEBUG('a', "Initializing data segment, at 0x%x, size %d\n",
-              noffH.initData.virtualAddr, noffH.initData.size);
-        // executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]), noffH.initData.size, noffH.initData.inFileAddr);
+        DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", noffH.initData.virtualAddr, noffH.initData.size);
         ReadAtVirtual(executable, noffH.initData.virtualAddr, noffH.initData.size, noffH.initData.inFileAddr, pageTable, numPages);
     }
 
@@ -155,7 +130,7 @@ AddrSpace::AddrSpace(OpenFile *executable) {
 AddrSpace::~AddrSpace() {
     for (unsigned int i = 0; i < numPages; i++) {
         if (pageTable[i].valid) {
-            frameProvider->ReleaseFrame(pageTable[i].physicalPage);
+            frameProvider->ReleaseFrame(static_cast<int>(pageTable[i].physicalPage));
         }
     }
 
@@ -183,11 +158,9 @@ AddrSpace::~AddrSpace() {
 //      when this thread is context switched out.
 //----------------------------------------------------------------------
 
-void AddrSpace::InitRegisters() {
-    int i;
+void AddrSpace::InitRegisters() const {
 
-    for (i = 0; i < NumTotalRegs; i++)
-        machine->WriteRegister(i, 0);
+    for (int i = 0; i < NumTotalRegs; i++) { machine->WriteRegister(i, 0); }
 
     // Initial program counter -- must be location of "Start"
     machine->WriteRegister(PCReg, 0);
@@ -199,7 +172,7 @@ void AddrSpace::InitRegisters() {
     // Set the stack register to the end of the address space, where we
     // allocated the stack; but subtract off a bit, to make sure we don't
     // accidentally reference off the end!
-    machine->WriteRegister(StackReg, numPages * PageSize - 16);
+    machine->WriteRegister(StackReg, static_cast<int>(numPages) * PageSize - 16);
     DEBUG('a', "Initializing stack register to %d\n", numPages * PageSize - 16);
 }
 
@@ -221,12 +194,12 @@ void AddrSpace::SaveState() {}
 //      For now, tell the machine where to find the page table.
 //----------------------------------------------------------------------
 
-void AddrSpace::RestoreState() {
+void AddrSpace::RestoreState() const {
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
 }
 
-int AddrSpace::SemaphoreCreate(const int initialValue){
+int AddrSpace::SemaphoreCreate(const int initialValue) {
     int semId = semaphoreBitmap->Find();
     if (semId == -1) {
         DEBUG('s', "AddrSpace::SemaphoreCreate: Failed to create semaphore, table full\n");
@@ -264,7 +237,7 @@ int AddrSpace::SemaphorePost(const int semId) {
 }
 
 int AddrSpace::SemaphoreDestroy(const int semId) {
-    Semaphore* sem = GetSemaphore(semId);
+    const Semaphore* sem = GetSemaphore(semId);
     if (sem == nullptr) {
         return -1;
     }
@@ -276,7 +249,7 @@ int AddrSpace::SemaphoreDestroy(const int semId) {
     return 0;
 }
 
-Semaphore* AddrSpace::GetSemaphore(int semId) {
+Semaphore* AddrSpace::GetSemaphore(const int semId) const {
     if (semId < 0 || semId >= MAX_SEMAPHORES_PER_PROCESS || !semaphoreTable[semId].valid) {
         return nullptr;
     }
@@ -292,13 +265,13 @@ Semaphore* AddrSpace::GetSemaphore(int semId) {
  *----------------------------------------------------------------------*/
 int AddrSpace::AllocateSemaphoreTable(const unsigned int maxSem) {
     DEBUG('s', "AddrSpace::AllocateSemaphoreTable: Allocating semaphore table with size %u\n", maxSem);
-    if (maxSem < 0 || maxSem > MAX_SEMAPHORES_PER_PROCESS) { return -1; }
+    if (maxSem > MAX_SEMAPHORES_PER_PROCESS) { return -1; }
     if (maxSem == this->maxSemaphores) { return 0; } // No change needed
 
-    if (this->semaphoreBitmap != nullptr) { this->semaphoreBitmap->UpdateSize(maxSem); }
-    else { this->semaphoreBitmap = new BitMapThreadSafe(maxSem); }
+    if (this->semaphoreBitmap != nullptr) { this->semaphoreBitmap->UpdateSize(static_cast<int>(maxSem)); }
+    else { this->semaphoreBitmap = new BitMapThreadSafe(static_cast<int>(maxSem)); }
 
-    semaphore_descriptor* oldTable = this->semaphoreTable;
+    const semaphore_descriptor* oldTable = this->semaphoreTable;
     this->semaphoreTable = new semaphore_descriptor[maxSem];
 
     if (oldTable != nullptr) {

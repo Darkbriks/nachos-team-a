@@ -96,7 +96,10 @@ def test(arg : Test) -> int:
 def generate(args : list[str]) -> int:
     file_expect = args[0]
     arguments = args[1]
-    os.remove(file_expect)
+    try:
+        os.remove(file_expect)
+    except:
+        pass
     exec_nachos(arguments, file_expect)
 
 def compile() -> None:
@@ -387,6 +390,13 @@ if __name__ == "__main__":
                         line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./producteur_consommateur",
                         name = "Test Producteur consommateur ",
                         description = "Test pour vérifier cohérence dans le cas d'un producteur/consommateur sur une liste partagée"
+                    )
+                )
+    all_test.append(Test(
+                        file_expect ="test_ForkExec.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./testForkExec",
+                        name = "Test ForkExec avec trois process",
+                        description = "Lance un premier process qui va en créer deux autres. Les trois doivent finir de s'éxècuter"
                     )
                 )
 

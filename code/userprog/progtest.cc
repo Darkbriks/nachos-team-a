@@ -22,16 +22,23 @@
 //----------------------------------------------------------------------
 
 void StartProcess(char *filename) {
-    OpenFile *executable = fileSystem->Open(filename);
+    OpenFile* executable = fileSystem->Open(filename);
 
-    if (executable == NULL) {
+    if (executable == nullptr) {
         printf("Unable to open file %s\n", filename);
         return;
     }
-    Process * newProcess = Process::createProcess(executable);
-    if (newProcess == nullptr){
+
+    const Process* newProcess = Process::createProcess(executable);
+    if (newProcess == nullptr) {
         ASSERT(FALSE);  // machine->Run never returns;
     }
+
+    const AddrSpace* space = newProcess->getSpace();
+    ASSERT(space != nullptr);
+    space->InitRegisters();
+    space->RestoreState();
+
     currentThread = newProcess->getMainThread();
     currentThread->setStatus(RUNNING);
     machine->Run(); // jump to the user progam
@@ -43,9 +50,9 @@ void StartProcess(char *filename) {
 // Data structures needed for the console test.  Threads making
 // I/O requests wait on a Semaphore to delay until the I/O completes.
 
-static Console *console;
-static Semaphore *readAvail;
-static Semaphore *writeDone;
+static Console* console;
+static Semaphore* readAvail;
+static Semaphore* writeDone;
 
 //----------------------------------------------------------------------
 // ConsoleInterruptHandlers
@@ -63,15 +70,13 @@ static void WriteDone(int arg) { writeDone->V(); }
 //----------------------------------------------------------------------
 
 void ConsoleTest(char *in, char *out) {
-    char ch;
-
     console = new Console(in, out, ReadAvail, WriteDone, 0);
     readAvail = new Semaphore("read avail", 0);
     writeDone = new Semaphore("write done", 0);
 
     for (;;) {
         readAvail->P(); // wait for character to arrive
-        ch = console->GetChar();
+        const char ch = console->GetChar();
         if (ch == 'q' || ch == EOF)
             return; // if q, quit
         // if (ch == 'c'){
