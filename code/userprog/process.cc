@@ -66,11 +66,12 @@ Process* Process::createProcess(OpenFile * executable) {
 Process::Process(OpenFile * executable, char* return_code) {
     *return_code = 0;
 
-    const int tmp = all_process->Find();
-    if (tmp == -1) { *return_code = -1; return; }
+    const int pid = all_process->Find();
+    if (pid == -1) { *return_code = -1; return; }
 
-    PID = static_cast<unsigned int>(tmp);
+    PID = static_cast<unsigned int>(pid);
 
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);
     if (PID > 0) {
         processCountLock->Acquire();
         all_process_addr->AddInList(this);
@@ -83,7 +84,7 @@ Process::Process(OpenFile * executable, char* return_code) {
         processCountLock->Release();
         DEBUG('p', "Kernel process %d created (not counted)\n", PID);
     }
-
+    interrupt->SetLevel(oldLevel);
     threadNumberLock = new Lock("thread number lock");
     threadExitSemaphore = new Semaphore("thread exit semaphore", 0);
     all_threads_addr = new LinkedList<Thread>();

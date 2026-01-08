@@ -77,6 +77,7 @@ void handle_SC_ForkJoin() {
     DEBUG('p', "ForkJoin: process %d wait for process %d\n",currentThread->getProcess()->getPId(), PID_to_wait); 
     currentThread->getProcess()->WaitForChild(child);
     int result = child->getExitCode();
+
     delete child;
 
     if (addr_return >= 0) {
@@ -84,6 +85,7 @@ void handle_SC_ForkJoin() {
             RETURN(-E_INVAL);
         }
     }
+    DEBUG('p', "ForkJoin: process %d finish wait for process %d and get exitCode %d\n",currentThread->getProcess()->getPId(), PID_to_wait, result); 
     
     RETURN(0);
 }
