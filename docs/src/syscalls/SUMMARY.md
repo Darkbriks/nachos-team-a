@@ -35,7 +35,15 @@
     - [PthreadDetach](./threads/PthreadDetach.md)
     - [SelfThread](./threads/PthreadSelf.md)
     - [Attributs de thread](./threads/attrs.md)
-    
+
+# Opérations temporelles
+
+- [Opérations temporelles](./time/SUMMARY.md)
+    - [Vue d'ensemble](./time/Time.md)
+    - [Sleep](./time/Sleep.md)
+    - [SleepUntil](./time/SleepUntil.md)
+    - [GetCurrentTick](./time/GetCurrentTick.md)
+
 # Sémaphores
 
 - [Sémaphores](./sync/SUMMARY.md)
