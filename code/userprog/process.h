@@ -82,6 +82,8 @@ class Process {
         void AncestorWait();
         void AncestorSigChild();
         void WaitForChild(Process* child);
+        void KillAllThreads();
+        static void freeAllStatic();
 };
 
 #endif // PROCESS_H

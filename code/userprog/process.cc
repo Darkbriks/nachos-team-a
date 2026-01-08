@@ -11,6 +11,12 @@ int Process::activeProcessCount = 0;
 Lock* Process::processCountLock = new Lock("process count lock");
 LinkedList<Process>* Process::all_process_addr = new LinkedList<Process>();
 
+void Process::freeAllStatic(){
+    delete Process::processCountLock;
+    delete Process::all_process;
+    delete Process::all_process_addr;
+}
+
 bool Process::isLastActiveProcess() {
     processCountLock->Acquire();
     const bool result = (activeProcessCount == 1);
@@ -34,13 +40,21 @@ Process* Process::FindProcessByPID(const unsigned int PID) {
 }
 
 unsigned int Process::getCurrentNumberOfProcess(){
-    return all_process->NumClearThreadSafe() - MAX_PROCESS;
+    int tmp = all_process->NumClearThreadSafe();
+    if (tmp == -1){
+        tmp = 0;
+    }
+    return MAX_PROCESS - tmp;
 }
 
 Process* Process::createProcess(OpenFile * executable) {
+    if (Process::getCurrentNumberOfProcess() == MAX_PROCESS){
+        return nullptr;
+    }
+    Process* result = nullptr;
     const auto status_code = new char;
-    auto* result = new Process(executable, status_code);
-    if (*status_code == -1) {
+    result = new Process(executable, status_code);
+    if (*status_code == -1 && result != nullptr) {
         delete result;
         result = nullptr;
     }
@@ -64,6 +78,9 @@ Process::Process(OpenFile * executable, char* return_code) {
         DEBUG('p', "Process %d created, now %d active processes\n", PID, activeProcessCount);
         processCountLock->Release();
     } else {
+        processCountLock->Acquire();
+        all_process_addr->AddInList(this);
+        processCountLock->Release();
         DEBUG('p', "Kernel process %d created (not counted)\n", PID);
     }
 
@@ -74,6 +91,7 @@ Process::Process(OpenFile * executable, char* return_code) {
 
     threadNumber = 0; // The main thread
     Thread * firstThread = CreateThread(executable ? "main" : "kernel");
+    this->space = nullptr;
 
     if (executable != nullptr) {
         this->space = new AddrSpace(executable);
@@ -84,10 +102,10 @@ Process::Process(OpenFile * executable, char* return_code) {
     ancestor = currentThread ? currentThread->getProcess() : nullptr;
     if (ancestor != nullptr ){
         DEBUG('p', "Process %d have process %d for ancestor\n", PID, ancestor->getPId());
+        ancestorSem = new Semaphore("Child sem for join between process", 0);
     } else {
         DEBUG('p', "Process %d don't have process for ancestor\n", PID);
     }
-    ancestorSem = new Semaphore("Child sem for join between process", 0);
 }
 
 void Process::AncestorWait(){
@@ -115,9 +133,7 @@ Process::~Process() {
     delete threadExitSemaphore;
     delete all_threads_addr;
     delete threads_bitmap;
-
     all_process->ClearThreadSafe(static_cast<int>(PID));
-
     if (PID > 0) {
         processCountLock->Acquire();
         activeProcessCount--;
@@ -133,6 +149,13 @@ Process::~Process() {
         }
     } else {
         DEBUG('p', "Kernel process %d destroyed\n", PID);
+    }
+}
+
+void Process::KillAllThreads(){
+    Thread * thread = nullptr;
+    while ( ( thread = all_threads_addr->RemoveFront()) != nullptr){
+        delete thread;
     }
 }
 
