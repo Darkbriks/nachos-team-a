@@ -32,6 +32,10 @@ class Process {
         Process *ancestor;
 
         class BitMap* threads_bitmap;
+
+        /**
+         * @brief  Our global list of process in the machine
+         */
         LinkedList<Thread>* all_threads_addr;
 
         //User owner; // TODO create User class for multiUser OS 
@@ -82,10 +86,31 @@ class Process {
          */
         [[nodiscard]] Thread* FindThread(unsigned int TID) const;
 
+        /**
+         * @brief This function is use by the ancestor to wait his child
+         */
         void AncestorWait();
+
+        /**
+         * @brief This function is use by the child to signal his ancestor he finish
+         */
         void AncestorSigChild();
+
+        /**
+         * @brief This function is called for wait a child process
+         *
+         * @param child The pointer on the desired child to wait
+         */
         void WaitForChild(Process* child);
+
+        /**
+         * @brief Delete all threads linked to a process
+         */
         void KillAllThreads();
+
+        /**
+         * @brief This function is called only by Cleanup at the end of the program
+         */
         static void freeAllStatic();
 };
 

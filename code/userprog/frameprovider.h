@@ -64,6 +64,9 @@ class FrameProvider {
         */
         int NumAvailFrame();
 
+        /**
+         * @brief This function is called only by Cleanup at the end of the program
+         */
         static void freeAllStatic();
 };
 

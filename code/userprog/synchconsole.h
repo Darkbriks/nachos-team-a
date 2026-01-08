@@ -34,6 +34,9 @@ class SynchConsole {
          */
         int SynchGetString(char *s, int n); // Unix fgets(3S)
                                             
+        /**
+         * @brief This function is called only by Cleanup at the end of the program
+         */
         static void freeAllStatic();
 
     private:
