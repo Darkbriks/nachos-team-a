@@ -2,6 +2,13 @@
 
 [Vue d'ensemble](Syscalls.md)
 
+# Contrôle Système
+
+- [System Control](./system/SUMMARY.md)
+    - [Vue d'ensemble](./system/System.md)
+    - [Halt](./system/Halt.md)
+    - [Exit](./system/Exit.md)
+
 # Gestion des erreurs
 
 - [Gestion des erreurs](./errors.md)
