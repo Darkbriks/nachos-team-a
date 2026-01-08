@@ -4,6 +4,7 @@
 #include "copyright.h"
 #include "linked_list.h"
 #include "system.h"
+#include "thread.h"
 
 #define MAX_THREAD 30 // TODO check for user's max process
 #define MAX_PROCESS 15 // TODO PUT it in User
@@ -17,6 +18,8 @@ class Process {
         static class BitMapThreadSafe *all_process; // TODO put it in USer one day ... I hope but I really don't know
         static int activeProcessCount;
         static Lock *processCountLock;
+
+
         static LinkedList<Process>* all_process_addr;
 
         AddrSpace *space;

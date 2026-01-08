@@ -41,6 +41,7 @@
 #include "synch.h"
 #include "utility.h"
 
+#include "system.h"
 #include "bitmap.h"
 
 #ifdef USER_PROGRAM
@@ -56,8 +57,6 @@
 // Size of the thread's private execution stack.
 // WATCH OUT IF THIS ISN'T BIG ENOUGH!!!!!
 #define StackSize (4 * 1024) // in words
-
-#define MAX_STRING_SIZE 256
 
 #define DETACHED_FLAG_POS 0
 

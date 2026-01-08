@@ -22,6 +22,7 @@
 #include "copyright.h"
 #include "process.h"
 #include "system.h"
+#include "thread.h"
 
 //----------------------------------------------------------------------
 // Scheduler::Scheduler

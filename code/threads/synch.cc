@@ -25,6 +25,7 @@
 #include "copyright.h"
 #include "system.h"
 #include <vector>
+#include "thread.h"
 
 //----------------------------------------------------------------------
 // Semaphore::Semaphore

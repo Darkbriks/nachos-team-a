@@ -23,6 +23,7 @@
 #include "interrupt.h"
 #include "copyright.h"
 #include "system.h"
+#include "thread.h"
 
 // String definitions for debugging messages
 
