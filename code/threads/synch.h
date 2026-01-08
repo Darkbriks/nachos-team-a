@@ -35,6 +35,8 @@
 // and some other thread might have called P or V, so the true value might
 // now be different.
 
+class Thread;
+
 class Semaphore {
   public:
     Semaphore(const char *debugName, int initialValue); // set initial value
@@ -77,8 +79,9 @@ class Lock {
                                   // Condition variable ops below.
 
   private:
-    const char *name; // for debugging
-    Semaphore * sem;
+    const char* name; // for debugging
+    Semaphore* sem;
+    Thread* holder;
     // plus some other stuff you'll need to define
 };
 
@@ -132,6 +135,7 @@ class Condition {
   private:
     const char *name;
     Semaphore * sem;
+    int waiters;
     // plus some other stuff you'll need to define
 };
 #endif // SYNCH_H

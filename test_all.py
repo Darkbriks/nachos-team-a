@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect="test_putchar_user_mode_result_expected.txt",
-                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./putChar",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./io/putChar",
                          name= "Test PutChar" ,
                          description = "Test du syscall PutChar depuis un programme utilisateur dans un cas normal."
                          )
@@ -148,7 +148,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_putString_user_mode_expect.txt",
-                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./putString",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./io/putString",
                          name = "Test PutString",
                          description = "Test du syscall PutString depuis un programme utilisateur dans un cas normal."
                          )
@@ -156,7 +156,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_putStringError_user_mode_expect.txt",
-                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./putStringError",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./io/putStringError",
                          name = "Test PutString overflow buffer",
                          description = "Test du syscall PutString depuis un programme utilisateur avec en entrée une chaîne de caractères plus longue que la taille du buffer."
                          )
@@ -164,7 +164,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_putStringTooManyChars_user_mode_expect.txt",
-                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./putStringTooManyChars",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./io/putStringTooManyChars",
                          name = "Test PutString number of characters greater than the maximum value",
                          description = "Test du syscall PutString depuis un programme utilisateur avec en entrée une chaîne de caractères plus longue que le nombre de charactères maximum."
                          )
@@ -172,7 +172,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_putInt.txt",
-                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./putInt",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./io/putInt",
                          name = "Test PutInt",
                          description = "Test du syscall PutInt depuis un programme utilisateur dans un cas normal."
                          )
@@ -180,7 +180,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_getChar.txt",
-                         line_to_execute =f'echo "a" | ./nachos-step{CURRENT_STEP} -x ./getChar',
+                         line_to_execute =f'echo "a" | ./nachos-step{CURRENT_STEP} -x ./io/getChar',
                          name = "Test GetChar",
                          description = "Test du syscall GetChar depuis un programme utilisateur dans un cas normal."
                          )
@@ -188,7 +188,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_getString_expected.txt",
-                         line_to_execute =f'echo "Bob" | ./nachos-step{CURRENT_STEP} -x ./getString',
+                         line_to_execute =f'echo "Bob" | ./nachos-step{CURRENT_STEP} -x ./io/getString',
                          name = "Test GetString avec EOF",
                          description = "Test du syscall GetString depuis un programme utilisateur dans un cas normal avec EOF."
                          )
@@ -196,7 +196,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_getInt_positive_integer_expected.txt",
-                         line_to_execute =f'echo "5" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+                         line_to_execute =f'echo "5" | ./nachos-step{CURRENT_STEP} -x ./io/getInt',
                          name = "Test GetInt entier positif",
                          description = "Test du syscall GetInt depuis un programme utilisateur avec un entier positif."
                          )
@@ -204,7 +204,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_getInt_negative_integer_expected.txt",
-                         line_to_execute =f'echo "-5" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+                         line_to_execute =f'echo "-5" | ./nachos-step{CURRENT_STEP} -x ./io/getInt',
                          name = "Test GetInt entier négatif",
                          description = "Test du syscall GetInt depuis un programme utilisateur avec un entier négatif."
                          )
@@ -212,7 +212,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_getInt_positive_integer_overflow_expected.txt",
-                         line_to_execute =f'echo "9999999999" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+                         line_to_execute =f'echo "9999999999" | ./nachos-step{CURRENT_STEP} -x ./io/getInt',
                          name = "Test GetInt entier positif overflow",
                          description = "Test du syscall GetInt depuis un programme utilisateur avec un entier positif dépassant la valeur maximale."
                          )
@@ -220,7 +220,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_getInt_negative_integer_overflow_expected.txt",
-                         line_to_execute =f'echo "-9999999999" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+                         line_to_execute =f'echo "-9999999999" | ./nachos-step{CURRENT_STEP} -x ./io/getInt',
                          name = "Test GetInt entier négatif overflow",
                          description = "Test du syscall GetInt depuis un programme utilisateur avec un entier négatif dépassant la valeur minimale."
                          )
@@ -228,7 +228,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_getInt_erno_not_integer_value_expected.txt",
-                         line_to_execute =f'echo "ab1c" | ./nachos-step{CURRENT_STEP} -x ./getInt',
+                         line_to_execute =f'echo "ab1c" | ./nachos-step{CURRENT_STEP} -x ./io/getInt',
                          name = "Test GetInt valeur non numérique",
                          description = "Test du syscall GetInt depuis un programme utilisateur avec une chaîne de caractères non numérique."
                          )
@@ -236,7 +236,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_getString_erno_negative_size.txt",
-                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./getErrno",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./system/getErrno",
                          name = "Test GetString taille négative",
                          description = "Test du syscall GetString depuis un programme utilisateur avec en paramètre une taille de chaîne négative. Doit échouer, et errno doit être mis à E_INVAL (1)."
                          )
@@ -244,7 +244,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_lot_of_thread_from_different_functions.txt",
-                         line_to_execute =f"./nachos-step{CURRENT_STEP} {RS} -x ./makethreads",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} {RS} -x ./threads/makethreads",
                          name = "Test création de plusieurs threads",
                          description = "Test du lancement de plusieurs threads depuis un programme utilisateur, avec plusieurs niveaux de threads."
                          )
@@ -252,7 +252,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_one_thread_join_an_other_without_corner_case.txt",
-                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./testJoin",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./threads/testJoin",
                          name = "Test ThreadJoin classique",
                          description = "Test du syscall ThreadJoin dans un cas classique sans erreur depuis un programme utilisateur."
                          )
@@ -260,7 +260,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "simple_sleep.txt",
-                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./simpleSleep",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./system/simpleSleep",
                          name = "Plusieurs tests du syscall sleep en monothread",
                          description = "Quelques tests du syscall Sleep dans un contexte mono thread"
                          )
@@ -268,7 +268,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "simple_sleep_until.txt",
-                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./simpleSleepUntil",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./system/simpleSleepUntil",
                          name = "Plusieurs tests du syscall sleepUntil en monothread",
                          description = "Quelques tests du syscall SleepUntil dans un contexte mono thread"
                          )
@@ -276,7 +276,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_multithreadSleep.txt",
-                         line_to_execute =f"./nachos-step{CURRENT_STEP} {RS} -x ./multithreadSleep",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} {RS} -x ./system/multithreadSleep",
                          name = "Test Sleep concurrent",
                          description = "Test de la gestion concurrente des appels Sleep depuis plusieurs threads dans un programme utilisateur."
                          )
@@ -284,7 +284,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_multiplethread_use_putString.txt",
-                         line_to_execute =f"./nachos-step{CURRENT_STEP} {RS} -x ./multi_thread_putString",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} {RS} -x ./io/multi_thread_putString",
                          name = "Test PutString concurrent",
                          description = "Test de la gestion concurrente des appels PutString depuis plusieurs threads dans un programme utilisateur."
                          )
@@ -292,7 +292,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_autoexit.txt",
-                         line_to_execute =f"./nachos-step{CURRENT_STEP} {RS} -x ./testAutoExit",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} {RS} -x ./threads/testAutoExit",
                          name = "Test terminaison automatique des threads 1",
                          description = "Test de la terminaison automatique des threads (pas d'appel explicite à ThreadExit) depuis un programme utilisateur."
                          )
@@ -300,7 +300,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_autoexit2.txt",
-                         line_to_execute =f"./nachos-step{CURRENT_STEP} {RS} -x ./testAutoExit2",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} {RS} -x ./threads/testAutoExit2",
                          name = "Test terminaison automatique des threads 2",
                          description = "Test de la terminaison automatique des threads (pas d'appel explicite à ThreadExit) depuis un programme utilisateur."
                          )
@@ -308,7 +308,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                          file_expect = "test_Semaphore_value_1_user.txt",
-                         line_to_execute =f"./nachos-step{CURRENT_STEP} {RS} -x ./testThreadSemaphore",
+                         line_to_execute =f"./nachos-step{CURRENT_STEP} {RS} -x ./sync/testThreadSemaphore",
                          name = "Test Sémaphore initialisée à 1 en mode user",
                          description = "Test pour les sémaphores au niveau utilisateur. Vérifie que les sémaphores permettent à un thread d'en attendre un autre si la sémaphore est initialisée à 1"
                          )
@@ -316,7 +316,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                         file_expect = "test_Semaphore_2.txt",
-                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./testThreadSemaphore2",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./sync/testThreadSemaphore2",
                         name = "Test Augmentation automatique de la taille de la table des sémaphores",
                         description = "Test pour vérifier que la table des sémaphores s'agrandit automatiquement lorsque le nombre de sémaphores créés dépasse la taille initiale."
                         )
@@ -324,7 +324,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                         file_expect = "sem_validation.txt",
-                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./testSemValidation",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./sync/testSemValidation",
                         name = "Vérification du comportement nominal des sémaphores dans un contexte d'utilisation normal",
                         description = "Test pour vérifier le comportement nominal des sémaphores dans un contexte d'utilisation normal."
                     )
@@ -387,7 +387,7 @@ if __name__ == "__main__":
                 )
     all_test.append(Test(
                         file_expect ="test_producteurs_consommateurs.txt",
-                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./producteur_consommateur",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./sync/producteur_consommateur",
                         name = "Test Producteur consommateur ",
                         description = "Test pour vérifier cohérence dans le cas d'un producteur/consommateur sur une liste partagée"
                     )

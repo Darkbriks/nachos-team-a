@@ -95,7 +95,9 @@ void Semaphore::V() {
 // Note -- without a correct implementation of Condition::Wait(),
 // the test case in the network assignment won't work!
 Lock::Lock(const char *debugName) {
-    sem = new Semaphore(debugName, 1);  
+    name = debugName;
+    sem = new Semaphore(debugName, 1);
+    holder = nullptr;
 }
 
 Lock::~Lock() {
@@ -104,24 +106,54 @@ Lock::~Lock() {
 
 void Lock::Acquire() {
     sem->P();
+    holder = currentThread;
 }
 
 void Lock::Release() {
+    ASSERT(isHeldByCurrentThread());
+    holder = nullptr;
     sem->V();
 }
 
+bool Lock::isHeldByCurrentThread() {
+    return holder == currentThread;
+}
+
 Condition::Condition(const char *debugName) {
-    std::vector<int> v = {8, 4, 5, 9};
+    name = debugName;
+    sem = new Semaphore(debugName, 0);
+    waiters = 0;
 }
 
 Condition::~Condition() {
-
+    delete sem;
 }
 
 void Condition::Wait(Lock *conditionLock) { 
-    ASSERT(FALSE);
+    ASSERT(conditionLock->isHeldByCurrentThread());
+
+    waiters++;
+    conditionLock->Release();
+
+    sem->P();
+
+    conditionLock->Acquire();
 }
 
-void Condition::Signal(Lock *conditionLock) {}
+void Condition::Signal(Lock *conditionLock) {
+    ASSERT(conditionLock->isHeldByCurrentThread());
 
-void Condition::Broadcast(Lock *conditionLock) {}
+    if (waiters > 0) {
+        waiters--;
+        sem->V();
+    }
+}
+
+void Condition::Broadcast(Lock *conditionLock) {
+    ASSERT(conditionLock->isHeldByCurrentThread());
+
+    while (waiters > 0) {
+        waiters--;
+        sem->V();
+    }
+}
