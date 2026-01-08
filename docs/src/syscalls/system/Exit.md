@@ -7,7 +7,7 @@
 ```c
 #include "syscall.h"
 
-void Exit(int status);
+void Exit(int status) __attribute__((noreturn));
 ```
 
 ## Description

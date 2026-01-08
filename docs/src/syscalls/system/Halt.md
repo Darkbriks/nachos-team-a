@@ -7,7 +7,7 @@
 ```c
 #include "syscall.h"
 
-void Halt(void);
+void Halt() __attribute__((noreturn));
 ```
 
 ## Description
@@ -19,8 +19,8 @@ void Halt(void);
 ### Comportement nominal
 
 1. Appel de `interrupt->Halt()` qui affiche les statistiques de performance (cycles CPU, interruptions, etc.) puis déclenche l'arrêt du système
-3. Terminaison complète du système Nachos
-4. Cette fonction ne retourne jamais
+2. Terminaison complète du système Nachos
+3. Cette fonction ne retourne jamais
 
 <div class="callout callout-warning">
     <div class="callout-title">Arrêt immédiat</div>
