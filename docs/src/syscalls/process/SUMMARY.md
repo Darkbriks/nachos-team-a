@@ -1,8 +1,8 @@
-# Sémaphores
+# Process Management
 
 - [Vue d'ensemble](Process.md)
 
-# Appels système sur les Process
+# Appels système sur les processus
 
 - [ForkExec](./ForkExec.md)
 - [ForkJoin](./ForkJoin.md)
