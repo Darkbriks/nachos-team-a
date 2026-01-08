@@ -63,6 +63,11 @@ class FrameProvider {
         * @return Number of available frames.
         */
         int NumAvailFrame();
+
+        /**
+         * @brief This function is called only by Cleanup at the end of the program
+         */
+        static void freeAllStatic();
 };
 
 #endif // FRAMEPROVIDER_H

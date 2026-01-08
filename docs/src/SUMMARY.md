@@ -35,5 +35,6 @@
   - [Process](./syscalls/process/SUMMARY.md)
     - [Process Overview](syscalls/process/Process.md)
     - [ForkExec](syscalls/process/ForkExec.md)
+    - [ForkJoin](syscalls/process/ForkJoin.md)
 - [Error Handling](./syscalls/errors.md)
 - [Errno Codes](./syscalls/errno.md)

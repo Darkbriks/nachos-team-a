@@ -33,6 +33,12 @@ class SynchConsole {
          * @return The real number of bytes read
          */
         int SynchGetString(char *s, int n); // Unix fgets(3S)
+                                            
+        /**
+         * @brief This function is called only by Cleanup at the end of the program
+         */
+        static void freeAllStatic();
+
     private:
         Console *console;
 };

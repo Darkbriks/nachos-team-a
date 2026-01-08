@@ -401,7 +401,7 @@ if __name__ == "__main__":
                 )
     all_test.append(Test(
                         file_expect ="test_HierarchiThread.txt",
-                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./firstThreadCanFinishFirst",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./threads/firstThreadCanFinishFirst",
                         name = "Test main thread call PthreadExit and others threads can finish",
                         description = "Lance un thread depuis main puis appelle PthreadExit. Le thread crée par main doit devenir le principal"
                     )
