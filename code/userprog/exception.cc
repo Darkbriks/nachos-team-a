@@ -104,7 +104,7 @@ void handle_SC_Exit() {
     }
 
     ASSERT(processToBeDestroyed == nullptr);
-    processToBeDestroyed = process;
+    process->setExitCode(return_code);
     process->AncestorSigChild();
 
     currentThread->Finish();

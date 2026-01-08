@@ -18,6 +18,7 @@ class Process {
         static class BitMapThreadSafe *all_process; // TODO put it in USer one day ... I hope but I really don't know
         static int activeProcessCount;
         static Lock *processCountLock;
+        int exitCode;
 
 
         static LinkedList<Process>* all_process_addr;
@@ -55,6 +56,8 @@ class Process {
         [[nodiscard]] Thread* getMainThread() const { return mainThread; }
         [[nodiscard]] unsigned int GetThreadNumber() const { return threadNumber; }
         [[nodiscard]] Process* getAncestor() const { return ancestor; }
+        [[nodiscard]] int getExitCode() { return exitCode; }
+        void setExitCode(int code) { exitCode = code;}
 
         /**
          * @brief Add a thread for this address space
