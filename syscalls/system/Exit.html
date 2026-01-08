@@ -37,7 +37,7 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-f19b851d.js";
+            window.path_to_searchindex_js = "../../searchindex-5ab326d4.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc-694da981.js"></script>
@@ -184,7 +184,7 @@
 <h2 id="synopsis"><a class="header" href="#synopsis">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
-void Exit(int status);
+void Exit(int status) __attribute__((noreturn));
 </code></pre>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <p><code>Exit</code> termine proprement le processus courant. Cette fonction attend la terminaison de tous les threads du processus, puis libère toutes les ressources associées. Si c’est le dernier processus actif du système, <code>Exit</code> arrête complètement Nachos.</p>
