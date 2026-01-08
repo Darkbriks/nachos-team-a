@@ -409,6 +409,7 @@ Pour exécuter du code concurrent :
 
 ## Auteurs
 
+Tommy PRATS, 8 Jan 2026
 Alioune Badara DIENE, 8 Jan 2026
 
 ## Dernière révision
