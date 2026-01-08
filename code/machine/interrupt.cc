@@ -226,7 +226,13 @@ void Interrupt::Idle() {
 // Interrupt::Halt
 //      Shut down Nachos cleanly, printing out performance statistics.
 //----------------------------------------------------------------------
+bool FirstTimeWeEnter = false;
+
 void Interrupt::Halt() {
+    if (FirstTimeWeEnter){
+        return;
+    }
+    FirstTimeWeEnter = true;
     printf("Machine halting!\n\n");
     stats->Print();
     Cleanup(); // Never returns.
