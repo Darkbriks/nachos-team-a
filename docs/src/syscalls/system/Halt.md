@@ -12,14 +12,13 @@ void Halt(void);
 
 ## Description
 
-`Halt` arrête complètement le système Nachos. Cette fonction termine immédiatement l'exécution de tous les processus et threads, puis affiche les statistiques de performance du système avant de quitter.
+`Halt` arrête complètement le système Nachos.Cette fonction affiche les statistiques de performance du système avant de quitter, puis termine immédiatement l'exécution de tous les processus et threads.
 
 **Numéro d'appel système** : `SC_Halt` (0)
 
 ### Comportement nominal
 
-1. Appel de `interrupt->Halt()` qui déclenche l'arrêt du système
-2. Affichage des statistiques de performance (cycles CPU, interruptions, etc.)
+1. Appel de `interrupt->Halt()` qui affiche les statistiques de performance (cycles CPU, interruptions, etc.) puis déclenche l'arrêt du système
 3. Terminaison complète du système Nachos
 4. Cette fonction ne retourne jamais
 
