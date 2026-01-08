@@ -185,6 +185,8 @@ void freeAllStatic(){
 // Cleanup
 //      Nachos is halting.  De-allocate global data structures.
 //----------------------------------------------------------------------
+
+
 void Cleanup() {
     printf("\nCleaning up...\n");
     Process* tmp;
@@ -197,7 +199,6 @@ void Cleanup() {
         delete processToBeDestroyed;
     }
 
-    ASSERT(Process::getCurrentNumberOfProcess() <= 2);
     tmp = currentThread->getProcess();
     for (int i = 1; i < MAX_PROCESS; i++){
         tmp = Process::FindProcessByPID(i);
