@@ -6,6 +6,7 @@ int main() {
     char buffer[255];
     int i;
     int pid;
+    int exitCode = -1;
     while (1) {
         printf_simple(prompt);
         i = scanf_simple("%s", buffer);
@@ -16,7 +17,9 @@ int main() {
                 print_error("Pas de process crée\n");
                 continue;;
             }
-            ForkJoin(pid);
+            ForkJoin(pid, &exitCode);
+            printf_simple("voici le code de retour du process\n");
+            PutInt(exitCode);
         }
     }
 }

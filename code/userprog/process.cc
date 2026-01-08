@@ -89,6 +89,7 @@ Process::Process(OpenFile * executable, char* return_code) {
     all_threads_addr = new LinkedList<Thread>();
     threads_bitmap = new BitMap(MAX_THREAD);
 
+    exitCode = 0;
     threadNumber = 0; // The main thread
     Thread * firstThread = CreateThread(executable ? "main" : "kernel");
     this->space = nullptr;

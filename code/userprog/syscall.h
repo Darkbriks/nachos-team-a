@@ -479,9 +479,10 @@ posix_process_t ForkExec(char *name);
  * @brief  Wait for the process finish
  *
  * @param PID the PID of the process to wait
- * @return The exit code of the process 
+ * @param addr_result A previously allocated adress where the exitcode will be put
+ * @return 0 on sucess and -1 on error
  */
-int ForkJoin(posix_process_t PID);
+int ForkJoin(posix_process_t PID, int *adrr_result);
 
 #endif // IN_USER_MODE
 

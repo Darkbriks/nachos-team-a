@@ -56,6 +56,7 @@ void handle_SC_ForkExec() {
 
 void handle_SC_ForkJoin() {
     const int PID_to_wait = machine->ReadRegister(4);
+    const int addr_return = machine->ReadRegister(5);
     if (PID_to_wait < 0){
         RETURN(-E_NOSPC);
     }
@@ -75,4 +76,14 @@ void handle_SC_ForkJoin() {
 
     DEBUG('p', "ForkJoin: process %d wait for process %d\n",currentThread->getProcess()->getPId(), PID_to_wait); 
     currentThread->getProcess()->WaitForChild(child);
+    int result = child->getExitCode();
+    delete child;
+
+    if (addr_return >= 0) {
+        if (machine->WriteMem(addr_return, sizeof(void*), reinterpret_cast<int>(result)) == FALSE) {
+            RETURN(-E_INVAL);
+        }
+    }
+    
+    RETURN(0);
 }
