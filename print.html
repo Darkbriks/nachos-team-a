@@ -38,10 +38,10 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-d48ae5be.js";
+            window.path_to_searchindex_js = "searchindex-1fbd2d58.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-1ca3ff59.js"></script>
+        <script src="toc-523511c1.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -190,6 +190,13 @@
 <li><a href="#appels-système">Syscalls List</a>
 <ul>
 <li><a href="#vue-densemble-des-appels-système">Syscall Overview</a></li>
+<li><a href="#system-control">System Control</a>
+<ul>
+<li><a href="#appels-système-de-contrôle-1">System Overview</a></li>
+<li><a href="#halt-1">Halt</a></li>
+<li><a href="#exit-1">Exit</a></li>
+</ul>
+</li>
 <li><a href="#console">Console</a>
 <ul>
 <li><a href="#vue-densemble---console-io">Console Overview</a></li>
@@ -242,6 +249,13 @@
 <li><a href="#appels-système">Syscalls List</a></li>
 <li><a href="#vue-densemble-des-appels-système">Syscall Overview</a>
 <ul>
+<li><a href="#system-control">System Control</a>
+<ul>
+<li><a href="#appels-système-de-contrôle-1">System Overview</a></li>
+<li><a href="#halt-1">Halt</a></li>
+<li><a href="#exit-1">Exit</a></li>
+</ul>
+</li>
 <li><a href="#console">Console</a>
 <ul>
 <li><a href="#vue-densemble---console-io">Console Overview</a></li>
@@ -359,6 +373,16 @@
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="appels-système"><a class="header" href="#appels-système">Appels système</a></h1>
 <p><a href="#vue-densemble-des-appels-système">Vue d’ensemble</a></p>
+<h1 id="contrôle-système"><a class="header" href="#contrôle-système">Contrôle Système</a></h1>
+<ul>
+<li><a href="#system-control">System Control</a>
+<ul>
+<li><a href="#appels-système-de-contrôle-1">Vue d’ensemble</a></li>
+<li><a href="#halt-1">Halt</a></li>
+<li><a href="#exit-1">Exit</a></li>
+</ul>
+</li>
+</ul>
 <h1 id="gestion-des-erreurs"><a class="header" href="#gestion-des-erreurs">Gestion des erreurs</a></h1>
 <ul>
 <li><a href="#gestion-des-erreurs-3">Gestion des erreurs</a></li>
@@ -526,6 +550,662 @@ Tommy, 05 Jan 2026</p>
 <h2 id="dernière-révision-1"><a class="header" href="#dernière-révision-1">Dernière révision</a></h2>
 <p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="system-control"><a class="header" href="#system-control">System Control</a></h1>
+<ul>
+<li><a href="#appels-système-de-contrôle-1">System Overview</a></li>
+</ul>
+<h1 id="appels-système-de-contrôle"><a class="header" href="#appels-système-de-contrôle">Appels système de contrôle</a></h1>
+<ul>
+<li><a href="#halt-1">Halt</a></li>
+<li><a href="#exit-1">Exit</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="appels-système-de-contrôle-1"><a class="header" href="#appels-système-de-contrôle-1">Appels Système de Contrôle</a></h1>
+<p>Cette section documente les appels système de contrôle du système Nachos, qui permettent de gérer le cycle de vie du système et des processus.</p>
+<h2 id="vue-densemble"><a class="header" href="#vue-densemble">Vue d’ensemble</a></h2>
+<p>Les appels système de contrôle permettent de :</p>
+<ul>
+<li>Arrêter complètement le système Nachos</li>
+<li>Terminer proprement un processus utilisateur</li>
+<li>Retourner des codes de statut</li>
+</ul>
+<h2 id="liste-des-appels-système"><a class="header" href="#liste-des-appels-système">Liste des appels système</a></h2>
+<h3 id="halt"><a class="header" href="#halt"><a href="#halt-1">Halt</a></a></h3>
+<p>Arrête immédiatement tout le système Nachos et affiche les statistiques de performance.</p>
+<p><strong>Utilisation</strong> :</p>
+<pre><code class="language-c">void Halt(void);
+</code></pre>
+<p><strong>Cas d’usage</strong> :</p>
+<ul>
+<li>Terminaison globale du système</li>
+<li>Fin de programmes de test</li>
+<li>Affichage des statistiques système</li>
+</ul>
+<h3 id="exit"><a class="header" href="#exit"><a href="#exit-1">Exit</a></a></h3>
+<p>Termine proprement le processus courant en attendant la fin de tous ses threads.</p>
+<p><strong>Utilisation</strong> :</p>
+<pre><code class="language-c">void Exit(int status);
+</code></pre>
+<p><strong>Cas d’usage</strong> :</p>
+<ul>
+<li>Terminaison normale d’un processus</li>
+<li>Gestion d’erreurs avec codes de retour</li>
+<li>Synchronisation avec processus parent</li>
+</ul>
+<h2 id="différences-principales"><a class="header" href="#différences-principales">Différences principales</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Caractéristique</th><th>Halt</th><th>Exit</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Portée</strong></td><td>Système entier</td><td>Processus courant</td></tr>
+<tr><td><strong>Autres processus</strong></td><td>Terminés</td><td>Non affectés</td></tr>
+<tr><td><strong>Threads du processus</strong></td><td>Terminés immédiatement</td><td>Attendus avant terminaison</td></tr>
+<tr><td><strong>Code de retour</strong></td><td>Aucun</td><td>Retourné au parent</td></tr>
+<tr><td><strong>Statistiques</strong></td><td>Affichées</td><td>Non affichées</td></tr>
+<tr><td><strong>Nettoyage</strong></td><td>Minimal</td><td>Complet</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="conventions-de-codes-de-retour"><a class="header" href="#conventions-de-codes-de-retour">Conventions de codes de retour</a></h2>
+<p>Les codes de retour suivent généralement ces conventions :</p>
+<ul>
+<li><strong>0</strong> : Succès, exécution normale</li>
+<li><strong>1-255</strong> : Erreurs diverses (définies par l’application)</li>
+</ul>
+<p>Exemples courants :</p>
+<pre><code class="language-c">#define EXIT_SUCCESS  0
+#define EXIT_FAILURE  1
+#define EXIT_INVALID_ARG  2
+#define EXIT_IO_ERROR     3
+</code></pre>
+<h2 id="hiérarchie-de-terminaison"><a class="header" href="#hiérarchie-de-terminaison">Hiérarchie de terminaison</a></h2>
+<p>Nachos offre plusieurs niveaux de terminaison :</p>
+<ol>
+<li><strong>Thread</strong> : <code>PthreadExit(retval)</code> - Termine le thread courant</li>
+<li><strong>Processus</strong> : <code>Exit(status)</code> - Termine le processus et tous ses threads</li>
+<li><strong>Système</strong> : <code>Halt()</code> - Termine tous les processus et le système</li>
+</ol>
+<h2 id="exemples"><a class="header" href="#exemples">Exemples</a></h2>
+<h3 id="terminaison-conditionnelle"><a class="header" href="#terminaison-conditionnelle">Terminaison conditionnelle</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int value;
+    int result = GetInt(&amp;value);
+
+    if (result != 0) {
+        PutString("Input error!\n", 13);
+        Exit(1);  // Terminaison avec erreur
+    }
+
+    if (value &lt; 0) {
+        PutString("Negative value not allowed\n", 27);
+        Exit(2);  // Code d'erreur spécifique
+    }
+
+    PutString("Processing value: ", 18);
+    PutInt(value);
+    PutChar('\n');
+
+    Exit(0);  // Succès
+}
+</code></pre>
+<h3 id="dernier-processus-déclenche-halt"><a class="header" href="#dernier-processus-déclenche-halt">Dernier processus déclenche Halt</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    PutString("This is the only process.\n", 26);
+    PutString("Exit will trigger Halt!\n", 24);
+
+    Exit(0);  // Si dernier processus, appelle Halt()
+
+    // Équivalent à Halt() dans ce cas
+}
+</code></pre>
+<h2 id="gestion-derreur"><a class="header" href="#gestion-derreur">Gestion d’erreur</a></h2>
+<p>Les appels système de contrôle ne peuvent pas échouer :</p>
+<ul>
+<li>Ils ne retournent jamais au code appelant</li>
+<li>Aucun code d’erreur n’est généré</li>
+<li><code>errno</code> n’est pas modifié</li>
+</ul>
+<h2 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h2>
+<p>Les deux appels système sont thread-safe :</p>
+<ul>
+<li>N’importe quel thread peut appeler <code>Halt</code> ou <code>Exit</code></li>
+<li>Les appels concurrents sont gérés correctement</li>
+<li>Le premier appel déclenche la terminaison</li>
+</ul>
+<h2 id="voir-aussi-1"><a class="header" href="#voir-aussi-1">Voir aussi</a></h2>
+<ul>
+<li><a href="#pthreadexit">PthreadExit</a> - Terminer un thread</li>
+<li><a href="syscalls/process/Join.html">Join</a> - Récupérer le code de retour d’un processus</li>
+<li><a href="#forkexec">ForkExec</a> - Créer un processus enfant</li>
+</ul>
+<h2 id="notes-dimplémentation"><a class="header" href="#notes-dimplémentation">Notes d’implémentation</a></h2>
+<h3 id="architecture"><a class="header" href="#architecture">Architecture</a></h3>
+<p>Les appels système de contrôle sont implémentés dans :</p>
+<ul>
+<li><code>code/userprog/exception.cc</code> - Handlers des syscalls</li>
+<li><code>code/threads/interrupt.cc</code> - Logique d’arrêt système</li>
+<li><code>code/userprog/process.cc</code> - Gestion des processus</li>
+</ul>
+<h3 id="convention-dappel"><a class="header" href="#convention-dappel">Convention d’appel</a></h3>
+<p>Registres utilisés :</p>
+<ul>
+<li><strong>$2</strong> : Numéro de syscall, puis valeur de retour</li>
+<li><strong>$4</strong> : Premier argument (status pour Exit)</li>
+<li><strong>PC</strong> : Incrémenté après syscall (sauf Halt/Exit qui ne retournent pas)</li>
+</ul>
+<h3 id="différences-posix"><a class="header" href="#différences-posix">Différences POSIX</a></h3>
+<p>Nachos simplifie le modèle POSIX :</p>
+<ul>
+<li>Pas de signaux (SIGTERM, SIGKILL, etc.)</li>
+<li>Pas de handlers atexit()</li>
+<li>Pas de groupes de processus</li>
+<li>Code de retour limité à un entier</li>
+</ul>
+<h2 id="auteurs-2"><a class="header" href="#auteurs-2">Auteurs</a></h2>
+<p>Alioune Badara DIENE, 8 Jan 2026</p>
+<h2 id="dernière-révision-2"><a class="header" href="#dernière-révision-2">Dernière révision</a></h2>
+<p>8 Jan 2026</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="halt-1"><a class="header" href="#halt-1">Halt</a></h1>
+<p><code>Halt</code> - Arrête le système Nachos et affiche les statistiques de performance</p>
+<h2 id="synopsis"><a class="header" href="#synopsis">Synopsis</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+void Halt(void);
+</code></pre>
+<h2 id="description"><a class="header" href="#description">Description</a></h2>
+<p><code>Halt</code> arrête complètement le système Nachos. Cette fonction termine immédiatement l’exécution de tous les processus et threads, puis affiche les statistiques de performance du système avant de quitter.</p>
+<p><strong>Numéro d’appel système</strong> : <code>SC_Halt</code> (0)</p>
+<h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
+<ol>
+<li>Appel de <code>interrupt-&gt;Halt()</code> qui déclenche l’arrêt du système</li>
+<li>Affichage des statistiques de performance (cycles CPU, interruptions, etc.)</li>
+<li>Terminaison complète du système Nachos</li>
+<li>Cette fonction ne retourne jamais</li>
+</ol>
+<div class="callout callout-warning">
+    
+<div class="callout-title">Arrêt immédiat</div>
+
+    
+<div class="callout-content">
+        <code>Halt</code> termine le système sans nettoyer les ressources ni attendre
+        la fin des autres threads ou processus. Utilisez <code>Exit</code> pour une
+        terminaison propre d'un processus.
+    </div>
+
+</div>
+
+<h2 id="paramètres"><a class="header" href="#paramètres">Paramètres</a></h2>
+<p>Cette fonction ne prend aucun paramètre.</p>
+<h2 id="valeur-de-retour"><a class="header" href="#valeur-de-retour">Valeur de retour</a></h2>
+<p><strong>Type</strong> : <code>void</code></p>
+<p>Cette fonction ne retourne jamais. Elle termine l’exécution du système Nachos.</p>
+<h2 id="codes-derreur"><a class="header" href="#codes-derreur">Codes d’erreur</a></h2>
+<p>Aucun. Cette fonction ne peut pas échouer.</p>
+<h2 id="implémentation"><a class="header" href="#implémentation">Implémentation</a></h2>
+<h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S:91</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handle_SC_Halt()</code></li>
+<li><strong>Implémentation</strong> : <code>code/threads/interrupt.cc:Interrupt::Halt()</code></li>
+</ul>
+<h3 id="flux-dexécution-1"><a class="header" href="#flux-dexécution-1">Flux d’exécution</a></h3>
+<pre><code>Halt()
+    │
+    ▼
+start.S: Halt
+    │ charge $2 = SC_Halt (0)
+    ▼
+syscall SC_Halt
+    │
+    ▼
+handle_SC_Halt()
+    │ affiche "Shutdown, initiated by user program."
+    ▼
+interrupt-&gt;Halt()
+    │ ├─ affiche les statistiques
+    │ ├─ cleanup()
+    │ └─ exit(0)
+    ▼
+[Fin du système Nachos]
+</code></pre>
+<h2 id="exemples-1"><a class="header" href="#exemples-1">Exemples</a></h2>
+<h3 id="exemple-1--arrêt-simple"><a class="header" href="#exemple-1--arrêt-simple">Exemple 1 : Arrêt simple</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    PutString("System is shutting down...\n", 27);
+    Halt();
+    // Cette ligne ne sera jamais exécutée
+    PutString("This will never print\n", 22);
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-2--arrêt-après-traitement"><a class="header" href="#exemple-2--arrêt-après-traitement">Exemple 2 : Arrêt après traitement</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int i;
+
+    PutString("Processing data...\n", 19);
+
+    for (i = 0; i &lt; 10; i++) {
+        PutInt(i);
+        PutChar(' ');
+    }
+    PutChar('\n');
+
+    PutString("Done! Halting system.\n", 22);
+    Halt();
+
+    return 0;  // Jamais atteint
+}
+</code></pre>
+<h3 id="exemple-3--halt-vs-exit"><a class="header" href="#exemple-3--halt-vs-exit">Exemple 3 : Halt vs Exit</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+void *thread_func(void *arg) {
+    int id = (int)(long)arg;
+    PutString("Thread ", 7);
+    PutInt(id);
+    PutString(" running\n", 9);
+
+    if (id == 0) {
+        PutString("Thread 0 calling Halt()!\n", 25);
+        Halt();  // Arrête TOUT le système
+    }
+
+    PutString("Thread ", 7);
+    PutInt(id);
+    PutString(" finished\n", 10);
+    return 0;
+}
+
+int main() {
+    posix_thread_t tid0, tid1;
+
+    PthreadCreate(&amp;tid0, 0, thread_func, (void *)0);
+    PthreadCreate(&amp;tid1, 0, thread_func, (void *)1);
+
+    PthreadJoin(tid0, 0);
+    PthreadJoin(tid1, 0);  // Jamais atteint si thread 0 appelle Halt
+
+    PutString("Main exiting\n", 13);  // Jamais atteint
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie attendue</strong> :</p>
+<pre><code>Thread 0 running
+Thread 1 running
+Thread 0 calling Halt()!
+Machine halting!
+
+[Statistiques de performance affichées]
+</code></pre>
+<h2 id="cas-dusage"><a class="header" href="#cas-dusage">Cas d’usage</a></h2>
+<h3 id="arrêt-de-test"><a class="header" href="#arrêt-de-test">Arrêt de test</a></h3>
+<p><code>Halt</code> est principalement utilisé pour :</p>
+<ul>
+<li>Terminer proprement les programmes de test</li>
+<li>Arrêter le système après une suite de tests</li>
+<li>Simuler un arrêt système complet</li>
+</ul>
+<h3 id="différence-avec-exit"><a class="header" href="#différence-avec-exit">Différence avec Exit</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Aspect</th><th>Halt</th><th>Exit</th></tr>
+</thead>
+<tbody>
+<tr><td>Portée</td><td>Arrête tout le système</td><td>Termine le processus appelant</td></tr>
+<tr><td>Threads</td><td>Tous terminés immédiatement</td><td>Attend la fin des threads du processus</td></tr>
+<tr><td>Autres processus</td><td>Terminés</td><td>Continuent leur exécution</td></tr>
+<tr><td>Nettoyage</td><td>Minimal</td><td>Complet pour le processus</td></tr>
+<tr><td>Statistiques</td><td>Affichées</td><td>Non affichées</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="thread-safety-1"><a class="header" href="#thread-safety-1">Thread-safety</a></h2>
+<p>Non applicable. <code>Halt</code> arrête immédiatement le système, quel que soit le thread appelant.</p>
+<div class="callout callout-warning">
+    
+<div class="callout-title">Utilisation multi-thread</div>
+
+    
+<div class="callout-content">
+        Si plusieurs threads tentent d'appeler <code>Halt</code> simultanément,
+        le premier appel arrêtera le système. Les autres threads seront terminés
+        avant d'atteindre leur appel à <code>Halt</code>.
+    </div>
+
+</div>
+
+<h2 id="statistiques-affichées"><a class="header" href="#statistiques-affichées">Statistiques affichées</a></h2>
+<p>Lors de l’arrêt, Nachos affiche typiquement :</p>
+<pre><code>Ticks: total X, idle Y, system Z, user W
+Disk I/O: reads R, writes W
+Console I/O: reads R, writes W
+Paging: faults F
+Network I/O: packets received R, sent S
+</code></pre>
+<p>Ces statistiques permettent d’évaluer les performances du système et des programmes utilisateur.</p>
+<h2 id="voir-aussi-2"><a class="header" href="#voir-aussi-2">Voir aussi</a></h2>
+<div class="callout callout-see-also">
+    
+<div class="callout-content">
+<ul>
+<li><a href="#exit-1">Exit</a> - Terminer un processus proprement</li>
+<li><a href="#pthreadexit">PthreadExit</a> - Terminer un thread</li>
+</ul>
+</div>
+
+</div>
+
+<h2 id="auteurs-3"><a class="header" href="#auteurs-3">Auteurs</a></h2>
+<p>Alioune Badara DIENE, 8 Jan 2026</p>
+<h2 id="dernière-révision-3"><a class="header" href="#dernière-révision-3">Dernière révision</a></h2>
+<p>8 Jan 2026</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="exit-1"><a class="header" href="#exit-1">Exit</a></h1>
+<p><code>Exit</code> - Termine proprement le processus courant</p>
+<h2 id="synopsis-1"><a class="header" href="#synopsis-1">Synopsis</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+void Exit(int status);
+</code></pre>
+<h2 id="description-1"><a class="header" href="#description-1">Description</a></h2>
+<p><code>Exit</code> termine proprement le processus courant. Cette fonction attend la terminaison de tous les threads du processus, puis libère toutes les ressources associées. Si c’est le dernier processus actif du système, <code>Exit</code> arrête complètement Nachos.</p>
+<p><strong>Numéro d’appel système</strong> : <code>SC_Exit</code> (1)</p>
+<h3 id="comportement-nominal-1"><a class="header" href="#comportement-nominal-1">Comportement nominal</a></h3>
+<ol>
+<li>Lecture du code de retour <code>status</code> depuis le registre <code>$4</code></li>
+<li>Écriture du code de retour dans le registre <code>$2</code></li>
+<li>Attente de la terminaison de tous les threads du processus via <code>WaitForAllThreadsTerminate()</code></li>
+<li>Si c’est le dernier processus actif :
+<ul>
+<li>Suppression du processus</li>
+<li>Arrêt du système avec <code>interrupt-&gt;Halt()</code></li>
+</ul>
+</li>
+<li>Sinon :
+<ul>
+<li>Marquage du processus pour destruction différée</li>
+<li>Terminaison du thread courant via <code>currentThread-&gt;Finish()</code></li>
+</ul>
+</li>
+</ol>
+<div class="callout callout-note">
+    
+<div class="callout-title">Terminaison propre</div>
+
+    
+<div class="callout-content">
+        Contrairement à <code>Halt</code>, <code>Exit</code> garantit une terminaison propre
+        du processus en attendant tous ses threads et en libérant ses ressources.
+    </div>
+
+</div>
+
+<h2 id="paramètres-1"><a class="header" href="#paramètres-1">Paramètres</a></h2>
+<h3 id="status"><a class="header" href="#status"><code>status</code></a></h3>
+<p>Code de retour du processus, conventionnellement 0 pour succès, non-zéro pour erreur.</p>
+<p><strong>Type</strong> : <code>int</code>
+<strong>Direction</strong> : IN
+<strong>Registre</strong> : <code>$4</code>
+<strong>Convention</strong> :</p>
+<ul>
+<li><code>0</code> = terminaison normale</li>
+<li><code>non-zéro</code> = erreur ou terminaison anormale</li>
+</ul>
+<h2 id="valeur-de-retour-1"><a class="header" href="#valeur-de-retour-1">Valeur de retour</a></h2>
+<p><strong>Type</strong> : <code>void</code></p>
+<p>Cette fonction ne retourne jamais au code utilisateur. Le code de retour <code>status</code> est écrit dans le registre <code>$2</code> avant la terminaison et peut être récupéré par un processus parent via <code>Join()</code>.</p>
+<h2 id="codes-derreur-1"><a class="header" href="#codes-derreur-1">Codes d’erreur</a></h2>
+<p>Aucun. Cette fonction ne peut pas échouer et ne retourne jamais.</p>
+<h2 id="implémentation-1"><a class="header" href="#implémentation-1">Implémentation</a></h2>
+<h3 id="localisation-du-code-1"><a class="header" href="#localisation-du-code-1">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S:99</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handle_SC_Exit()</code></li>
+</ul>
+<h3 id="flux-dexécution-2"><a class="header" href="#flux-dexécution-2">Flux d’exécution</a></h3>
+<pre><code>Exit(status)
+    │
+    ▼
+start.S: Exit
+    │ charge $4 = status
+    │ charge $2 = SC_Exit (1)
+    ▼
+syscall SC_Exit
+    │
+    ▼
+handle_SC_Exit()
+    │ ├─ lit status depuis $4
+    │ ├─ écrit status dans $2
+    │ └─ récupère process
+    ▼
+process-&gt;WaitForAllThreadsTerminate()
+    │ attend que tous les threads se terminent
+    ▼
+Si dernier processus actif:
+    │ ├─ delete process
+    │ └─ interrupt-&gt;Halt()
+Sinon:
+    │ ├─ processToBeDestroyed = process
+    │ └─ currentThread-&gt;Finish()
+    ▼
+[Processus terminé]
+</code></pre>
+<h2 id="exemples-2"><a class="header" href="#exemples-2">Exemples</a></h2>
+<h3 id="exemple-1--terminaison-normale"><a class="header" href="#exemple-1--terminaison-normale">Exemple 1 : Terminaison normale</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    PutString("Hello, Nachos!\n", 15);
+    PutString("Program completed successfully.\n", 32);
+    Exit(0);  // Code de retour 0 = succès
+}
+</code></pre>
+<h3 id="exemple-2--terminaison-avec-erreur"><a class="header" href="#exemple-2--terminaison-avec-erreur">Exemple 2 : Terminaison avec erreur</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int result;
+
+    result = GetInt(&amp;result);
+    if (result != 0) {
+        PutString("Error reading integer!\n", 23);
+        Exit(1);  // Code d'erreur 1
+    }
+
+    PutString("Value read: ", 12);
+    PutInt(result);
+    PutChar('\n');
+
+    Exit(0);  // Succès
+}
+</code></pre>
+<h3 id="exemple-3--attente-des-threads"><a class="header" href="#exemple-3--attente-des-threads">Exemple 3 : Attente des threads</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+void *worker(void *arg) {
+    int id = (int)(long)arg;
+    int i;
+
+    for (i = 0; i &lt; 5; i++) {
+        PutString("Thread ", 7);
+        PutInt(id);
+        PutString(" iteration ", 11);
+        PutInt(i);
+        PutChar('\n');
+    }
+
+    return 0;
+}
+
+int main() {
+    posix_thread_t tid1, tid2;
+
+    PutString("Starting threads...\n", 20);
+
+    PthreadCreate(&amp;tid1, 0, worker, (void *)1);
+    PthreadCreate(&amp;tid2, 0, worker, (void *)2);
+
+    PutString("Main thread calling Exit()\n", 27);
+    Exit(0);  // Attend automatiquement tid1 et tid2
+
+    // Jamais atteint
+}
+</code></pre>
+<p><strong>Comportement</strong> : <code>Exit</code> attend que les threads 1 et 2 se terminent avant de détruire le processus.</p>
+<h3 id="exemple-4--exit-vs-return"><a class="header" href="#exemple-4--exit-vs-return">Exemple 4 : Exit vs return</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int choice = 1;
+
+    if (choice == 0) {
+        PutString("Using return\n", 13);
+        return 0;  // Équivalent à Exit(0)
+    } else {
+        PutString("Using Exit\n", 11);
+        Exit(0);   // Explicite
+    }
+}
+</code></pre>
+<div class="callout callout-note">
+    
+<div class="callout-title">return vs Exit</div>
+
+    
+<div class="callout-content">
+        Dans le thread principal, <code>return status;</code> est typiquement converti
+        en <code>Exit(status);</code> par le runtime C. Les deux formes sont équivalentes.
+    </div>
+
+</div>
+
+<h3 id="exemple-5--codes-de-retour-conventionnels"><a class="header" href="#exemple-5--codes-de-retour-conventionnels">Exemple 5 : Codes de retour conventionnels</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+#define SUCCESS 0
+#define ERROR_INVALID_INPUT 1
+#define ERROR_OVERFLOW 2
+#define ERROR_IO 3
+
+int divide(int a, int b, int *result) {
+    if (b == 0) return ERROR_INVALID_INPUT;
+    *result = a / b;
+    return SUCCESS;
+}
+
+int main() {
+    int a = 10, b = 2, result;
+    int status;
+
+    status = divide(a, b, &amp;result);
+
+    if (status != SUCCESS) {
+        PutString("Error: ", 7);
+        PutInt(status);
+        PutChar('\n');
+        Exit(status);
+    }
+
+    PutString("Result: ", 8);
+    PutInt(result);
+    PutChar('\n');
+
+    Exit(SUCCESS);
+}
+</code></pre>
+<h2 id="cas-dusage-1"><a class="header" href="#cas-dusage-1">Cas d’usage</a></h2>
+<h3 id="terminaison-normale"><a class="header" href="#terminaison-normale">Terminaison normale</a></h3>
+<p><code>Exit</code> est utilisé pour :</p>
+<ul>
+<li>Terminer proprement un programme après son exécution</li>
+<li>Retourner un code de statut au système ou au processus parent</li>
+<li>Garantir la libération de toutes les ressources du processus</li>
+</ul>
+<h3 id="gestion-derreur-1"><a class="header" href="#gestion-derreur-1">Gestion d’erreur</a></h3>
+<p>Les codes de retour permettent de signaler différents types d’erreurs :</p>
+<ul>
+<li><code>0</code> : succès</li>
+<li><code>1-255</code> : codes d’erreur spécifiques à l’application</li>
+</ul>
+<h2 id="thread-safety-2"><a class="header" href="#thread-safety-2">Thread-safety</a></h2>
+<p><code>Exit</code> est thread-safe. N’importe quel thread d’un processus peut appeler <code>Exit</code>, et le système garantit que tous les autres threads du processus seront terminés proprement.</p>
+<div class="callout callout-warning">
+    
+<div class="callout-title">Appel concurrent</div>
+
+    
+<div class="callout-content">
+        Si plusieurs threads appellent <code>Exit</code> simultanément, le premier appel
+        déclenchera la terminaison du processus. Les autres threads seront terminés
+        avant d'atteindre leur appel à <code>Exit</code>.
+    </div>
+
+</div>
+
+<h2 id="différences-avec-posix"><a class="header" href="#différences-avec-posix">Différences avec POSIX</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Aspect</th><th>POSIX exit()</th><th>Nachos Exit()</th></tr>
+</thead>
+<tbody>
+<tr><td>Prototype</td><td><code>void exit(int status)</code></td><td><code>void Exit(int status)</code></td></tr>
+<tr><td>Casse</td><td>Minuscule</td><td>Majuscule</td></tr>
+<tr><td>Threads</td><td>Termine tout le processus</td><td>Attend les threads du processus</td></tr>
+<tr><td>atexit()</td><td>Appelle les handlers</td><td>Non supporté</td></tr>
+<tr><td>Buffers stdio</td><td>Vidés</td><td>Non applicable</td></tr>
+<tr><td>Processus parent</td><td>Notifié via SIGCHLD</td><td>Peut utiliser Join()</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="relation-avec-join"><a class="header" href="#relation-avec-join">Relation avec Join()</a></h2>
+<p>Le code de retour passé à <code>Exit</code> peut être récupéré par un processus parent utilisant <code>Join()</code> :</p>
+<pre><code class="language-c">// Processus enfant
+int main() {
+    // ... traitement ...
+    Exit(42);
+}
+
+// Processus parent
+int main() {
+    SpaceId child = Exec("child_program");
+    int status = Join(child);  // Récupère 42
+    PutInt(status);
+    Exit(0);
+}
+</code></pre>
+<h2 id="voir-aussi-3"><a class="header" href="#voir-aussi-3">Voir aussi</a></h2>
+<div class="callout callout-see-also">
+    
+<div class="callout-content">
+<ul>
+<li><a href="#halt-1">Halt</a> - Arrêter tout le système</li>
+<li><a href="#pthreadexit">PthreadExit</a> - Terminer un thread</li>
+<li><a href="syscalls/process/Join.html">Join</a> - Attendre un processus enfant</li>
+<li><a href="#forkexec">ForkExec</a> - Créer un processus</li>
+</ul>
+</div>
+
+</div>
+
+<h2 id="auteurs-4"><a class="header" href="#auteurs-4">Auteurs</a></h2>
+<p>Alioune Badara DIENE, 8 Jan 2026</p>
+<h2 id="dernière-révision-4"><a class="header" href="#dernière-révision-4">Dernière révision</a></h2>
+<p>8 Jan 2026</p>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="console"><a class="header" href="#console">Console</a></h1>
 <ul>
 <li><a href="#vue-densemble---console-io">Vue d’ensemble</a></li>
@@ -555,7 +1235,7 @@ Tommy, 05 Jan 2026</p>
 <li><strong><a href="#getstring">GetString</a></strong> : Lit une chaîne de caractères</li>
 <li><strong><a href="#getint">GetInt</a></strong> : Lit un entier signé</li>
 </ul>
-<h2 id="architecture"><a class="header" href="#architecture">Architecture</a></h2>
+<h2 id="architecture-1"><a class="header" href="#architecture-1">Architecture</a></h2>
 <p>Tous les appels système de console utilisent la classe <code>SynchConsole</code> qui fournit :</p>
 <ul>
 <li><strong>Synchronisation</strong> : Accès thread-safe via sémaphores</li>
@@ -580,22 +1260,22 @@ Tommy, 05 Jan 2026</p>
 </div>
 <h2 id="synchronisation"><a class="header" href="#synchronisation">Synchronisation</a></h2>
 <p>Le sémaphore <code>IO_Lock</code> garantit qu’un seul thread accède à la console à la fois, évitant l’entrelacement des caractères.</p>
-<h2 id="voir-aussi-1"><a class="header" href="#voir-aussi-1">Voir aussi</a></h2>
+<h2 id="voir-aussi-4"><a class="header" href="#voir-aussi-4">Voir aussi</a></h2>
 <ul>
 <li><a href="#gestion-des-erreurs-3">Gestion des erreurs</a></li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="putchar"><a class="header" href="#putchar">PutChar</a></h1>
 <p><code>PutChar</code> - Écrit un caractère dans la console de sortie standard</p>
-<h2 id="synopsis"><a class="header" href="#synopsis">SYNOPSIS</a></h2>
+<h2 id="synopsis-2"><a class="header" href="#synopsis-2">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 void PutChar(char c);
 </code></pre>
-<h2 id="description"><a class="header" href="#description">DESCRIPTION</a></h2>
+<h2 id="description-2"><a class="header" href="#description-2">DESCRIPTION</a></h2>
 <p><code>PutChar</code> écrit le caractère spécifié <code>c</code> dans la console de sortie standard. Cette opération est bloquante et attend que le caractère soit effectivement affiché avant de retourner le contrôle au programme appelant.</p>
 <p>Numéro d’appel système : <code>11</code></p>
-<h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-2"><a class="header" href="#comportement-nominal-2">Comportement nominal</a></h3>
 <ul>
 <li>Le caractère <code>c</code> est immédiatement envoyé au périphérique de sortie.</li>
 <li>L’appel bloque jusqu’à ce que le périphérique confirme l’écriture.</li>
@@ -611,7 +1291,7 @@ void PutChar(char c);
 <li><strong>Caractères de contrôle</strong> : Leur affichage dépend du terminal (ex. <code>\n</code> provoque un saut de ligne dans la plupart des terminaux).</li>
 <li><strong>Caractères non ASCII</strong> : Dépend du support du terminal.</li>
 </ul>
-<h2 id="paramètres"><a class="header" href="#paramètres">PARAMÈTRES</a></h2>
+<h2 id="paramètres-2"><a class="header" href="#paramètres-2">PARAMÈTRES</a></h2>
 <h3 id="c"><a class="header" href="#c"><code>c</code></a></h3>
 <p>Le caractère à écrire dans la console.</p>
 <p><strong>Type</strong> : <code>char</code><br><strong>Direction</strong> : IN
@@ -620,22 +1300,22 @@ void PutChar(char c);
 <ul>
 <li>Doit être sur 8 bits signé</li>
 </ul>
-<h2 id="valeur-de-retour"><a class="header" href="#valeur-de-retour">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-2"><a class="header" href="#valeur-de-retour-2">VALEUR DE RETOUR</a></h2>
 <p>Auncune valeur de retour (<code>void</code>). Cet appel ne produit pas de code d’erreur.</p>
-<h2 id="codes-derreur"><a class="header" href="#codes-derreur">CODES D’ERREUR</a></h2>
+<h2 id="codes-derreur-2"><a class="header" href="#codes-derreur-2">CODES D’ERREUR</a></h2>
 <p>Aucun code d’erreur n’est défini pour cet appel système. En cas de problème matériel, le comportement est indéfini.</p>
-<h2 id="implémentation"><a class="header" href="#implémentation">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
+<h2 id="implémentation-2"><a class="header" href="#implémentation-2">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-2"><a class="header" href="#localisation-du-code-2">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S:186-193</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handleSC_PutChar()</code></li>
 <li><strong>Implémentation</strong> : <code>code/userprog/synchconsole.cc:SynchConsole::SynchPutChar()</code></li>
 </ul>
-<h3 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h3>
+<h3 id="thread-safety-3"><a class="header" href="#thread-safety-3">Thread-safety</a></h3>
 <p>L’implémentation utilise des sémaphores pour garantir que les appels concurrents à <code>PutChar</code> ne produisent pas d’erreurs, et que chaque caractère demandé soit affiché.</p>
 <h2 id="décisions-de-conception"><a class="header" href="#décisions-de-conception">DÉCISIONS DE CONCEPTION</a></h2>
 <p><em>TODO : A compléter (Pourquoi bloquant synchrone, pourquoi pas d’erreur)</em></p>
-<h2 id="exemples"><a class="header" href="#exemples">EXEMPLES</a></h2>
+<h2 id="exemples-3"><a class="header" href="#exemples-3">EXEMPLES</a></h2>
 <h3 id="exemple-1--utilisation-basique"><a class="header" href="#exemple-1--utilisation-basique">Exemple 1 : Utilisation basique</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -712,28 +1392,28 @@ int main() {
 <li><strong>v1.0</strong> : Implémentation initiale sans synchronisation</li>
 <li><strong>v1.1</strong> : Ajout de <code>IO_Lock</code> pour thread-safety</li>
 </ul>
-<h2 id="voir-aussi-2"><a class="header" href="#voir-aussi-2">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-5"><a class="header" href="#voir-aussi-5">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#putstring">PutString</a> - Écrit une chaîne de caractères</li>
 <li><a href="#putint">PutInt</a> - Écrit un entier</li>
 <li><a href="#getchar">GetChar</a> - Lecture d’un caractère</li>
 </ul>
-<h2 id="auteurs-2"><a class="header" href="#auteurs-2">AUTEURS</a></h2>
+<h2 id="auteurs-5"><a class="header" href="#auteurs-5">AUTEURS</a></h2>
 <p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision-2"><a class="header" href="#dernière-révision-2">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-5"><a class="header" href="#dernière-révision-5">DERNIÈRE RÉVISION</a></h2>
 <p>20 Dec 2025 par Antoine</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="getchar"><a class="header" href="#getchar">GetChar</a></h1>
 <p><code>GetChar</code> - Lit un caractère depuis la console d’entrée standard</p>
-<h2 id="synopsis-1"><a class="header" href="#synopsis-1">SYNOPSIS</a></h2>
+<h2 id="synopsis-3"><a class="header" href="#synopsis-3">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 char GetChar(void);
 </code></pre>
-<h2 id="description-1"><a class="header" href="#description-1">DESCRIPTION</a></h2>
+<h2 id="description-3"><a class="header" href="#description-3">DESCRIPTION</a></h2>
 <p><code>GetChar</code> lit et retourne un seul caractère depuis la console d’entrée standard (clavier). L’appel bloque jusqu’à ce qu’un caractère soit disponible.</p>
 <p>Numéro d’appel système : <code>13</code></p>
-<h3 id="comportement-nominal-1"><a class="header" href="#comportement-nominal-1">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-3"><a class="header" href="#comportement-nominal-3">Comportement nominal</a></h3>
 <ul>
 <li>L’appel bloque jusqu’à ce qu’un caractère soit tapé par l’utilisateur</li>
 <li>Le caractère est lu depuis le buffer interne de la console</li>
@@ -746,29 +1426,29 @@ char GetChar(void);
 <li><strong>Interruption clavier</strong> : Les interruptions ne sont pas gérées au niveau syscall</li>
 <li><strong>Buffer vide</strong> : Thread bloqué sur sémaphore <code>readAvail</code> jusqu’à input</li>
 </ul>
-<h2 id="paramètres-1"><a class="header" href="#paramètres-1">PARAMÈTRES</a></h2>
+<h2 id="paramètres-3"><a class="header" href="#paramètres-3">PARAMÈTRES</a></h2>
 <p>Aucun paramètre.</p>
-<h2 id="valeur-de-retour-1"><a class="header" href="#valeur-de-retour-1">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-3"><a class="header" href="#valeur-de-retour-3">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>char</code> (registre <code>$2</code>)</p>
 <p><strong>Valeurs possibles</strong> :</p>
 <ul>
 <li>Caractère lu (0x00 à 0xFF, signé)</li>
 <li><code>EOF</code> (-1) si fin de flux</li>
 </ul>
-<h2 id="codes-derreur-1"><a class="header" href="#codes-derreur-1">CODES D’ERREUR</a></h2>
+<h2 id="codes-derreur-3"><a class="header" href="#codes-derreur-3">CODES D’ERREUR</a></h2>
 <p>Aucun code d’erreur. La variable <code>errno</code> n’est jamais modifiée.</p>
-<h2 id="implémentation-1"><a class="header" href="#implémentation-1">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-1"><a class="header" href="#localisation-du-code-1">Localisation du code</a></h3>
+<h2 id="implémentation-3"><a class="header" href="#implémentation-3">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-3"><a class="header" href="#localisation-du-code-3">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S:214-221</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handler_SC_getChar()</code></li>
 <li><strong>Implémentation</strong> : <code>code/userprog/synchconsole.cc:SynchConsole::SynchGetChar()</code></li>
 </ul>
-<h3 id="thread-safety-1"><a class="header" href="#thread-safety-1">Thread-safety</a></h3>
+<h3 id="thread-safety-4"><a class="header" href="#thread-safety-4">Thread-safety</a></h3>
 <p>L’implementation utilise des sémaphores pour garantir un accès exclusif au buffer de la console, évitant les conditions de course lors de lectures concurrentes.</p>
 <h2 id="décisions-de-conception-1"><a class="header" href="#décisions-de-conception-1">DÉCISIONS DE CONCEPTION</a></h2>
 <p><em>TODO : A compléter (Pourquoi bloquant synchrone, pourquoi pas d’erreur)</em></p>
-<h2 id="exemples-1"><a class="header" href="#exemples-1">EXEMPLES</a></h2>
+<h2 id="exemples-4"><a class="header" href="#exemples-4">EXEMPLES</a></h2>
 <h3 id="exemple-1--lecture-simple"><a class="header" href="#exemple-1--lecture-simple">Exemple 1 : Lecture simple</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -873,28 +1553,28 @@ int main() {
 <li><strong>v1.0</strong> : Implémentation initiale sans synchronisation</li>
 <li><strong>v1.1</strong> : Ajout de <code>IO_Lock</code> pour thread-safety</li>
 </ul>
-<h2 id="voir-aussi-3"><a class="header" href="#voir-aussi-3">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-6"><a class="header" href="#voir-aussi-6">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#getstring">GetString</a> - Lecture de chaîne</li>
 <li><a href="#getint">GetInt</a> - Lecture d’un entier</li>
 <li><a href="#putchar">PutChar</a> - Affiche un caractère</li>
 </ul>
-<h2 id="auteurs-3"><a class="header" href="#auteurs-3">AUTEURS</a></h2>
+<h2 id="auteurs-6"><a class="header" href="#auteurs-6">AUTEURS</a></h2>
 <p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision-3"><a class="header" href="#dernière-révision-3">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-6"><a class="header" href="#dernière-révision-6">DERNIÈRE RÉVISION</a></h2>
 <p>20 Dec 2025 par Antoine</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="putstring"><a class="header" href="#putstring">PutString</a></h1>
 <p><code>PutString</code> - Écrit une chaîne de caractères dans la console de sortie standard</p>
-<h2 id="synopsis-2"><a class="header" href="#synopsis-2">SYNOPSIS</a></h2>
+<h2 id="synopsis-4"><a class="header" href="#synopsis-4">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int PutString(char *s, int n);
 </code></pre>
-<h2 id="description-2"><a class="header" href="#description-2">DESCRIPTION</a></h2>
+<h2 id="description-4"><a class="header" href="#description-4">DESCRIPTION</a></h2>
 <p><code>PutString</code> écrit jusqu’à <code>n</code> octets de la chaîne pointée par <code>s</code> vers la console de sortie standard. L’écriture s’arrête au premier caractère null (<code>\0</code>) rencontré ou après <code>n</code> octets, selon ce qui arrive en premier.</p>
 <p>Numéro d’appel système : <code>12</code></p>
-<h3 id="comportement-nominal-2"><a class="header" href="#comportement-nominal-2">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-4"><a class="header" href="#comportement-nominal-4">Comportement nominal</a></h3>
 <ul>
 <li>Écrit jusqu’à <code>n</code> octets depuis <code>s</code></li>
 <li>S’arrête au premier <code>\0</code> (non compté dans le retour)</li>
@@ -911,7 +1591,7 @@ int PutString(char *s, int n);
 <li><strong>Pointeur NULL</strong> : Comportement indéfini</li>
 <li><strong>Overflow arithmétique</strong> : Retourne -1, <code>errno = E_OVERFLOW</code></li>
 </ul>
-<h2 id="paramètres-2"><a class="header" href="#paramètres-2">PARAMÈTRES</a></h2>
+<h2 id="paramètres-4"><a class="header" href="#paramètres-4">PARAMÈTRES</a></h2>
 <h3 id="s"><a class="header" href="#s"><code>s</code></a></h3>
 <p>Pointeur vers la chaîne de caractères à écrire.</p>
 <p><strong>Type</strong> : <code>char *</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code> (adresse virtuelle)<br><strong>Contraintes</strong> :</p>
@@ -928,11 +1608,11 @@ int PutString(char *s, int n);
 <li>Si &gt; <code>MAX_PUT_STRING</code>, tronqué automatiquement</li>
 <li>Ne compte pas le <code>\0</code> terminal</li>
 </ul>
-<h2 id="valeur-de-retour-2"><a class="header" href="#valeur-de-retour-2">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-4"><a class="header" href="#valeur-de-retour-4">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <p><strong>En cas de succès</strong> : Nombre d’octets écrits (0 à n), hors <code>\0</code></p>
 <p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="codes-derreur-2"><a class="header" href="#codes-derreur-2">CODES D’ERREUR</a></h2>
+<h2 id="codes-derreur-4"><a class="header" href="#codes-derreur-4">CODES D’ERREUR</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -945,8 +1625,8 @@ int PutString(char *s, int n);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-2"><a class="header" href="#implémentation-2">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-2"><a class="header" href="#localisation-du-code-2">Localisation du code</a></h3>
+<h2 id="implémentation-4"><a class="header" href="#implémentation-4">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-4"><a class="header" href="#localisation-du-code-4">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handler_SC_putString()</code></li>
@@ -959,7 +1639,7 @@ int PutString(char *s, int n);
 <li>Libéré après chaque caractère affiché</li>
 <li>Pas de garantie d’atomicité pour la chaîne complète</li>
 </ul>
-<h3 id="thread-safety-2"><a class="header" href="#thread-safety-2">Thread-safety</a></h3>
+<h3 id="thread-safety-5"><a class="header" href="#thread-safety-5">Thread-safety</a></h3>
 <p><strong>Garanti au niveau caractère</strong> : Pas d’entrelacement de caractères individuels</p>
 <p><strong>NON garanti au niveau chaîne</strong> : Deux threads peuvent entrelacer leurs chaînes :</p>
 <pre><code>Thread 1: PutString("AAAA", 4)
@@ -968,7 +1648,7 @@ Résultat possible: "AABBAABB"
 </code></pre>
 <h2 id="décisions-de-conception-2"><a class="header" href="#décisions-de-conception-2">DÉCISIONS DE CONCEPTION</a></h2>
 <p><em>TODO : A compléter (MAX_PUT_STRING, Taille de buffer intermédiaire, Arrêt au \0)</em></p>
-<h2 id="exemples-2"><a class="header" href="#exemples-2">EXEMPLES</a></h2>
+<h2 id="exemples-5"><a class="header" href="#exemples-5">EXEMPLES</a></h2>
 <h3 id="exemple-1--utilisation-basique-1"><a class="header" href="#exemple-1--utilisation-basique-1">Exemple 1 : Utilisation basique</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -1086,28 +1766,28 @@ PutString(kernel_addr, 100);
 <li><strong>v3.1</strong> : Ajout de la gestion des quelques erreurs avec <code>errno</code></li>
 <li><strong>v3.2</strong> : Correction du retour en cas d’erreur partielle (retourne le nombre d’octets écrits avant que l’erreur ne survienne)</li>
 </ul>
-<h2 id="voir-aussi-4"><a class="header" href="#voir-aussi-4">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-7"><a class="header" href="#voir-aussi-7">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#putchar">PutChar</a> - Affichage d’un caractère</li>
 <li><a href="#putint">PutInt</a> - Affichage d’un entier</li>
 <li><a href="#getstring">GetString</a> - Lecture de chaîne</li>
 </ul>
-<h2 id="auteurs-4"><a class="header" href="#auteurs-4">AUTEURS</a></h2>
+<h2 id="auteurs-7"><a class="header" href="#auteurs-7">AUTEURS</a></h2>
 <p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision-4"><a class="header" href="#dernière-révision-4">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-7"><a class="header" href="#dernière-révision-7">DERNIÈRE RÉVISION</a></h2>
 <p>20 Dec 2025 par Antoine</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="getstring"><a class="header" href="#getstring">GetString</a></h1>
 <p><code>GetString</code> - Lit une chaîne de caractères depuis la console d’entrée standard</p>
-<h2 id="synopsis-3"><a class="header" href="#synopsis-3">SYNOPSIS</a></h2>
+<h2 id="synopsis-5"><a class="header" href="#synopsis-5">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int GetString(char *s, int n);
 </code></pre>
-<h2 id="description-3"><a class="header" href="#description-3">DESCRIPTION</a></h2>
+<h2 id="description-5"><a class="header" href="#description-5">DESCRIPTION</a></h2>
 <p><code>GetString</code> lit jusqu’à <code>n-1</code> caractères depuis la console d’entrée et les stocke dans le buffer pointé par <code>s</code>. La lecture s’arrête lorsqu’un caractère newline (<code>\n</code>) est rencontré ou après <code>n-1</code> caractères. Un caractère null (<code>\0</code>) est toujours ajouté à la fin, ce qui justifie la lecture de <code>n-1</code> caractères maximum.</p>
 <p>Numéro d’appel système : <code>14</code></p>
-<h3 id="comportement-nominal-3"><a class="header" href="#comportement-nominal-3">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-5"><a class="header" href="#comportement-nominal-5">Comportement nominal</a></h3>
 <ul>
 <li>Lit jusqu’à <code>n-1</code> caractères (réserve 1 octet pour <code>\0</code>)</li>
 <li>S’arrête au premier <code>\n</code> (inclus dans la chaîne)</li>
@@ -1125,7 +1805,7 @@ int GetString(char *s, int n);
 <li><strong>EOF</strong> : Retourne nombre de caractères lus jusqu’à EOF</li>
 <li><strong>Pointeur NULL</strong> : Comportement indéfini (pas de vérification)</li>
 </ul>
-<h2 id="paramètres-3"><a class="header" href="#paramètres-3">PARAMÈTRES</a></h2>
+<h2 id="paramètres-5"><a class="header" href="#paramètres-5">PARAMÈTRES</a></h2>
 <h3 id="s-1"><a class="header" href="#s-1"><code>s</code></a></h3>
 <p>Pointeur vers le buffer où stocker la chaîne lue.</p>
 <p><strong>Type</strong> : <code>char *</code><br><strong>Direction</strong> : OUT<br><strong>Registre</strong> : <code>$4</code> (adresse virtuelle)<br><strong>Contraintes</strong> :</p>
@@ -1145,11 +1825,11 @@ int GetString(char *s, int n);
 <li>Si &gt; <code>MAX_STRING_SIZE</code>, tronqué automatiquement</li>
 <li>Au plus n-1 caractères lus</li>
 </ul>
-<h2 id="valeur-de-retour-3"><a class="header" href="#valeur-de-retour-3">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-5"><a class="header" href="#valeur-de-retour-5">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <p><strong>En cas de succès</strong> : Nombre de caractères lus (hors <code>\0</code>), peut être 0</p>
 <p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="codes-derreur-3"><a class="header" href="#codes-derreur-3">CODES D’ERREUR</a></h2>
+<h2 id="codes-derreur-5"><a class="header" href="#codes-derreur-5">CODES D’ERREUR</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -1161,8 +1841,8 @@ int GetString(char *s, int n);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-3"><a class="header" href="#implémentation-3">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-3"><a class="header" href="#localisation-du-code-3">Localisation du code</a></h3>
+<h2 id="implémentation-5"><a class="header" href="#implémentation-5">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-5"><a class="header" href="#localisation-du-code-5">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handler_SC_getString()</code></li>
@@ -1180,7 +1860,7 @@ int GetString(char *s, int n);
 <li>P() pour chaque caractère attendu</li>
 <li>V() lorsqu’un caractère est disponible</li>
 </ul>
-<h3 id="thread-safety-3"><a class="header" href="#thread-safety-3">Thread-safety</a></h3>
+<h3 id="thread-safety-6"><a class="header" href="#thread-safety-6">Thread-safety</a></h3>
 <p><strong>Caractères</strong> : Pas de corruption de caractères individuels</p>
 <p><strong>Chaînes</strong> : Deux threads peuvent recevoir des caractères entrelacés :</p>
 <pre><code>User types: "ABCD\n"
@@ -1193,7 +1873,7 @@ buf2 = "BD\n"
 </code></pre>
 <h2 id="décisions-de-conception-3"><a class="header" href="#décisions-de-conception-3">DÉCISIONS DE CONCEPTION</a></h2>
 <p><em>TODO : A compléter (Inclure <code>\n</code>, taille max, arrêt au <code>\n</code>)</em></p>
-<h2 id="exemples-3"><a class="header" href="#exemples-3">EXEMPLES</a></h2>
+<h2 id="exemples-6"><a class="header" href="#exemples-6">EXEMPLES</a></h2>
 <h3 id="exemple-1--utilisation-basique-2"><a class="header" href="#exemple-1--utilisation-basique-2">Exemple 1 : Utilisation basique</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -1356,28 +2036,28 @@ while (offset &lt; 999) {
 <li><strong>v1.0</strong> : Implémentation initiale</li>
 <li><strong>v2.0</strong> : Ajout de la valeur de retour</li>
 </ul>
-<h2 id="voir-aussi-5"><a class="header" href="#voir-aussi-5">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-8"><a class="header" href="#voir-aussi-8">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#putstring">PutString</a> - Écriture de chaîne</li>
 <li><a href="#getchar">GetChar</a> - Lecture d’un caractère</li>
 <li><a href="#getint">GetInt</a> - Lecture d’un entier</li>
 </ul>
-<h2 id="auteurs-5"><a class="header" href="#auteurs-5">AUTEURS</a></h2>
+<h2 id="auteurs-8"><a class="header" href="#auteurs-8">AUTEURS</a></h2>
 <p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision-5"><a class="header" href="#dernière-révision-5">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-8"><a class="header" href="#dernière-révision-8">DERNIÈRE RÉVISION</a></h2>
 <p>20 Dec 2025 par Antoine</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="putint"><a class="header" href="#putint">PutInt</a></h1>
 <p><code>PutInt</code> - Écrit un entier dans la console de sortie standard</p>
-<h2 id="synopsis-4"><a class="header" href="#synopsis-4">SYNOPSIS</a></h2>
+<h2 id="synopsis-6"><a class="header" href="#synopsis-6">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int PutInt(int n);
 </code></pre>
-<h2 id="description-4"><a class="header" href="#description-4">DESCRIPTION</a></h2>
+<h2 id="description-6"><a class="header" href="#description-6">DESCRIPTION</a></h2>
 <p><code>PutInt</code> convertit l’entier <code>n</code> en représentation décimale ASCII et l’affiche sur la console de sortie standard.</p>
 <p>Numéro d’appel système : <code>15</code></p>
-<h3 id="comportement-nominal-4"><a class="header" href="#comportement-nominal-4">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-6"><a class="header" href="#comportement-nominal-6">Comportement nominal</a></h3>
 <ul>
 <li>Convertit l’entier en chaîne décimale</li>
 <li>Affiche le signe <code>-</code> pour les nombres négatifs</li>
@@ -1390,7 +2070,7 @@ int PutInt(int n);
 <ul>
 <li><strong>Nombres négatifs</strong> : Préfixés par <code>-</code></li>
 </ul>
-<h2 id="paramètres-4"><a class="header" href="#paramètres-4">PARAMÈTRES</a></h2>
+<h2 id="paramètres-6"><a class="header" href="#paramètres-6">PARAMÈTRES</a></h2>
 <h3 id="n-2"><a class="header" href="#n-2"><code>n</code></a></h3>
 <p>L’entier à afficher.</p>
 <p><strong>Type</strong> : <code>int</code> (32-bit signé)<br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> :</p>
@@ -1398,14 +2078,14 @@ int PutInt(int n);
 <li>Aucune contrainte sur la valeur</li>
 <li>Plage : -2147483648 à 2147483647</li>
 </ul>
-<h2 id="valeur-de-retour-4"><a class="header" href="#valeur-de-retour-4">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-6"><a class="header" href="#valeur-de-retour-6">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <p><strong>En cas de succès</strong> : <code>0</code></p>
 <p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="codes-derreur-4"><a class="header" href="#codes-derreur-4">CODES D’ERREUR</a></h2>
+<h2 id="codes-derreur-6"><a class="header" href="#codes-derreur-6">CODES D’ERREUR</a></h2>
 <p>Auncun code d’erreur spécifique défini. Hérite des erreurs de <code>SynchPutString</code> qui est utilisé en interne.</p>
-<h2 id="implémentation-4"><a class="header" href="#implémentation-4">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-4"><a class="header" href="#localisation-du-code-4">Localisation du code</a></h3>
+<h2 id="implémentation-6"><a class="header" href="#implémentation-6">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-6"><a class="header" href="#localisation-du-code-6">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handler_SC_PutInt()</code></li>
@@ -1417,7 +2097,7 @@ int PutInt(int n);
 <li><code>IO_Lock</code> pour exclusivité</li>
 <li>Bloquant jusqu’à affichage complet</li>
 </ul>
-<h3 id="thread-safety-4"><a class="header" href="#thread-safety-4">Thread-safety</a></h3>
+<h3 id="thread-safety-7"><a class="header" href="#thread-safety-7">Thread-safety</a></h3>
 <p><strong>Garanti au niveau caractère</strong> via <code>SynchPutString</code></p>
 <p><strong>Pas garanti au niveau nombre</strong> : Deux threads peuvent entrelacer leurs chiffres</p>
 <h2 id="décisions-de-conception-4"><a class="header" href="#décisions-de-conception-4">DÉCISIONS DE CONCEPTION</a></h2>
@@ -1430,7 +2110,7 @@ int PutInt(int n);
 <li>Suffisant pour tous les int 32-bit signés</li>
 <li>Stack allocation (pas de malloc)</li>
 </ul>
-<h2 id="exemples-4"><a class="header" href="#exemples-4">EXEMPLES</a></h2>
+<h2 id="exemples-7"><a class="header" href="#exemples-7">EXEMPLES</a></h2>
 <h3 id="exemple-1--affichage-de-divers-entiers"><a class="header" href="#exemple-1--affichage-de-divers-entiers">Exemple 1 : Affichage de divers entiers</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -1524,28 +2204,28 @@ int main() {
 <li><strong>v1.0</strong> : Implémentation initiale</li>
 <li><strong>v1.1</strong> : Ajout du retour explicite manquant</li>
 </ul>
-<h2 id="voir-aussi-6"><a class="header" href="#voir-aussi-6">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-9"><a class="header" href="#voir-aussi-9">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#getint">GetInt</a> - Lecture d’un entier</li>
 <li><a href="#putstring">PutString</a> - Affichage de chaîne</li>
 <li><a href="#putchar">PutChar</a> - Affichage d’un caractère</li>
 </ul>
-<h2 id="auteurs-6"><a class="header" href="#auteurs-6">AUTEURS</a></h2>
+<h2 id="auteurs-9"><a class="header" href="#auteurs-9">AUTEURS</a></h2>
 <p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision-6"><a class="header" href="#dernière-révision-6">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-9"><a class="header" href="#dernière-révision-9">DERNIÈRE RÉVISION</a></h2>
 <p>20 Dec 2025 par Antoine</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="getint"><a class="header" href="#getint">GetInt</a></h1>
 <p><code>GetInt</code> - Lit un entier depuis la console d’entrée standard</p>
-<h2 id="synopsis-5"><a class="header" href="#synopsis-5">SYNOPSIS</a></h2>
+<h2 id="synopsis-7"><a class="header" href="#synopsis-7">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int GetInt(int *n);
 </code></pre>
-<h2 id="description-5"><a class="header" href="#description-5">DESCRIPTION</a></h2>
+<h2 id="description-7"><a class="header" href="#description-7">DESCRIPTION</a></h2>
 <p><code>GetInt</code> lit une ligne de texte depuis la console, la convertit en entier, et stocke le résultat à l’adresse pointée par <code>n</code>. La fonction attend que l’utilisateur tape Enter après avoir saisi un nombre.</p>
 <p>Numéro d’appel système : <code>16</code></p>
-<h3 id="comportement-nominal-5"><a class="header" href="#comportement-nominal-5">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-7"><a class="header" href="#comportement-nominal-7">Comportement nominal</a></h3>
 <ul>
 <li>Lit jusqu’à 11 caractères (taille d’un int 32-bit)</li>
 <li>Utilise <code>SynchGetString</code> puis <code>sscanf</code> pour la conversion</li>
@@ -1560,7 +2240,7 @@ int GetInt(int *n);
 <li><strong>Overflow</strong> : Comportement dépend de <code>sscanf</code> (typiquement INT_MAX/MIN)</li>
 <li><strong>Plusieurs nombres</strong> : Seul le premier est pris (<code>"42 56"</code> → 42)</li>
 </ul>
-<h2 id="paramètres-5"><a class="header" href="#paramètres-5">PARAMÈTRES</a></h2>
+<h2 id="paramètres-7"><a class="header" href="#paramètres-7">PARAMÈTRES</a></h2>
 <h3 id="n-3"><a class="header" href="#n-3"><code>n</code></a></h3>
 <p>Pointeur vers l’entier où stocker le résultat.</p>
 <p><strong>Type</strong> : <code>int *</code><br><strong>Direction</strong> : OUT<br><strong>Registre</strong> : <code>$4</code>
@@ -1571,11 +2251,11 @@ int GetInt(int *n);
 <li><strong>NON VÉRIFIÉ</strong> : Peut être NULL</li>
 <li><strong>NON VÉRIFIÉ</strong> : Peut être dans l’espace noyau</li>
 </ul>
-<h2 id="valeur-de-retour-5"><a class="header" href="#valeur-de-retour-5">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-7"><a class="header" href="#valeur-de-retour-7">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <p><strong>En cas de succès</strong> : <code>0</code> et <code>*n</code> contient la valeur lue</p>
 <p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="codes-derreur-5"><a class="header" href="#codes-derreur-5">CODES D’ERREUR</a></h2>
+<h2 id="codes-derreur-7"><a class="header" href="#codes-derreur-7">CODES D’ERREUR</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -1587,8 +2267,8 @@ int GetInt(int *n);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-5"><a class="header" href="#implémentation-5">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-5"><a class="header" href="#localisation-du-code-5">Localisation du code</a></h3>
+<h2 id="implémentation-7"><a class="header" href="#implémentation-7">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-7"><a class="header" href="#localisation-du-code-7">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handler_SC_GetInt()</code></li>
@@ -1601,7 +2281,7 @@ int GetInt(int *n);
 <li><code>readAvail</code> pour attendre input utilisateur</li>
 <li>Bloquant jusqu’à newline</li>
 </ul>
-<h3 id="thread-safety-5"><a class="header" href="#thread-safety-5">Thread-safety</a></h3>
+<h3 id="thread-safety-8"><a class="header" href="#thread-safety-8">Thread-safety</a></h3>
 <p>Hérite de <code>SynchGetString</code> :</p>
 <ul>
 <li><strong>Garanti au niveau caractère</strong></li>
@@ -1616,7 +2296,7 @@ int GetInt(int *n);
 <li>INT_MIN = -2147483648 : 11 caractères + <code>\0</code> = 12 octets</li>
 <li>Cohérent avec <code>PutInt</code></li>
 </ul>
-<h2 id="exemples-5"><a class="header" href="#exemples-5">EXEMPLES</a></h2>
+<h2 id="exemples-8"><a class="header" href="#exemples-8">EXEMPLES</a></h2>
 <h3 id="exemple-1--utilisation-basique-3"><a class="header" href="#exemple-1--utilisation-basique-3">Exemple 1 : Utilisation basique</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -1795,15 +2475,15 @@ RETURN(0);  // Succès même si WriteMem a échoué !
 <li><strong>v2.0</strong> : Ajout de la valeur de retour et gestion d’erreurs basique</li>
 <li><strong>v2.1</strong> : Fix allocation inutile</li>
 </ul>
-<h2 id="voir-aussi-7"><a class="header" href="#voir-aussi-7">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-10"><a class="header" href="#voir-aussi-10">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#putint">PutInt</a> - Affichage d’un entier</li>
 <li><a href="#getstring">GetString</a> - Lecture de chaîne</li>
 <li><a href="#getchar">GetChar</a> - Lecture d’un caractère</li>
 </ul>
-<h2 id="auteurs-7"><a class="header" href="#auteurs-7">AUTEURS</a></h2>
+<h2 id="auteurs-10"><a class="header" href="#auteurs-10">AUTEURS</a></h2>
 <p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision-7"><a class="header" href="#dernière-révision-7">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-10"><a class="header" href="#dernière-révision-10">DERNIÈRE RÉVISION</a></h2>
 <p>20 Dec 2025 par Antoine</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="threads-1"><a class="header" href="#threads-1">Threads</a></h1>
@@ -1822,7 +2502,7 @@ RETURN(0);  // Succès même si WriteMem a échoué !
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="threads-utilisateur"><a class="header" href="#threads-utilisateur">Threads utilisateur</a></h1>
 <p>Cette page documente le système de threads utilisateur de NachOS et l’API pthread simplifiée.</p>
-<h2 id="vue-densemble"><a class="header" href="#vue-densemble">Vue d’ensemble</a></h2>
+<h2 id="vue-densemble-1"><a class="header" href="#vue-densemble-1">Vue d’ensemble</a></h2>
 <p>NachOS implémente un modèle de threads 1:1 où chaque thread utilisateur est directement supporté par un thread noyau (kernel thread). L’API est inspirée de POSIX pthreads.</p>
 <div class="callout callout-future">
     
@@ -2077,7 +2757,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<h2 id="voir-aussi-8"><a class="header" href="#voir-aussi-8">Voir aussi</a></h2>
+<h2 id="voir-aussi-11"><a class="header" href="#voir-aussi-11">Voir aussi</a></h2>
 <div class="callout callout-see-also">
     
 <div class="callout-title">Voir aussi</div>
@@ -2095,14 +2775,14 @@ int main() {
 
 </div>
 
-<h2 id="auteurs-8"><a class="header" href="#auteurs-8">Auteurs</a></h2>
+<h2 id="auteurs-11"><a class="header" href="#auteurs-11">Auteurs</a></h2>
 <p>Antoine, 31 Dec 2025</p>
-<h2 id="dernière-révision-8"><a class="header" href="#dernière-révision-8">Dernière révision</a></h2>
+<h2 id="dernière-révision-11"><a class="header" href="#dernière-révision-11">Dernière révision</a></h2>
 <p>31 Dec 2025</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="pthreadcreate"><a class="header" href="#pthreadcreate">PthreadCreate</a></h1>
 <p><code>PthreadCreate</code> - Crée un nouveau thread utilisateur</p>
-<h2 id="synopsis-6"><a class="header" href="#synopsis-6">Synopsis</a></h2>
+<h2 id="synopsis-8"><a class="header" href="#synopsis-8">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int PthreadCreate(posix_thread_t *thread, 
@@ -2110,10 +2790,10 @@ int PthreadCreate(posix_thread_t *thread,
                   void *(*start_routine)(void *), 
                   void *arg);
 </code></pre>
-<h2 id="description-6"><a class="header" href="#description-6">Description</a></h2>
+<h2 id="description-8"><a class="header" href="#description-8">Description</a></h2>
 <p><code>PthreadCreate</code> crée un nouveau thread qui exécute la fonction <code>start_routine</code> avec l’argument <code>arg</code>. Le nouveau thread partage le même espace d’adressage que le thread appelant.</p>
 <p><strong>Numéro d’appel système</strong> : <code>SC_PthreadCreate</code> (17)</p>
-<h3 id="comportement-nominal-6"><a class="header" href="#comportement-nominal-6">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-8"><a class="header" href="#comportement-nominal-8">Comportement nominal</a></h3>
 <ol>
 <li>Allocation d’un TID unique via <code>threads_bitmap</code></li>
 <li>Création d’un objet <code>Thread</code> noyau</li>
@@ -2150,7 +2830,7 @@ int PthreadCreate(posix_thread_t *thread,
 
 </div>
 
-<h2 id="paramètres-6"><a class="header" href="#paramètres-6">Paramètres</a></h2>
+<h2 id="paramètres-8"><a class="header" href="#paramètres-8">Paramètres</a></h2>
 <h3 id="thread"><a class="header" href="#thread"><code>thread</code></a></h3>
 <p>Pointeur vers un <code>posix_thread_t</code> où sera stocké l’identifiant du nouveau thread.</p>
 <p><strong>Type</strong> : <code>posix_thread_t *</code> (pointeur vers <code>unsigned int</code>)<br><strong>Direction</strong> : OUT<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> : Doit être une adresse valide en espace utilisateur</p>
@@ -2163,7 +2843,7 @@ int PthreadCreate(posix_thread_t *thread,
 <h3 id="arg"><a class="header" href="#arg"><code>arg</code></a></h3>
 <p>Argument passé à <code>start_routine</code>.</p>
 <p><strong>Type</strong> : <code>void *</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$7</code><br><strong>Contraintes</strong> : Aucune (peut être <code>NULL</code>)</p>
-<h2 id="valeur-de-retour-6"><a class="header" href="#valeur-de-retour-6">Valeur de retour</a></h2>
+<h2 id="valeur-de-retour-8"><a class="header" href="#valeur-de-retour-8">Valeur de retour</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <div class="table-wrapper">
 <table>
@@ -2176,7 +2856,7 @@ int PthreadCreate(posix_thread_t *thread,
 </tbody>
 </table>
 </div>
-<h2 id="codes-derreur-6"><a class="header" href="#codes-derreur-6">Codes d’erreur</a></h2>
+<h2 id="codes-derreur-8"><a class="header" href="#codes-derreur-8">Codes d’erreur</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -2189,15 +2869,15 @@ int PthreadCreate(posix_thread_t *thread,
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-6"><a class="header" href="#implémentation-6">Implémentation</a></h2>
-<h3 id="localisation-du-code-6"><a class="header" href="#localisation-du-code-6">Localisation du code</a></h3>
+<h2 id="implémentation-8"><a class="header" href="#implémentation-8">Implémentation</a></h2>
+<h3 id="localisation-du-code-8"><a class="header" href="#localisation-du-code-8">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userthread.cc:handle_SC_PthreadCreate()</code></li>
 <li><strong>Implémentation</strong> : <code>code/userprog/userthread.cc:do_PthreadCreate()</code></li>
 <li><strong>Démarrage thread</strong> : <code>code/userprog/userthread.cc:StartUserThread()</code></li>
 </ul>
-<h3 id="flux-dexécution-1"><a class="header" href="#flux-dexécution-1">Flux d’exécution</a></h3>
+<h3 id="flux-dexécution-3"><a class="header" href="#flux-dexécution-3">Flux d’exécution</a></h3>
 <pre><code>PthreadCreate(&amp;tid, attr, func, arg)
         │
         ▼
@@ -2229,7 +2909,7 @@ int PthreadCreate(posix_thread_t *thread,
         ▼
     [exécution de start_routine(arg)]
 </code></pre>
-<h2 id="exemples-6"><a class="header" href="#exemples-6">Exemples</a></h2>
+<h2 id="exemples-9"><a class="header" href="#exemples-9">Exemples</a></h2>
 <h3 id="exemple-1--création-simple"><a class="header" href="#exemple-1--création-simple">Exemple 1 : Création simple</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -2352,9 +3032,9 @@ int main() {
 
 </div>
 
-<h2 id="thread-safety-6"><a class="header" href="#thread-safety-6">Thread-safety</a></h2>
+<h2 id="thread-safety-9"><a class="header" href="#thread-safety-9">Thread-safety</a></h2>
 <p>L’appel est thread-safe. Plusieurs threads peuvent appeler <code>PthreadCreate</code> simultanément grâce à la protection du <code>threads_bitmap</code> par <code>threadNumberLock</code>.</p>
-<h2 id="voir-aussi-9"><a class="header" href="#voir-aussi-9">Voir aussi</a></h2>
+<h2 id="voir-aussi-12"><a class="header" href="#voir-aussi-12">Voir aussi</a></h2>
 <div class="callout callout-see-also">
     
 <div class="callout-title">Voir aussi</div>
@@ -2371,22 +3051,22 @@ int main() {
 
 </div>
 
-<h2 id="auteurs-9"><a class="header" href="#auteurs-9">Auteurs</a></h2>
+<h2 id="auteurs-12"><a class="header" href="#auteurs-12">Auteurs</a></h2>
 <p>Antoine, 31 Dec 2025</p>
-<h2 id="dernière-révision-9"><a class="header" href="#dernière-révision-9">Dernière révision</a></h2>
+<h2 id="dernière-révision-12"><a class="header" href="#dernière-révision-12">Dernière révision</a></h2>
 <p>31 Dec 2025</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="pthreadexit"><a class="header" href="#pthreadexit">PthreadExit</a></h1>
 <p><code>PthreadExit</code> - Termine le thread appelant</p>
-<h2 id="synopsis-7"><a class="header" href="#synopsis-7">Synopsis</a></h2>
+<h2 id="synopsis-9"><a class="header" href="#synopsis-9">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 void PthreadExit(void *retval) __attribute__((noreturn));
 </code></pre>
-<h2 id="description-7"><a class="header" href="#description-7">Description</a></h2>
+<h2 id="description-9"><a class="header" href="#description-9">Description</a></h2>
 <p><code>PthreadExit</code> termine le thread appelant et rend la valeur <code>retval</code> disponible pour un éventuel <code>PthreadJoin</code>. Cette fonction ne retourne jamais.</p>
 <p><strong>Numéro d’appel système</strong> : <code>SC_PthreadExit</code> (18)</p>
-<h3 id="comportement-nominal-7"><a class="header" href="#comportement-nominal-7">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-9"><a class="header" href="#comportement-nominal-9">Comportement nominal</a></h3>
 <ol>
 <li>Stockage de <code>retval</code> dans le thread (<code>setReturnValue</code>)</li>
 <li>Passage à l’état <code>TERMINATED</code></li>
@@ -2406,22 +3086,22 @@ void PthreadExit(void *retval) __attribute__((noreturn));
 
 </div>
 
-<h2 id="paramètres-7"><a class="header" href="#paramètres-7">Paramètres</a></h2>
+<h2 id="paramètres-9"><a class="header" href="#paramètres-9">Paramètres</a></h2>
 <h3 id="retval"><a class="header" href="#retval"><code>retval</code></a></h3>
 <p>Valeur de retour du thread, récupérable par <code>PthreadJoin</code>.</p>
 <p><strong>Type</strong> : <code>void *</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> : Aucune (peut être <code>NULL</code>, une valeur entière castée, ou un pointeur)</p>
-<h2 id="valeur-de-retour-7"><a class="header" href="#valeur-de-retour-7">Valeur de retour</a></h2>
+<h2 id="valeur-de-retour-9"><a class="header" href="#valeur-de-retour-9">Valeur de retour</a></h2>
 <p>Cette fonction ne retourne pas.</p>
-<h2 id="codes-derreur-7"><a class="header" href="#codes-derreur-7">Codes d’erreur</a></h2>
+<h2 id="codes-derreur-9"><a class="header" href="#codes-derreur-9">Codes d’erreur</a></h2>
 <p>Aucun. Cette fonction ne peut pas échouer.</p>
-<h2 id="implémentation-7"><a class="header" href="#implémentation-7">Implémentation</a></h2>
-<h3 id="localisation-du-code-7"><a class="header" href="#localisation-du-code-7">Localisation du code</a></h3>
+<h2 id="implémentation-9"><a class="header" href="#implémentation-9">Implémentation</a></h2>
+<h3 id="localisation-du-code-9"><a class="header" href="#localisation-du-code-9">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userthread.cc:handle_SC_PthreadExit()</code></li>
 <li><strong>Implémentation</strong> : <code>code/userprog/userthread.cc:do_PthreadExit()</code></li>
 </ul>
-<h3 id="flux-dexécution-2"><a class="header" href="#flux-dexécution-2">Flux d’exécution</a></h3>
+<h3 id="flux-dexécution-4"><a class="header" href="#flux-dexécution-4">Flux d’exécution</a></h3>
 <pre><code>PthreadExit(retval)
         │
         ▼
@@ -2456,7 +3136,7 @@ void PthreadExit(void *retval) __attribute__((noreturn));
 
 </div>
 
-<h2 id="exemples-7"><a class="header" href="#exemples-7">Exemples</a></h2>
+<h2 id="exemples-10"><a class="header" href="#exemples-10">Exemples</a></h2>
 <h3 id="exemple-1--terminaison-explicite"><a class="header" href="#exemple-1--terminaison-explicite">Exemple 1 : Terminaison explicite</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -2564,9 +3244,9 @@ int main() {
 <p>Les ressources (objet <code>Thread</code>) sont conservées jusqu’au <code>PthreadJoin</code>. La valeur de retour est stockée pour être récupérée.</p>
 <h3 id="thread-détaché"><a class="header" href="#thread-détaché">Thread détaché</a></h3>
 <p>Les ressources sont libérées immédiatement. La valeur de retour est perdue.</p>
-<h2 id="thread-safety-7"><a class="header" href="#thread-safety-7">Thread-safety</a></h2>
+<h2 id="thread-safety-10"><a class="header" href="#thread-safety-10">Thread-safety</a></h2>
 <p>L’appel est thread-safe. Chaque thread ne peut appeler <code>PthreadExit</code> que pour lui-même.</p>
-<h2 id="voir-aussi-10"><a class="header" href="#voir-aussi-10">Voir aussi</a></h2>
+<h2 id="voir-aussi-13"><a class="header" href="#voir-aussi-13">Voir aussi</a></h2>
 <div class="callout callout-see-also">
     
 <div class="callout-title">Voir aussi</div>
@@ -2582,22 +3262,22 @@ int main() {
 
 </div>
 
-<h2 id="auteurs-10"><a class="header" href="#auteurs-10">Auteurs</a></h2>
+<h2 id="auteurs-13"><a class="header" href="#auteurs-13">Auteurs</a></h2>
 <p>Antoine, 07 Jan 2026</p>
-<h2 id="dernière-révision-10"><a class="header" href="#dernière-révision-10">Dernière révision</a></h2>
+<h2 id="dernière-révision-13"><a class="header" href="#dernière-révision-13">Dernière révision</a></h2>
 <p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="pthreadjoin"><a class="header" href="#pthreadjoin">PthreadJoin</a></h1>
 <p><code>PthreadJoin</code> - Attend la terminaison d’un thread</p>
-<h2 id="synopsis-8"><a class="header" href="#synopsis-8">Synopsis</a></h2>
+<h2 id="synopsis-10"><a class="header" href="#synopsis-10">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int PthreadJoin(posix_thread_t thread, void **retval);
 </code></pre>
-<h2 id="description-8"><a class="header" href="#description-8">Description</a></h2>
+<h2 id="description-10"><a class="header" href="#description-10">Description</a></h2>
 <p><code>PthreadJoin</code> bloque le thread appelant jusqu’à ce que le thread spécifié se termine. Si le thread cible est déjà terminé, la fonction retourne immédiatement.</p>
 <p><strong>Numéro d’appel système</strong> : <code>SC_PthreadJoin</code> (19)</p>
-<h3 id="comportement-nominal-8"><a class="header" href="#comportement-nominal-8">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-10"><a class="header" href="#comportement-nominal-10">Comportement nominal</a></h3>
 <ol>
 <li>Recherche du thread cible via <code>Process::FindThread()</code></li>
 <li>Vérification des conditions (non-soi, non-détaché, non-déjà-joint)</li>
@@ -2621,14 +3301,14 @@ int PthreadJoin(posix_thread_t thread, void **retval);
 
 </div>
 
-<h2 id="paramètres-8"><a class="header" href="#paramètres-8">Paramètres</a></h2>
+<h2 id="paramètres-10"><a class="header" href="#paramètres-10">Paramètres</a></h2>
 <h3 id="thread-1"><a class="header" href="#thread-1"><code>thread</code></a></h3>
 <p>Identifiant du thread à attendre.</p>
 <p><strong>Type</strong> : <code>posix_thread_t</code> (<code>unsigned int</code>)<br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> : Doit être un TID valide d’un thread joinable</p>
 <h3 id="retval-1"><a class="header" href="#retval-1"><code>retval</code></a></h3>
 <p>Pointeur où stocker la valeur de retour du thread. Peut être <code>NULL</code> si la valeur n’est pas nécessaire.</p>
 <p><strong>Type</strong> : <code>void **</code><br><strong>Direction</strong> : OUT<br><strong>Registre</strong> : <code>$5</code><br><strong>Contraintes</strong> : Si non-NULL, doit être une adresse valide en espace utilisateur</p>
-<h2 id="valeur-de-retour-8"><a class="header" href="#valeur-de-retour-8">Valeur de retour</a></h2>
+<h2 id="valeur-de-retour-10"><a class="header" href="#valeur-de-retour-10">Valeur de retour</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <div class="table-wrapper">
 <table>
@@ -2641,7 +3321,7 @@ int PthreadJoin(posix_thread_t thread, void **retval);
 </tbody>
 </table>
 </div>
-<h2 id="codes-derreur-8"><a class="header" href="#codes-derreur-8">Codes d’erreur</a></h2>
+<h2 id="codes-derreur-10"><a class="header" href="#codes-derreur-10">Codes d’erreur</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -2654,14 +3334,14 @@ int PthreadJoin(posix_thread_t thread, void **retval);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-8"><a class="header" href="#implémentation-8">Implémentation</a></h2>
-<h3 id="localisation-du-code-8"><a class="header" href="#localisation-du-code-8">Localisation du code</a></h3>
+<h2 id="implémentation-10"><a class="header" href="#implémentation-10">Implémentation</a></h2>
+<h3 id="localisation-du-code-10"><a class="header" href="#localisation-du-code-10">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userthread.cc:handle_SC_PthreadJoin()</code></li>
 <li><strong>Implémentation</strong> : <code>code/userprog/userthread.cc:do_PthreadJoin()</code></li>
 </ul>
-<h2 id="exemples-8"><a class="header" href="#exemples-8">Exemples</a></h2>
+<h2 id="exemples-11"><a class="header" href="#exemples-11">Exemples</a></h2>
 <h3 id="exemple-1--join-basique"><a class="header" href="#exemple-1--join-basique">Exemple 1 : Join basique</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -2786,7 +3466,7 @@ int main() {
 
 </div>
 
-<h2 id="thread-safety-8"><a class="header" href="#thread-safety-8">Thread-safety</a></h2>
+<h2 id="thread-safety-11"><a class="header" href="#thread-safety-11">Thread-safety</a></h2>
 <p>L’appel est thread-safe. Un seul thread peut joindre un thread donné grâce au flag <code>hasJoiner</code>.</p>
 <div class="callout callout-warning">
     
@@ -2799,7 +3479,7 @@ int main() {
 
 </div>
 
-<h2 id="voir-aussi-11"><a class="header" href="#voir-aussi-11">Voir aussi</a></h2>
+<h2 id="voir-aussi-14"><a class="header" href="#voir-aussi-14">Voir aussi</a></h2>
 <div class="callout callout-see-also">
     
 <div class="callout-title">Voir aussi</div>
@@ -2815,22 +3495,22 @@ int main() {
 
 </div>
 
-<h2 id="auteurs-11"><a class="header" href="#auteurs-11">Auteurs</a></h2>
+<h2 id="auteurs-14"><a class="header" href="#auteurs-14">Auteurs</a></h2>
 <p>Antoine, 31 Dec 2025</p>
-<h2 id="dernière-révision-11"><a class="header" href="#dernière-révision-11">Dernière révision</a></h2>
+<h2 id="dernière-révision-14"><a class="header" href="#dernière-révision-14">Dernière révision</a></h2>
 <p>31 Dec 2025</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="pthreaddetach"><a class="header" href="#pthreaddetach">PthreadDetach</a></h1>
 <p><code>PthreadDetach</code> - Détache un thread</p>
-<h2 id="synopsis-9"><a class="header" href="#synopsis-9">Synopsis</a></h2>
+<h2 id="synopsis-11"><a class="header" href="#synopsis-11">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int PthreadDetach(posix_thread_t thread);
 </code></pre>
-<h2 id="description-9"><a class="header" href="#description-9">Description</a></h2>
+<h2 id="description-11"><a class="header" href="#description-11">Description</a></h2>
 <p><code>PthreadDetach</code> marque le thread spécifié comme détaché. Un thread détaché ne peut plus être joint, et ses ressources sont automatiquement libérées à sa terminaison.</p>
 <p><strong>Numéro d’appel système</strong> : <code>SC_PthreadDetach</code> (20)</p>
-<h3 id="comportement-nominal-9"><a class="header" href="#comportement-nominal-9">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-11"><a class="header" href="#comportement-nominal-11">Comportement nominal</a></h3>
 <ol>
 <li>Recherche du thread via <code>Process::FindThread()</code></li>
 <li>Vérification que le thread n’est pas déjà détaché</li>
@@ -2850,11 +3530,11 @@ int PthreadDetach(posix_thread_t thread);
 
 </div>
 
-<h2 id="paramètres-9"><a class="header" href="#paramètres-9">Paramètres</a></h2>
+<h2 id="paramètres-11"><a class="header" href="#paramètres-11">Paramètres</a></h2>
 <h3 id="thread-2"><a class="header" href="#thread-2"><code>thread</code></a></h3>
 <p>Identifiant du thread à détacher.</p>
 <p><strong>Type</strong> : <code>posix_thread_t</code> (<code>unsigned int</code>)<br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> : Doit être un TID valide d’un thread non-détaché</p>
-<h2 id="valeur-de-retour-9"><a class="header" href="#valeur-de-retour-9">Valeur de retour</a></h2>
+<h2 id="valeur-de-retour-11"><a class="header" href="#valeur-de-retour-11">Valeur de retour</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <div class="table-wrapper">
 <table>
@@ -2867,7 +3547,7 @@ int PthreadDetach(posix_thread_t thread);
 </tbody>
 </table>
 </div>
-<h2 id="codes-derreur-9"><a class="header" href="#codes-derreur-9">Codes d’erreur</a></h2>
+<h2 id="codes-derreur-11"><a class="header" href="#codes-derreur-11">Codes d’erreur</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -2879,14 +3559,14 @@ int PthreadDetach(posix_thread_t thread);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-9"><a class="header" href="#implémentation-9">Implémentation</a></h2>
-<h3 id="localisation-du-code-9"><a class="header" href="#localisation-du-code-9">Localisation du code</a></h3>
+<h2 id="implémentation-11"><a class="header" href="#implémentation-11">Implémentation</a></h2>
+<h3 id="localisation-du-code-11"><a class="header" href="#localisation-du-code-11">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userthread.cc:handle_SC_PthreadDetach()</code></li>
 <li><strong>Implémentation</strong> : <code>code/userprog/userthread.cc:do_PthreadDetach()</code></li>
 </ul>
-<h3 id="flux-dexécution-3"><a class="header" href="#flux-dexécution-3">Flux d’exécution</a></h3>
+<h3 id="flux-dexécution-5"><a class="header" href="#flux-dexécution-5">Flux d’exécution</a></h3>
 <pre><code>PthreadDetach(tid)
         │
         ▼
@@ -2904,7 +3584,7 @@ int PthreadDetach(posix_thread_t thread);
         ▼
     return 0
 </code></pre>
-<h2 id="exemples-9"><a class="header" href="#exemples-9">Exemples</a></h2>
+<h2 id="exemples-12"><a class="header" href="#exemples-12">Exemples</a></h2>
 <h3 id="exemple-1--détachement-après-création"><a class="header" href="#exemple-1--détachement-après-création">Exemple 1 : Détachement après création</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -3025,9 +3705,9 @@ int main() {
 </tbody>
 </table>
 </div>
-<h2 id="thread-safety-9"><a class="header" href="#thread-safety-9">Thread-safety</a></h2>
+<h2 id="thread-safety-12"><a class="header" href="#thread-safety-12">Thread-safety</a></h2>
 <p>L’appel est thread-safe. L’état de détachement est protégé par les flags du thread.</p>
-<h2 id="voir-aussi-12"><a class="header" href="#voir-aussi-12">Voir aussi</a></h2>
+<h2 id="voir-aussi-15"><a class="header" href="#voir-aussi-15">Voir aussi</a></h2>
 <div class="callout callout-see-also">
     
 <div class="callout-title">Voir aussi</div>
@@ -3043,22 +3723,22 @@ int main() {
 
 </div>
 
-<h2 id="auteurs-12"><a class="header" href="#auteurs-12">Auteurs</a></h2>
+<h2 id="auteurs-15"><a class="header" href="#auteurs-15">Auteurs</a></h2>
 <p>Antoine, 31 Dec 2025</p>
-<h2 id="dernière-révision-12"><a class="header" href="#dernière-révision-12">Dernière révision</a></h2>
+<h2 id="dernière-révision-15"><a class="header" href="#dernière-révision-15">Dernière révision</a></h2>
 <p>31 Dec 2025</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="pthreadself"><a class="header" href="#pthreadself">PthreadSelf</a></h1>
 <p><code>PthreadSelf</code> - Obtient l’identifiant du thread courant</p>
-<h2 id="synopsis-10"><a class="header" href="#synopsis-10">Synopsis</a></h2>
+<h2 id="synopsis-12"><a class="header" href="#synopsis-12">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 posix_thread_t PthreadSelf(void);
 </code></pre>
-<h2 id="description-10"><a class="header" href="#description-10">Description</a></h2>
+<h2 id="description-12"><a class="header" href="#description-12">Description</a></h2>
 <p><code>PthreadSelf</code> retourne l’identifiant unique (TID) du thread appelant. Chaque thread dans un processus possède un TID unique attribué lors de sa création.</p>
 <p><strong>Numéro d’appel système</strong> : <code>SC_PthreadSelf</code> (21)</p>
-<h3 id="comportement-nominal-10"><a class="header" href="#comportement-nominal-10">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-12"><a class="header" href="#comportement-nominal-12">Comportement nominal</a></h3>
 <ol>
 <li>Récupération du pointeur vers le thread courant (<code>currentThread</code>)</li>
 <li>Extraction du TID via <code>currentThread-&gt;getTID()</code></li>
@@ -3075,9 +3755,9 @@ posix_thread_t PthreadSelf(void);
 
 </div>
 
-<h2 id="paramètres-10"><a class="header" href="#paramètres-10">Paramètres</a></h2>
+<h2 id="paramètres-12"><a class="header" href="#paramètres-12">Paramètres</a></h2>
 <p>Cette fonction ne prend aucun paramètre.</p>
-<h2 id="valeur-de-retour-10"><a class="header" href="#valeur-de-retour-10">Valeur de retour</a></h2>
+<h2 id="valeur-de-retour-12"><a class="header" href="#valeur-de-retour-12">Valeur de retour</a></h2>
 <p><strong>Type</strong> : <code>posix_thread_t</code> (registre <code>$2</code>)</p>
 <div class="table-wrapper">
 <table>
@@ -3090,7 +3770,7 @@ posix_thread_t PthreadSelf(void);
 </tbody>
 </table>
 </div>
-<h2 id="codes-derreur-10"><a class="header" href="#codes-derreur-10">Codes d’erreur</a></h2>
+<h2 id="codes-derreur-12"><a class="header" href="#codes-derreur-12">Codes d’erreur</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3113,14 +3793,14 @@ posix_thread_t PthreadSelf(void);
 
 </div>
 
-<h2 id="implémentation-10"><a class="header" href="#implémentation-10">Implémentation</a></h2>
-<h3 id="localisation-du-code-10"><a class="header" href="#localisation-du-code-10">Localisation du code</a></h3>
+<h2 id="implémentation-12"><a class="header" href="#implémentation-12">Implémentation</a></h2>
+<h3 id="localisation-du-code-12"><a class="header" href="#localisation-du-code-12">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S:351</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userthread.cc:handle_SC_PthreadSelf()</code></li>
 <li><strong>Implémentation</strong> : <code>code/userprog/userthread.cc:do_PthreadSelf()</code></li>
 </ul>
-<h3 id="flux-dexécution-4"><a class="header" href="#flux-dexécution-4">Flux d’exécution</a></h3>
+<h3 id="flux-dexécution-6"><a class="header" href="#flux-dexécution-6">Flux d’exécution</a></h3>
 <pre><code>PthreadSelf()
     │
     ▼
@@ -3140,7 +3820,7 @@ do_PthreadSelf()
     ▼
 [registre $2 contient le TID]
 </code></pre>
-<h2 id="exemples-10"><a class="header" href="#exemples-10">Exemples</a></h2>
+<h2 id="exemples-13"><a class="header" href="#exemples-13">Exemples</a></h2>
 <h3 id="exemple-1--affichage-du-tid"><a class="header" href="#exemple-1--affichage-du-tid">Exemple 1 : Affichage du TID</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -3271,7 +3951,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<h2 id="cas-dusage"><a class="header" href="#cas-dusage">Cas d’usage</a></h2>
+<h2 id="cas-dusage-2"><a class="header" href="#cas-dusage-2">Cas d’usage</a></h2>
 <h3 id="identification-de-thread"><a class="header" href="#identification-de-thread">Identification de thread</a></h3>
 <p><code>PthreadSelf</code> est particulièrement utile pour :</p>
 <ul>
@@ -3282,7 +3962,7 @@ int main() {
 </ul>
 <h3 id="comparaison-avec-pthread_equal"><a class="header" href="#comparaison-avec-pthread_equal">Comparaison avec pthread_equal</a></h3>
 <p>Contrairement à POSIX qui fournit <code>pthread_equal()</code> pour comparer des TID, Nachos utilise des entiers simples, donc la comparaison directe avec <code>==</code> est possible.</p>
-<h2 id="thread-safety-10"><a class="header" href="#thread-safety-10">Thread-safety</a></h2>
+<h2 id="thread-safety-13"><a class="header" href="#thread-safety-13">Thread-safety</a></h2>
 <p>L’appel est thread-safe. Chaque thread obtient son propre TID unique, et <code>currentThread</code> est toujours valide dans le contexte d’un thread en cours d’exécution.</p>
 <div class="callout callout-note">
     
@@ -3296,7 +3976,7 @@ int main() {
 
 </div>
 
-<h2 id="voir-aussi-13"><a class="header" href="#voir-aussi-13">Voir aussi</a></h2>
+<h2 id="voir-aussi-16"><a class="header" href="#voir-aussi-16">Voir aussi</a></h2>
 <div class="callout callout-see-also">
     
 <div class="callout-content">
@@ -3310,14 +3990,14 @@ int main() {
 
 </div>
 
-<h2 id="auteurs-13"><a class="header" href="#auteurs-13">Auteurs</a></h2>
+<h2 id="auteurs-16"><a class="header" href="#auteurs-16">Auteurs</a></h2>
 <p>Alioune Badara DIENE, 7 Jan 2026</p>
-<h2 id="dernière-révision-13"><a class="header" href="#dernière-révision-13">Dernière révision</a></h2>
+<h2 id="dernière-révision-16"><a class="header" href="#dernière-révision-16">Dernière révision</a></h2>
 <p>7 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="attributs-de-thread"><a class="header" href="#attributs-de-thread">Attributs de thread</a></h1>
 <p>Cette page documente les fonctions de gestion des attributs de thread (<code>pthread_attr_*</code>).</p>
-<h2 id="vue-densemble-1"><a class="header" href="#vue-densemble-1">Vue d’ensemble</a></h2>
+<h2 id="vue-densemble-2"><a class="header" href="#vue-densemble-2">Vue d’ensemble</a></h2>
 <p>Les attributs permettent de configurer le comportement d’un thread avant sa création. Une fois le thread créé, les attributs ne sont plus liés au thread.</p>
 <div class="callout callout-security">
     
@@ -3390,15 +4070,15 @@ Pthread_attr_destroy(&amp;attr)
 <h2 id="pthread_attr_init"><a class="header" href="#pthread_attr_init">Pthread_attr_init</a></h2>
 <p>Initialise un objet d’attributs avec les valeurs par défaut.</p>
 <p><strong>Numéro d’appel système</strong> : <code>SC_Pthread_attr_init</code> (22)</p>
-<h3 id="synopsis-11"><a class="header" href="#synopsis-11">Synopsis</a></h3>
+<h3 id="synopsis-13"><a class="header" href="#synopsis-13">Synopsis</a></h3>
 <pre><code class="language-c">int Pthread_attr_init(pthread_attr_t *attr);
 </code></pre>
-<h3 id="description-11"><a class="header" href="#description-11">Description</a></h3>
+<h3 id="description-13"><a class="header" href="#description-13">Description</a></h3>
 <p>Initialise <code>attr</code> avec les valeurs par défaut :</p>
 <ul>
 <li><code>detachstate</code> = <code>JOINABLE</code></li>
 </ul>
-<h3 id="paramètres-11"><a class="header" href="#paramètres-11">Paramètres</a></h3>
+<h3 id="paramètres-13"><a class="header" href="#paramètres-13">Paramètres</a></h3>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3409,7 +4089,7 @@ Pthread_attr_destroy(&amp;attr)
 </tbody>
 </table>
 </div>
-<h3 id="valeur-de-retour-11"><a class="header" href="#valeur-de-retour-11">Valeur de retour</a></h3>
+<h3 id="valeur-de-retour-13"><a class="header" href="#valeur-de-retour-13">Valeur de retour</a></h3>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3627,14 +4307,14 @@ int main() {
     return 0;
 }
 </code></pre>
-<h2 id="implémentation-11"><a class="header" href="#implémentation-11">Implémentation</a></h2>
-<h3 id="localisation-du-code-11"><a class="header" href="#localisation-du-code-11">Localisation du code</a></h3>
+<h2 id="implémentation-13"><a class="header" href="#implémentation-13">Implémentation</a></h2>
+<h3 id="localisation-du-code-13"><a class="header" href="#localisation-du-code-13">Localisation du code</a></h3>
 <ul>
 <li><strong>Définition structure</strong> : <code>code/threads/thread.h</code> (<code>posix_thread_attr_t</code>)</li>
 <li><strong>Fonctions noyau</strong> : <code>code/threads/thread.cc</code> (<code>posix_thread_attr_*</code>)</li>
 <li><strong>Stubs utilisateur</strong> : <code>code/test/start.S</code></li>
 </ul>
-<h2 id="voir-aussi-14"><a class="header" href="#voir-aussi-14">Voir aussi</a></h2>
+<h2 id="voir-aussi-17"><a class="header" href="#voir-aussi-17">Voir aussi</a></h2>
 <div class="callout callout-see-also">
     
 <div class="callout-title">Voir aussi</div>
@@ -3650,9 +4330,9 @@ int main() {
 
 </div>
 
-<h2 id="auteurs-14"><a class="header" href="#auteurs-14">Auteurs</a></h2>
+<h2 id="auteurs-17"><a class="header" href="#auteurs-17">Auteurs</a></h2>
 <p>Antoine, 31 Dec 2025</p>
-<h2 id="dernière-révision-14"><a class="header" href="#dernière-révision-14">Dernière révision</a></h2>
+<h2 id="dernière-révision-17"><a class="header" href="#dernière-révision-17">Dernière révision</a></h2>
 <p>31 Dec 2025</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="sémaphores-2"><a class="header" href="#sémaphores-2">Sémaphores</a></h1>
@@ -3678,7 +4358,7 @@ int main() {
 <li><strong><a href="#semdestroy">SemDestroy</a></strong> : Détruit un sémaphore</li>
 <li><strong><a href="#setmaxsemforprocess">SetMaxSemForProcess</a></strong> : Redimensionne la table de sémaphores</li>
 </ul>
-<h2 id="architecture-1"><a class="header" href="#architecture-1">Architecture</a></h2>
+<h2 id="architecture-2"><a class="header" href="#architecture-2">Architecture</a></h2>
 <h3 id="modèle-de-sécurité"><a class="header" href="#modèle-de-sécurité">Modèle de sécurité</a></h3>
 <p>Les sémaphores utilisent une table de descripteurs au niveau de chaque processus (<code>AddrSpace</code>). L’utilisateur manipule des descripteurs (entiers), jamais des pointeurs directs vers les structures kernel.</p>
 <p><strong>Avantages</strong> :</p>
@@ -3751,7 +4431,7 @@ int main() {
 </tbody>
 </table>
 </div>
-<h2 id="thread-safety-11"><a class="header" href="#thread-safety-11">Thread-safety</a></h2>
+<h2 id="thread-safety-14"><a class="header" href="#thread-safety-14">Thread-safety</a></h2>
 <p><strong>Garanti</strong> :</p>
 <ul>
 <li>Les opérations Wait() et Post() sont atomiques et thread-safe</li>
@@ -3845,7 +4525,7 @@ int main() {
 </tbody>
 </table>
 </div>
-<h2 id="voir-aussi-15"><a class="header" href="#voir-aussi-15">Voir aussi</a></h2>
+<h2 id="voir-aussi-18"><a class="header" href="#voir-aussi-18">Voir aussi</a></h2>
 <ul>
 <li><a href="#gestion-des-erreurs-3">Gestion des erreurs</a> - Codes d’erreur système</li>
 <li><a href="#threads-utilisateur">Threads</a> - Création et gestion de threads</li>
@@ -3855,22 +4535,22 @@ int main() {
 <li><a href="#semdestroy">Destruction des sémaphores</a> - Libérer un sémaphore</li>
 <li><a href="#setmaxsemforprocess">Redimensionnement de la table</a> - Ajuster la taille maximale</li>
 </ul>
-<h2 id="auteurs-15"><a class="header" href="#auteurs-15">Auteurs</a></h2>
+<h2 id="auteurs-18"><a class="header" href="#auteurs-18">Auteurs</a></h2>
 <p>Antoine, 07 Jan 2026</p>
-<h2 id="dernière-révision-15"><a class="header" href="#dernière-révision-15">Dernière révision</a></h2>
+<h2 id="dernière-révision-18"><a class="header" href="#dernière-révision-18">Dernière révision</a></h2>
 <p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="seminit"><a class="header" href="#seminit">SemInit</a></h1>
 <p><code>SemInit</code> - Crée et initialise un nouveau sémaphore</p>
-<h2 id="synopsis-12"><a class="header" href="#synopsis-12">SYNOPSIS</a></h2>
+<h2 id="synopsis-14"><a class="header" href="#synopsis-14">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int SemInit(int value);
 </code></pre>
-<h2 id="description-12"><a class="header" href="#description-12">DESCRIPTION</a></h2>
+<h2 id="description-14"><a class="header" href="#description-14">DESCRIPTION</a></h2>
 <p><code>SemInit</code> crée un nouveau sémaphore avec une valeur initiale spécifiée et retourne un descripteur permettant de l’identifier. Le sémaphore peut ensuite être utilisé pour la synchronisation entre threads du même processus.</p>
 <p>Numéro d’appel système : <code>29</code></p>
-<h3 id="comportement-nominal-11"><a class="header" href="#comportement-nominal-11">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-13"><a class="header" href="#comportement-nominal-13">Comportement nominal</a></h3>
 <ul>
 <li>Alloue un nouveau descripteur dans la table de sémaphores du processus</li>
 <li>Initialise le compteur interne du sémaphore à <code>value</code></li>
@@ -3886,7 +4566,7 @@ int SemInit(int value);
 <li><strong>value &lt; 0</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
 <li><strong>Table pleine et expansion impossible</strong> : Retourne -1, <code>errno = E_FTABLE</code> (maximum 512 sémaphores atteint)</li>
 </ul>
-<h2 id="paramètres-12"><a class="header" href="#paramètres-12">PARAMÈTRES</a></h2>
+<h2 id="paramètres-14"><a class="header" href="#paramètres-14">PARAMÈTRES</a></h2>
 <h3 id="value"><a class="header" href="#value"><code>value</code></a></h3>
 <p>Valeur initiale du compteur du sémaphore.</p>
 <p><strong>Type</strong> : <code>int</code>
@@ -3897,11 +4577,11 @@ int SemInit(int value);
 <li>Doit être ≥ 0</li>
 <li>Représente le nombre de threads pouvant exécuter <code>SemWait()</code> simultanément sans bloquer</li>
 </ul>
-<h2 id="valeur-de-retour-12"><a class="header" href="#valeur-de-retour-12">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-14"><a class="header" href="#valeur-de-retour-14">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <p><strong>En cas de succès</strong> : Handle du sémaphore (0 à <code>maxSemaphores - 1</code>)</p>
 <p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="codes-derreur-11"><a class="header" href="#codes-derreur-11">CODES D’ERREUR</a></h2>
+<h2 id="codes-derreur-13"><a class="header" href="#codes-derreur-13">CODES D’ERREUR</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -3913,8 +4593,8 @@ int SemInit(int value);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-12"><a class="header" href="#implémentation-12">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-12"><a class="header" href="#localisation-du-code-12">Localisation du code</a></h3>
+<h2 id="implémentation-14"><a class="header" href="#implémentation-14">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-14"><a class="header" href="#localisation-du-code-14">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SemInit()</code></li>
@@ -3943,7 +4623,7 @@ int SemInit(int value);
 <li>Enregistrement dans la table</li>
 <li>Marquage du slot comme utilisé</li>
 </ol>
-<h3 id="thread-safety-12"><a class="header" href="#thread-safety-12">Thread-safety</a></h3>
+<h3 id="thread-safety-15"><a class="header" href="#thread-safety-15">Thread-safety</a></h3>
 <p><strong>Garanties</strong> :</p>
 <ul>
 <li>Plusieurs threads peuvent appeler <code>SemInit</code> simultanément</li>
@@ -3960,7 +4640,7 @@ int SemInit(int value);
 </ul>
 <h3 id="pourquoi-lauto-expansion-"><a class="header" href="#pourquoi-lauto-expansion-">Pourquoi l’auto-expansion ?</a></h3>
 <p><em>TODO</em></p>
-<h2 id="exemples-11"><a class="header" href="#exemples-11">EXEMPLES</a></h2>
+<h2 id="exemples-14"><a class="header" href="#exemples-14">EXEMPLES</a></h2>
 <h3 id="exemple-1--créer-un-mutex"><a class="header" href="#exemple-1--créer-un-mutex">Exemple 1 : Créer un mutex</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -4127,7 +4807,7 @@ int main() {
 <li><strong>v2.0</strong> : Modification avec table de descripteurs (taille fixe 16)</li>
 <li><strong>v2.1</strong> : Auto-expansion de la table (taille initiale 16, max 512)</li>
 </ul>
-<h2 id="voir-aussi-16"><a class="header" href="#voir-aussi-16">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-19"><a class="header" href="#voir-aussi-19">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#semwait">SemWait</a> - Opération P (wait) sur un sémaphore</li>
 <li><a href="#sempost">SemPost</a> - Opération V (signal) sur un sémaphore</li>
@@ -4135,23 +4815,23 @@ int main() {
 <li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a> - Redimensionnement manuel de la table</li>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
-<h2 id="auteurs-16"><a class="header" href="#auteurs-16">AUTEURS</a></h2>
+<h2 id="auteurs-19"><a class="header" href="#auteurs-19">AUTEURS</a></h2>
 <p>Antoine, 25 Dec 2025
 Tommy, 5 Jan 2026</p>
-<h2 id="dernière-révision-16"><a class="header" href="#dernière-révision-16">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-19"><a class="header" href="#dernière-révision-19">DERNIÈRE RÉVISION</a></h2>
 <p>5 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="semwait"><a class="header" href="#semwait">SemWait</a></h1>
 <p><code>SemWait</code> - Opération Wait (P/acquire) sur un sémaphore</p>
-<h2 id="synopsis-13"><a class="header" href="#synopsis-13">SYNOPSIS</a></h2>
+<h2 id="synopsis-15"><a class="header" href="#synopsis-15">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int SemWait(int sem_id);
 </code></pre>
-<h2 id="description-13"><a class="header" href="#description-13">DESCRIPTION</a></h2>
+<h2 id="description-15"><a class="header" href="#description-15">DESCRIPTION</a></h2>
 <p><code>SemWait</code> effectue l’opération Wait (Proberen) sur le sémaphore identifié par <code>sem_id</code>. Cette opération décrémente le compteur du sémaphore et bloque le thread appelant si le compteur devient négatif.</p>
 <p>Numéro d’appel système : <code>30</code></p>
-<h3 id="comportement-nominal-12"><a class="header" href="#comportement-nominal-12">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-14"><a class="header" href="#comportement-nominal-14">Comportement nominal</a></h3>
 <ul>
 <li>Vérifie la validité du descripteur <code>sem_id</code></li>
 <li>Si compteur &gt; 0 : décrémente et retourne immédiatement</li>
@@ -4165,7 +4845,7 @@ int SemWait(int sem_id);
 <li><strong>Blocage indéfini</strong> : Si aucun <code>SemPost()</code> n’est appelé, le thread reste bloqué (pas de timeout)</li>
 <li><strong>Interruptions</strong> : Le blocage n’est pas interruptible</li>
 </ul>
-<h2 id="paramètres-13"><a class="header" href="#paramètres-13">PARAMÈTRES</a></h2>
+<h2 id="paramètres-15"><a class="header" href="#paramètres-15">PARAMÈTRES</a></h2>
 <h3 id="sem_id"><a class="header" href="#sem_id"><code>sem_id</code></a></h3>
 <p>Descripteur du sémaphore sur lequel effectuer l’opération P.</p>
 <p><strong>Type</strong> : <code>int</code>
@@ -4177,11 +4857,11 @@ int SemWait(int sem_id);
 <li>Doit être dans l’intervalle [0, maxSemaphores-1] (max 511)</li>
 <li>Le sémaphore ne doit pas avoir été détruit</li>
 </ul>
-<h2 id="valeur-de-retour-13"><a class="header" href="#valeur-de-retour-13">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-15"><a class="header" href="#valeur-de-retour-15">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <p><strong>En cas de succès</strong> : <code>0</code></p>
 <p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="codes-derreur-12"><a class="header" href="#codes-derreur-12">CODES D’ERREUR</a></h2>
+<h2 id="codes-derreur-14"><a class="header" href="#codes-derreur-14">CODES D’ERREUR</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4192,8 +4872,8 @@ int SemWait(int sem_id);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-13"><a class="header" href="#implémentation-13">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-13"><a class="header" href="#localisation-du-code-13">Localisation du code</a></h3>
+<h2 id="implémentation-15"><a class="header" href="#implémentation-15">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-15"><a class="header" href="#localisation-du-code-15">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SemWait()</code></li>
@@ -4204,7 +4884,7 @@ int SemWait(int sem_id);
 </ul>
 </li>
 </ul>
-<h3 id="thread-safety-13"><a class="header" href="#thread-safety-13">Thread-safety</a></h3>
+<h3 id="thread-safety-16"><a class="header" href="#thread-safety-16">Thread-safety</a></h3>
 <p><strong>Sémaphore interne</strong> : <code>Semaphore::P()</code> utilise son propre lock interne :</p>
 <ul>
 <li>Lock sémaphore acquis</li>
@@ -4214,7 +4894,7 @@ int SemWait(int sem_id);
 </ul>
 <h2 id="décisions-de-conception-7"><a class="header" href="#décisions-de-conception-7">DÉCISIONS DE CONCEPTION</a></h2>
 <p><em>TODO</em></p>
-<h2 id="exemples-12"><a class="header" href="#exemples-12">EXEMPLES</a></h2>
+<h2 id="exemples-15"><a class="header" href="#exemples-15">EXEMPLES</a></h2>
 <h3 id="exemple-1--mutex-basique"><a class="header" href="#exemple-1--mutex-basique">Exemple 1 : Mutex basique</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -4377,7 +5057,7 @@ Erreur: handle invalide
 <li><strong>v1.0</strong> : Implémentation initiale avec adresses</li>
 <li><strong>v2.0</strong> : Modification avec table de descripteurs</li>
 </ul>
-<h2 id="voir-aussi-17"><a class="header" href="#voir-aussi-17">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-20"><a class="header" href="#voir-aussi-20">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#seminit">SemInit</a> - Création d’un sémaphore</li>
 <li><a href="#sempost">SemPost</a> - Opération V (signal) sur un sémaphore</li>
@@ -4385,23 +5065,23 @@ Erreur: handle invalide
 <li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a> - Redimensionnement de la table</li>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
-<h2 id="auteurs-17"><a class="header" href="#auteurs-17">AUTEURS</a></h2>
+<h2 id="auteurs-20"><a class="header" href="#auteurs-20">AUTEURS</a></h2>
 <p>Antoine, 07 Jan 2026
 Tommy, 05 Jan 2026</p>
-<h2 id="dernière-révision-17"><a class="header" href="#dernière-révision-17">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-20"><a class="header" href="#dernière-révision-20">DERNIÈRE RÉVISION</a></h2>
 <p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="sempost"><a class="header" href="#sempost">SemPost</a></h1>
 <p><code>SemPost</code> - Opération Post (V/signal/release) sur un sémaphore</p>
-<h2 id="synopsis-14"><a class="header" href="#synopsis-14">SYNOPSIS</a></h2>
+<h2 id="synopsis-16"><a class="header" href="#synopsis-16">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int SemPost(int sem_id);
 </code></pre>
-<h2 id="description-14"><a class="header" href="#description-14">DESCRIPTION</a></h2>
+<h2 id="description-16"><a class="header" href="#description-16">DESCRIPTION</a></h2>
 <p><code>SemPost</code> effectue l’opération Post (Verhogen) sur le sémaphore identifié par <code>sem_id</code>. Cette opération incrémente le compteur du sémaphore et réveille un thread bloqué en attente sur <code>SemWait()</code> si la queue n’est pas vide.</p>
 <p>Numéro d’appel système : <code>31</code></p>
-<h3 id="comportement-nominal-13"><a class="header" href="#comportement-nominal-13">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-15"><a class="header" href="#comportement-nominal-15">Comportement nominal</a></h3>
 <ul>
 <li>Vérifie la validité du handle <code>sem_id</code></li>
 <li>Incrémente le compteur du sémaphore de manière atomique</li>
@@ -4416,7 +5096,7 @@ int SemPost(int sem_id);
 <li><strong>Queue vide</strong> : Compteur simplement incrémenté, pas de réveil</li>
 <li><strong>Overflow</strong> : Compteur peut croître indéfiniment (pas de limite supérieure)</li>
 </ul>
-<h2 id="paramètres-14"><a class="header" href="#paramètres-14">PARAMÈTRES</a></h2>
+<h2 id="paramètres-16"><a class="header" href="#paramètres-16">PARAMÈTRES</a></h2>
 <h3 id="sem_id-1"><a class="header" href="#sem_id-1"><code>sem_id</code></a></h3>
 <p>Descripteur du sémaphore sur lequel effectuer l’opération Post.</p>
 <p><strong>Type</strong> : <code>int</code>
@@ -4428,11 +5108,11 @@ int SemPost(int sem_id);
 <li>Doit être dans l’intervalle [0, maxSemaphores-1] (max 511)</li>
 <li>Le sémaphore ne doit pas avoir été détruit</li>
 </ul>
-<h2 id="valeur-de-retour-14"><a class="header" href="#valeur-de-retour-14">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-16"><a class="header" href="#valeur-de-retour-16">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <p><strong>En cas de succès</strong> : <code>0</code></p>
 <p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="codes-derreur-13"><a class="header" href="#codes-derreur-13">CODES D’ERREUR</a></h2>
+<h2 id="codes-derreur-15"><a class="header" href="#codes-derreur-15">CODES D’ERREUR</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4443,8 +5123,8 @@ int SemPost(int sem_id);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-14"><a class="header" href="#implémentation-14">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-14"><a class="header" href="#localisation-du-code-14">Localisation du code</a></h3>
+<h2 id="implémentation-16"><a class="header" href="#implémentation-16">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-16"><a class="header" href="#localisation-du-code-16">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SemPost()</code></li>
@@ -4455,13 +5135,13 @@ int SemPost(int sem_id);
 </ul>
 </li>
 </ul>
-<h3 id="thread-safety-14"><a class="header" href="#thread-safety-14">Thread-safety</a></h3>
+<h3 id="thread-safety-17"><a class="header" href="#thread-safety-17">Thread-safety</a></h3>
 <ul>
 <li>L’opération <code>SemPost()</code> est thread-safe</li>
 </ul>
 <h2 id="décisions-de-conception-8"><a class="header" href="#décisions-de-conception-8">DÉCISIONS DE CONCEPTION</a></h2>
 <p><em>TODO</em></p>
-<h2 id="exemples-13"><a class="header" href="#exemples-13">EXEMPLES</a></h2>
+<h2 id="exemples-16"><a class="header" href="#exemples-16">EXEMPLES</a></h2>
 <h3 id="exemple-1--libération-de-mutex"><a class="header" href="#exemple-1--libération-de-mutex">Exemple 1 : Libération de mutex</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -4660,7 +5340,7 @@ Erreur: handle invalide
 <li><strong>v1.0</strong> : Implémentation initiale avec adresses</li>
 <li><strong>v2.0</strong> : Modification avec table de descripteurs</li>
 </ul>
-<h2 id="voir-aussi-18"><a class="header" href="#voir-aussi-18">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-21"><a class="header" href="#voir-aussi-21">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#seminit">SemInit</a> - Création d’un sémaphore</li>
 <li><a href="#semwait">SemWait</a> - Opération P (wait) sur un sémaphore</li>
@@ -4668,23 +5348,23 @@ Erreur: handle invalide
 <li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a> - Redimensionnement de la table</li>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
-<h2 id="auteurs-18"><a class="header" href="#auteurs-18">AUTEURS</a></h2>
+<h2 id="auteurs-21"><a class="header" href="#auteurs-21">AUTEURS</a></h2>
 <p>Antoine, 07 Jan 2026
 Tommy, 05 Jan 2026</p>
-<h2 id="dernière-révision-18"><a class="header" href="#dernière-révision-18">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-21"><a class="header" href="#dernière-révision-21">DERNIÈRE RÉVISION</a></h2>
 <p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="semdestroy"><a class="header" href="#semdestroy">SemDestroy</a></h1>
 <p><code>SemDestroy</code> - Détruit un sémaphore et libère ses ressources</p>
-<h2 id="synopsis-15"><a class="header" href="#synopsis-15">SYNOPSIS</a></h2>
+<h2 id="synopsis-17"><a class="header" href="#synopsis-17">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int SemDestroy(int sem_id);
 </code></pre>
-<h2 id="description-15"><a class="header" href="#description-15">DESCRIPTION</a></h2>
+<h2 id="description-17"><a class="header" href="#description-17">DESCRIPTION</a></h2>
 <p><code>SemDestroy</code> détruit le sémaphore identifié par <code>sem_id</code>, libère ses ressources kernel et invalide le descripteur.</p>
 <p>Numéro d’appel système : <code>32</code></p>
-<h3 id="comportement-nominal-14"><a class="header" href="#comportement-nominal-14">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-16"><a class="header" href="#comportement-nominal-16">Comportement nominal</a></h3>
 <ul>
 <li>Vérifie la validité du handle <code>sem_id</code></li>
 <li>Marque le descripteur comme invalide</li>
@@ -4699,7 +5379,7 @@ int SemDestroy(int sem_id);
 <li><strong>Threads bloqués</strong> : <strong>UNDEFINED BEHAVIOR</strong> - Ne pas détruire un sémaphore avec threads en attente</li>
 <li><strong>Nettoyage automatique</strong> : Si non détruit explicitement, libération automatique à la terminaison du processus</li>
 </ul>
-<h2 id="paramètres-15"><a class="header" href="#paramètres-15">PARAMÈTRES</a></h2>
+<h2 id="paramètres-17"><a class="header" href="#paramètres-17">PARAMÈTRES</a></h2>
 <h3 id="sem_id-2"><a class="header" href="#sem_id-2"><code>sem_id</code></a></h3>
 <p>Descripteur du sémaphore à détruire.</p>
 <p><strong>Type</strong> : <code>int</code>
@@ -4712,18 +5392,18 @@ int SemDestroy(int sem_id);
 <li>Le sémaphore ne doit pas déjà être détruit</li>
 <li><strong>IMPORTANT</strong> : Aucun thread ne doit être bloqué sur ce sémaphore</li>
 </ul>
-<h2 id="valeur-de-retour-15"><a class="header" href="#valeur-de-retour-15">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-17"><a class="header" href="#valeur-de-retour-17">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <p><strong>En cas de succès</strong> : <code>0</code></p>
 <p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="implémentation-15"><a class="header" href="#implémentation-15">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-15"><a class="header" href="#localisation-du-code-15">Localisation du code</a></h3>
+<h2 id="implémentation-17"><a class="header" href="#implémentation-17">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-17"><a class="header" href="#localisation-du-code-17">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SemDestroy()</code></li>
 <li><strong>Implémentation</strong> : <code>code/userprog/addrspace.cc:AddrSpace::SemaphoreDestroy()</code></li>
 </ul>
-<h3 id="thread-safety-15"><a class="header" href="#thread-safety-15">Thread-safety</a></h3>
+<h3 id="thread-safety-18"><a class="header" href="#thread-safety-18">Thread-safety</a></h3>
 <p>Destruction atomique : pas de race condition entre threads</p>
 <div class="callout callout-limitation">
     
@@ -4737,7 +5417,7 @@ int SemDestroy(int sem_id);
 </div>
 
 <h2 id="décisions-de-conception-9"><a class="header" href="#décisions-de-conception-9">DÉCISIONS DE CONCEPTION</a></h2>
-<h2 id="exemples-14"><a class="header" href="#exemples-14">EXEMPLES</a></h2>
+<h2 id="exemples-17"><a class="header" href="#exemples-17">EXEMPLES</a></h2>
 <h3 id="exemple-1--utilisation-normale"><a class="header" href="#exemple-1--utilisation-normale">Exemple 1 : Utilisation normale</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -4861,7 +5541,7 @@ SemDestroy(sem);  // Maintenant sûr
 <li><strong>v1.0</strong> : Implémentation initiale avec adresses</li>
 <li><strong>v2.0</strong> : Modification avec table de descripteurs</li>
 </ul>
-<h2 id="voir-aussi-19"><a class="header" href="#voir-aussi-19">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-22"><a class="header" href="#voir-aussi-22">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#seminit">SemInit</a> - Création d’un sémaphore</li>
 <li><a href="#semwait">SemWait</a> - Opération P (wait) sur un sémaphore</li>
@@ -4869,23 +5549,23 @@ SemDestroy(sem);  // Maintenant sûr
 <li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a> - Redimensionnement de la table</li>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
-<h2 id="auteurs-19"><a class="header" href="#auteurs-19">AUTEURS</a></h2>
+<h2 id="auteurs-22"><a class="header" href="#auteurs-22">AUTEURS</a></h2>
 <p>Antoine, 07 Jan 2026
 Tommy, 05 Jan 2026</p>
-<h2 id="dernière-révision-19"><a class="header" href="#dernière-révision-19">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-22"><a class="header" href="#dernière-révision-22">DERNIÈRE RÉVISION</a></h2>
 <p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="setmaxsemforprocess"><a class="header" href="#setmaxsemforprocess">SetMaxSemForProcess</a></h1>
 <p><code>SetMaxSemForProcess</code> - Définit la taille maximale de la table de sémaphores du processus</p>
-<h2 id="synopsis-16"><a class="header" href="#synopsis-16">SYNOPSIS</a></h2>
+<h2 id="synopsis-18"><a class="header" href="#synopsis-18">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int SetMaxSemForProcess(unsigned int maxSemaphores);
 </code></pre>
-<h2 id="description-16"><a class="header" href="#description-16">DESCRIPTION</a></h2>
+<h2 id="description-18"><a class="header" href="#description-18">DESCRIPTION</a></h2>
 <p><code>SetMaxSemForProcess</code> permet de redimensionner explicitement la table de sémaphores du processus courant. Cette fonction est utile pour pré-allouer une table de grande taille si le nombre de sémaphores nécessaires est connu à l’avance, évitant ainsi les réallocations dynamiques.</p>
 <p>Numéro d’appel système : <code>33</code></p>
-<h3 id="comportement-nominal-15"><a class="header" href="#comportement-nominal-15">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-17"><a class="header" href="#comportement-nominal-17">Comportement nominal</a></h3>
 <ul>
 <li>Réalloue la table de sémaphores à la taille spécifiée</li>
 <li>Préserve les sémaphores existants en cas d’agrandissement (aucune garantie en cas de réduction)</li>
@@ -4898,7 +5578,7 @@ int SetMaxSemForProcess(unsigned int maxSemaphores);
 <li><strong>maxSemaphores &gt; MAX_SEMAPHORES_PER_PROCESS (512)</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
 <li><strong>Réduction de taille</strong> : Les sémaphores au-delà de la nouvelle limite sont perdus (non recommandé)</li>
 </ul>
-<h2 id="paramètres-16"><a class="header" href="#paramètres-16">PARAMÈTRES</a></h2>
+<h2 id="paramètres-18"><a class="header" href="#paramètres-18">PARAMÈTRES</a></h2>
 <h3 id="maxsemaphores"><a class="header" href="#maxsemaphores"><code>maxSemaphores</code></a></h3>
 <p>Nouvelle taille de la table de sémaphores.</p>
 <p><strong>Type</strong> : <code>unsigned int</code>
@@ -4909,24 +5589,24 @@ int SetMaxSemForProcess(unsigned int maxSemaphores);
 <li>Doit être &gt; 0</li>
 <li>Doit être ≤ 512 (<code>MAX_SEMAPHORES_PER_PROCESS</code>)</li>
 </ul>
-<h2 id="valeur-de-retour-16"><a class="header" href="#valeur-de-retour-16">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-18"><a class="header" href="#valeur-de-retour-18">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <p><strong>En cas de succès</strong> : <code>0</code></p>
 <p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="implémentation-16"><a class="header" href="#implémentation-16">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-16"><a class="header" href="#localisation-du-code-16">Localisation du code</a></h3>
+<h2 id="implémentation-18"><a class="header" href="#implémentation-18">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-18"><a class="header" href="#localisation-du-code-18">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SetMaxSemForProcess()</code></li>
 <li><strong>Implémentation</strong> : <code>code/userprog/addrspace.cc:AddrSpace::AllocateSemaphoreTable()</code></li>
 </ul>
-<h3 id="thread-safety-16"><a class="header" href="#thread-safety-16">Thread-safety</a></h3>
+<h3 id="thread-safety-19"><a class="header" href="#thread-safety-19">Thread-safety</a></h3>
 <p><em>TODO</em></p>
 <h2 id="décisions-de-conception-10"><a class="header" href="#décisions-de-conception-10">DÉCISIONS DE CONCEPTION</a></h2>
 <h3 id="pourquoi-permettre-le-redimensionnement-manuel-"><a class="header" href="#pourquoi-permettre-le-redimensionnement-manuel-">Pourquoi permettre le redimensionnement manuel ?</a></h3>
 <p><strong>Optimisation</strong> : Évite les réallocations multiples si le nombre de sémaphores est connu à l’avance.</p>
 <p><strong>Contrôle mémoire</strong> : Permet de limiter l’utilisation mémoire en spécifiant une taille exacte.</p>
-<h2 id="exemples-15"><a class="header" href="#exemples-15">EXEMPLES</a></h2>
+<h2 id="exemples-18"><a class="header" href="#exemples-18">EXEMPLES</a></h2>
 <h3 id="exemple-1--pré-allocation-pour-application-intensive"><a class="header" href="#exemple-1--pré-allocation-pour-application-intensive">Exemple 1 : Pré-allocation pour application intensive</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -5045,16 +5725,16 @@ int main() {
 <ul>
 <li><strong>v1.0</strong> : Implémentation initiale</li>
 </ul>
-<h2 id="voir-aussi-20"><a class="header" href="#voir-aussi-20">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-23"><a class="header" href="#voir-aussi-23">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#seminit">SemInit</a> - Création d’un sémaphore (déclenche auto-expansion si nécessaire)</li>
 <li><a href="#semdestroy">SemDestroy</a> - Destruction d’un sémaphore</li>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
-<h2 id="auteurs-20"><a class="header" href="#auteurs-20">AUTEURS</a></h2>
+<h2 id="auteurs-23"><a class="header" href="#auteurs-23">AUTEURS</a></h2>
 <p>Antoine, 07 Jan 2026
 Tommy, 05 Jan 2026</p>
-<h2 id="dernière-révision-20"><a class="header" href="#dernière-révision-20">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-23"><a class="header" href="#dernière-révision-23">DERNIÈRE RÉVISION</a></h2>
 <p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="sémaphores-3"><a class="header" href="#sémaphores-3">Sémaphores</a></h1>
@@ -5072,15 +5752,15 @@ Tommy, 05 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="forkexec"><a class="header" href="#forkexec">ForkExec</a></h1>
 <p><code>ForkExec</code> - Crée un nouveau process utilisateur</p>
-<h2 id="synopsis-17"><a class="header" href="#synopsis-17">Synopsis</a></h2>
+<h2 id="synopsis-19"><a class="header" href="#synopsis-19">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int ForkExec(char* file_name);
 </code></pre>
-<h2 id="description-17"><a class="header" href="#description-17">Description</a></h2>
+<h2 id="description-19"><a class="header" href="#description-19">Description</a></h2>
 <p><code>ForkExec</code> crée un nouveau process qui va éxècuter l’éxècutable dont le nom est donné en paramètre</p>
 <p><strong>Numéro d’appel système</strong> : <code>SC_ForkExec</code> (34)</p>
-<h3 id="comportement-nominal-16"><a class="header" href="#comportement-nominal-16">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-18"><a class="header" href="#comportement-nominal-18">Comportement nominal</a></h3>
 <ol>
 <li>Allocation d’un PID unique via <code>processs_bitmap</code></li>
 <li>Création d’un objet <code>Process</code> noyau</li>
@@ -5088,11 +5768,11 @@ int ForkExec(char* file_name);
 <li>Création du thread principal du <code>Process</code> avec l’éxècutable donné comme paramétre</li>
 <li>Retour immédiat (le nouveau process s’exécute de manière asynchrone)</li>
 </ol>
-<h2 id="paramètres-17"><a class="header" href="#paramètres-17">Paramètres</a></h2>
+<h2 id="paramètres-19"><a class="header" href="#paramètres-19">Paramètres</a></h2>
 <h3 id="file_name"><a class="header" href="#file_name"><code>file_name</code></a></h3>
 <p>Argument passé à <code>start_routine</code>.</p>
 <p><strong>Type</strong> : <code>char *</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> : Le fichier doit exister et être éxècutable.</p>
-<h2 id="valeur-de-retour-17"><a class="header" href="#valeur-de-retour-17">Valeur de retour</a></h2>
+<h2 id="valeur-de-retour-19"><a class="header" href="#valeur-de-retour-19">Valeur de retour</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <div class="table-wrapper">
 <table>
@@ -5105,7 +5785,7 @@ int ForkExec(char* file_name);
 </tbody>
 </table>
 </div>
-<h2 id="codes-derreur-14"><a class="header" href="#codes-derreur-14">Codes d’erreur</a></h2>
+<h2 id="codes-derreur-16"><a class="header" href="#codes-derreur-16">Codes d’erreur</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -5118,15 +5798,15 @@ int ForkExec(char* file_name);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-17"><a class="header" href="#implémentation-17">Implémentation</a></h2>
-<h3 id="localisation-du-code-17"><a class="header" href="#localisation-du-code-17">Localisation du code</a></h3>
+<h2 id="implémentation-19"><a class="header" href="#implémentation-19">Implémentation</a></h2>
+<h3 id="localisation-du-code-19"><a class="header" href="#localisation-du-code-19">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userprocess.cc:handle_SC_ForkExec()</code></li>
 <li><strong>Implémentation</strong> : <code>code/userprog/userprocess.cc:handle_SC_ForkExec()</code></li>
 <li><strong>Démarrage process</strong> : <code>code/userprog/userprocess.cc:StartProcess()</code></li>
 </ul>
-<h3 id="flux-dexécution-5"><a class="header" href="#flux-dexécution-5">Flux d’exécution</a></h3>
+<h3 id="flux-dexécution-7"><a class="header" href="#flux-dexécution-7">Flux d’exécution</a></h3>
 <pre><code>ForkExec(&amp;tid, attr, func, arg)
         │
         ▼
@@ -5154,7 +5834,7 @@ int ForkExec(char* file_name);
         ▼
     [exécution de main()]
 </code></pre>
-<h2 id="exemples-16"><a class="header" href="#exemples-16">Exemples</a></h2>
+<h2 id="exemples-19"><a class="header" href="#exemples-19">Exemples</a></h2>
 <h3 id="exemple-1--création-simple-de-deux-processus"><a class="header" href="#exemple-1--création-simple-de-deux-processus">Exemple 1 : Création simple de deux processus</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -5177,14 +5857,14 @@ int main(){
 
 </div>
 
-<h2 id="auteurs-21"><a class="header" href="#auteurs-21">Auteurs</a></h2>
+<h2 id="auteurs-24"><a class="header" href="#auteurs-24">Auteurs</a></h2>
 <p>Tommy, 7 Jan 2026</p>
-<h2 id="dernière-révision-21"><a class="header" href="#dernière-révision-21">Dernière révision</a></h2>
+<h2 id="dernière-révision-24"><a class="header" href="#dernière-révision-24">Dernière révision</a></h2>
 <p>7 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="gestion-des-erreurs-3"><a class="header" href="#gestion-des-erreurs-3">Gestion des erreurs</a></h1>
 <p>Ce document décrit le mécanisme de gestion des erreurs dans NachOS et l’utilisation de la variable globale <code>errno</code>.</p>
-<h2 id="vue-densemble-2"><a class="header" href="#vue-densemble-2">Vue d’ensemble</a></h2>
+<h2 id="vue-densemble-3"><a class="header" href="#vue-densemble-3">Vue d’ensemble</a></h2>
 <p>NachOS utilise une convention de gestion d’erreurs inspirée de POSIX mais simplifiée :</p>
 <ul>
 <li>Les appels système qui peuvent échouer retournent <code>-1</code> en cas d’erreur</li>
@@ -5290,7 +5970,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<h2 id="codes-derreur-15"><a class="header" href="#codes-derreur-15">Codes d’erreur</a></h2>
+<h2 id="codes-derreur-17"><a class="header" href="#codes-derreur-17">Codes d’erreur</a></h2>
 <p>Voir <a href="#liste-des-codes-errno">Liste des codes errno</a> pour la documentation complète de chaque code.</p>
 <h3 id="codes-principaux"><a class="header" href="#codes-principaux">Codes principaux</a></h3>
 <div class="table-wrapper">
@@ -5447,15 +6127,15 @@ int main() {
     return 0;
 }
 </code></pre>
-<h2 id="voir-aussi-21"><a class="header" href="#voir-aussi-21">Voir aussi</a></h2>
+<h2 id="voir-aussi-24"><a class="header" href="#voir-aussi-24">Voir aussi</a></h2>
 <ul>
 <li><a href="#liste-des-codes-errno">Liste des codes errno</a> - Documentation détaillée de chaque code</li>
 <li><a href="#vue-densemble---console-io">Console I/O Overview</a> - Appels système avec gestion errno</li>
 <li><a href="userspace/my_stdlib.html">my_stdlib</a> - Fonctions utilitaires pour errno</li>
 </ul>
-<h2 id="auteurs-22"><a class="header" href="#auteurs-22">Auteurs</a></h2>
+<h2 id="auteurs-25"><a class="header" href="#auteurs-25">Auteurs</a></h2>
 <p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision-22"><a class="header" href="#dernière-révision-22">Dernière révision</a></h2>
+<h2 id="dernière-révision-25"><a class="header" href="#dernière-révision-25">Dernière révision</a></h2>
 <p>20 Dec 2025 par Antoine</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="liste-des-codes-errno"><a class="header" href="#liste-des-codes-errno">Liste des codes errno</a></h1>
@@ -5580,15 +6260,15 @@ if (result != -1) {
 <li>Thread déjà terminé</li>
 <li>TID jamais créé</li>
 </ul>
-<h2 id="voir-aussi-22"><a class="header" href="#voir-aussi-22">Voir aussi</a></h2>
+<h2 id="voir-aussi-25"><a class="header" href="#voir-aussi-25">Voir aussi</a></h2>
 <ul>
 <li><a href="#gestion-des-erreurs-3">Gestion des erreurs</a> - Vue d’ensemble du mécanisme errno</li>
 <li><a href="#vue-densemble---console-io">Console I/O</a> - Appels avec gestion d’erreur</li>
 <li><a href="userspace/my_stdlib.html">my_stdlib</a> - Fonctions print_error()</li>
 </ul>
-<h2 id="auteurs-23"><a class="header" href="#auteurs-23">Auteurs</a></h2>
+<h2 id="auteurs-26"><a class="header" href="#auteurs-26">Auteurs</a></h2>
 <p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision-23"><a class="header" href="#dernière-révision-23">Dernière révision</a></h2>
+<h2 id="dernière-révision-26"><a class="header" href="#dernière-révision-26">Dernière révision</a></h2>
 <p>20 Dec 2025 par Antoine</p>
 
                     </main>

@@ -3,8 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Page not found - NachOS Manual</title>
-        <base href="/">
+        <title>Halt - NachOS Manual</title>
 
 
         <!-- Custom HTML head -->
@@ -13,35 +12,35 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="favicon-8114d1fc.png">
-        <link rel="stylesheet" href="css/variables-8adf115d.css">
-        <link rel="stylesheet" href="css/general-2459343d.css">
-        <link rel="stylesheet" href="css/chrome-ae938929.css">
-        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+        <link rel="icon" href="../../favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="../../favicon-8114d1fc.png">
+        <link rel="stylesheet" href="../../css/variables-8adf115d.css">
+        <link rel="stylesheet" href="../../css/general-2459343d.css">
+        <link rel="stylesheet" href="../../css/chrome-ae938929.css">
+        <link rel="stylesheet" href="../../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="../../fonts/fonts-9644e21d.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
-        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
-        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+        <link rel="stylesheet" id="mdbook-highlight-css" href="../../highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../../tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="theme/custom-c9a1a890.css">
-        <link rel="stylesheet" href="theme/callouts-599be5a1.css">
+        <link rel="stylesheet" href="../../theme/custom-c9a1a890.css">
+        <link rel="stylesheet" href="../../theme/callouts-599be5a1.css">
 
 
         <!-- Provide site root and default themes to javascript -->
         <script>
-            const path_to_root = "";
+            const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1fbd2d58.js";
+            window.path_to_searchindex_js = "../../searchindex-1fbd2d58.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-523511c1.js"></script>
+        <script src="../../toc-523511c1.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -108,7 +107,7 @@
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
-                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
             </noscript>
             <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -143,7 +142,7 @@
                     <h1 class="menu-title">NachOS Manual</h1>
 
                     <div class="right-buttons">
-                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
                             <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
                         </a>
                         <a href="https://gricad-gitlab.univ-grenoble-alpes.fr/systeme/nachos-etu/2025-2026/team-a" title="Git repository" aria-label="Git repository">
@@ -180,14 +179,218 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="document-not-found-404"><a class="header" href="#document-not-found-404">Document not found (404)</a></h1>
-<p>This URL is invalid, sorry. Please use the navigation bar or search to continue.</p>
+                        <h1 id="halt"><a class="header" href="#halt">Halt</a></h1>
+<p><code>Halt</code> - Arrête le système Nachos et affiche les statistiques de performance</p>
+<h2 id="synopsis"><a class="header" href="#synopsis">Synopsis</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+void Halt(void);
+</code></pre>
+<h2 id="description"><a class="header" href="#description">Description</a></h2>
+<p><code>Halt</code> arrête complètement le système Nachos. Cette fonction termine immédiatement l’exécution de tous les processus et threads, puis affiche les statistiques de performance du système avant de quitter.</p>
+<p><strong>Numéro d’appel système</strong> : <code>SC_Halt</code> (0)</p>
+<h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
+<ol>
+<li>Appel de <code>interrupt-&gt;Halt()</code> qui déclenche l’arrêt du système</li>
+<li>Affichage des statistiques de performance (cycles CPU, interruptions, etc.)</li>
+<li>Terminaison complète du système Nachos</li>
+<li>Cette fonction ne retourne jamais</li>
+</ol>
+<div class="callout callout-warning">
+    
+<div class="callout-title">Arrêt immédiat</div>
+
+    
+<div class="callout-content">
+        <code>Halt</code> termine le système sans nettoyer les ressources ni attendre
+        la fin des autres threads ou processus. Utilisez <code>Exit</code> pour une
+        terminaison propre d'un processus.
+    </div>
+
+</div>
+
+<h2 id="paramètres"><a class="header" href="#paramètres">Paramètres</a></h2>
+<p>Cette fonction ne prend aucun paramètre.</p>
+<h2 id="valeur-de-retour"><a class="header" href="#valeur-de-retour">Valeur de retour</a></h2>
+<p><strong>Type</strong> : <code>void</code></p>
+<p>Cette fonction ne retourne jamais. Elle termine l’exécution du système Nachos.</p>
+<h2 id="codes-derreur"><a class="header" href="#codes-derreur">Codes d’erreur</a></h2>
+<p>Aucun. Cette fonction ne peut pas échouer.</p>
+<h2 id="implémentation"><a class="header" href="#implémentation">Implémentation</a></h2>
+<h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S:91</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handle_SC_Halt()</code></li>
+<li><strong>Implémentation</strong> : <code>code/threads/interrupt.cc:Interrupt::Halt()</code></li>
+</ul>
+<h3 id="flux-dexécution"><a class="header" href="#flux-dexécution">Flux d’exécution</a></h3>
+<pre><code>Halt()
+    │
+    ▼
+start.S: Halt
+    │ charge $2 = SC_Halt (0)
+    ▼
+syscall SC_Halt
+    │
+    ▼
+handle_SC_Halt()
+    │ affiche "Shutdown, initiated by user program."
+    ▼
+interrupt-&gt;Halt()
+    │ ├─ affiche les statistiques
+    │ ├─ cleanup()
+    │ └─ exit(0)
+    ▼
+[Fin du système Nachos]
+</code></pre>
+<h2 id="exemples"><a class="header" href="#exemples">Exemples</a></h2>
+<h3 id="exemple-1--arrêt-simple"><a class="header" href="#exemple-1--arrêt-simple">Exemple 1 : Arrêt simple</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    PutString("System is shutting down...\n", 27);
+    Halt();
+    // Cette ligne ne sera jamais exécutée
+    PutString("This will never print\n", 22);
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-2--arrêt-après-traitement"><a class="header" href="#exemple-2--arrêt-après-traitement">Exemple 2 : Arrêt après traitement</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int i;
+
+    PutString("Processing data...\n", 19);
+
+    for (i = 0; i &lt; 10; i++) {
+        PutInt(i);
+        PutChar(' ');
+    }
+    PutChar('\n');
+
+    PutString("Done! Halting system.\n", 22);
+    Halt();
+
+    return 0;  // Jamais atteint
+}
+</code></pre>
+<h3 id="exemple-3--halt-vs-exit"><a class="header" href="#exemple-3--halt-vs-exit">Exemple 3 : Halt vs Exit</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+void *thread_func(void *arg) {
+    int id = (int)(long)arg;
+    PutString("Thread ", 7);
+    PutInt(id);
+    PutString(" running\n", 9);
+
+    if (id == 0) {
+        PutString("Thread 0 calling Halt()!\n", 25);
+        Halt();  // Arrête TOUT le système
+    }
+
+    PutString("Thread ", 7);
+    PutInt(id);
+    PutString(" finished\n", 10);
+    return 0;
+}
+
+int main() {
+    posix_thread_t tid0, tid1;
+
+    PthreadCreate(&amp;tid0, 0, thread_func, (void *)0);
+    PthreadCreate(&amp;tid1, 0, thread_func, (void *)1);
+
+    PthreadJoin(tid0, 0);
+    PthreadJoin(tid1, 0);  // Jamais atteint si thread 0 appelle Halt
+
+    PutString("Main exiting\n", 13);  // Jamais atteint
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie attendue</strong> :</p>
+<pre><code>Thread 0 running
+Thread 1 running
+Thread 0 calling Halt()!
+Machine halting!
+
+[Statistiques de performance affichées]
+</code></pre>
+<h2 id="cas-dusage"><a class="header" href="#cas-dusage">Cas d’usage</a></h2>
+<h3 id="arrêt-de-test"><a class="header" href="#arrêt-de-test">Arrêt de test</a></h3>
+<p><code>Halt</code> est principalement utilisé pour :</p>
+<ul>
+<li>Terminer proprement les programmes de test</li>
+<li>Arrêter le système après une suite de tests</li>
+<li>Simuler un arrêt système complet</li>
+</ul>
+<h3 id="différence-avec-exit"><a class="header" href="#différence-avec-exit">Différence avec Exit</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Aspect</th><th>Halt</th><th>Exit</th></tr>
+</thead>
+<tbody>
+<tr><td>Portée</td><td>Arrête tout le système</td><td>Termine le processus appelant</td></tr>
+<tr><td>Threads</td><td>Tous terminés immédiatement</td><td>Attend la fin des threads du processus</td></tr>
+<tr><td>Autres processus</td><td>Terminés</td><td>Continuent leur exécution</td></tr>
+<tr><td>Nettoyage</td><td>Minimal</td><td>Complet pour le processus</td></tr>
+<tr><td>Statistiques</td><td>Affichées</td><td>Non affichées</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h2>
+<p>Non applicable. <code>Halt</code> arrête immédiatement le système, quel que soit le thread appelant.</p>
+<div class="callout callout-warning">
+    
+<div class="callout-title">Utilisation multi-thread</div>
+
+    
+<div class="callout-content">
+        Si plusieurs threads tentent d'appeler <code>Halt</code> simultanément,
+        le premier appel arrêtera le système. Les autres threads seront terminés
+        avant d'atteindre leur appel à <code>Halt</code>.
+    </div>
+
+</div>
+
+<h2 id="statistiques-affichées"><a class="header" href="#statistiques-affichées">Statistiques affichées</a></h2>
+<p>Lors de l’arrêt, Nachos affiche typiquement :</p>
+<pre><code>Ticks: total X, idle Y, system Z, user W
+Disk I/O: reads R, writes W
+Console I/O: reads R, writes W
+Paging: faults F
+Network I/O: packets received R, sent S
+</code></pre>
+<p>Ces statistiques permettent d’évaluer les performances du système et des programmes utilisateur.</p>
+<h2 id="voir-aussi"><a class="header" href="#voir-aussi">Voir aussi</a></h2>
+<div class="callout callout-see-also">
+    
+<div class="callout-content">
+<ul>
+<li><a href="./Exit.html">Exit</a> - Terminer un processus proprement</li>
+<li><a href="../threads/PthreadExit.html">PthreadExit</a> - Terminer un thread</li>
+</ul>
+</div>
+
+</div>
+
+<h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
+<p>Alioune Badara DIENE, 8 Jan 2026</p>
+<h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
+<p>8 Jan 2026</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../syscalls/system/System.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
 
+                            <a rel="next prefetch" href="../../syscalls/system/Exit.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -195,7 +398,13 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../syscalls/system/System.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
 
+                    <a rel="next prefetch" href="../../syscalls/system/Exit.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
             </nav>
 
         </div>
@@ -213,16 +422,16 @@
         </script>
 
 
-        <script src="elasticlunr-ef4e11c1.min.js"></script>
-        <script src="mark-09e88c2c.min.js"></script>
-        <script src="searcher-c2a407aa.js"></script>
+        <script src="../../elasticlunr-ef4e11c1.min.js"></script>
+        <script src="../../mark-09e88c2c.min.js"></script>
+        <script src="../../searcher-c2a407aa.js"></script>
 
-        <script src="clipboard-1626706a.min.js"></script>
-        <script src="highlight-abc7f01d.js"></script>
-        <script src="book-a0b12cfe.js"></script>
+        <script src="../../clipboard-1626706a.min.js"></script>
+        <script src="../../highlight-abc7f01d.js"></script>
+        <script src="../../book-a0b12cfe.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="theme/custom-da2ff7a9.js"></script>
+        <script src="../../theme/custom-da2ff7a9.js"></script>
 
 
 

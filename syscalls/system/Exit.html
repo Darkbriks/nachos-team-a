@@ -3,8 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Page not found - NachOS Manual</title>
-        <base href="/">
+        <title>Exit - NachOS Manual</title>
 
 
         <!-- Custom HTML head -->
@@ -13,35 +12,35 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="favicon-8114d1fc.png">
-        <link rel="stylesheet" href="css/variables-8adf115d.css">
-        <link rel="stylesheet" href="css/general-2459343d.css">
-        <link rel="stylesheet" href="css/chrome-ae938929.css">
-        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+        <link rel="icon" href="../../favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="../../favicon-8114d1fc.png">
+        <link rel="stylesheet" href="../../css/variables-8adf115d.css">
+        <link rel="stylesheet" href="../../css/general-2459343d.css">
+        <link rel="stylesheet" href="../../css/chrome-ae938929.css">
+        <link rel="stylesheet" href="../../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="../../fonts/fonts-9644e21d.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
-        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
-        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+        <link rel="stylesheet" id="mdbook-highlight-css" href="../../highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../../tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="theme/custom-c9a1a890.css">
-        <link rel="stylesheet" href="theme/callouts-599be5a1.css">
+        <link rel="stylesheet" href="../../theme/custom-c9a1a890.css">
+        <link rel="stylesheet" href="../../theme/callouts-599be5a1.css">
 
 
         <!-- Provide site root and default themes to javascript -->
         <script>
-            const path_to_root = "";
+            const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1fbd2d58.js";
+            window.path_to_searchindex_js = "../../searchindex-1fbd2d58.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-523511c1.js"></script>
+        <script src="../../toc-523511c1.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -108,7 +107,7 @@
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
-                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
             </noscript>
             <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -143,7 +142,7 @@
                     <h1 class="menu-title">NachOS Manual</h1>
 
                     <div class="right-buttons">
-                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
                             <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
                         </a>
                         <a href="https://gricad-gitlab.univ-grenoble-alpes.fr/systeme/nachos-etu/2025-2026/team-a" title="Git repository" aria-label="Git repository">
@@ -180,14 +179,310 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="document-not-found-404"><a class="header" href="#document-not-found-404">Document not found (404)</a></h1>
-<p>This URL is invalid, sorry. Please use the navigation bar or search to continue.</p>
+                        <h1 id="exit"><a class="header" href="#exit">Exit</a></h1>
+<p><code>Exit</code> - Termine proprement le processus courant</p>
+<h2 id="synopsis"><a class="header" href="#synopsis">Synopsis</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+void Exit(int status);
+</code></pre>
+<h2 id="description"><a class="header" href="#description">Description</a></h2>
+<p><code>Exit</code> termine proprement le processus courant. Cette fonction attend la terminaison de tous les threads du processus, puis libère toutes les ressources associées. Si c’est le dernier processus actif du système, <code>Exit</code> arrête complètement Nachos.</p>
+<p><strong>Numéro d’appel système</strong> : <code>SC_Exit</code> (1)</p>
+<h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
+<ol>
+<li>Lecture du code de retour <code>status</code> depuis le registre <code>$4</code></li>
+<li>Écriture du code de retour dans le registre <code>$2</code></li>
+<li>Attente de la terminaison de tous les threads du processus via <code>WaitForAllThreadsTerminate()</code></li>
+<li>Si c’est le dernier processus actif :
+<ul>
+<li>Suppression du processus</li>
+<li>Arrêt du système avec <code>interrupt-&gt;Halt()</code></li>
+</ul>
+</li>
+<li>Sinon :
+<ul>
+<li>Marquage du processus pour destruction différée</li>
+<li>Terminaison du thread courant via <code>currentThread-&gt;Finish()</code></li>
+</ul>
+</li>
+</ol>
+<div class="callout callout-note">
+    
+<div class="callout-title">Terminaison propre</div>
+
+    
+<div class="callout-content">
+        Contrairement à <code>Halt</code>, <code>Exit</code> garantit une terminaison propre
+        du processus en attendant tous ses threads et en libérant ses ressources.
+    </div>
+
+</div>
+
+<h2 id="paramètres"><a class="header" href="#paramètres">Paramètres</a></h2>
+<h3 id="status"><a class="header" href="#status"><code>status</code></a></h3>
+<p>Code de retour du processus, conventionnellement 0 pour succès, non-zéro pour erreur.</p>
+<p><strong>Type</strong> : <code>int</code>
+<strong>Direction</strong> : IN
+<strong>Registre</strong> : <code>$4</code>
+<strong>Convention</strong> :</p>
+<ul>
+<li><code>0</code> = terminaison normale</li>
+<li><code>non-zéro</code> = erreur ou terminaison anormale</li>
+</ul>
+<h2 id="valeur-de-retour"><a class="header" href="#valeur-de-retour">Valeur de retour</a></h2>
+<p><strong>Type</strong> : <code>void</code></p>
+<p>Cette fonction ne retourne jamais au code utilisateur. Le code de retour <code>status</code> est écrit dans le registre <code>$2</code> avant la terminaison et peut être récupéré par un processus parent via <code>Join()</code>.</p>
+<h2 id="codes-derreur"><a class="header" href="#codes-derreur">Codes d’erreur</a></h2>
+<p>Aucun. Cette fonction ne peut pas échouer et ne retourne jamais.</p>
+<h2 id="implémentation"><a class="header" href="#implémentation">Implémentation</a></h2>
+<h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S:99</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handle_SC_Exit()</code></li>
+</ul>
+<h3 id="flux-dexécution"><a class="header" href="#flux-dexécution">Flux d’exécution</a></h3>
+<pre><code>Exit(status)
+    │
+    ▼
+start.S: Exit
+    │ charge $4 = status
+    │ charge $2 = SC_Exit (1)
+    ▼
+syscall SC_Exit
+    │
+    ▼
+handle_SC_Exit()
+    │ ├─ lit status depuis $4
+    │ ├─ écrit status dans $2
+    │ └─ récupère process
+    ▼
+process-&gt;WaitForAllThreadsTerminate()
+    │ attend que tous les threads se terminent
+    ▼
+Si dernier processus actif:
+    │ ├─ delete process
+    │ └─ interrupt-&gt;Halt()
+Sinon:
+    │ ├─ processToBeDestroyed = process
+    │ └─ currentThread-&gt;Finish()
+    ▼
+[Processus terminé]
+</code></pre>
+<h2 id="exemples"><a class="header" href="#exemples">Exemples</a></h2>
+<h3 id="exemple-1--terminaison-normale"><a class="header" href="#exemple-1--terminaison-normale">Exemple 1 : Terminaison normale</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    PutString("Hello, Nachos!\n", 15);
+    PutString("Program completed successfully.\n", 32);
+    Exit(0);  // Code de retour 0 = succès
+}
+</code></pre>
+<h3 id="exemple-2--terminaison-avec-erreur"><a class="header" href="#exemple-2--terminaison-avec-erreur">Exemple 2 : Terminaison avec erreur</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int result;
+
+    result = GetInt(&amp;result);
+    if (result != 0) {
+        PutString("Error reading integer!\n", 23);
+        Exit(1);  // Code d'erreur 1
+    }
+
+    PutString("Value read: ", 12);
+    PutInt(result);
+    PutChar('\n');
+
+    Exit(0);  // Succès
+}
+</code></pre>
+<h3 id="exemple-3--attente-des-threads"><a class="header" href="#exemple-3--attente-des-threads">Exemple 3 : Attente des threads</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+void *worker(void *arg) {
+    int id = (int)(long)arg;
+    int i;
+
+    for (i = 0; i &lt; 5; i++) {
+        PutString("Thread ", 7);
+        PutInt(id);
+        PutString(" iteration ", 11);
+        PutInt(i);
+        PutChar('\n');
+    }
+
+    return 0;
+}
+
+int main() {
+    posix_thread_t tid1, tid2;
+
+    PutString("Starting threads...\n", 20);
+
+    PthreadCreate(&amp;tid1, 0, worker, (void *)1);
+    PthreadCreate(&amp;tid2, 0, worker, (void *)2);
+
+    PutString("Main thread calling Exit()\n", 27);
+    Exit(0);  // Attend automatiquement tid1 et tid2
+
+    // Jamais atteint
+}
+</code></pre>
+<p><strong>Comportement</strong> : <code>Exit</code> attend que les threads 1 et 2 se terminent avant de détruire le processus.</p>
+<h3 id="exemple-4--exit-vs-return"><a class="header" href="#exemple-4--exit-vs-return">Exemple 4 : Exit vs return</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int choice = 1;
+
+    if (choice == 0) {
+        PutString("Using return\n", 13);
+        return 0;  // Équivalent à Exit(0)
+    } else {
+        PutString("Using Exit\n", 11);
+        Exit(0);   // Explicite
+    }
+}
+</code></pre>
+<div class="callout callout-note">
+    
+<div class="callout-title">return vs Exit</div>
+
+    
+<div class="callout-content">
+        Dans le thread principal, <code>return status;</code> est typiquement converti
+        en <code>Exit(status);</code> par le runtime C. Les deux formes sont équivalentes.
+    </div>
+
+</div>
+
+<h3 id="exemple-5--codes-de-retour-conventionnels"><a class="header" href="#exemple-5--codes-de-retour-conventionnels">Exemple 5 : Codes de retour conventionnels</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+#define SUCCESS 0
+#define ERROR_INVALID_INPUT 1
+#define ERROR_OVERFLOW 2
+#define ERROR_IO 3
+
+int divide(int a, int b, int *result) {
+    if (b == 0) return ERROR_INVALID_INPUT;
+    *result = a / b;
+    return SUCCESS;
+}
+
+int main() {
+    int a = 10, b = 2, result;
+    int status;
+
+    status = divide(a, b, &amp;result);
+
+    if (status != SUCCESS) {
+        PutString("Error: ", 7);
+        PutInt(status);
+        PutChar('\n');
+        Exit(status);
+    }
+
+    PutString("Result: ", 8);
+    PutInt(result);
+    PutChar('\n');
+
+    Exit(SUCCESS);
+}
+</code></pre>
+<h2 id="cas-dusage"><a class="header" href="#cas-dusage">Cas d’usage</a></h2>
+<h3 id="terminaison-normale"><a class="header" href="#terminaison-normale">Terminaison normale</a></h3>
+<p><code>Exit</code> est utilisé pour :</p>
+<ul>
+<li>Terminer proprement un programme après son exécution</li>
+<li>Retourner un code de statut au système ou au processus parent</li>
+<li>Garantir la libération de toutes les ressources du processus</li>
+</ul>
+<h3 id="gestion-derreur"><a class="header" href="#gestion-derreur">Gestion d’erreur</a></h3>
+<p>Les codes de retour permettent de signaler différents types d’erreurs :</p>
+<ul>
+<li><code>0</code> : succès</li>
+<li><code>1-255</code> : codes d’erreur spécifiques à l’application</li>
+</ul>
+<h2 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h2>
+<p><code>Exit</code> est thread-safe. N’importe quel thread d’un processus peut appeler <code>Exit</code>, et le système garantit que tous les autres threads du processus seront terminés proprement.</p>
+<div class="callout callout-warning">
+    
+<div class="callout-title">Appel concurrent</div>
+
+    
+<div class="callout-content">
+        Si plusieurs threads appellent <code>Exit</code> simultanément, le premier appel
+        déclenchera la terminaison du processus. Les autres threads seront terminés
+        avant d'atteindre leur appel à <code>Exit</code>.
+    </div>
+
+</div>
+
+<h2 id="différences-avec-posix"><a class="header" href="#différences-avec-posix">Différences avec POSIX</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Aspect</th><th>POSIX exit()</th><th>Nachos Exit()</th></tr>
+</thead>
+<tbody>
+<tr><td>Prototype</td><td><code>void exit(int status)</code></td><td><code>void Exit(int status)</code></td></tr>
+<tr><td>Casse</td><td>Minuscule</td><td>Majuscule</td></tr>
+<tr><td>Threads</td><td>Termine tout le processus</td><td>Attend les threads du processus</td></tr>
+<tr><td>atexit()</td><td>Appelle les handlers</td><td>Non supporté</td></tr>
+<tr><td>Buffers stdio</td><td>Vidés</td><td>Non applicable</td></tr>
+<tr><td>Processus parent</td><td>Notifié via SIGCHLD</td><td>Peut utiliser Join()</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="relation-avec-join"><a class="header" href="#relation-avec-join">Relation avec Join()</a></h2>
+<p>Le code de retour passé à <code>Exit</code> peut être récupéré par un processus parent utilisant <code>Join()</code> :</p>
+<pre><code class="language-c">// Processus enfant
+int main() {
+    // ... traitement ...
+    Exit(42);
+}
+
+// Processus parent
+int main() {
+    SpaceId child = Exec("child_program");
+    int status = Join(child);  // Récupère 42
+    PutInt(status);
+    Exit(0);
+}
+</code></pre>
+<h2 id="voir-aussi"><a class="header" href="#voir-aussi">Voir aussi</a></h2>
+<div class="callout callout-see-also">
+    
+<div class="callout-content">
+<ul>
+<li><a href="./Halt.html">Halt</a> - Arrêter tout le système</li>
+<li><a href="../threads/PthreadExit.html">PthreadExit</a> - Terminer un thread</li>
+<li><a href="../process/Join.html">Join</a> - Attendre un processus enfant</li>
+<li><a href="../process/ForkExec.html">ForkExec</a> - Créer un processus</li>
+</ul>
+</div>
+
+</div>
+
+<h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
+<p>Alioune Badara DIENE, 8 Jan 2026</p>
+<h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
+<p>8 Jan 2026</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../syscalls/system/Halt.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
 
+                            <a rel="next prefetch" href="../../syscalls/console/SUMMARY.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -195,7 +490,13 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../syscalls/system/Halt.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
 
+                    <a rel="next prefetch" href="../../syscalls/console/SUMMARY.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
             </nav>
 
         </div>
@@ -213,16 +514,16 @@
         </script>
 
 
-        <script src="elasticlunr-ef4e11c1.min.js"></script>
-        <script src="mark-09e88c2c.min.js"></script>
-        <script src="searcher-c2a407aa.js"></script>
+        <script src="../../elasticlunr-ef4e11c1.min.js"></script>
+        <script src="../../mark-09e88c2c.min.js"></script>
+        <script src="../../searcher-c2a407aa.js"></script>
 
-        <script src="clipboard-1626706a.min.js"></script>
-        <script src="highlight-abc7f01d.js"></script>
-        <script src="book-a0b12cfe.js"></script>
+        <script src="../../clipboard-1626706a.min.js"></script>
+        <script src="../../highlight-abc7f01d.js"></script>
+        <script src="../../book-a0b12cfe.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="theme/custom-da2ff7a9.js"></script>
+        <script src="../../theme/custom-da2ff7a9.js"></script>
 
 
 
