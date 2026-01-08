@@ -63,6 +63,8 @@ class FrameProvider {
         * @return Number of available frames.
         */
         int NumAvailFrame();
+
+        static void freeAllStatic();
 };
 
 #endif // FRAMEPROVIDER_H

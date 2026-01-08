@@ -33,6 +33,9 @@ class SynchConsole {
          * @return The real number of bytes read
          */
         int SynchGetString(char *s, int n); // Unix fgets(3S)
+                                            
+        static void freeAllStatic();
+
     private:
         Console *console;
 };

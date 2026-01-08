@@ -8,6 +8,10 @@ static Semaphore *writeDone;
 
 Semaphore *SynchConsole::IO_Lock = new Semaphore("a", 1);
 
+void SynchConsole::freeAllStatic(){
+    delete IO_Lock;
+}
+
 static void ReadAvail(int arg) { 
     readAvail->V();
     SynchConsole::IO_Lock->V();
