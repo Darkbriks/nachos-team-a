@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>System Overview - NachOS Manual</title>
+        <title>SleepUntil - NachOS Manual</title>
 
 
         <!-- Custom HTML head -->
@@ -179,153 +179,373 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="appels-système-de-contrôle"><a class="header" href="#appels-système-de-contrôle">Appels Système de Contrôle</a></h1>
-<p>Cette section documente les appels système de contrôle du système Nachos, qui permettent de gérer le cycle de vie du système et des processus.</p>
-<h2 id="vue-densemble"><a class="header" href="#vue-densemble">Vue d’ensemble</a></h2>
-<p>Les appels système de contrôle permettent de :</p>
-<ul>
-<li>Arrêter complètement le système Nachos</li>
-<li>Terminer proprement un processus utilisateur</li>
-<li>Retourner des codes de statut</li>
-</ul>
-<h2 id="liste-des-appels-système"><a class="header" href="#liste-des-appels-système">Liste des appels système</a></h2>
-<h3 id="halt"><a class="header" href="#halt"><a href="./Halt.html">Halt</a></a></h3>
-<p>Arrête immédiatement tout le système Nachos et affiche les statistiques de performance.</p>
-<p><strong>Utilisation</strong> :</p>
-<pre><code class="language-c">void Halt(void);
+                        <h1 id="sleepuntil"><a class="header" href="#sleepuntil">SleepUntil</a></h1>
+<p><code>SleepUntil</code> - Endort le thread courant jusqu’à un instant précis</p>
+<h2 id="synopsis"><a class="header" href="#synopsis">Synopsis</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+int SleepUntil(long long wake_time);
 </code></pre>
-<p><strong>Cas d’usage</strong> :</p>
-<ul>
-<li>Terminaison globale du système</li>
-<li>Fin de programmes de test</li>
-<li>Affichage des statistiques système</li>
-</ul>
-<h3 id="exit"><a class="header" href="#exit"><a href="./Exit.html">Exit</a></a></h3>
-<p>Termine proprement le processus courant en attendant la fin de tous ses threads.</p>
-<p><strong>Utilisation</strong> :</p>
-<pre><code class="language-c">void Exit(int status);
-</code></pre>
-<p><strong>Cas d’usage</strong> :</p>
-<ul>
-<li>Terminaison normale d’un processus</li>
-<li>Gestion d’erreurs avec codes de retour</li>
-<li>Synchronisation avec processus parent</li>
-</ul>
-<h2 id="différences-principales"><a class="header" href="#différences-principales">Différences principales</a></h2>
+<h2 id="description"><a class="header" href="#description">Description</a></h2>
+<p><code>SleepUntil</code> met en pause l’exécution du thread courant jusqu’à ce qu’un instant précis (exprimé en ticks système absolus) soit atteint. Le thread est retiré de la file d’ordonnancement et sera réveillé automatiquement lorsque <code>stats-&gt;totalTicks &gt;= wake_time</code>.</p>
+<p><strong>Numéro d’appel système</strong> : <code>SC_SleepUntil</code> (27)</p>
+<h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
+<ol>
+<li>Validation que <code>wake_time &gt;= 0</code></li>
+<li>Si <code>wake_time &lt;= stats-&gt;totalTicks</code> (déjà passé), retour immédiat</li>
+<li>Appel de <code>currentThread-&gt;SleepUntil(wake_time)</code> pour endormir le thread</li>
+<li>Le thread est réveillé automatiquement quand <code>stats-&gt;totalTicks &gt;= wake_time</code></li>
+</ol>
+<div class="callout callout-note">
+    
+<div class="callout-title">Temps absolu</div>
+
+    
+<div class="callout-content">
+        <code>SleepUntil</code> utilise un temps absolu (instant précis), tandis que <code>Sleep</code>
+        utilise un temps relatif (durée). Utilisez <code>SleepUntil</code> pour des synchronisations
+        temporelles précises sans dérive cumulative.
+    </div>
+
+</div>
+
+<h2 id="paramètres"><a class="header" href="#paramètres">Paramètres</a></h2>
+<h3 id="wake_time"><a class="header" href="#wake_time"><code>wake_time</code></a></h3>
+<p>Instant absolu (en ticks système) auquel le thread doit se réveiller.</p>
+<p><strong>Type</strong> : <code>long long</code>
+<strong>Direction</strong> : IN
+<strong>Registre</strong> : <code>$4</code> (32 bits inférieurs seulement dans cette implémentation simplifiée)
+<strong>Contraintes</strong> : Doit être &gt;= 0</p>
+<div class="callout callout-warning">
+    
+<div class="callout-title">Réveil immédiat</div>
+
+    
+<div class="callout-content">
+        Si <code>wake_time</code> est dans le passé ou égal au tick courant,
+        <code>SleepUntil</code> retourne immédiatement sans endormir le thread.
+    </div>
+
+</div>
+
+<h2 id="valeur-de-retour"><a class="header" href="#valeur-de-retour">Valeur de retour</a></h2>
+<p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Caractéristique</th><th>Halt</th><th>Exit</th></tr>
+<tr><th>Valeur</th><th>Signification</th></tr>
 </thead>
 <tbody>
-<tr><td><strong>Portée</strong></td><td>Système entier</td><td>Processus courant</td></tr>
-<tr><td><strong>Autres processus</strong></td><td>Terminés</td><td>Non affectés</td></tr>
-<tr><td><strong>Threads du processus</strong></td><td>Terminés immédiatement</td><td>Attendus avant terminaison</td></tr>
-<tr><td><strong>Code de retour</strong></td><td>Aucun</td><td>Retourné au parent</td></tr>
-<tr><td><strong>Statistiques</strong></td><td>Affichées</td><td>Non affichées</td></tr>
-<tr><td><strong>Nettoyage</strong></td><td>Minimal</td><td>Complet</td></tr>
+<tr><td><code>0</code></td><td>Succès, le thread s’est réveillé au bon moment</td></tr>
+<tr><td><code>-1</code></td><td>Erreur (consulter <code>errno</code>)</td></tr>
 </tbody>
 </table>
 </div>
-<h2 id="conventions-de-codes-de-retour"><a class="header" href="#conventions-de-codes-de-retour">Conventions de codes de retour</a></h2>
-<p>Les codes de retour suivent généralement ces conventions :</p>
+<h2 id="codes-derreur"><a class="header" href="#codes-derreur">Codes d’erreur</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td><code>E_INVAL</code></td><td><code>wake_time</code> est négatif</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="implémentation"><a class="header" href="#implémentation">Implémentation</a></h2>
+<h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
 <ul>
-<li><strong>0</strong> : Succès, exécution normale</li>
-<li><strong>1-255</strong> : Erreurs diverses (définies par l’application)</li>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S:467</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/userSleep.cc:handle_SC_SleepUntil()</code></li>
+<li><strong>Implémentation</strong> : <code>code/userprog/userSleep.cc:do_UserSleepUntil()</code></li>
+<li><strong>Mécanisme de réveil</strong> : <code>code/threads/thread.cc:Thread::SleepUntil()</code></li>
 </ul>
-<p>Exemples courants :</p>
-<pre><code class="language-c">#define EXIT_SUCCESS  0
-#define EXIT_FAILURE  1
-#define EXIT_INVALID_ARG  2
-#define EXIT_IO_ERROR     3
+<h3 id="flux-dexécution"><a class="header" href="#flux-dexécution">Flux d’exécution</a></h3>
+<pre><code>SleepUntil(wake_time)
+    │
+    ▼
+start.S: SleepUntil
+    │ charge $4 = wake_time
+    │ charge $2 = SC_SleepUntil (27)
+    ▼
+syscall SC_SleepUntil
+    │
+    ▼
+handle_SC_SleepUntil()
+    │ lit wake_time depuis $4
+    ▼
+do_UserSleepUntil(wake_time)
+    │ ├─ valide wake_time &gt;= 0
+    │ ├─ désactive les interruptions
+    │ ├─ si wake_time &lt;= totalTicks, retourne 0
+    │ └─ appelle currentThread-&gt;SleepUntil(wake_time)
+    ▼
+Thread::SleepUntil(wake_time)
+    │ ├─ ajoute thread à la liste d'attente
+    │ ├─ ordonne par wake_time croissant
+    │ └─ appelle Sleep() pour suspendre le thread
+    ▼
+[Thread suspendu jusqu'à wake_time]
+    │
+    ▼
+[Interruption horloge : stats-&gt;totalTicks &gt;= wake_time]
+    │
+    ▼
+[Thread réveillé et replacé dans la file d'ordonnancement]
+    │
+    ▼
+[Retour à l'utilisateur avec succès]
 </code></pre>
-<h2 id="hiérarchie-de-terminaison"><a class="header" href="#hiérarchie-de-terminaison">Hiérarchie de terminaison</a></h2>
-<p>Nachos offre plusieurs niveaux de terminaison :</p>
-<ol>
-<li><strong>Thread</strong> : <code>PthreadExit(retval)</code> - Termine le thread courant</li>
-<li><strong>Processus</strong> : <code>Exit(status)</code> - Termine le processus et tous ses threads</li>
-<li><strong>Système</strong> : <code>Halt()</code> - Termine tous les processus et le système</li>
-</ol>
 <h2 id="exemples"><a class="header" href="#exemples">Exemples</a></h2>
-<h3 id="terminaison-conditionnelle"><a class="header" href="#terminaison-conditionnelle">Terminaison conditionnelle</a></h3>
+<h3 id="exemple-1--réveil-à-un-instant-précis"><a class="header" href="#exemple-1--réveil-à-un-instant-précis">Exemple 1 : Réveil à un instant précis</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
 int main() {
-    int value;
-    int result = GetInt(&amp;value);
+    long long wake_time;
 
-    if (result != 0) {
-        PutString("Input error!\n", 13);
-        Exit(1);  // Terminaison avec erreur
+    if (GetCurrentTick(&amp;wake_time) != 0) {
+        PutString("Error getting current tick\n", 27);
+        return 1;
     }
 
-    if (value &lt; 0) {
-        PutString("Negative value not allowed\n", 27);
-        Exit(2);  // Code d'erreur spécifique
-    }
+    wake_time += 200;  // Réveil dans 200 ticks
 
-    PutString("Processing value: ", 18);
-    PutInt(value);
+    PutString("Sleeping until tick ", 20);
+    PutInt((int)wake_time);
     PutChar('\n');
 
-    Exit(0);  // Succès
+    SleepUntil(wake_time);
+
+    PutString("Woke up!\n", 9);
+    return 0;
 }
 </code></pre>
-<h3 id="dernier-processus-déclenche-halt"><a class="header" href="#dernier-processus-déclenche-halt">Dernier processus déclenche Halt</a></h3>
+<h3 id="exemple-2--synchronisation-périodique-sans-dérive"><a class="header" href="#exemple-2--synchronisation-périodique-sans-dérive">Exemple 2 : Synchronisation périodique sans dérive</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+void *periodic_task_precise(void *arg) {
+    long long next_wake;
+    int period = (int)(long)arg;
+    int i;
+
+    // Obtenir l'instant de départ
+    if (GetCurrentTick(&amp;next_wake) != 0) {
+        return (void *)-1;
+    }
+
+    for (i = 0; i &lt; 10; i++) {
+        PutString("Tick ", 5);
+        PutInt(i);
+        PutChar('\n');
+
+        // Calculer le prochain instant de réveil
+        next_wake += period;
+
+        // Dormir jusqu'à cet instant précis
+        SleepUntil(next_wake);
+    }
+
+    return 0;
+}
+
+int main() {
+    posix_thread_t tid;
+
+    PutString("Starting precise periodic task (period=100)\n", 44);
+    PthreadCreate(&amp;tid, 0, periodic_task_precise, (void *)100);
+
+    PthreadJoin(tid, 0);
+    PutString("Task completed\n", 15);
+
+    return 0;
+}
+</code></pre>
+<p><strong>Avantage</strong> : Pas de dérive cumulative, contrairement à une boucle utilisant <code>Sleep(period)</code>.</p>
+<h3 id="exemple-3--gestion-du-cas-où-wake_time-est-dans-le-passé"><a class="header" href="#exemple-3--gestion-du-cas-où-wake_time-est-dans-le-passé">Exemple 3 : Gestion du cas où wake_time est dans le passé</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
 int main() {
-    PutString("This is the only process.\n", 26);
-    PutString("Exit will trigger Halt!\n", 24);
+    long long current_tick;
+    long long past_time;
 
-    Exit(0);  // Si dernier processus, appelle Halt()
+    GetCurrentTick(&amp;current_tick);
+    past_time = current_tick - 100;  // 100 ticks dans le passé
 
-    // Équivalent à Halt() dans ce cas
+    PutString("Current tick: ", 14);
+    PutInt((int)current_tick);
+    PutChar('\n');
+
+    PutString("Trying to sleep until: ", 23);
+    PutInt((int)past_time);
+    PutChar('\n');
+
+    // Retourne immédiatement
+    if (SleepUntil(past_time) == 0) {
+        PutString("SleepUntil returned immediately (expected)\n", 43);
+    }
+
+    return 0;
 }
 </code></pre>
-<h2 id="gestion-derreur"><a class="header" href="#gestion-derreur">Gestion d’erreur</a></h2>
-<p>Les appels système de contrôle ne peuvent pas échouer :</p>
+<h3 id="exemple-4--gestion-derreur"><a class="header" href="#exemple-4--gestion-derreur">Exemple 4 : Gestion d’erreur</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    long long invalid_time = -100;
+
+    if (SleepUntil(invalid_time) != 0) {
+        int err = GetLastError();
+        PutString("SleepUntil failed with errno=", 29);
+        PutInt(err);  // Affichera 1 (E_INVAL)
+        PutChar('\n');
+        return 1;
+    }
+
+    PutString("This should not print\n", 22);
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-5--barrière-temporelle-pour-threads"><a class="header" href="#exemple-5--barrière-temporelle-pour-threads">Exemple 5 : Barrière temporelle pour threads</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+long long barrier_time;
+
+void *worker(void *arg) {
+    int id = (int)(long)arg;
+
+    PutString("Thread ", 7);
+    PutInt(id);
+    PutString(" working...\n", 12);
+
+    // Simule un travail variable
+    Sleep(id * 50);
+
+    PutString("Thread ", 7);
+    PutInt(id);
+    PutString(" waiting at barrier\n", 20);
+
+    // Tous les threads se réveillent au même instant
+    SleepUntil(barrier_time);
+
+    PutString("Thread ", 7);
+    PutInt(id);
+    PutString(" passed barrier!\n", 17);
+
+    return 0;
+}
+
+int main() {
+    posix_thread_t tid1, tid2, tid3;
+    long long current;
+
+    GetCurrentTick(&amp;current);
+    barrier_time = current + 500;  // Barrière dans 500 ticks
+
+    PutString("Barrier time set to tick ", 25);
+    PutInt((int)barrier_time);
+    PutChar('\n');
+
+    PthreadCreate(&amp;tid1, 0, worker, (void *)1);
+    PthreadCreate(&amp;tid2, 0, worker, (void *)2);
+    PthreadCreate(&amp;tid3, 0, worker, (void *)3);
+
+    PthreadJoin(tid1, 0);
+    PthreadJoin(tid2, 0);
+    PthreadJoin(tid3, 0);
+
+    PutString("All threads completed\n", 22);
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-6--comparaison-sleep-vs-sleepuntil"><a class="header" href="#exemple-6--comparaison-sleep-vs-sleepuntil">Exemple 6 : Comparaison Sleep vs SleepUntil</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    long long start, end, target;
+    int i;
+
+    // Méthode 1 : Sleep répété (avec dérive)
+    GetCurrentTick(&amp;start);
+    for (i = 0; i &lt; 5; i++) {
+        Sleep(100);
+    }
+    GetCurrentTick(&amp;end);
+    PutString("Sleep x5: elapsed = ", 20);
+    PutInt((int)(end - start));
+    PutChar('\n');
+
+    // Méthode 2 : SleepUntil (sans dérive)
+    GetCurrentTick(&amp;start);
+    target = start;
+    for (i = 0; i &lt; 5; i++) {
+        target += 100;
+        SleepUntil(target);
+    }
+    GetCurrentTick(&amp;end);
+    PutString("SleepUntil x5: elapsed = ", 25);
+    PutInt((int)(end - start));
+    PutChar('\n');
+
+    return 0;
+}
+</code></pre>
+<p><strong>Résultat attendu</strong> : <code>SleepUntil</code> est plus précis car il compense automatiquement les délais d’ordonnancement.</p>
+<h2 id="cas-dusage"><a class="header" href="#cas-dusage">Cas d’usage</a></h2>
+<h3 id="synchronisation-temporelle-précise"><a class="header" href="#synchronisation-temporelle-précise">Synchronisation temporelle précise</a></h3>
+<p><code>SleepUntil</code> est idéal pour :</p>
 <ul>
-<li>Ils ne retournent jamais au code appelant</li>
-<li>Aucun code d’erreur n’est généré</li>
-<li><code>errno</code> n’est pas modifié</li>
+<li>Tâches périodiques sans dérive cumulative</li>
+<li>Synchronisation de threads à un instant précis</li>
+<li>Barrières temporelles</li>
+<li>Ordonnancement temps réel</li>
 </ul>
+<h3 id="avantages-par-rapport-à-sleep"><a class="header" href="#avantages-par-rapport-à-sleep">Avantages par rapport à Sleep</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Aspect</th><th>Sleep</th><th>SleepUntil</th></tr>
+</thead>
+<tbody>
+<tr><td>Dérive</td><td>Cumulative sur plusieurs itérations</td><td>Aucune</td></tr>
+<tr><td>Utilisation</td><td>Délais simples</td><td>Synchronisation précise</td></tr>
+<tr><td>Complexité</td><td>Plus simple</td><td>Nécessite gestion des ticks absolus</td></tr>
+</tbody>
+</table>
+</div>
 <h2 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h2>
-<p>Les deux appels système sont thread-safe :</p>
+<p><code>SleepUntil</code> est thread-safe. Plusieurs threads peuvent dormir jusqu’à des instants différents ou identiques sans conflit.</p>
+<h2 id="performance"><a class="header" href="#performance">Performance</a></h2>
 <ul>
-<li>N’importe quel thread peut appeler <code>Halt</code> ou <code>Exit</code></li>
-<li>Les appels concurrents sont gérés correctement</li>
-<li>Le premier appel déclenche la terminaison</li>
+<li><strong>Coût</strong> : Très faible (changement de contexte)</li>
+<li><strong>Blocage</strong> : Le thread est suspendu et ne consomme pas de CPU</li>
+<li><strong>Ordonnancement</strong> : File d’attente ordonnée par <code>wake_time</code> pour un réveil efficace</li>
 </ul>
+<h2 id="différences-avec-posix"><a class="header" href="#différences-avec-posix">Différences avec POSIX</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Aspect</th><th>POSIX clock_nanosleep()</th><th>Nachos SleepUntil()</th></tr>
+</thead>
+<tbody>
+<tr><td>Temps absolu</td><td>Supporte TIMER_ABSTIME</td><td>Par défaut</td></tr>
+<tr><td>Unité</td><td>Nanosecondes</td><td>Ticks système</td></tr>
+<tr><td>Horloges</td><td>Multiple (CLOCK_REALTIME, etc.)</td><td>Une seule horloge</td></tr>
+<tr><td>Interruption</td><td>Peut être interrompu</td><td>Non interruptible</td></tr>
+</tbody>
+</table>
+</div>
 <h2 id="voir-aussi"><a class="header" href="#voir-aussi">Voir aussi</a></h2>
+<div class="callout callout-see-also">
+    
+<div class="callout-content">
 <ul>
-<li><a href="../threads/PthreadExit.html">PthreadExit</a> - Terminer un thread</li>
-<li><a href="../process/Join.html">Join</a> - Récupérer le code de retour d’un processus</li>
-<li><a href="../process/ForkExec.html">ForkExec</a> - Créer un processus enfant</li>
+<li><a href="./Sleep.html">Sleep</a> - Dormir pendant une durée relative</li>
+<li><a href="./GetCurrentTick.html">GetCurrentTick</a> - Obtenir le tick courant</li>
 </ul>
-<h2 id="notes-dimplémentation"><a class="header" href="#notes-dimplémentation">Notes d’implémentation</a></h2>
-<h3 id="architecture"><a class="header" href="#architecture">Architecture</a></h3>
-<p>Les appels système de contrôle sont implémentés dans :</p>
-<ul>
-<li><code>code/userprog/exception.cc</code> - Handlers des syscalls</li>
-<li><code>code/threads/interrupt.cc</code> - Logique d’arrêt système</li>
-<li><code>code/userprog/process.cc</code> - Gestion des processus</li>
-</ul>
-<h3 id="convention-dappel"><a class="header" href="#convention-dappel">Convention d’appel</a></h3>
-<p>Registres utilisés :</p>
-<ul>
-<li><strong>$2</strong> : Numéro de syscall, puis valeur de retour</li>
-<li><strong>$4</strong> : Premier argument (status pour Exit)</li>
-<li><strong>PC</strong> : Incrémenté après syscall (sauf Halt/Exit qui ne retournent pas)</li>
-</ul>
-<h3 id="différences-posix"><a class="header" href="#différences-posix">Différences POSIX</a></h3>
-<p>Nachos simplifie le modèle POSIX :</p>
-<ul>
-<li>Pas de signaux (SIGTERM, SIGKILL, etc.)</li>
-<li>Pas de handlers atexit()</li>
-<li>Pas de groupes de processus</li>
-<li>Code de retour limité à un entier</li>
-</ul>
+</div>
+
+</div>
+
 <h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
 <p>Alioune Badara DIENE, 8 Jan 2026</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
@@ -335,11 +555,11 @@ int main() {
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../syscalls/system/SUMMARY.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../syscalls/time/Sleep.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../syscalls/system/Halt.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../syscalls/time/GetCurrentTick.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -349,11 +569,11 @@ int main() {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../syscalls/system/SUMMARY.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../syscalls/time/Sleep.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../syscalls/system/Halt.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../syscalls/time/GetCurrentTick.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

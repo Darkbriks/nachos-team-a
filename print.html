@@ -38,10 +38,10 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-5ab326d4.js";
+            window.path_to_searchindex_js = "searchindex-f04ee4d4.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-694da981.js"></script>
+        <script src="toc-ea31cd0b.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -219,6 +219,14 @@
 <li><a href="#pthreadself">SelfThread</a></li>
 </ul>
 </li>
+<li><a href="#opérations-temporelles-1">Opérations temporelles</a>
+<ul>
+<li><a href="#appels-système-temporels-1">Time Overview</a></li>
+<li><a href="#sleep-1">Sleep</a></li>
+<li><a href="#sleepuntil-1">SleepUntil</a></li>
+<li><a href="#getcurrenttick-1">GetCurrentTick</a></li>
+</ul>
+</li>
 <li><a href="#sémaphores-2">Sémaphores</a>
 <ul>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Sémaphores Overview</a></li>
@@ -275,8 +283,16 @@
 <li><a href="#pthreadexit">ExitThread</a></li>
 <li><a href="#pthreadjoin">JoinThread</a></li>
 <li><a href="#pthreaddetach">DetachThread</a></li>
-<li><a href="#pthreadself">SelfThread</a></li>
 <li><a href="#attributs-de-thread">Thread Attributes</a></li>
+<li><a href="#pthreadself">SelfThread</a></li>
+</ul>
+</li>
+<li><a href="#opérations-temporelles-1">Opérations temporelles</a>
+<ul>
+<li><a href="#appels-système-temporels-1">Time Overview</a></li>
+<li><a href="#sleep-1">Sleep</a></li>
+<li><a href="#sleepuntil-1">SleepUntil</a></li>
+<li><a href="#getcurrenttick-1">GetCurrentTick</a></li>
 </ul>
 </li>
 <li><a href="#sémaphores-2">Sémaphores</a>
@@ -415,6 +431,17 @@
 <li><a href="#pthreaddetach">PthreadDetach</a></li>
 <li><a href="#pthreadself">SelfThread</a></li>
 <li><a href="#attributs-de-thread">Attributs de thread</a></li>
+</ul>
+</li>
+</ul>
+<h1 id="opérations-temporelles"><a class="header" href="#opérations-temporelles">Opérations temporelles</a></h1>
+<ul>
+<li><a href="#opérations-temporelles-1">Opérations temporelles</a>
+<ul>
+<li><a href="#appels-système-temporels-1">Vue d’ensemble</a></li>
+<li><a href="#sleep-1">Sleep</a></li>
+<li><a href="#sleepuntil-1">SleepUntil</a></li>
+<li><a href="#getcurrenttick-1">GetCurrentTick</a></li>
 </ul>
 </li>
 </ul>
@@ -3731,273 +3758,6 @@ int main() {
 <h2 id="dernière-révision-15"><a class="header" href="#dernière-révision-15">Dernière révision</a></h2>
 <p>31 Dec 2025</p>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="pthreadself"><a class="header" href="#pthreadself">PthreadSelf</a></h1>
-<p><code>PthreadSelf</code> - Obtient l’identifiant du thread courant</p>
-<h2 id="synopsis-12"><a class="header" href="#synopsis-12">Synopsis</a></h2>
-<pre><code class="language-c">#include "syscall.h"
-
-posix_thread_t PthreadSelf(void);
-</code></pre>
-<h2 id="description-12"><a class="header" href="#description-12">Description</a></h2>
-<p><code>PthreadSelf</code> retourne l’identifiant unique (TID) du thread appelant. Chaque thread dans un processus possède un TID unique attribué lors de sa création.</p>
-<p><strong>Numéro d’appel système</strong> : <code>SC_PthreadSelf</code> (21)</p>
-<h3 id="comportement-nominal-12"><a class="header" href="#comportement-nominal-12">Comportement nominal</a></h3>
-<ol>
-<li>Récupération du pointeur vers le thread courant (<code>currentThread</code>)</li>
-<li>Extraction du TID via <code>currentThread-&gt;getTID()</code></li>
-<li>Retour immédiat du TID dans le registre <code>$2</code></li>
-</ol>
-<div class="callout callout-note">
-    
-<div class="callout-title">Thread principal</div>
-
-    
-<div class="callout-content">
-        Le thread principal d'un processus possède toujours le TID 0.
-    </div>
-
-</div>
-
-<h2 id="paramètres-12"><a class="header" href="#paramètres-12">Paramètres</a></h2>
-<p>Cette fonction ne prend aucun paramètre.</p>
-<h2 id="valeur-de-retour-12"><a class="header" href="#valeur-de-retour-12">Valeur de retour</a></h2>
-<p><strong>Type</strong> : <code>posix_thread_t</code> (registre <code>$2</code>)</p>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Valeur</th><th>Signification</th></tr>
-</thead>
-<tbody>
-<tr><td><code>&gt;= 0</code></td><td>TID du thread courant (succès)</td></tr>
-<tr><td><code>-1</code></td><td>Erreur (consulter <code>errno</code>)</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="codes-derreur-12"><a class="header" href="#codes-derreur-12">Codes d’erreur</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
-</thead>
-<tbody>
-<tr><td>9</td><td><code>E_NOSPC</code></td><td>Pointeur de thread courant invalide (ne devrait jamais arriver)</td></tr>
-</tbody>
-</table>
-</div>
-<div class="callout callout-note">
-    
-<div class="callout-title">Fiabilité</div>
-
-    
-<div class="callout-content">
-        En pratique, <code>PthreadSelf</code> ne devrait jamais échouer dans un système correctement configuré,
-        car <code>currentThread</code> est toujours valide pendant l'exécution d'un thread.
-    </div>
-
-</div>
-
-<h2 id="implémentation-12"><a class="header" href="#implémentation-12">Implémentation</a></h2>
-<h3 id="localisation-du-code-12"><a class="header" href="#localisation-du-code-12">Localisation du code</a></h3>
-<ul>
-<li><strong>Stub utilisateur</strong> : <code>code/test/start.S:351</code></li>
-<li><strong>Handler noyau</strong> : <code>code/userprog/userthread.cc:handle_SC_PthreadSelf()</code></li>
-<li><strong>Implémentation</strong> : <code>code/userprog/userthread.cc:do_PthreadSelf()</code></li>
-</ul>
-<h3 id="flux-dexécution-6"><a class="header" href="#flux-dexécution-6">Flux d’exécution</a></h3>
-<pre><code>PthreadSelf()
-    │
-    ▼
-start.S: PthreadSelf
-    │ charge $2 = SC_PthreadSelf
-    ▼
-syscall SC_PthreadSelf
-    │
-    ▼
-handle_SC_PthreadSelf()
-    │
-    ▼
-do_PthreadSelf()
-    │ ├─ récupère currentThread
-    │ ├─ vérifie validité (protection)
-    │ └─ retourne currentThread-&gt;getTID()
-    ▼
-[registre $2 contient le TID]
-</code></pre>
-<h2 id="exemples-13"><a class="header" href="#exemples-13">Exemples</a></h2>
-<h3 id="exemple-1--affichage-du-tid"><a class="header" href="#exemple-1--affichage-du-tid">Exemple 1 : Affichage du TID</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-void *worker(void *arg) {
-    posix_thread_t my_tid = PthreadSelf();
-
-    PutString("Thread TID=", 11);
-    PutInt(my_tid);
-    PutString(" is running\n", 12);
-
-    return 0;
-}
-
-int main() {
-    posix_thread_t tid1, tid2;
-    posix_thread_t main_tid = PthreadSelf();
-
-    PutString("Main thread TID=", 16);
-    PutInt(main_tid);
-    PutChar('\n');
-
-    PthreadCreate(&amp;tid1, 0, worker, 0);
-    PthreadCreate(&amp;tid2, 0, worker, 0);
-
-    PthreadJoin(tid1, 0);
-    PthreadJoin(tid2, 0);
-
-    return 0;
-}
-</code></pre>
-<p><strong>Sortie attendue</strong> :</p>
-<pre><code>Main thread TID=0
-Thread TID=1 is running
-Thread TID=2 is running
-</code></pre>
-<h3 id="exemple-2--comparaison-de-tid"><a class="header" href="#exemple-2--comparaison-de-tid">Exemple 2 : Comparaison de TID</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-posix_thread_t global_tid;
-
-void *compare_thread(void *arg) {
-    posix_thread_t my_tid = PthreadSelf();
-
-    if (my_tid == global_tid) {
-        PutString("TID matches!\n", 13);
-    } else {
-        PutString("TID mismatch!\n", 14);
-    }
-
-    return 0;
-}
-
-int main() {
-    PthreadCreate(&amp;global_tid, 0, compare_thread, 0);
-    PthreadJoin(global_tid, 0);
-    return 0;
-}
-</code></pre>
-<h3 id="exemple-3--thread-local-storage-simulé"><a class="header" href="#exemple-3--thread-local-storage-simulé">Exemple 3 : Thread-local storage simulé</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-#define MAX_THREADS 10
-
-int thread_data[MAX_THREADS];
-
-void set_thread_data(int value) {
-    posix_thread_t tid = PthreadSelf();
-    if (tid &gt;= 0 &amp;&amp; tid &lt; MAX_THREADS) {
-        thread_data[tid] = value;
-    }
-}
-
-int get_thread_data(void) {
-    posix_thread_t tid = PthreadSelf();
-    if (tid &gt;= 0 &amp;&amp; tid &lt; MAX_THREADS) {
-        return thread_data[tid];
-    }
-    return -1;
-}
-
-void *worker(void *arg) {
-    int value = (int)(long)arg;
-    set_thread_data(value);
-
-    PutString("Thread ", 7);
-    PutInt(PthreadSelf());
-    PutString(" stored value: ", 15);
-    PutInt(get_thread_data());
-    PutChar('\n');
-
-    return 0;
-}
-
-int main() {
-    posix_thread_t tid1, tid2;
-
-    PthreadCreate(&amp;tid1, 0, worker, (void *)42);
-    PthreadCreate(&amp;tid2, 0, worker, (void *)99);
-
-    PthreadJoin(tid1, 0);
-    PthreadJoin(tid2, 0);
-
-    return 0;
-}
-</code></pre>
-<p><strong>Sortie attendue</strong> :</p>
-<pre><code>Thread 1 stored value: 42
-Thread 2 stored value: 99
-</code></pre>
-<h3 id="exemple-4--gestion-derreur-1"><a class="header" href="#exemple-4--gestion-derreur-1">Exemple 4 : Gestion d’erreur</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-int main() {
-    posix_thread_t tid = PthreadSelf();
-
-    if (tid &lt; 0) {
-        int err = GetLastError();
-        PutString("PthreadSelf failed with errno=", 30);
-        PutInt(err);
-        PutChar('\n');
-        return 1;
-    }
-
-    PutString("Current TID: ", 13);
-    PutInt(tid);
-    PutChar('\n');
-
-    return 0;
-}
-</code></pre>
-<h2 id="cas-dusage-2"><a class="header" href="#cas-dusage-2">Cas d’usage</a></h2>
-<h3 id="identification-de-thread"><a class="header" href="#identification-de-thread">Identification de thread</a></h3>
-<p><code>PthreadSelf</code> est particulièrement utile pour :</p>
-<ul>
-<li>Distinguer le thread principal des threads secondaires</li>
-<li>Implémenter un système de logging par thread</li>
-<li>Créer des structures de données thread-local</li>
-<li>Déboguer des problèmes de concurrence</li>
-</ul>
-<h3 id="comparaison-avec-pthread_equal"><a class="header" href="#comparaison-avec-pthread_equal">Comparaison avec pthread_equal</a></h3>
-<p>Contrairement à POSIX qui fournit <code>pthread_equal()</code> pour comparer des TID, Nachos utilise des entiers simples, donc la comparaison directe avec <code>==</code> est possible.</p>
-<h2 id="thread-safety-13"><a class="header" href="#thread-safety-13">Thread-safety</a></h2>
-<p>L’appel est thread-safe. Chaque thread obtient son propre TID unique, et <code>currentThread</code> est toujours valide dans le contexte d’un thread en cours d’exécution.</p>
-<div class="callout callout-note">
-    
-<div class="callout-title">Macro RETURN</div>
-
-    
-<div class="callout-content">
-        L'implémentation utilise la macro <code>RETURN()</code> qui écrit directement
-        dans le registre <code>$2</code> et gère la convention d'appel système.
-    </div>
-
-</div>
-
-<h2 id="voir-aussi-16"><a class="header" href="#voir-aussi-16">Voir aussi</a></h2>
-<div class="callout callout-see-also">
-    
-<div class="callout-content">
-<ul>
-<li><a href="#pthreadcreate">PthreadCreate</a> - Créer un nouveau thread</li>
-<li><a href="#pthreadexit">PthreadExit</a> - Terminer un thread</li>
-<li><a href="#pthreadjoin">PthreadJoin</a> - Attendre un thread</li>
-<li><a href="#pthreaddetach">PthreadDetach</a> - Détacher un thread</li>
-</ul>
-</div>
-
-</div>
-
-<h2 id="auteurs-16"><a class="header" href="#auteurs-16">Auteurs</a></h2>
-<p>Alioune Badara DIENE, 7 Jan 2026</p>
-<h2 id="dernière-révision-16"><a class="header" href="#dernière-révision-16">Dernière révision</a></h2>
-<p>7 Jan 2026</p>
-<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="attributs-de-thread"><a class="header" href="#attributs-de-thread">Attributs de thread</a></h1>
 <p>Cette page documente les fonctions de gestion des attributs de thread (<code>pthread_attr_*</code>).</p>
 <h2 id="vue-densemble-2"><a class="header" href="#vue-densemble-2">Vue d’ensemble</a></h2>
@@ -4073,15 +3833,15 @@ Pthread_attr_destroy(&amp;attr)
 <h2 id="pthread_attr_init"><a class="header" href="#pthread_attr_init">Pthread_attr_init</a></h2>
 <p>Initialise un objet d’attributs avec les valeurs par défaut.</p>
 <p><strong>Numéro d’appel système</strong> : <code>SC_Pthread_attr_init</code> (22)</p>
-<h3 id="synopsis-13"><a class="header" href="#synopsis-13">Synopsis</a></h3>
+<h3 id="synopsis-12"><a class="header" href="#synopsis-12">Synopsis</a></h3>
 <pre><code class="language-c">int Pthread_attr_init(pthread_attr_t *attr);
 </code></pre>
-<h3 id="description-13"><a class="header" href="#description-13">Description</a></h3>
+<h3 id="description-12"><a class="header" href="#description-12">Description</a></h3>
 <p>Initialise <code>attr</code> avec les valeurs par défaut :</p>
 <ul>
 <li><code>detachstate</code> = <code>JOINABLE</code></li>
 </ul>
-<h3 id="paramètres-13"><a class="header" href="#paramètres-13">Paramètres</a></h3>
+<h3 id="paramètres-12"><a class="header" href="#paramètres-12">Paramètres</a></h3>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4092,7 +3852,7 @@ Pthread_attr_destroy(&amp;attr)
 </tbody>
 </table>
 </div>
-<h3 id="valeur-de-retour-13"><a class="header" href="#valeur-de-retour-13">Valeur de retour</a></h3>
+<h3 id="valeur-de-retour-12"><a class="header" href="#valeur-de-retour-12">Valeur de retour</a></h3>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4310,14 +4070,14 @@ int main() {
     return 0;
 }
 </code></pre>
-<h2 id="implémentation-13"><a class="header" href="#implémentation-13">Implémentation</a></h2>
-<h3 id="localisation-du-code-13"><a class="header" href="#localisation-du-code-13">Localisation du code</a></h3>
+<h2 id="implémentation-12"><a class="header" href="#implémentation-12">Implémentation</a></h2>
+<h3 id="localisation-du-code-12"><a class="header" href="#localisation-du-code-12">Localisation du code</a></h3>
 <ul>
 <li><strong>Définition structure</strong> : <code>code/threads/thread.h</code> (<code>posix_thread_attr_t</code>)</li>
 <li><strong>Fonctions noyau</strong> : <code>code/threads/thread.cc</code> (<code>posix_thread_attr_*</code>)</li>
 <li><strong>Stubs utilisateur</strong> : <code>code/test/start.S</code></li>
 </ul>
-<h2 id="voir-aussi-17"><a class="header" href="#voir-aussi-17">Voir aussi</a></h2>
+<h2 id="voir-aussi-16"><a class="header" href="#voir-aussi-16">Voir aussi</a></h2>
 <div class="callout callout-see-also">
     
 <div class="callout-title">Voir aussi</div>
@@ -4333,10 +4093,1592 @@ int main() {
 
 </div>
 
-<h2 id="auteurs-17"><a class="header" href="#auteurs-17">Auteurs</a></h2>
+<h2 id="auteurs-16"><a class="header" href="#auteurs-16">Auteurs</a></h2>
 <p>Antoine, 31 Dec 2025</p>
-<h2 id="dernière-révision-17"><a class="header" href="#dernière-révision-17">Dernière révision</a></h2>
+<h2 id="dernière-révision-16"><a class="header" href="#dernière-révision-16">Dernière révision</a></h2>
 <p>31 Dec 2025</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="pthreadself"><a class="header" href="#pthreadself">PthreadSelf</a></h1>
+<p><code>PthreadSelf</code> - Obtient l’identifiant du thread courant</p>
+<h2 id="synopsis-13"><a class="header" href="#synopsis-13">Synopsis</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+posix_thread_t PthreadSelf(void);
+</code></pre>
+<h2 id="description-13"><a class="header" href="#description-13">Description</a></h2>
+<p><code>PthreadSelf</code> retourne l’identifiant unique (TID) du thread appelant. Chaque thread dans un processus possède un TID unique attribué lors de sa création.</p>
+<p><strong>Numéro d’appel système</strong> : <code>SC_PthreadSelf</code> (21)</p>
+<h3 id="comportement-nominal-12"><a class="header" href="#comportement-nominal-12">Comportement nominal</a></h3>
+<ol>
+<li>Récupération du pointeur vers le thread courant (<code>currentThread</code>)</li>
+<li>Extraction du TID via <code>currentThread-&gt;getTID()</code></li>
+<li>Retour immédiat du TID dans le registre <code>$2</code></li>
+</ol>
+<div class="callout callout-note">
+    
+<div class="callout-title">Thread principal</div>
+
+    
+<div class="callout-content">
+        Le thread principal d'un processus possède toujours le TID 0.
+    </div>
+
+</div>
+
+<h2 id="paramètres-13"><a class="header" href="#paramètres-13">Paramètres</a></h2>
+<p>Cette fonction ne prend aucun paramètre.</p>
+<h2 id="valeur-de-retour-13"><a class="header" href="#valeur-de-retour-13">Valeur de retour</a></h2>
+<p><strong>Type</strong> : <code>posix_thread_t</code> (registre <code>$2</code>)</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Valeur</th><th>Signification</th></tr>
+</thead>
+<tbody>
+<tr><td><code>&gt;= 0</code></td><td>TID du thread courant (succès)</td></tr>
+<tr><td><code>-1</code></td><td>Erreur (consulter <code>errno</code>)</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="codes-derreur-12"><a class="header" href="#codes-derreur-12">Codes d’erreur</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
+</thead>
+<tbody>
+<tr><td>9</td><td><code>E_NOSPC</code></td><td>Pointeur de thread courant invalide (ne devrait jamais arriver)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="callout callout-note">
+    
+<div class="callout-title">Fiabilité</div>
+
+    
+<div class="callout-content">
+        En pratique, <code>PthreadSelf</code> ne devrait jamais échouer dans un système correctement configuré,
+        car <code>currentThread</code> est toujours valide pendant l'exécution d'un thread.
+    </div>
+
+</div>
+
+<h2 id="implémentation-13"><a class="header" href="#implémentation-13">Implémentation</a></h2>
+<h3 id="localisation-du-code-13"><a class="header" href="#localisation-du-code-13">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S:351</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/userthread.cc:handle_SC_PthreadSelf()</code></li>
+<li><strong>Implémentation</strong> : <code>code/userprog/userthread.cc:do_PthreadSelf()</code></li>
+</ul>
+<h3 id="flux-dexécution-6"><a class="header" href="#flux-dexécution-6">Flux d’exécution</a></h3>
+<pre><code>PthreadSelf()
+    │
+    ▼
+start.S: PthreadSelf
+    │ charge $2 = SC_PthreadSelf
+    ▼
+syscall SC_PthreadSelf
+    │
+    ▼
+handle_SC_PthreadSelf()
+    │
+    ▼
+do_PthreadSelf()
+    │ ├─ récupère currentThread
+    │ ├─ vérifie validité (protection)
+    │ └─ retourne currentThread-&gt;getTID()
+    ▼
+[registre $2 contient le TID]
+</code></pre>
+<h2 id="exemples-13"><a class="header" href="#exemples-13">Exemples</a></h2>
+<h3 id="exemple-1--affichage-du-tid"><a class="header" href="#exemple-1--affichage-du-tid">Exemple 1 : Affichage du TID</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+void *worker(void *arg) {
+    posix_thread_t my_tid = PthreadSelf();
+
+    PutString("Thread TID=", 11);
+    PutInt(my_tid);
+    PutString(" is running\n", 12);
+
+    return 0;
+}
+
+int main() {
+    posix_thread_t tid1, tid2;
+    posix_thread_t main_tid = PthreadSelf();
+
+    PutString("Main thread TID=", 16);
+    PutInt(main_tid);
+    PutChar('\n');
+
+    PthreadCreate(&amp;tid1, 0, worker, 0);
+    PthreadCreate(&amp;tid2, 0, worker, 0);
+
+    PthreadJoin(tid1, 0);
+    PthreadJoin(tid2, 0);
+
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie attendue</strong> :</p>
+<pre><code>Main thread TID=0
+Thread TID=1 is running
+Thread TID=2 is running
+</code></pre>
+<h3 id="exemple-2--comparaison-de-tid"><a class="header" href="#exemple-2--comparaison-de-tid">Exemple 2 : Comparaison de TID</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+posix_thread_t global_tid;
+
+void *compare_thread(void *arg) {
+    posix_thread_t my_tid = PthreadSelf();
+
+    if (my_tid == global_tid) {
+        PutString("TID matches!\n", 13);
+    } else {
+        PutString("TID mismatch!\n", 14);
+    }
+
+    return 0;
+}
+
+int main() {
+    PthreadCreate(&amp;global_tid, 0, compare_thread, 0);
+    PthreadJoin(global_tid, 0);
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-3--thread-local-storage-simulé"><a class="header" href="#exemple-3--thread-local-storage-simulé">Exemple 3 : Thread-local storage simulé</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+#define MAX_THREADS 10
+
+int thread_data[MAX_THREADS];
+
+void set_thread_data(int value) {
+    posix_thread_t tid = PthreadSelf();
+    if (tid &gt;= 0 &amp;&amp; tid &lt; MAX_THREADS) {
+        thread_data[tid] = value;
+    }
+}
+
+int get_thread_data(void) {
+    posix_thread_t tid = PthreadSelf();
+    if (tid &gt;= 0 &amp;&amp; tid &lt; MAX_THREADS) {
+        return thread_data[tid];
+    }
+    return -1;
+}
+
+void *worker(void *arg) {
+    int value = (int)(long)arg;
+    set_thread_data(value);
+
+    PutString("Thread ", 7);
+    PutInt(PthreadSelf());
+    PutString(" stored value: ", 15);
+    PutInt(get_thread_data());
+    PutChar('\n');
+
+    return 0;
+}
+
+int main() {
+    posix_thread_t tid1, tid2;
+
+    PthreadCreate(&amp;tid1, 0, worker, (void *)42);
+    PthreadCreate(&amp;tid2, 0, worker, (void *)99);
+
+    PthreadJoin(tid1, 0);
+    PthreadJoin(tid2, 0);
+
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie attendue</strong> :</p>
+<pre><code>Thread 1 stored value: 42
+Thread 2 stored value: 99
+</code></pre>
+<h3 id="exemple-4--gestion-derreur-1"><a class="header" href="#exemple-4--gestion-derreur-1">Exemple 4 : Gestion d’erreur</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    posix_thread_t tid = PthreadSelf();
+
+    if (tid &lt; 0) {
+        int err = GetLastError();
+        PutString("PthreadSelf failed with errno=", 30);
+        PutInt(err);
+        PutChar('\n');
+        return 1;
+    }
+
+    PutString("Current TID: ", 13);
+    PutInt(tid);
+    PutChar('\n');
+
+    return 0;
+}
+</code></pre>
+<h2 id="cas-dusage-2"><a class="header" href="#cas-dusage-2">Cas d’usage</a></h2>
+<h3 id="identification-de-thread"><a class="header" href="#identification-de-thread">Identification de thread</a></h3>
+<p><code>PthreadSelf</code> est particulièrement utile pour :</p>
+<ul>
+<li>Distinguer le thread principal des threads secondaires</li>
+<li>Implémenter un système de logging par thread</li>
+<li>Créer des structures de données thread-local</li>
+<li>Déboguer des problèmes de concurrence</li>
+</ul>
+<h3 id="comparaison-avec-pthread_equal"><a class="header" href="#comparaison-avec-pthread_equal">Comparaison avec pthread_equal</a></h3>
+<p>Contrairement à POSIX qui fournit <code>pthread_equal()</code> pour comparer des TID, Nachos utilise des entiers simples, donc la comparaison directe avec <code>==</code> est possible.</p>
+<h2 id="thread-safety-13"><a class="header" href="#thread-safety-13">Thread-safety</a></h2>
+<p>L’appel est thread-safe. Chaque thread obtient son propre TID unique, et <code>currentThread</code> est toujours valide dans le contexte d’un thread en cours d’exécution.</p>
+<div class="callout callout-note">
+    
+<div class="callout-title">Macro RETURN</div>
+
+    
+<div class="callout-content">
+        L'implémentation utilise la macro <code>RETURN()</code> qui écrit directement
+        dans le registre <code>$2</code> et gère la convention d'appel système.
+    </div>
+
+</div>
+
+<h2 id="voir-aussi-17"><a class="header" href="#voir-aussi-17">Voir aussi</a></h2>
+<div class="callout callout-see-also">
+    
+<div class="callout-content">
+<ul>
+<li><a href="#pthreadcreate">PthreadCreate</a> - Créer un nouveau thread</li>
+<li><a href="#pthreadexit">PthreadExit</a> - Terminer un thread</li>
+<li><a href="#pthreadjoin">PthreadJoin</a> - Attendre un thread</li>
+<li><a href="#pthreaddetach">PthreadDetach</a> - Détacher un thread</li>
+</ul>
+</div>
+
+</div>
+
+<h2 id="auteurs-17"><a class="header" href="#auteurs-17">Auteurs</a></h2>
+<p>Alioune Badara DIENE, 7 Jan 2026</p>
+<h2 id="dernière-révision-17"><a class="header" href="#dernière-révision-17">Dernière révision</a></h2>
+<p>7 Jan 2026</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="opérations-temporelles-1"><a class="header" href="#opérations-temporelles-1">Opérations temporelles</a></h1>
+<ul>
+<li><a href="#appels-système-temporels-1">Time Overview</a></li>
+</ul>
+<h1 id="appels-système-temporels"><a class="header" href="#appels-système-temporels">Appels système temporels</a></h1>
+<ul>
+<li><a href="#sleep-1">Sleep</a></li>
+<li><a href="#sleepuntil-1">SleepUntil</a></li>
+<li><a href="#getcurrenttick-1">GetCurrentTick</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="appels-système-temporels-1"><a class="header" href="#appels-système-temporels-1">Appels Système Temporels</a></h1>
+<p>Cette section documente les appels système liés à la gestion du temps dans Nachos, permettant aux threads de contrôler leur exécution temporelle.</p>
+<h2 id="vue-densemble-3"><a class="header" href="#vue-densemble-3">Vue d’ensemble</a></h2>
+<p>Les appels système temporels permettent de :</p>
+<ul>
+<li>Suspendre l’exécution d’un thread pendant une durée déterminée</li>
+<li>Synchroniser des threads à des instants précis</li>
+<li>Obtenir l’instant courant du système</li>
+<li>Implémenter des timeouts et des tâches périodiques</li>
+</ul>
+<h2 id="concepts-fondamentaux"><a class="header" href="#concepts-fondamentaux">Concepts fondamentaux</a></h2>
+<h3 id="ticks-système"><a class="header" href="#ticks-système">Ticks système</a></h3>
+<p>Nachos mesure le temps en <strong>ticks système</strong>, qui représentent les unités de temps atomiques. Un tick correspond généralement à une interruption d’horloge.</p>
+<p>La variable globale <code>stats-&gt;totalTicks</code> contient le nombre total de ticks écoulés depuis le démarrage du système.</p>
+<h3 id="temps-absolu-vs-relatif"><a class="header" href="#temps-absolu-vs-relatif">Temps absolu vs relatif</a></h3>
+<ul>
+<li><strong>Temps relatif</strong> : Durée à partir de maintenant (ex: “dans 100 ticks”)</li>
+<li><strong>Temps absolu</strong> : Instant précis sur l’horloge système (ex: “au tick 1500”)</li>
+</ul>
+<h2 id="liste-des-appels-système-1"><a class="header" href="#liste-des-appels-système-1">Liste des appels système</a></h2>
+<h3 id="sleep"><a class="header" href="#sleep"><a href="#sleep-1">Sleep</a></a></h3>
+<p>Endort le thread courant pendant une durée spécifiée (temps relatif).</p>
+<p><strong>Utilisation</strong> :</p>
+<pre><code class="language-c">int Sleep(int sleep_time);
+</code></pre>
+<p><strong>Cas d’usage</strong> :</p>
+<ul>
+<li>Délais simples</li>
+<li>Pause entre opérations</li>
+<li>Ralentir l’exécution</li>
+</ul>
+<p><strong>Exemple</strong> :</p>
+<pre><code class="language-c">Sleep(100);  // Dort pendant 100 ticks
+</code></pre>
+<h3 id="sleepuntil"><a class="header" href="#sleepuntil"><a href="#sleepuntil-1">SleepUntil</a></a></h3>
+<p>Endort le thread courant jusqu’à un instant absolu spécifié.</p>
+<p><strong>Utilisation</strong> :</p>
+<pre><code class="language-c">int SleepUntil(long long wake_time);
+</code></pre>
+<p><strong>Cas d’usage</strong> :</p>
+<ul>
+<li>Tâches périodiques sans dérive</li>
+<li>Barrières temporelles</li>
+<li>Synchronisation précise</li>
+</ul>
+<p><strong>Exemple</strong> :</p>
+<pre><code class="language-c">long long wake_time;
+GetCurrentTick(&amp;wake_time);
+wake_time += 100;
+SleepUntil(wake_time);  // Dort jusqu'au tick (current + 100)
+</code></pre>
+<h3 id="getcurrenttick"><a class="header" href="#getcurrenttick"><a href="#getcurrenttick-1">GetCurrentTick</a></a></h3>
+<p>Obtient le nombre de ticks système écoulés depuis le démarrage.</p>
+<p><strong>Utilisation</strong> :</p>
+<pre><code class="language-c">int GetCurrentTick(long long *tick);
+</code></pre>
+<p><strong>Cas d’usage</strong> :</p>
+<ul>
+<li>Mesurer des durées</li>
+<li>Calculer des instants futurs</li>
+<li>Horodatage d’événements</li>
+</ul>
+<p><strong>Exemple</strong> :</p>
+<pre><code class="language-c">long long current_tick;
+GetCurrentTick(&amp;current_tick);
+</code></pre>
+<h2 id="comparaison-sleep-vs-sleepuntil"><a class="header" href="#comparaison-sleep-vs-sleepuntil">Comparaison Sleep vs SleepUntil</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Aspect</th><th>Sleep</th><th>SleepUntil</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Type de temps</strong></td><td>Relatif (durée)</td><td>Absolu (instant)</td></tr>
+<tr><td><strong>Paramètre</strong></td><td><code>int</code> durée</td><td><code>long long</code> instant</td></tr>
+<tr><td><strong>Dérive cumulative</strong></td><td>Oui</td><td>Non</td></tr>
+<tr><td><strong>Simplicité</strong></td><td>Plus simple</td><td>Nécessite calculs</td></tr>
+<tr><td><strong>Précision</strong></td><td>Bonne</td><td>Excellente</td></tr>
+<tr><td><strong>Usage typique</strong></td><td>Délais simples</td><td>Synchronisation précise</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="exemple-de-dérive-avec-sleep"><a class="header" href="#exemple-de-dérive-avec-sleep">Exemple de dérive avec Sleep</a></h3>
+<pre><code class="language-c">// Méthode 1 : Sleep répété (avec dérive)
+for (i = 0; i &lt; 10; i++) {
+    do_work();
+    Sleep(100);  // Dérive = temps de do_work() * 10
+}
+
+// Méthode 2 : SleepUntil (sans dérive)
+long long next_wake;
+GetCurrentTick(&amp;next_wake);
+for (i = 0; i &lt; 10; i++) {
+    do_work();
+    next_wake += 100;
+    SleepUntil(next_wake);  // Pas de dérive
+}
+</code></pre>
+<h2 id="patterns-courants"><a class="header" href="#patterns-courants">Patterns courants</a></h2>
+<h3 id="pattern-1--tâche-périodique-simple"><a class="header" href="#pattern-1--tâche-périodique-simple">Pattern 1 : Tâche périodique simple</a></h3>
+<pre><code class="language-c">void periodic_simple() {
+    while (1) {
+        do_task();
+        Sleep(PERIOD);  // Acceptable si do_task() est rapide
+    }
+}
+</code></pre>
+<h3 id="pattern-2--tâche-périodique-précise"><a class="header" href="#pattern-2--tâche-périodique-précise">Pattern 2 : Tâche périodique précise</a></h3>
+<pre><code class="language-c">void periodic_precise() {
+    long long next_wake;
+    GetCurrentTick(&amp;next_wake);
+
+    while (1) {
+        do_task();
+        next_wake += PERIOD;
+        SleepUntil(next_wake);  // Compense le temps de do_task()
+    }
+}
+</code></pre>
+<h3 id="pattern-3--timeout"><a class="header" href="#pattern-3--timeout">Pattern 3 : Timeout</a></h3>
+<pre><code class="language-c">int wait_with_timeout(int condition, int timeout_ticks) {
+    long long deadline;
+    GetCurrentTick(&amp;deadline);
+    deadline += timeout_ticks;
+
+    while (!condition) {
+        long long now;
+        GetCurrentTick(&amp;now);
+
+        if (now &gt;= deadline) {
+            return -1;  // Timeout
+        }
+
+        Sleep(10);  // Petite pause avant revérification
+    }
+
+    return 0;  // Succès
+}
+</code></pre>
+<h3 id="pattern-4--barrière-temporelle"><a class="header" href="#pattern-4--barrière-temporelle">Pattern 4 : Barrière temporelle</a></h3>
+<pre><code class="language-c">long long barrier_time;
+
+void thread_with_barrier() {
+    // Phase 1 : travail
+    do_work();
+
+    // Phase 2 : attente à la barrière
+    SleepUntil(barrier_time);
+
+    // Phase 3 : tous les threads commencent ici ensemble
+    synchronized_work();
+}
+</code></pre>
+<h3 id="pattern-5--mesure-de-performance"><a class="header" href="#pattern-5--mesure-de-performance">Pattern 5 : Mesure de performance</a></h3>
+<pre><code class="language-c">long long start_tick, end_tick;
+
+GetCurrentTick(&amp;start_tick);
+expensive_operation();
+GetCurrentTick(&amp;end_tick);
+
+long long elapsed = end_tick - start_tick;
+PutString("Operation took ", 15);
+PutInt((int)elapsed);
+PutString(" ticks\n", 7);
+</code></pre>
+<h2 id="précision-et-garanties"><a class="header" href="#précision-et-garanties">Précision et garanties</a></h2>
+<h3 id="garanties"><a class="header" href="#garanties">Garanties</a></h3>
+<ul>
+<li>Les threads sont réveillés <strong>dès que possible</strong> après l’expiration du délai</li>
+<li>L’ordre de réveil respecte l’ordre des <code>wake_time</code> pour des threads endormis</li>
+<li>Aucun thread n’est réveillé <strong>avant</strong> son instant de réveil</li>
+</ul>
+<h3 id="limitations-1"><a class="header" href="#limitations-1">Limitations</a></h3>
+<ul>
+<li><strong>Granularité</strong> : Limitée par la fréquence d’interruption de l’horloge</li>
+<li><strong>Latence</strong> : Délai possible entre le réveil et l’exécution effective si CPU occupé</li>
+<li><strong>Précision</strong> : Plus ou moins quelques ticks selon la charge système</li>
+</ul>
+<h2 id="thread-safety-14"><a class="header" href="#thread-safety-14">Thread-safety</a></h2>
+<p>Tous les appels système temporels sont thread-safe :</p>
+<ul>
+<li>Plusieurs threads peuvent dormir simultanément</li>
+<li>Les structures de données internes sont protégées</li>
+</ul>
+<h2 id="performance"><a class="header" href="#performance">Performance</a></h2>
+<h3 id="coût-des-opérations"><a class="header" href="#coût-des-opérations">Coût des opérations</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Opération</th><th>Coût</th><th>Blocage</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Sleep</code> / <code>SleepUntil</code></td><td>Changement de contexte</td><td>Oui</td></tr>
+<tr><td><code>GetCurrentTick</code></td><td>Lecture mémoire</td><td>Non</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="optimisations"><a class="header" href="#optimisations">Optimisations</a></h3>
+<ul>
+<li>La file d’attente des threads endormis est triée par <code>wake_time</code></li>
+<li>Le réveil est géré par interruption d’horloge (pas de polling)</li>
+<li>Les threads endormis ne consomment pas de CPU</li>
+</ul>
+<h2 id="différences-avec-posix-1"><a class="header" href="#différences-avec-posix-1">Différences avec POSIX</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Fonction Nachos</th><th>Équivalent POSIX</th><th>Différences principales</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Sleep(int)</code></td><td><code>sleep(unsigned)</code> / <code>usleep(useconds_t)</code></td><td>Unité : ticks vs secondes/µs</td></tr>
+<tr><td><code>SleepUntil(long long)</code></td><td><code>clock_nanosleep(..., TIMER_ABSTIME, ...)</code></td><td>Plus simple, une seule horloge</td></tr>
+<tr><td><code>GetCurrentTick(long long*)</code></td><td><code>clock_gettime(...)</code></td><td>Retourne directement les ticks</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="voir-aussi-18"><a class="header" href="#voir-aussi-18">Voir aussi</a></h2>
+<ul>
+<li><a href="#threads-utilisateur">Threads</a> - Gestion des threads</li>
+<li><a href="#pthreadexit">PthreadExit</a> - Terminer un thread</li>
+</ul>
+<h2 id="auteurs-18"><a class="header" href="#auteurs-18">Auteurs</a></h2>
+<p>Alioune Badara DIENE, 8 Jan 2026</p>
+<h2 id="dernière-révision-18"><a class="header" href="#dernière-révision-18">Dernière révision</a></h2>
+<p>8 Jan 2026</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="sleep-1"><a class="header" href="#sleep-1">Sleep</a></h1>
+<p><code>Sleep</code> - Endort le thread courant pendant un nombre de ticks</p>
+<h2 id="synopsis-14"><a class="header" href="#synopsis-14">Synopsis</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+int Sleep(int sleep_time);
+</code></pre>
+<h2 id="description-14"><a class="header" href="#description-14">Description</a></h2>
+<p><code>Sleep</code> met en pause l’exécution du thread courant pendant un nombre spécifié de ticks système. Le thread est retiré de la file d’ordonnancement et sera réveillé automatiquement lorsque le nombre de ticks spécifié se sera écoulé.</p>
+<p><strong>Numéro d’appel système</strong> : <code>SC_Sleep</code> (26)</p>
+<h3 id="comportement-nominal-13"><a class="header" href="#comportement-nominal-13">Comportement nominal</a></h3>
+<ol>
+<li>Validation que <code>sleep_time &gt;= 0</code></li>
+<li>Si <code>sleep_time == 0</code>, retour immédiat (no-op)</li>
+<li>Calcul du temps de réveil : <code>wakeTime = stats-&gt;totalTicks + sleep_time</code></li>
+<li>Vérification de débordement arithmétique</li>
+<li>Appel de <code>currentThread-&gt;SleepUntil(wakeTime)</code> pour endormir le thread</li>
+<li>Le thread est réveillé automatiquement quand <code>stats-&gt;totalTicks &gt;= wakeTime</code></li>
+</ol>
+<div class="callout callout-note">
+    
+<div class="callout-title">Temps relatif</div>
+
+    
+<div class="callout-content">
+        <code>Sleep</code> utilise un temps relatif (durée), tandis que <code>SleepUntil</code>
+        utilise un temps absolu (instant précis). Utilisez <code>Sleep</code> pour des délais simples.
+    </div>
+
+</div>
+
+<h2 id="paramètres-14"><a class="header" href="#paramètres-14">Paramètres</a></h2>
+<h3 id="sleep_time"><a class="header" href="#sleep_time"><code>sleep_time</code></a></h3>
+<p>Nombre de ticks système pendant lesquels le thread doit dormir.</p>
+<p><strong>Type</strong> : <code>int</code>
+<strong>Direction</strong> : IN
+<strong>Registre</strong> : <code>$4</code>
+<strong>Contraintes</strong> : Doit être &gt;= 0</p>
+<div class="callout callout-note">
+    
+<div class="callout-title">Ticks système</div>
+
+    
+<div class="callout-content">
+        Un tick système correspond à une unité de temps de base dans Nachos.
+        La durée exacte dépend de la configuration, mais représente généralement
+        l'intervalle entre deux interruptions de l'horloge.
+    </div>
+
+</div>
+
+<h2 id="valeur-de-retour-14"><a class="header" href="#valeur-de-retour-14">Valeur de retour</a></h2>
+<p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Valeur</th><th>Signification</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0</code></td><td>Succès, le thread s’est réveillé normalement</td></tr>
+<tr><td><code>-1</code></td><td>Erreur (consulter <code>errno</code>)</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="codes-derreur-13"><a class="header" href="#codes-derreur-13">Codes d’erreur</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td><code>E_INVAL</code></td><td><code>sleep_time</code> est négatif</td></tr>
+<tr><td>3</td><td><code>E_OVERFLOW</code></td><td>Débordement arithmétique lors du calcul du temps de réveil</td></tr>
+</tbody>
+</table>
+</div>
+<div class="callout callout-warning">
+    
+<div class="callout-title">Débordement</div>
+
+    
+<div class="callout-content">
+        Si <code>currentTick + sleep_time</code> dépasse la capacité d'un <code>long long</code>,
+        l'erreur <code>E_OVERFLOW</code> est retournée et le thread n'est pas endormi.
+    </div>
+
+</div>
+
+<h2 id="implémentation-14"><a class="header" href="#implémentation-14">Implémentation</a></h2>
+<h3 id="localisation-du-code-14"><a class="header" href="#localisation-du-code-14">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S:448</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/userSleep.cc:handle_SC_Sleep()</code></li>
+<li><strong>Implémentation</strong> : <code>code/userprog/userSleep.cc:do_UserSleep()</code></li>
+<li><strong>Mécanisme de réveil</strong> : <code>code/threads/thread.cc:Thread::SleepUntil()</code></li>
+</ul>
+<h3 id="flux-dexécution-7"><a class="header" href="#flux-dexécution-7">Flux d’exécution</a></h3>
+<pre><code>Sleep(sleep_time)
+    │
+    ▼
+start.S: Sleep
+    │ charge $4 = sleep_time
+    │ charge $2 = SC_Sleep (26)
+    ▼
+syscall SC_Sleep
+    │
+    ▼
+handle_SC_Sleep()
+    │ lit sleep_time depuis $4
+    ▼
+do_UserSleep(sleep_time)
+    │ ├─ valide sleep_time &gt;= 0
+    │ ├─ si sleep_time == 0, retourne 0
+    │ ├─ désactive les interruptions
+    │ ├─ calcule wakeTime = totalTicks + sleep_time
+    │ ├─ vérifie débordement
+    │ └─ appelle currentThread-&gt;SleepUntil(wakeTime)
+    ▼
+Thread::SleepUntil(wakeTime)
+    │ ├─ ajoute thread à la liste d'attente
+    │ ├─ ordonne par wakeTime croissant
+    │ └─ appelle Sleep() pour suspendre le thread
+    ▼
+[Thread suspendu jusqu'à wakeTime]
+    │
+    ▼
+[Interruption horloge : stats-&gt;totalTicks &gt;= wakeTime]
+    │
+    ▼
+[Thread réveillé et replacé dans la file d'ordonnancement]
+    │
+    ▼
+[Retour à l'utilisateur avec succès]
+</code></pre>
+<h2 id="exemples-14"><a class="header" href="#exemples-14">Exemples</a></h2>
+<h3 id="exemple-1--délai-simple"><a class="header" href="#exemple-1--délai-simple">Exemple 1 : Délai simple</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    PutString("Starting task...\n", 17);
+
+    Sleep(100);  // Dort pendant 100 ticks
+
+    PutString("Task resumed after 100 ticks\n", 29);
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-2--boucle-avec-délai"><a class="header" href="#exemple-2--boucle-avec-délai">Exemple 2 : Boucle avec délai</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int i;
+
+    for (i = 0; i &lt; 5; i++) {
+        PutString("Iteration ", 10);
+        PutInt(i);
+        PutChar('\n');
+
+        Sleep(50);  // Pause entre les itérations
+    }
+
+    PutString("Done!\n", 6);
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-3--gestion-derreur-2"><a class="header" href="#exemple-3--gestion-derreur-2">Exemple 3 : Gestion d’erreur</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int sleep_time = -10;
+
+    if (Sleep(sleep_time) != 0) {
+        int err = GetLastError();
+        PutString("Sleep failed with errno=", 24);
+        PutInt(err);  // Affichera 1 (E_INVAL)
+        PutChar('\n');
+        return 1;
+    }
+
+    PutString("Sleep succeeded\n", 16);
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-4--sleep0-comme-yield"><a class="header" href="#exemple-4--sleep0-comme-yield">Exemple 4 : Sleep(0) comme yield</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+void *worker(void *arg) {
+    int id = (int)(long)arg;
+    int i;
+
+    for (i = 0; i &lt; 10; i++) {
+        PutString("Thread ", 7);
+        PutInt(id);
+        PutString(" working\n", 9);
+
+        Sleep(0);  // Permet aux autres threads de s'exécuter
+    }
+
+    return 0;
+}
+
+int main() {
+    posix_thread_t tid1, tid2;
+
+    PthreadCreate(&amp;tid1, 0, worker, (void *)1);
+    PthreadCreate(&amp;tid2, 0, worker, (void *)2);
+
+    PthreadJoin(tid1, 0);
+    PthreadJoin(tid2, 0);
+
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-5--synchronisation-temporelle"><a class="header" href="#exemple-5--synchronisation-temporelle">Exemple 5 : Synchronisation temporelle</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+void *periodic_task(void *arg) {
+    int period = (int)(long)arg;
+    int i;
+
+    for (i = 0; i &lt; 5; i++) {
+        PutString("Periodic task executing\n", 24);
+        Sleep(period);
+    }
+
+    return 0;
+}
+
+int main() {
+    posix_thread_t tid;
+
+    PutString("Starting periodic task (period=100 ticks)\n", 42);
+    PthreadCreate(&amp;tid, 0, periodic_task, (void *)100);
+
+    PthreadJoin(tid, 0);
+    PutString("Periodic task completed\n", 24);
+
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-6--timeout-avec-vérification"><a class="header" href="#exemple-6--timeout-avec-vérification">Exemple 6 : Timeout avec vérification</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int wait_with_timeout(int timeout_ticks) {
+    long long start_tick, end_tick;
+
+    if (GetCurrentTick(&amp;start_tick) != 0) {
+        return -1;
+    }
+
+    Sleep(timeout_ticks);
+
+    if (GetCurrentTick(&amp;end_tick) != 0) {
+        return -1;
+    }
+
+    // Vérifie que le délai s'est bien écoulé
+    long long elapsed = end_tick - start_tick;
+    PutString("Elapsed ticks: ", 15);
+    PutInt((int)elapsed);
+    PutChar('\n');
+
+    return 0;
+}
+
+int main() {
+    wait_with_timeout(200);
+    return 0;
+}
+</code></pre>
+<h2 id="cas-dusage-3"><a class="header" href="#cas-dusage-3">Cas d’usage</a></h2>
+<h3 id="délais-et-temporisation"><a class="header" href="#délais-et-temporisation">Délais et temporisation</a></h3>
+<p><code>Sleep</code> est utilisé pour :</p>
+<ul>
+<li>Créer des délais entre opérations</li>
+<li>Implémenter des timeouts</li>
+<li>Ralentir l’exécution pour des démonstrations</li>
+<li>Simuler des opérations longues</li>
+</ul>
+<h3 id="ordonnancement-coopératif"><a class="header" href="#ordonnancement-coopératif">Ordonnancement coopératif</a></h3>
+<p><code>Sleep(0)</code> peut être utilisé comme point de coopération pour permettre à d’autres threads de s’exécuter sans attente réelle.</p>
+<h2 id="thread-safety-15"><a class="header" href="#thread-safety-15">Thread-safety</a></h2>
+<p><code>Sleep</code> est thread-safe. Chaque thread peut appeler <code>Sleep</code> indépendamment, et le système gère correctement le réveil de plusieurs threads simultanément.</p>
+<div class="callout callout-note">
+    
+<div class="callout-title">Précision temporelle</div>
+
+    
+<div class="callout-content">
+        La précision de <code>Sleep</code> dépend de la fréquence des interruptions d'horloge.
+        Le thread sera réveillé dès que possible après l'expiration du délai, mais peut
+        y avoir un léger retard si d'autres threads sont en cours d'exécution.
+    </div>
+
+</div>
+
+<h2 id="performance-1"><a class="header" href="#performance-1">Performance</a></h2>
+<ul>
+<li><strong>Coût</strong> : Très faible (changement de contexte)</li>
+<li><strong>Blocage</strong> : Le thread est suspendu et ne consomme pas de CPU</li>
+<li><strong>Ordonnancement</strong> : Les autres threads peuvent s’exécuter pendant le sommeil</li>
+</ul>
+<h2 id="différences-avec-posix-2"><a class="header" href="#différences-avec-posix-2">Différences avec POSIX</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Aspect</th><th>POSIX sleep() / usleep()</th><th>Nachos Sleep()</th></tr>
+</thead>
+<tbody>
+<tr><td>Unité</td><td>Secondes / microsecondes</td><td>Ticks système</td></tr>
+<tr><td>Type paramètre</td><td><code>unsigned int</code> / <code>useconds_t</code></td><td><code>int</code></td></tr>
+<tr><td>Interruption</td><td>Peut être interrompu par signal</td><td>Non interruptible</td></tr>
+<tr><td>Valeur de retour</td><td>Temps restant si interrompu</td><td>0 ou -1</td></tr>
+<tr><td>Précision</td><td>Haute résolution</td><td>Dépend de l’horloge système</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="voir-aussi-19"><a class="header" href="#voir-aussi-19">Voir aussi</a></h2>
+<div class="callout callout-see-also">
+    
+<div class="callout-content">
+<ul>
+<li><a href="#sleepuntil-1">SleepUntil</a> - Dormir jusqu’à un instant précis</li>
+<li><a href="#getcurrenttick-1">GetCurrentTick</a> - Obtenir le tick courant</li>
+</ul>
+</div>
+
+</div>
+
+<h2 id="auteurs-19"><a class="header" href="#auteurs-19">Auteurs</a></h2>
+<p>Alioune Badara DIENE, 8 Jan 2026</p>
+<h2 id="dernière-révision-19"><a class="header" href="#dernière-révision-19">Dernière révision</a></h2>
+<p>8 Jan 2026</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="sleepuntil-1"><a class="header" href="#sleepuntil-1">SleepUntil</a></h1>
+<p><code>SleepUntil</code> - Endort le thread courant jusqu’à un instant précis</p>
+<h2 id="synopsis-15"><a class="header" href="#synopsis-15">Synopsis</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+int SleepUntil(long long wake_time);
+</code></pre>
+<h2 id="description-15"><a class="header" href="#description-15">Description</a></h2>
+<p><code>SleepUntil</code> met en pause l’exécution du thread courant jusqu’à ce qu’un instant précis (exprimé en ticks système absolus) soit atteint. Le thread est retiré de la file d’ordonnancement et sera réveillé automatiquement lorsque <code>stats-&gt;totalTicks &gt;= wake_time</code>.</p>
+<p><strong>Numéro d’appel système</strong> : <code>SC_SleepUntil</code> (27)</p>
+<h3 id="comportement-nominal-14"><a class="header" href="#comportement-nominal-14">Comportement nominal</a></h3>
+<ol>
+<li>Validation que <code>wake_time &gt;= 0</code></li>
+<li>Si <code>wake_time &lt;= stats-&gt;totalTicks</code> (déjà passé), retour immédiat</li>
+<li>Appel de <code>currentThread-&gt;SleepUntil(wake_time)</code> pour endormir le thread</li>
+<li>Le thread est réveillé automatiquement quand <code>stats-&gt;totalTicks &gt;= wake_time</code></li>
+</ol>
+<div class="callout callout-note">
+    
+<div class="callout-title">Temps absolu</div>
+
+    
+<div class="callout-content">
+        <code>SleepUntil</code> utilise un temps absolu (instant précis), tandis que <code>Sleep</code>
+        utilise un temps relatif (durée). Utilisez <code>SleepUntil</code> pour des synchronisations
+        temporelles précises sans dérive cumulative.
+    </div>
+
+</div>
+
+<h2 id="paramètres-15"><a class="header" href="#paramètres-15">Paramètres</a></h2>
+<h3 id="wake_time"><a class="header" href="#wake_time"><code>wake_time</code></a></h3>
+<p>Instant absolu (en ticks système) auquel le thread doit se réveiller.</p>
+<p><strong>Type</strong> : <code>long long</code>
+<strong>Direction</strong> : IN
+<strong>Registre</strong> : <code>$4</code> (32 bits inférieurs seulement dans cette implémentation simplifiée)
+<strong>Contraintes</strong> : Doit être &gt;= 0</p>
+<div class="callout callout-warning">
+    
+<div class="callout-title">Réveil immédiat</div>
+
+    
+<div class="callout-content">
+        Si <code>wake_time</code> est dans le passé ou égal au tick courant,
+        <code>SleepUntil</code> retourne immédiatement sans endormir le thread.
+    </div>
+
+</div>
+
+<h2 id="valeur-de-retour-15"><a class="header" href="#valeur-de-retour-15">Valeur de retour</a></h2>
+<p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Valeur</th><th>Signification</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0</code></td><td>Succès, le thread s’est réveillé au bon moment</td></tr>
+<tr><td><code>-1</code></td><td>Erreur (consulter <code>errno</code>)</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="codes-derreur-14"><a class="header" href="#codes-derreur-14">Codes d’erreur</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td><code>E_INVAL</code></td><td><code>wake_time</code> est négatif</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="implémentation-15"><a class="header" href="#implémentation-15">Implémentation</a></h2>
+<h3 id="localisation-du-code-15"><a class="header" href="#localisation-du-code-15">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S:467</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/userSleep.cc:handle_SC_SleepUntil()</code></li>
+<li><strong>Implémentation</strong> : <code>code/userprog/userSleep.cc:do_UserSleepUntil()</code></li>
+<li><strong>Mécanisme de réveil</strong> : <code>code/threads/thread.cc:Thread::SleepUntil()</code></li>
+</ul>
+<h3 id="flux-dexécution-8"><a class="header" href="#flux-dexécution-8">Flux d’exécution</a></h3>
+<pre><code>SleepUntil(wake_time)
+    │
+    ▼
+start.S: SleepUntil
+    │ charge $4 = wake_time
+    │ charge $2 = SC_SleepUntil (27)
+    ▼
+syscall SC_SleepUntil
+    │
+    ▼
+handle_SC_SleepUntil()
+    │ lit wake_time depuis $4
+    ▼
+do_UserSleepUntil(wake_time)
+    │ ├─ valide wake_time &gt;= 0
+    │ ├─ désactive les interruptions
+    │ ├─ si wake_time &lt;= totalTicks, retourne 0
+    │ └─ appelle currentThread-&gt;SleepUntil(wake_time)
+    ▼
+Thread::SleepUntil(wake_time)
+    │ ├─ ajoute thread à la liste d'attente
+    │ ├─ ordonne par wake_time croissant
+    │ └─ appelle Sleep() pour suspendre le thread
+    ▼
+[Thread suspendu jusqu'à wake_time]
+    │
+    ▼
+[Interruption horloge : stats-&gt;totalTicks &gt;= wake_time]
+    │
+    ▼
+[Thread réveillé et replacé dans la file d'ordonnancement]
+    │
+    ▼
+[Retour à l'utilisateur avec succès]
+</code></pre>
+<h2 id="exemples-15"><a class="header" href="#exemples-15">Exemples</a></h2>
+<h3 id="exemple-1--réveil-à-un-instant-précis"><a class="header" href="#exemple-1--réveil-à-un-instant-précis">Exemple 1 : Réveil à un instant précis</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    long long wake_time;
+
+    if (GetCurrentTick(&amp;wake_time) != 0) {
+        PutString("Error getting current tick\n", 27);
+        return 1;
+    }
+
+    wake_time += 200;  // Réveil dans 200 ticks
+
+    PutString("Sleeping until tick ", 20);
+    PutInt((int)wake_time);
+    PutChar('\n');
+
+    SleepUntil(wake_time);
+
+    PutString("Woke up!\n", 9);
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-2--synchronisation-périodique-sans-dérive"><a class="header" href="#exemple-2--synchronisation-périodique-sans-dérive">Exemple 2 : Synchronisation périodique sans dérive</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+void *periodic_task_precise(void *arg) {
+    long long next_wake;
+    int period = (int)(long)arg;
+    int i;
+
+    // Obtenir l'instant de départ
+    if (GetCurrentTick(&amp;next_wake) != 0) {
+        return (void *)-1;
+    }
+
+    for (i = 0; i &lt; 10; i++) {
+        PutString("Tick ", 5);
+        PutInt(i);
+        PutChar('\n');
+
+        // Calculer le prochain instant de réveil
+        next_wake += period;
+
+        // Dormir jusqu'à cet instant précis
+        SleepUntil(next_wake);
+    }
+
+    return 0;
+}
+
+int main() {
+    posix_thread_t tid;
+
+    PutString("Starting precise periodic task (period=100)\n", 44);
+    PthreadCreate(&amp;tid, 0, periodic_task_precise, (void *)100);
+
+    PthreadJoin(tid, 0);
+    PutString("Task completed\n", 15);
+
+    return 0;
+}
+</code></pre>
+<p><strong>Avantage</strong> : Pas de dérive cumulative, contrairement à une boucle utilisant <code>Sleep(period)</code>.</p>
+<h3 id="exemple-3--gestion-du-cas-où-wake_time-est-dans-le-passé"><a class="header" href="#exemple-3--gestion-du-cas-où-wake_time-est-dans-le-passé">Exemple 3 : Gestion du cas où wake_time est dans le passé</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    long long current_tick;
+    long long past_time;
+
+    GetCurrentTick(&amp;current_tick);
+    past_time = current_tick - 100;  // 100 ticks dans le passé
+
+    PutString("Current tick: ", 14);
+    PutInt((int)current_tick);
+    PutChar('\n');
+
+    PutString("Trying to sleep until: ", 23);
+    PutInt((int)past_time);
+    PutChar('\n');
+
+    // Retourne immédiatement
+    if (SleepUntil(past_time) == 0) {
+        PutString("SleepUntil returned immediately (expected)\n", 43);
+    }
+
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-4--gestion-derreur-2"><a class="header" href="#exemple-4--gestion-derreur-2">Exemple 4 : Gestion d’erreur</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    long long invalid_time = -100;
+
+    if (SleepUntil(invalid_time) != 0) {
+        int err = GetLastError();
+        PutString("SleepUntil failed with errno=", 29);
+        PutInt(err);  // Affichera 1 (E_INVAL)
+        PutChar('\n');
+        return 1;
+    }
+
+    PutString("This should not print\n", 22);
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-5--barrière-temporelle-pour-threads"><a class="header" href="#exemple-5--barrière-temporelle-pour-threads">Exemple 5 : Barrière temporelle pour threads</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+long long barrier_time;
+
+void *worker(void *arg) {
+    int id = (int)(long)arg;
+
+    PutString("Thread ", 7);
+    PutInt(id);
+    PutString(" working...\n", 12);
+
+    // Simule un travail variable
+    Sleep(id * 50);
+
+    PutString("Thread ", 7);
+    PutInt(id);
+    PutString(" waiting at barrier\n", 20);
+
+    // Tous les threads se réveillent au même instant
+    SleepUntil(barrier_time);
+
+    PutString("Thread ", 7);
+    PutInt(id);
+    PutString(" passed barrier!\n", 17);
+
+    return 0;
+}
+
+int main() {
+    posix_thread_t tid1, tid2, tid3;
+    long long current;
+
+    GetCurrentTick(&amp;current);
+    barrier_time = current + 500;  // Barrière dans 500 ticks
+
+    PutString("Barrier time set to tick ", 25);
+    PutInt((int)barrier_time);
+    PutChar('\n');
+
+    PthreadCreate(&amp;tid1, 0, worker, (void *)1);
+    PthreadCreate(&amp;tid2, 0, worker, (void *)2);
+    PthreadCreate(&amp;tid3, 0, worker, (void *)3);
+
+    PthreadJoin(tid1, 0);
+    PthreadJoin(tid2, 0);
+    PthreadJoin(tid3, 0);
+
+    PutString("All threads completed\n", 22);
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-6--comparaison-sleep-vs-sleepuntil"><a class="header" href="#exemple-6--comparaison-sleep-vs-sleepuntil">Exemple 6 : Comparaison Sleep vs SleepUntil</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    long long start, end, target;
+    int i;
+
+    // Méthode 1 : Sleep répété (avec dérive)
+    GetCurrentTick(&amp;start);
+    for (i = 0; i &lt; 5; i++) {
+        Sleep(100);
+    }
+    GetCurrentTick(&amp;end);
+    PutString("Sleep x5: elapsed = ", 20);
+    PutInt((int)(end - start));
+    PutChar('\n');
+
+    // Méthode 2 : SleepUntil (sans dérive)
+    GetCurrentTick(&amp;start);
+    target = start;
+    for (i = 0; i &lt; 5; i++) {
+        target += 100;
+        SleepUntil(target);
+    }
+    GetCurrentTick(&amp;end);
+    PutString("SleepUntil x5: elapsed = ", 25);
+    PutInt((int)(end - start));
+    PutChar('\n');
+
+    return 0;
+}
+</code></pre>
+<p><strong>Résultat attendu</strong> : <code>SleepUntil</code> est plus précis car il compense automatiquement les délais d’ordonnancement.</p>
+<h2 id="cas-dusage-4"><a class="header" href="#cas-dusage-4">Cas d’usage</a></h2>
+<h3 id="synchronisation-temporelle-précise"><a class="header" href="#synchronisation-temporelle-précise">Synchronisation temporelle précise</a></h3>
+<p><code>SleepUntil</code> est idéal pour :</p>
+<ul>
+<li>Tâches périodiques sans dérive cumulative</li>
+<li>Synchronisation de threads à un instant précis</li>
+<li>Barrières temporelles</li>
+<li>Ordonnancement temps réel</li>
+</ul>
+<h3 id="avantages-par-rapport-à-sleep"><a class="header" href="#avantages-par-rapport-à-sleep">Avantages par rapport à Sleep</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Aspect</th><th>Sleep</th><th>SleepUntil</th></tr>
+</thead>
+<tbody>
+<tr><td>Dérive</td><td>Cumulative sur plusieurs itérations</td><td>Aucune</td></tr>
+<tr><td>Utilisation</td><td>Délais simples</td><td>Synchronisation précise</td></tr>
+<tr><td>Complexité</td><td>Plus simple</td><td>Nécessite gestion des ticks absolus</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="thread-safety-16"><a class="header" href="#thread-safety-16">Thread-safety</a></h2>
+<p><code>SleepUntil</code> est thread-safe. Plusieurs threads peuvent dormir jusqu’à des instants différents ou identiques sans conflit.</p>
+<h2 id="performance-2"><a class="header" href="#performance-2">Performance</a></h2>
+<ul>
+<li><strong>Coût</strong> : Très faible (changement de contexte)</li>
+<li><strong>Blocage</strong> : Le thread est suspendu et ne consomme pas de CPU</li>
+<li><strong>Ordonnancement</strong> : File d’attente ordonnée par <code>wake_time</code> pour un réveil efficace</li>
+</ul>
+<h2 id="différences-avec-posix-3"><a class="header" href="#différences-avec-posix-3">Différences avec POSIX</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Aspect</th><th>POSIX clock_nanosleep()</th><th>Nachos SleepUntil()</th></tr>
+</thead>
+<tbody>
+<tr><td>Temps absolu</td><td>Supporte TIMER_ABSTIME</td><td>Par défaut</td></tr>
+<tr><td>Unité</td><td>Nanosecondes</td><td>Ticks système</td></tr>
+<tr><td>Horloges</td><td>Multiple (CLOCK_REALTIME, etc.)</td><td>Une seule horloge</td></tr>
+<tr><td>Interruption</td><td>Peut être interrompu</td><td>Non interruptible</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="voir-aussi-20"><a class="header" href="#voir-aussi-20">Voir aussi</a></h2>
+<div class="callout callout-see-also">
+    
+<div class="callout-content">
+<ul>
+<li><a href="#sleep-1">Sleep</a> - Dormir pendant une durée relative</li>
+<li><a href="#getcurrenttick-1">GetCurrentTick</a> - Obtenir le tick courant</li>
+</ul>
+</div>
+
+</div>
+
+<h2 id="auteurs-20"><a class="header" href="#auteurs-20">Auteurs</a></h2>
+<p>Alioune Badara DIENE, 8 Jan 2026</p>
+<h2 id="dernière-révision-20"><a class="header" href="#dernière-révision-20">Dernière révision</a></h2>
+<p>8 Jan 2026</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="getcurrenttick-1"><a class="header" href="#getcurrenttick-1">GetCurrentTick</a></h1>
+<p><code>GetCurrentTick</code> - Obtient le nombre de ticks système écoulés depuis le démarrage</p>
+<h2 id="synopsis-16"><a class="header" href="#synopsis-16">Synopsis</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+int GetCurrentTick(long long *tick);
+</code></pre>
+<h2 id="description-16"><a class="header" href="#description-16">Description</a></h2>
+<p><code>GetCurrentTick</code> récupère le nombre total de ticks système écoulés depuis le démarrage de Nachos. Cette valeur est stockée dans <code>stats-&gt;totalTicks</code> et s’incrémente à chaque interruption d’horloge.</p>
+<p><strong>Numéro d’appel système</strong> : <code>SC_GetCurrentTick</code> (28)</p>
+<h3 id="comportement-nominal-15"><a class="header" href="#comportement-nominal-15">Comportement nominal</a></h3>
+<ol>
+<li>Validation de l’adresse <code>tick</code> (doit être &gt;= 0)</li>
+<li>Lecture de <code>stats-&gt;totalTicks</code> (64 bits)</li>
+<li>Décomposition en deux mots de 32 bits (low et high)</li>
+<li>Écriture des 32 bits inférieurs à l’adresse <code>tick</code></li>
+<li>Écriture des 32 bits supérieurs à l’adresse <code>tick + 4</code></li>
+</ol>
+<div class="callout callout-note">
+    
+<div class="callout-title">Format 64 bits</div>
+
+    
+<div class="callout-content">
+        Les ticks sont stockés sur 64 bits pour éviter un débordement rapide.
+        L'architecture MIPS32 nécessite de décomposer cette valeur en deux mots de 32 bits.
+    </div>
+
+</div>
+
+<h2 id="paramètres-16"><a class="header" href="#paramètres-16">Paramètres</a></h2>
+<h3 id="tick"><a class="header" href="#tick"><code>tick</code></a></h3>
+<p>Pointeur vers une variable <code>long long</code> où sera stocké le nombre de ticks courant.</p>
+<p><strong>Type</strong> : <code>long long *</code>
+<strong>Direction</strong> : OUT
+<strong>Registre</strong> : <code>$4</code>
+<strong>Contraintes</strong> : Doit être une adresse valide en espace utilisateur avec au moins 8 octets disponibles</p>
+<div class="callout callout-warning">
+    
+<div class="callout-title">Alignement mémoire</div>
+
+    
+<div class="callout-content">
+        L'adresse doit pointer vers une zone mémoire d'au moins 8 octets consécutifs.
+        Les 4 premiers octets reçoivent les bits inférieurs, les 4 suivants les bits supérieurs.
+    </div>
+
+</div>
+
+<h2 id="valeur-de-retour-16"><a class="header" href="#valeur-de-retour-16">Valeur de retour</a></h2>
+<p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Valeur</th><th>Signification</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0</code></td><td>Succès, la valeur a été écrite à l’adresse <code>tick</code></td></tr>
+<tr><td><code>-1</code></td><td>Erreur (consulter <code>errno</code>)</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="codes-derreur-15"><a class="header" href="#codes-derreur-15">Codes d’erreur</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
+</thead>
+<tbody>
+<tr><td>2</td><td><code>E_FAULT</code></td><td>Adresse invalide ou écriture mémoire échouée</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="implémentation-16"><a class="header" href="#implémentation-16">Implémentation</a></h2>
+<h3 id="localisation-du-code-16"><a class="header" href="#localisation-du-code-16">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S:482</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/userSleep.cc:handle_SC_GetCurrentTick()</code></li>
+</ul>
+<h3 id="flux-dexécution-9"><a class="header" href="#flux-dexécution-9">Flux d’exécution</a></h3>
+<pre><code>GetCurrentTick(&amp;tick)
+    │
+    ▼
+start.S: GetCurrentTick
+    │ charge $4 = adresse de tick
+    │ charge $2 = SC_GetCurrentTick (28)
+    ▼
+syscall SC_GetCurrentTick
+    │
+    ▼
+handle_SC_GetCurrentTick()
+    │ ├─ lit adresse depuis $4
+    │ ├─ valide adresse &gt;= 0
+    │ ├─ lit stats-&gt;totalTicks (64 bits)
+    │ ├─ décompose en high (bits 32-63) et low (bits 0-31)
+    │ ├─ écrit low à l'adresse
+    │ └─ écrit high à l'adresse + 4
+    ▼
+[Variable utilisateur contient le tick courant]
+</code></pre>
+<h2 id="exemples-16"><a class="header" href="#exemples-16">Exemples</a></h2>
+<h3 id="exemple-1--obtenir-le-tick-courant"><a class="header" href="#exemple-1--obtenir-le-tick-courant">Exemple 1 : Obtenir le tick courant</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    long long current_tick;
+
+    if (GetCurrentTick(&amp;current_tick) != 0) {
+        PutString("Error getting current tick\n", 27);
+        return 1;
+    }
+
+    PutString("Current tick: ", 14);
+    PutInt((int)current_tick);
+    PutChar('\n');
+
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-2--mesurer-une-durée"><a class="header" href="#exemple-2--mesurer-une-durée">Exemple 2 : Mesurer une durée</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    long long start_tick, end_tick, elapsed;
+    int i, sum = 0;
+
+    GetCurrentTick(&amp;start_tick);
+
+    // Opération à mesurer
+    for (i = 0; i &lt; 1000; i++) {
+        sum += i;
+    }
+
+    GetCurrentTick(&amp;end_tick);
+    elapsed = end_tick - start_tick;
+
+    PutString("Operation took ", 15);
+    PutInt((int)elapsed);
+    PutString(" ticks\n", 7);
+
+    PutString("Result: ", 8);
+    PutInt(sum);
+    PutChar('\n');
+
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-3--calculer-un-instant-futur"><a class="header" href="#exemple-3--calculer-un-instant-futur">Exemple 3 : Calculer un instant futur</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    long long current_tick, future_tick;
+
+    GetCurrentTick(&amp;current_tick);
+    future_tick = current_tick + 500;
+
+    PutString("Current: ", 9);
+    PutInt((int)current_tick);
+    PutChar('\n');
+
+    PutString("Sleeping until: ", 16);
+    PutInt((int)future_tick);
+    PutChar('\n');
+
+    SleepUntil(future_tick);
+
+    PutString("Woke up!\n", 9);
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-4--horodatage-dévénements"><a class="header" href="#exemple-4--horodatage-dévénements">Exemple 4 : Horodatage d’événements</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+void log_event(char *message, int len) {
+    long long timestamp;
+    GetCurrentTick(&amp;timestamp);
+
+    PutChar('[');
+    PutInt((int)timestamp);
+    PutString("] ", 2);
+    PutString(message, len);
+}
+
+int main() {
+    log_event("Program started\n", 16);
+
+    Sleep(100);
+    log_event("After first sleep\n", 18);
+
+    Sleep(200);
+    log_event("After second sleep\n", 19);
+
+    log_event("Program ending\n", 15);
+    return 0;
+}
+</code></pre>
+<p><strong>Sortie attendue</strong> :</p>
+<pre><code>[0] Program started
+[100] After first sleep
+[300] After second sleep
+[300] Program ending
+</code></pre>
+<h3 id="exemple-5--gestion-derreur"><a class="header" href="#exemple-5--gestion-derreur">Exemple 5 : Gestion d’erreur</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    long long tick;
+    long long *invalid_ptr = (long long *)-1;
+
+    // Tentative avec adresse invalide
+    if (GetCurrentTick(invalid_ptr) != 0) {
+        int err = GetLastError();
+        PutString("GetCurrentTick failed with errno=", 33);
+        PutInt(err);  // Affichera 2 (E_FAULT)
+        PutChar('\n');
+    }
+
+    // Tentative avec adresse valide
+    if (GetCurrentTick(&amp;tick) == 0) {
+        PutString("Success! Tick = ", 16);
+        PutInt((int)tick);
+        PutChar('\n');
+    }
+
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-6--tâche-périodique-sans-dérive"><a class="header" href="#exemple-6--tâche-périodique-sans-dérive">Exemple 6 : Tâche périodique sans dérive</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+#define PERIOD 100
+#define ITERATIONS 10
+
+int main() {
+    long long next_wake, start, end;
+    int i;
+
+    GetCurrentTick(&amp;start);
+    next_wake = start;
+
+    for (i = 0; i &lt; ITERATIONS; i++) {
+        PutString("Iteration ", 10);
+        PutInt(i);
+        PutChar('\n');
+
+        next_wake += PERIOD;
+        SleepUntil(next_wake);
+    }
+
+    GetCurrentTick(&amp;end);
+
+    PutString("Total elapsed: ", 15);
+    PutInt((int)(end - start));
+    PutString(" ticks\n", 7);
+
+    PutString("Expected: ", 10);
+    PutInt(PERIOD * ITERATIONS);
+    PutString(" ticks\n", 7);
+
+    return 0;
+}
+</code></pre>
+<p><strong>Résultat</strong> : Le temps total est très proche de l’attendu (PERIOD × ITERATIONS), sans dérive.</p>
+<h3 id="exemple-7--comparaison-de-performances"><a class="header" href="#exemple-7--comparaison-de-performances">Exemple 7 : Comparaison de performances</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+void benchmark(char *name, int name_len, void (*func)(void)) {
+    long long start, end;
+
+    GetCurrentTick(&amp;start);
+    func();
+    GetCurrentTick(&amp;end);
+
+    PutString(name, name_len);
+    PutString(": ", 2);
+    PutInt((int)(end - start));
+    PutString(" ticks\n", 7);
+}
+
+void fast_operation(void) {
+    int i, sum = 0;
+    for (i = 0; i &lt; 100; i++) sum += i;
+}
+
+void slow_operation(void) {
+    int i, j, sum = 0;
+    for (i = 0; i &lt; 100; i++)
+        for (j = 0; j &lt; 100; j++)
+            sum += i * j;
+}
+
+int main() {
+    benchmark("Fast operation", 14, fast_operation);
+    benchmark("Slow operation", 14, slow_operation);
+    return 0;
+}
+</code></pre>
+<h2 id="cas-dusage-5"><a class="header" href="#cas-dusage-5">Cas d’usage</a></h2>
+<h3 id="horodatage"><a class="header" href="#horodatage">Horodatage</a></h3>
+<p><code>GetCurrentTick</code> est idéal pour :</p>
+<ul>
+<li>Enregistrer l’instant d’un événement</li>
+<li>Logger avec timestamp</li>
+<li>Créer des traces d’exécution</li>
+</ul>
+<h3 id="mesure-de-performance"><a class="header" href="#mesure-de-performance">Mesure de performance</a></h3>
+<ul>
+<li>Mesurer la durée d’opérations</li>
+<li>Comparer différentes implémentations</li>
+<li>Profiler du code</li>
+</ul>
+<h3 id="calculs-temporels"><a class="header" href="#calculs-temporels">Calculs temporels</a></h3>
+<ul>
+<li>Déterminer des instants futurs pour <code>SleepUntil</code></li>
+<li>Implémenter des timeouts</li>
+<li>Planifier des tâches périodiques</li>
+</ul>
+<h2 id="thread-safety-17"><a class="header" href="#thread-safety-17">Thread-safety</a></h2>
+<p><code>GetCurrentTick</code> est thread-safe. Plusieurs threads peuvent lire simultanément <code>stats-&gt;totalTicks</code> sans conflit, car il s’agit d’une opération en lecture seule.</p>
+<div class="callout callout-note">
+    
+<div class="callout-title">Cohérence</div>
+
+    
+<div class="callout-content">
+        La valeur retournée est cohérente au moment de l'appel, mais peut
+        être légèrement obsolète au moment où le thread l'utilise en raison
+        de la préemption.
+    </div>
+
+</div>
+
+<h2 id="performance-3"><a class="header" href="#performance-3">Performance</a></h2>
+<ul>
+<li><strong>Coût</strong> : Très faible (lecture mémoire + deux écritures)</li>
+<li><strong>Blocage</strong> : Non-bloquant</li>
+<li><strong>Atomicité</strong> : La lecture de <code>totalTicks</code> est atomique</li>
+</ul>
+<h2 id="précision"><a class="header" href="#précision">Précision</a></h2>
+<p>La valeur retournée a la même précision que les interruptions d’horloge système. Entre deux interruptions, <code>totalTicks</code> ne change pas.</p>
+<h2 id="différences-avec-posix-4"><a class="header" href="#différences-avec-posix-4">Différences avec POSIX</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Aspect</th><th>POSIX clock_gettime()</th><th>Nachos GetCurrentTick()</th></tr>
+</thead>
+<tbody>
+<tr><td>Horloges</td><td>Multiples (REALTIME, MONOTONIC, etc.)</td><td>Une seule</td></tr>
+<tr><td>Unité</td><td>Secondes + nanosecondes</td><td>Ticks système</td></tr>
+<tr><td>Structure</td><td><code>struct timespec</code></td><td><code>long long</code></td></tr>
+<tr><td>Précision</td><td>Nanoseconde (théorique)</td><td>Tick système</td></tr>
+<tr><td>Retour</td><td>0 ou -1 + errno global</td><td>0 ou -1 + errno via registre</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="voir-aussi-21"><a class="header" href="#voir-aussi-21">Voir aussi</a></h2>
+<div class="callout callout-see-also">
+    
+<div class="callout-content">
+<ul>
+<li><a href="#sleep-1">Sleep</a> - Dormir pendant une durée</li>
+<li><a href="#sleepuntil-1">SleepUntil</a> - Dormir jusqu’à un instant précis</li>
+</ul>
+</div>
+
+</div>
+
+<h2 id="auteurs-21"><a class="header" href="#auteurs-21">Auteurs</a></h2>
+<p>Alioune Badara DIENE, 8 Jan 2026</p>
+<h2 id="dernière-révision-21"><a class="header" href="#dernière-révision-21">Dernière révision</a></h2>
+<p>8 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="sémaphores-2"><a class="header" href="#sémaphores-2">Sémaphores</a></h1>
 <ul>
@@ -4434,7 +5776,7 @@ int main() {
 </tbody>
 </table>
 </div>
-<h2 id="thread-safety-14"><a class="header" href="#thread-safety-14">Thread-safety</a></h2>
+<h2 id="thread-safety-18"><a class="header" href="#thread-safety-18">Thread-safety</a></h2>
 <p><strong>Garanti</strong> :</p>
 <ul>
 <li>Les opérations Wait() et Post() sont atomiques et thread-safe</li>
@@ -4528,7 +5870,7 @@ int main() {
 </tbody>
 </table>
 </div>
-<h2 id="voir-aussi-18"><a class="header" href="#voir-aussi-18">Voir aussi</a></h2>
+<h2 id="voir-aussi-22"><a class="header" href="#voir-aussi-22">Voir aussi</a></h2>
 <ul>
 <li><a href="#gestion-des-erreurs-3">Gestion des erreurs</a> - Codes d’erreur système</li>
 <li><a href="#threads-utilisateur">Threads</a> - Création et gestion de threads</li>
@@ -4538,22 +5880,22 @@ int main() {
 <li><a href="#semdestroy">Destruction des sémaphores</a> - Libérer un sémaphore</li>
 <li><a href="#setmaxsemforprocess">Redimensionnement de la table</a> - Ajuster la taille maximale</li>
 </ul>
-<h2 id="auteurs-18"><a class="header" href="#auteurs-18">Auteurs</a></h2>
+<h2 id="auteurs-22"><a class="header" href="#auteurs-22">Auteurs</a></h2>
 <p>Antoine, 07 Jan 2026</p>
-<h2 id="dernière-révision-18"><a class="header" href="#dernière-révision-18">Dernière révision</a></h2>
+<h2 id="dernière-révision-22"><a class="header" href="#dernière-révision-22">Dernière révision</a></h2>
 <p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="seminit"><a class="header" href="#seminit">SemInit</a></h1>
 <p><code>SemInit</code> - Crée et initialise un nouveau sémaphore</p>
-<h2 id="synopsis-14"><a class="header" href="#synopsis-14">SYNOPSIS</a></h2>
+<h2 id="synopsis-17"><a class="header" href="#synopsis-17">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int SemInit(int value);
 </code></pre>
-<h2 id="description-14"><a class="header" href="#description-14">DESCRIPTION</a></h2>
+<h2 id="description-17"><a class="header" href="#description-17">DESCRIPTION</a></h2>
 <p><code>SemInit</code> crée un nouveau sémaphore avec une valeur initiale spécifiée et retourne un descripteur permettant de l’identifier. Le sémaphore peut ensuite être utilisé pour la synchronisation entre threads du même processus.</p>
 <p>Numéro d’appel système : <code>29</code></p>
-<h3 id="comportement-nominal-13"><a class="header" href="#comportement-nominal-13">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-16"><a class="header" href="#comportement-nominal-16">Comportement nominal</a></h3>
 <ul>
 <li>Alloue un nouveau descripteur dans la table de sémaphores du processus</li>
 <li>Initialise le compteur interne du sémaphore à <code>value</code></li>
@@ -4569,7 +5911,7 @@ int SemInit(int value);
 <li><strong>value &lt; 0</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
 <li><strong>Table pleine et expansion impossible</strong> : Retourne -1, <code>errno = E_FTABLE</code> (maximum 512 sémaphores atteint)</li>
 </ul>
-<h2 id="paramètres-14"><a class="header" href="#paramètres-14">PARAMÈTRES</a></h2>
+<h2 id="paramètres-17"><a class="header" href="#paramètres-17">PARAMÈTRES</a></h2>
 <h3 id="value"><a class="header" href="#value"><code>value</code></a></h3>
 <p>Valeur initiale du compteur du sémaphore.</p>
 <p><strong>Type</strong> : <code>int</code>
@@ -4580,11 +5922,11 @@ int SemInit(int value);
 <li>Doit être ≥ 0</li>
 <li>Représente le nombre de threads pouvant exécuter <code>SemWait()</code> simultanément sans bloquer</li>
 </ul>
-<h2 id="valeur-de-retour-14"><a class="header" href="#valeur-de-retour-14">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-17"><a class="header" href="#valeur-de-retour-17">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <p><strong>En cas de succès</strong> : Handle du sémaphore (0 à <code>maxSemaphores - 1</code>)</p>
 <p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="codes-derreur-13"><a class="header" href="#codes-derreur-13">CODES D’ERREUR</a></h2>
+<h2 id="codes-derreur-16"><a class="header" href="#codes-derreur-16">CODES D’ERREUR</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4596,8 +5938,8 @@ int SemInit(int value);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-14"><a class="header" href="#implémentation-14">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-14"><a class="header" href="#localisation-du-code-14">Localisation du code</a></h3>
+<h2 id="implémentation-17"><a class="header" href="#implémentation-17">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-17"><a class="header" href="#localisation-du-code-17">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SemInit()</code></li>
@@ -4626,7 +5968,7 @@ int SemInit(int value);
 <li>Enregistrement dans la table</li>
 <li>Marquage du slot comme utilisé</li>
 </ol>
-<h3 id="thread-safety-15"><a class="header" href="#thread-safety-15">Thread-safety</a></h3>
+<h3 id="thread-safety-19"><a class="header" href="#thread-safety-19">Thread-safety</a></h3>
 <p><strong>Garanties</strong> :</p>
 <ul>
 <li>Plusieurs threads peuvent appeler <code>SemInit</code> simultanément</li>
@@ -4643,7 +5985,7 @@ int SemInit(int value);
 </ul>
 <h3 id="pourquoi-lauto-expansion-"><a class="header" href="#pourquoi-lauto-expansion-">Pourquoi l’auto-expansion ?</a></h3>
 <p><em>TODO</em></p>
-<h2 id="exemples-14"><a class="header" href="#exemples-14">EXEMPLES</a></h2>
+<h2 id="exemples-17"><a class="header" href="#exemples-17">EXEMPLES</a></h2>
 <h3 id="exemple-1--créer-un-mutex"><a class="header" href="#exemple-1--créer-un-mutex">Exemple 1 : Créer un mutex</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -4810,7 +6152,7 @@ int main() {
 <li><strong>v2.0</strong> : Modification avec table de descripteurs (taille fixe 16)</li>
 <li><strong>v2.1</strong> : Auto-expansion de la table (taille initiale 16, max 512)</li>
 </ul>
-<h2 id="voir-aussi-19"><a class="header" href="#voir-aussi-19">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-23"><a class="header" href="#voir-aussi-23">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#semwait">SemWait</a> - Opération P (wait) sur un sémaphore</li>
 <li><a href="#sempost">SemPost</a> - Opération V (signal) sur un sémaphore</li>
@@ -4818,23 +6160,23 @@ int main() {
 <li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a> - Redimensionnement manuel de la table</li>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
-<h2 id="auteurs-19"><a class="header" href="#auteurs-19">AUTEURS</a></h2>
+<h2 id="auteurs-23"><a class="header" href="#auteurs-23">AUTEURS</a></h2>
 <p>Antoine, 25 Dec 2025
 Tommy, 5 Jan 2026</p>
-<h2 id="dernière-révision-19"><a class="header" href="#dernière-révision-19">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-23"><a class="header" href="#dernière-révision-23">DERNIÈRE RÉVISION</a></h2>
 <p>5 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="semwait"><a class="header" href="#semwait">SemWait</a></h1>
 <p><code>SemWait</code> - Opération Wait (P/acquire) sur un sémaphore</p>
-<h2 id="synopsis-15"><a class="header" href="#synopsis-15">SYNOPSIS</a></h2>
+<h2 id="synopsis-18"><a class="header" href="#synopsis-18">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int SemWait(int sem_id);
 </code></pre>
-<h2 id="description-15"><a class="header" href="#description-15">DESCRIPTION</a></h2>
+<h2 id="description-18"><a class="header" href="#description-18">DESCRIPTION</a></h2>
 <p><code>SemWait</code> effectue l’opération Wait (Proberen) sur le sémaphore identifié par <code>sem_id</code>. Cette opération décrémente le compteur du sémaphore et bloque le thread appelant si le compteur devient négatif.</p>
 <p>Numéro d’appel système : <code>30</code></p>
-<h3 id="comportement-nominal-14"><a class="header" href="#comportement-nominal-14">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-17"><a class="header" href="#comportement-nominal-17">Comportement nominal</a></h3>
 <ul>
 <li>Vérifie la validité du descripteur <code>sem_id</code></li>
 <li>Si compteur &gt; 0 : décrémente et retourne immédiatement</li>
@@ -4848,7 +6190,7 @@ int SemWait(int sem_id);
 <li><strong>Blocage indéfini</strong> : Si aucun <code>SemPost()</code> n’est appelé, le thread reste bloqué (pas de timeout)</li>
 <li><strong>Interruptions</strong> : Le blocage n’est pas interruptible</li>
 </ul>
-<h2 id="paramètres-15"><a class="header" href="#paramètres-15">PARAMÈTRES</a></h2>
+<h2 id="paramètres-18"><a class="header" href="#paramètres-18">PARAMÈTRES</a></h2>
 <h3 id="sem_id"><a class="header" href="#sem_id"><code>sem_id</code></a></h3>
 <p>Descripteur du sémaphore sur lequel effectuer l’opération P.</p>
 <p><strong>Type</strong> : <code>int</code>
@@ -4860,11 +6202,11 @@ int SemWait(int sem_id);
 <li>Doit être dans l’intervalle [0, maxSemaphores-1] (max 511)</li>
 <li>Le sémaphore ne doit pas avoir été détruit</li>
 </ul>
-<h2 id="valeur-de-retour-15"><a class="header" href="#valeur-de-retour-15">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-18"><a class="header" href="#valeur-de-retour-18">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <p><strong>En cas de succès</strong> : <code>0</code></p>
 <p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="codes-derreur-14"><a class="header" href="#codes-derreur-14">CODES D’ERREUR</a></h2>
+<h2 id="codes-derreur-17"><a class="header" href="#codes-derreur-17">CODES D’ERREUR</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -4875,8 +6217,8 @@ int SemWait(int sem_id);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-15"><a class="header" href="#implémentation-15">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-15"><a class="header" href="#localisation-du-code-15">Localisation du code</a></h3>
+<h2 id="implémentation-18"><a class="header" href="#implémentation-18">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-18"><a class="header" href="#localisation-du-code-18">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SemWait()</code></li>
@@ -4887,7 +6229,7 @@ int SemWait(int sem_id);
 </ul>
 </li>
 </ul>
-<h3 id="thread-safety-16"><a class="header" href="#thread-safety-16">Thread-safety</a></h3>
+<h3 id="thread-safety-20"><a class="header" href="#thread-safety-20">Thread-safety</a></h3>
 <p><strong>Sémaphore interne</strong> : <code>Semaphore::P()</code> utilise son propre lock interne :</p>
 <ul>
 <li>Lock sémaphore acquis</li>
@@ -4897,7 +6239,7 @@ int SemWait(int sem_id);
 </ul>
 <h2 id="décisions-de-conception-7"><a class="header" href="#décisions-de-conception-7">DÉCISIONS DE CONCEPTION</a></h2>
 <p><em>TODO</em></p>
-<h2 id="exemples-15"><a class="header" href="#exemples-15">EXEMPLES</a></h2>
+<h2 id="exemples-18"><a class="header" href="#exemples-18">EXEMPLES</a></h2>
 <h3 id="exemple-1--mutex-basique"><a class="header" href="#exemple-1--mutex-basique">Exemple 1 : Mutex basique</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -4985,7 +6327,7 @@ B: Phase 1
 A: Phase 2   (ou B: Phase 2)
 B: Phase 2   (ou A: Phase 2)
 </code></pre>
-<h3 id="exemple-3--gestion-derreur-2"><a class="header" href="#exemple-3--gestion-derreur-2">Exemple 3 : Gestion d’erreur</a></h3>
+<h3 id="exemple-3--gestion-derreur-3"><a class="header" href="#exemple-3--gestion-derreur-3">Exemple 3 : Gestion d’erreur</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
 int main() {
@@ -5060,7 +6402,7 @@ Erreur: handle invalide
 <li><strong>v1.0</strong> : Implémentation initiale avec adresses</li>
 <li><strong>v2.0</strong> : Modification avec table de descripteurs</li>
 </ul>
-<h2 id="voir-aussi-20"><a class="header" href="#voir-aussi-20">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-24"><a class="header" href="#voir-aussi-24">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#seminit">SemInit</a> - Création d’un sémaphore</li>
 <li><a href="#sempost">SemPost</a> - Opération V (signal) sur un sémaphore</li>
@@ -5068,23 +6410,23 @@ Erreur: handle invalide
 <li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a> - Redimensionnement de la table</li>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
-<h2 id="auteurs-20"><a class="header" href="#auteurs-20">AUTEURS</a></h2>
+<h2 id="auteurs-24"><a class="header" href="#auteurs-24">AUTEURS</a></h2>
 <p>Antoine, 07 Jan 2026
 Tommy, 05 Jan 2026</p>
-<h2 id="dernière-révision-20"><a class="header" href="#dernière-révision-20">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-24"><a class="header" href="#dernière-révision-24">DERNIÈRE RÉVISION</a></h2>
 <p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="sempost"><a class="header" href="#sempost">SemPost</a></h1>
 <p><code>SemPost</code> - Opération Post (V/signal/release) sur un sémaphore</p>
-<h2 id="synopsis-16"><a class="header" href="#synopsis-16">SYNOPSIS</a></h2>
+<h2 id="synopsis-19"><a class="header" href="#synopsis-19">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int SemPost(int sem_id);
 </code></pre>
-<h2 id="description-16"><a class="header" href="#description-16">DESCRIPTION</a></h2>
+<h2 id="description-19"><a class="header" href="#description-19">DESCRIPTION</a></h2>
 <p><code>SemPost</code> effectue l’opération Post (Verhogen) sur le sémaphore identifié par <code>sem_id</code>. Cette opération incrémente le compteur du sémaphore et réveille un thread bloqué en attente sur <code>SemWait()</code> si la queue n’est pas vide.</p>
 <p>Numéro d’appel système : <code>31</code></p>
-<h3 id="comportement-nominal-15"><a class="header" href="#comportement-nominal-15">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-18"><a class="header" href="#comportement-nominal-18">Comportement nominal</a></h3>
 <ul>
 <li>Vérifie la validité du handle <code>sem_id</code></li>
 <li>Incrémente le compteur du sémaphore de manière atomique</li>
@@ -5099,7 +6441,7 @@ int SemPost(int sem_id);
 <li><strong>Queue vide</strong> : Compteur simplement incrémenté, pas de réveil</li>
 <li><strong>Overflow</strong> : Compteur peut croître indéfiniment (pas de limite supérieure)</li>
 </ul>
-<h2 id="paramètres-16"><a class="header" href="#paramètres-16">PARAMÈTRES</a></h2>
+<h2 id="paramètres-19"><a class="header" href="#paramètres-19">PARAMÈTRES</a></h2>
 <h3 id="sem_id-1"><a class="header" href="#sem_id-1"><code>sem_id</code></a></h3>
 <p>Descripteur du sémaphore sur lequel effectuer l’opération Post.</p>
 <p><strong>Type</strong> : <code>int</code>
@@ -5111,11 +6453,11 @@ int SemPost(int sem_id);
 <li>Doit être dans l’intervalle [0, maxSemaphores-1] (max 511)</li>
 <li>Le sémaphore ne doit pas avoir été détruit</li>
 </ul>
-<h2 id="valeur-de-retour-16"><a class="header" href="#valeur-de-retour-16">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-19"><a class="header" href="#valeur-de-retour-19">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <p><strong>En cas de succès</strong> : <code>0</code></p>
 <p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="codes-derreur-15"><a class="header" href="#codes-derreur-15">CODES D’ERREUR</a></h2>
+<h2 id="codes-derreur-18"><a class="header" href="#codes-derreur-18">CODES D’ERREUR</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -5126,8 +6468,8 @@ int SemPost(int sem_id);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-16"><a class="header" href="#implémentation-16">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-16"><a class="header" href="#localisation-du-code-16">Localisation du code</a></h3>
+<h2 id="implémentation-19"><a class="header" href="#implémentation-19">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-19"><a class="header" href="#localisation-du-code-19">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SemPost()</code></li>
@@ -5138,13 +6480,13 @@ int SemPost(int sem_id);
 </ul>
 </li>
 </ul>
-<h3 id="thread-safety-17"><a class="header" href="#thread-safety-17">Thread-safety</a></h3>
+<h3 id="thread-safety-21"><a class="header" href="#thread-safety-21">Thread-safety</a></h3>
 <ul>
 <li>L’opération <code>SemPost()</code> est thread-safe</li>
 </ul>
 <h2 id="décisions-de-conception-8"><a class="header" href="#décisions-de-conception-8">DÉCISIONS DE CONCEPTION</a></h2>
 <p><em>TODO</em></p>
-<h2 id="exemples-16"><a class="header" href="#exemples-16">EXEMPLES</a></h2>
+<h2 id="exemples-19"><a class="header" href="#exemples-19">EXEMPLES</a></h2>
 <h3 id="exemple-1--libération-de-mutex"><a class="header" href="#exemple-1--libération-de-mutex">Exemple 1 : Libération de mutex</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -5266,7 +6608,7 @@ Thread 2: phase 2
 Thread 3: phase 2
 Thread 4: phase 2
 </code></pre>
-<h3 id="exemple-4--gestion-derreur-2"><a class="header" href="#exemple-4--gestion-derreur-2">Exemple 4 : Gestion d’erreur</a></h3>
+<h3 id="exemple-4--gestion-derreur-3"><a class="header" href="#exemple-4--gestion-derreur-3">Exemple 4 : Gestion d’erreur</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
 int main() {
@@ -5343,7 +6685,7 @@ Erreur: handle invalide
 <li><strong>v1.0</strong> : Implémentation initiale avec adresses</li>
 <li><strong>v2.0</strong> : Modification avec table de descripteurs</li>
 </ul>
-<h2 id="voir-aussi-21"><a class="header" href="#voir-aussi-21">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-25"><a class="header" href="#voir-aussi-25">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#seminit">SemInit</a> - Création d’un sémaphore</li>
 <li><a href="#semwait">SemWait</a> - Opération P (wait) sur un sémaphore</li>
@@ -5351,23 +6693,23 @@ Erreur: handle invalide
 <li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a> - Redimensionnement de la table</li>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
-<h2 id="auteurs-21"><a class="header" href="#auteurs-21">AUTEURS</a></h2>
+<h2 id="auteurs-25"><a class="header" href="#auteurs-25">AUTEURS</a></h2>
 <p>Antoine, 07 Jan 2026
 Tommy, 05 Jan 2026</p>
-<h2 id="dernière-révision-21"><a class="header" href="#dernière-révision-21">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-25"><a class="header" href="#dernière-révision-25">DERNIÈRE RÉVISION</a></h2>
 <p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="semdestroy"><a class="header" href="#semdestroy">SemDestroy</a></h1>
 <p><code>SemDestroy</code> - Détruit un sémaphore et libère ses ressources</p>
-<h2 id="synopsis-17"><a class="header" href="#synopsis-17">SYNOPSIS</a></h2>
+<h2 id="synopsis-20"><a class="header" href="#synopsis-20">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int SemDestroy(int sem_id);
 </code></pre>
-<h2 id="description-17"><a class="header" href="#description-17">DESCRIPTION</a></h2>
+<h2 id="description-20"><a class="header" href="#description-20">DESCRIPTION</a></h2>
 <p><code>SemDestroy</code> détruit le sémaphore identifié par <code>sem_id</code>, libère ses ressources kernel et invalide le descripteur.</p>
 <p>Numéro d’appel système : <code>32</code></p>
-<h3 id="comportement-nominal-16"><a class="header" href="#comportement-nominal-16">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-19"><a class="header" href="#comportement-nominal-19">Comportement nominal</a></h3>
 <ul>
 <li>Vérifie la validité du handle <code>sem_id</code></li>
 <li>Marque le descripteur comme invalide</li>
@@ -5382,7 +6724,7 @@ int SemDestroy(int sem_id);
 <li><strong>Threads bloqués</strong> : <strong>UNDEFINED BEHAVIOR</strong> - Ne pas détruire un sémaphore avec threads en attente</li>
 <li><strong>Nettoyage automatique</strong> : Si non détruit explicitement, libération automatique à la terminaison du processus</li>
 </ul>
-<h2 id="paramètres-17"><a class="header" href="#paramètres-17">PARAMÈTRES</a></h2>
+<h2 id="paramètres-20"><a class="header" href="#paramètres-20">PARAMÈTRES</a></h2>
 <h3 id="sem_id-2"><a class="header" href="#sem_id-2"><code>sem_id</code></a></h3>
 <p>Descripteur du sémaphore à détruire.</p>
 <p><strong>Type</strong> : <code>int</code>
@@ -5395,18 +6737,18 @@ int SemDestroy(int sem_id);
 <li>Le sémaphore ne doit pas déjà être détruit</li>
 <li><strong>IMPORTANT</strong> : Aucun thread ne doit être bloqué sur ce sémaphore</li>
 </ul>
-<h2 id="valeur-de-retour-17"><a class="header" href="#valeur-de-retour-17">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-20"><a class="header" href="#valeur-de-retour-20">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <p><strong>En cas de succès</strong> : <code>0</code></p>
 <p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="implémentation-17"><a class="header" href="#implémentation-17">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-17"><a class="header" href="#localisation-du-code-17">Localisation du code</a></h3>
+<h2 id="implémentation-20"><a class="header" href="#implémentation-20">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-20"><a class="header" href="#localisation-du-code-20">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SemDestroy()</code></li>
 <li><strong>Implémentation</strong> : <code>code/userprog/addrspace.cc:AddrSpace::SemaphoreDestroy()</code></li>
 </ul>
-<h3 id="thread-safety-18"><a class="header" href="#thread-safety-18">Thread-safety</a></h3>
+<h3 id="thread-safety-22"><a class="header" href="#thread-safety-22">Thread-safety</a></h3>
 <p>Destruction atomique : pas de race condition entre threads</p>
 <div class="callout callout-limitation">
     
@@ -5420,7 +6762,7 @@ int SemDestroy(int sem_id);
 </div>
 
 <h2 id="décisions-de-conception-9"><a class="header" href="#décisions-de-conception-9">DÉCISIONS DE CONCEPTION</a></h2>
-<h2 id="exemples-17"><a class="header" href="#exemples-17">EXEMPLES</a></h2>
+<h2 id="exemples-20"><a class="header" href="#exemples-20">EXEMPLES</a></h2>
 <h3 id="exemple-1--utilisation-normale"><a class="header" href="#exemple-1--utilisation-normale">Exemple 1 : Utilisation normale</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -5544,7 +6886,7 @@ SemDestroy(sem);  // Maintenant sûr
 <li><strong>v1.0</strong> : Implémentation initiale avec adresses</li>
 <li><strong>v2.0</strong> : Modification avec table de descripteurs</li>
 </ul>
-<h2 id="voir-aussi-22"><a class="header" href="#voir-aussi-22">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-26"><a class="header" href="#voir-aussi-26">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#seminit">SemInit</a> - Création d’un sémaphore</li>
 <li><a href="#semwait">SemWait</a> - Opération P (wait) sur un sémaphore</li>
@@ -5552,23 +6894,23 @@ SemDestroy(sem);  // Maintenant sûr
 <li><a href="#setmaxsemforprocess">SetMaxSemForProcess</a> - Redimensionnement de la table</li>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
-<h2 id="auteurs-22"><a class="header" href="#auteurs-22">AUTEURS</a></h2>
+<h2 id="auteurs-26"><a class="header" href="#auteurs-26">AUTEURS</a></h2>
 <p>Antoine, 07 Jan 2026
 Tommy, 05 Jan 2026</p>
-<h2 id="dernière-révision-22"><a class="header" href="#dernière-révision-22">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-26"><a class="header" href="#dernière-révision-26">DERNIÈRE RÉVISION</a></h2>
 <p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="setmaxsemforprocess"><a class="header" href="#setmaxsemforprocess">SetMaxSemForProcess</a></h1>
 <p><code>SetMaxSemForProcess</code> - Définit la taille maximale de la table de sémaphores du processus</p>
-<h2 id="synopsis-18"><a class="header" href="#synopsis-18">SYNOPSIS</a></h2>
+<h2 id="synopsis-21"><a class="header" href="#synopsis-21">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int SetMaxSemForProcess(unsigned int maxSemaphores);
 </code></pre>
-<h2 id="description-18"><a class="header" href="#description-18">DESCRIPTION</a></h2>
+<h2 id="description-21"><a class="header" href="#description-21">DESCRIPTION</a></h2>
 <p><code>SetMaxSemForProcess</code> permet de redimensionner explicitement la table de sémaphores du processus courant. Cette fonction est utile pour pré-allouer une table de grande taille si le nombre de sémaphores nécessaires est connu à l’avance, évitant ainsi les réallocations dynamiques.</p>
 <p>Numéro d’appel système : <code>33</code></p>
-<h3 id="comportement-nominal-17"><a class="header" href="#comportement-nominal-17">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-20"><a class="header" href="#comportement-nominal-20">Comportement nominal</a></h3>
 <ul>
 <li>Réalloue la table de sémaphores à la taille spécifiée</li>
 <li>Préserve les sémaphores existants en cas d’agrandissement (aucune garantie en cas de réduction)</li>
@@ -5581,7 +6923,7 @@ int SetMaxSemForProcess(unsigned int maxSemaphores);
 <li><strong>maxSemaphores &gt; MAX_SEMAPHORES_PER_PROCESS (512)</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
 <li><strong>Réduction de taille</strong> : Les sémaphores au-delà de la nouvelle limite sont perdus (non recommandé)</li>
 </ul>
-<h2 id="paramètres-18"><a class="header" href="#paramètres-18">PARAMÈTRES</a></h2>
+<h2 id="paramètres-21"><a class="header" href="#paramètres-21">PARAMÈTRES</a></h2>
 <h3 id="maxsemaphores"><a class="header" href="#maxsemaphores"><code>maxSemaphores</code></a></h3>
 <p>Nouvelle taille de la table de sémaphores.</p>
 <p><strong>Type</strong> : <code>unsigned int</code>
@@ -5592,24 +6934,24 @@ int SetMaxSemForProcess(unsigned int maxSemaphores);
 <li>Doit être &gt; 0</li>
 <li>Doit être ≤ 512 (<code>MAX_SEMAPHORES_PER_PROCESS</code>)</li>
 </ul>
-<h2 id="valeur-de-retour-18"><a class="header" href="#valeur-de-retour-18">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-21"><a class="header" href="#valeur-de-retour-21">VALEUR DE RETOUR</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <p><strong>En cas de succès</strong> : <code>0</code></p>
 <p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="implémentation-18"><a class="header" href="#implémentation-18">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code-18"><a class="header" href="#localisation-du-code-18">Localisation du code</a></h3>
+<h2 id="implémentation-21"><a class="header" href="#implémentation-21">IMPLÉMENTATION</a></h2>
+<h3 id="localisation-du-code-21"><a class="header" href="#localisation-du-code-21">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userSem.cc:handle_SC_SetMaxSemForProcess()</code></li>
 <li><strong>Implémentation</strong> : <code>code/userprog/addrspace.cc:AddrSpace::AllocateSemaphoreTable()</code></li>
 </ul>
-<h3 id="thread-safety-19"><a class="header" href="#thread-safety-19">Thread-safety</a></h3>
+<h3 id="thread-safety-23"><a class="header" href="#thread-safety-23">Thread-safety</a></h3>
 <p><em>TODO</em></p>
 <h2 id="décisions-de-conception-10"><a class="header" href="#décisions-de-conception-10">DÉCISIONS DE CONCEPTION</a></h2>
 <h3 id="pourquoi-permettre-le-redimensionnement-manuel-"><a class="header" href="#pourquoi-permettre-le-redimensionnement-manuel-">Pourquoi permettre le redimensionnement manuel ?</a></h3>
 <p><strong>Optimisation</strong> : Évite les réallocations multiples si le nombre de sémaphores est connu à l’avance.</p>
 <p><strong>Contrôle mémoire</strong> : Permet de limiter l’utilisation mémoire en spécifiant une taille exacte.</p>
-<h2 id="exemples-18"><a class="header" href="#exemples-18">EXEMPLES</a></h2>
+<h2 id="exemples-21"><a class="header" href="#exemples-21">EXEMPLES</a></h2>
 <h3 id="exemple-1--pré-allocation-pour-application-intensive"><a class="header" href="#exemple-1--pré-allocation-pour-application-intensive">Exemple 1 : Pré-allocation pour application intensive</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -5728,16 +7070,16 @@ int main() {
 <ul>
 <li><strong>v1.0</strong> : Implémentation initiale</li>
 </ul>
-<h2 id="voir-aussi-23"><a class="header" href="#voir-aussi-23">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-27"><a class="header" href="#voir-aussi-27">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#seminit">SemInit</a> - Création d’un sémaphore (déclenche auto-expansion si nécessaire)</li>
 <li><a href="#semdestroy">SemDestroy</a> - Destruction d’un sémaphore</li>
 <li><a href="#vue-densemble---synchronisation-par-sémaphores">Vue d’ensemble</a> - Guide complet des sémaphores</li>
 </ul>
-<h2 id="auteurs-23"><a class="header" href="#auteurs-23">AUTEURS</a></h2>
+<h2 id="auteurs-27"><a class="header" href="#auteurs-27">AUTEURS</a></h2>
 <p>Antoine, 07 Jan 2026
 Tommy, 05 Jan 2026</p>
-<h2 id="dernière-révision-23"><a class="header" href="#dernière-révision-23">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-27"><a class="header" href="#dernière-révision-27">DERNIÈRE RÉVISION</a></h2>
 <p>07 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="sémaphores-3"><a class="header" href="#sémaphores-3">Sémaphores</a></h1>
@@ -5756,15 +7098,15 @@ Tommy, 05 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="forkexec"><a class="header" href="#forkexec">ForkExec</a></h1>
 <p><code>ForkExec</code> - Crée un nouveau process utilisateur</p>
-<h2 id="synopsis-19"><a class="header" href="#synopsis-19">Synopsis</a></h2>
+<h2 id="synopsis-22"><a class="header" href="#synopsis-22">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int ForkExec(char* file_name);
 </code></pre>
-<h2 id="description-19"><a class="header" href="#description-19">Description</a></h2>
+<h2 id="description-22"><a class="header" href="#description-22">Description</a></h2>
 <p><code>ForkExec</code> crée un nouveau process qui va éxècuter l’éxècutable dont le nom est donné en paramètre</p>
 <p><strong>Numéro d’appel système</strong> : <code>SC_ForkExec</code> (34)</p>
-<h3 id="comportement-nominal-18"><a class="header" href="#comportement-nominal-18">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-21"><a class="header" href="#comportement-nominal-21">Comportement nominal</a></h3>
 <ol>
 <li>Allocation d’un PID unique via <code>processs_bitmap</code></li>
 <li>Création d’un objet <code>Process</code> noyau</li>
@@ -5772,11 +7114,11 @@ int ForkExec(char* file_name);
 <li>Création du thread principal du <code>Process</code> avec l’éxècutable donné comme paramétre</li>
 <li>Retour immédiat (le nouveau process s’exécute de manière asynchrone)</li>
 </ol>
-<h2 id="paramètres-19"><a class="header" href="#paramètres-19">Paramètres</a></h2>
+<h2 id="paramètres-22"><a class="header" href="#paramètres-22">Paramètres</a></h2>
 <h3 id="file_name"><a class="header" href="#file_name"><code>file_name</code></a></h3>
 <p>Argument passé à <code>start_routine</code>.</p>
 <p><strong>Type</strong> : <code>char *</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> : Le fichier doit exister et être éxècutable.</p>
-<h2 id="valeur-de-retour-19"><a class="header" href="#valeur-de-retour-19">Valeur de retour</a></h2>
+<h2 id="valeur-de-retour-22"><a class="header" href="#valeur-de-retour-22">Valeur de retour</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <div class="table-wrapper">
 <table>
@@ -5789,7 +7131,7 @@ int ForkExec(char* file_name);
 </tbody>
 </table>
 </div>
-<h2 id="codes-derreur-16"><a class="header" href="#codes-derreur-16">Codes d’erreur</a></h2>
+<h2 id="codes-derreur-19"><a class="header" href="#codes-derreur-19">Codes d’erreur</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -5801,15 +7143,15 @@ int ForkExec(char* file_name);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-19"><a class="header" href="#implémentation-19">Implémentation</a></h2>
-<h3 id="localisation-du-code-19"><a class="header" href="#localisation-du-code-19">Localisation du code</a></h3>
+<h2 id="implémentation-22"><a class="header" href="#implémentation-22">Implémentation</a></h2>
+<h3 id="localisation-du-code-22"><a class="header" href="#localisation-du-code-22">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userprocess.cc:handle_SC_ForkExec()</code></li>
 <li><strong>Implémentation</strong> : <code>code/userprog/userprocess.cc:handle_SC_ForkExec()</code></li>
 <li><strong>Démarrage process</strong> : <code>code/userprog/userprocess.cc:StartProcess()</code></li>
 </ul>
-<h3 id="flux-dexécution-7"><a class="header" href="#flux-dexécution-7">Flux d’exécution</a></h3>
+<h3 id="flux-dexécution-10"><a class="header" href="#flux-dexécution-10">Flux d’exécution</a></h3>
 <pre><code>ForkExec(&amp;tid, attr, func, arg)
         │
         ▼
@@ -5837,7 +7179,7 @@ int ForkExec(char* file_name);
         ▼
     [exécution de main()]
 </code></pre>
-<h2 id="exemples-19"><a class="header" href="#exemples-19">Exemples</a></h2>
+<h2 id="exemples-22"><a class="header" href="#exemples-22">Exemples</a></h2>
 <h3 id="exemple-1--création-simple-de-deux-processus"><a class="header" href="#exemple-1--création-simple-de-deux-processus">Exemple 1 : Création simple de deux processus</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -5848,7 +7190,7 @@ int main(){
     return 0;
 }
 </code></pre>
-<h2 id="limitations-1"><a class="header" href="#limitations-1">Limitations</a></h2>
+<h2 id="limitations-2"><a class="header" href="#limitations-2">Limitations</a></h2>
 <div class="callout callout-limitation">
     
 <div class="callout-title">Limite de processs</div>
@@ -5860,32 +7202,32 @@ int main(){
 
 </div>
 
-<h2 id="auteurs-24"><a class="header" href="#auteurs-24">Auteurs</a></h2>
+<h2 id="auteurs-28"><a class="header" href="#auteurs-28">Auteurs</a></h2>
 <p>Tommy, 7 Jan 2026</p>
-<h2 id="dernière-révision-24"><a class="header" href="#dernière-révision-24">Dernière révision</a></h2>
+<h2 id="dernière-révision-28"><a class="header" href="#dernière-révision-28">Dernière révision</a></h2>
 <p>8 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="forkjoin"><a class="header" href="#forkjoin">ForkJoin</a></h1>
 <p><code>ForkJoin</code> - Attend la fin d’un autre process</p>
-<h2 id="synopsis-20"><a class="header" href="#synopsis-20">Synopsis</a></h2>
+<h2 id="synopsis-23"><a class="header" href="#synopsis-23">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
 int ForkJoin(int PID);
 </code></pre>
-<h2 id="description-20"><a class="header" href="#description-20">Description</a></h2>
+<h2 id="description-23"><a class="header" href="#description-23">Description</a></h2>
 <p><code>ForkJoin</code> Fait attendre au thread du process appelant la terminaison d’un process qu’il a crée.</p>
 <p><strong>Numéro d’appel système</strong> : <code>SC_ForkJoin</code> (35)</p>
-<h3 id="comportement-nominal-19"><a class="header" href="#comportement-nominal-19">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-22"><a class="header" href="#comportement-nominal-22">Comportement nominal</a></h3>
 <ol>
 <li>Vérification du PID donné</li>
 <li>Attente de la fin du processus</li>
 <li>Retour</li>
 </ol>
-<h2 id="paramètres-20"><a class="header" href="#paramètres-20">Paramètres</a></h2>
+<h2 id="paramètres-23"><a class="header" href="#paramètres-23">Paramètres</a></h2>
 <h3 id="pid"><a class="header" href="#pid"><code>PID</code></a></h3>
 <p>The process id for the process we want to wait</p>
 <p><strong>Type</strong> : <code>posix_process_t</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> : Le process doit exister et être un enfant du process appelant</p>
-<h2 id="valeur-de-retour-20"><a class="header" href="#valeur-de-retour-20">Valeur de retour</a></h2>
+<h2 id="valeur-de-retour-23"><a class="header" href="#valeur-de-retour-23">Valeur de retour</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <div class="table-wrapper">
 <table>
@@ -5898,7 +7240,7 @@ int ForkJoin(int PID);
 </tbody>
 </table>
 </div>
-<h2 id="codes-derreur-17"><a class="header" href="#codes-derreur-17">Codes d’erreur</a></h2>
+<h2 id="codes-derreur-20"><a class="header" href="#codes-derreur-20">Codes d’erreur</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -5911,15 +7253,15 @@ int ForkJoin(int PID);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-20"><a class="header" href="#implémentation-20">Implémentation</a></h2>
-<h3 id="localisation-du-code-20"><a class="header" href="#localisation-du-code-20">Localisation du code</a></h3>
+<h2 id="implémentation-23"><a class="header" href="#implémentation-23">Implémentation</a></h2>
+<h3 id="localisation-du-code-23"><a class="header" href="#localisation-du-code-23">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
 <li><strong>Handler noyau</strong> : <code>code/userprog/userprocess.cc:handle_SC_ForkJoin()</code></li>
 <li><strong>Implémentation</strong> : <code>code/userprog/userprocess.cc:handle_SC_ForkJoin()</code></li>
 <li><strong>Attente</strong> : <code>code/userprog/process.cc:WaitForChild(Process* child)</code></li>
 </ul>
-<h3 id="flux-dexécution-8"><a class="header" href="#flux-dexécution-8">Flux d’exécution</a></h3>
+<h3 id="flux-dexécution-11"><a class="header" href="#flux-dexécution-11">Flux d’exécution</a></h3>
 <pre><code>ForkJoin(PID)
         │
         ▼
@@ -5938,7 +7280,7 @@ int ForkJoin(int PID);
         │ └─ Attend le process
         ▼
 </code></pre>
-<h2 id="exemples-20"><a class="header" href="#exemples-20">Exemples</a></h2>
+<h2 id="exemples-23"><a class="header" href="#exemples-23">Exemples</a></h2>
 <h3 id="exemple-1--création-simple-de-deux-processus-1"><a class="header" href="#exemple-1--création-simple-de-deux-processus-1">Exemple 1 : Création simple de deux processus</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -5948,14 +7290,14 @@ int main(){
     return 0;
 }
 </code></pre>
-<h2 id="auteurs-25"><a class="header" href="#auteurs-25">Auteurs</a></h2>
+<h2 id="auteurs-29"><a class="header" href="#auteurs-29">Auteurs</a></h2>
 <p>Tommy, 8 Jan 2026</p>
-<h2 id="dernière-révision-25"><a class="header" href="#dernière-révision-25">Dernière révision</a></h2>
+<h2 id="dernière-révision-29"><a class="header" href="#dernière-révision-29">Dernière révision</a></h2>
 <p>8 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="gestion-des-erreurs-3"><a class="header" href="#gestion-des-erreurs-3">Gestion des erreurs</a></h1>
 <p>Ce document décrit le mécanisme de gestion des erreurs dans NachOS et l’utilisation de la variable globale <code>errno</code>.</p>
-<h2 id="vue-densemble-3"><a class="header" href="#vue-densemble-3">Vue d’ensemble</a></h2>
+<h2 id="vue-densemble-4"><a class="header" href="#vue-densemble-4">Vue d’ensemble</a></h2>
 <p>NachOS utilise une convention de gestion d’erreurs inspirée de POSIX mais simplifiée :</p>
 <ul>
 <li>Les appels système qui peuvent échouer retournent <code>-1</code> en cas d’erreur</li>
@@ -6061,7 +7403,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<h2 id="codes-derreur-18"><a class="header" href="#codes-derreur-18">Codes d’erreur</a></h2>
+<h2 id="codes-derreur-21"><a class="header" href="#codes-derreur-21">Codes d’erreur</a></h2>
 <p>Voir <a href="#liste-des-codes-errno">Liste des codes errno</a> pour la documentation complète de chaque code.</p>
 <h3 id="codes-principaux"><a class="header" href="#codes-principaux">Codes principaux</a></h3>
 <div class="table-wrapper">
@@ -6218,15 +7560,15 @@ int main() {
     return 0;
 }
 </code></pre>
-<h2 id="voir-aussi-24"><a class="header" href="#voir-aussi-24">Voir aussi</a></h2>
+<h2 id="voir-aussi-28"><a class="header" href="#voir-aussi-28">Voir aussi</a></h2>
 <ul>
 <li><a href="#liste-des-codes-errno">Liste des codes errno</a> - Documentation détaillée de chaque code</li>
 <li><a href="#vue-densemble---console-io">Console I/O Overview</a> - Appels système avec gestion errno</li>
 <li><a href="userspace/my_stdlib.html">my_stdlib</a> - Fonctions utilitaires pour errno</li>
 </ul>
-<h2 id="auteurs-26"><a class="header" href="#auteurs-26">Auteurs</a></h2>
+<h2 id="auteurs-30"><a class="header" href="#auteurs-30">Auteurs</a></h2>
 <p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision-26"><a class="header" href="#dernière-révision-26">Dernière révision</a></h2>
+<h2 id="dernière-révision-30"><a class="header" href="#dernière-révision-30">Dernière révision</a></h2>
 <p>20 Dec 2025 par Antoine</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="liste-des-codes-errno"><a class="header" href="#liste-des-codes-errno">Liste des codes errno</a></h1>
@@ -6351,15 +7693,15 @@ if (result != -1) {
 <li>Thread déjà terminé</li>
 <li>TID jamais créé</li>
 </ul>
-<h2 id="voir-aussi-25"><a class="header" href="#voir-aussi-25">Voir aussi</a></h2>
+<h2 id="voir-aussi-29"><a class="header" href="#voir-aussi-29">Voir aussi</a></h2>
 <ul>
 <li><a href="#gestion-des-erreurs-3">Gestion des erreurs</a> - Vue d’ensemble du mécanisme errno</li>
 <li><a href="#vue-densemble---console-io">Console I/O</a> - Appels avec gestion d’erreur</li>
 <li><a href="userspace/my_stdlib.html">my_stdlib</a> - Fonctions print_error()</li>
 </ul>
-<h2 id="auteurs-27"><a class="header" href="#auteurs-27">Auteurs</a></h2>
+<h2 id="auteurs-31"><a class="header" href="#auteurs-31">Auteurs</a></h2>
 <p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision-27"><a class="header" href="#dernière-révision-27">Dernière révision</a></h2>
+<h2 id="dernière-révision-31"><a class="header" href="#dernière-révision-31">Dernière révision</a></h2>
 <p>20 Dec 2025 par Antoine</p>
 
                     </main>
