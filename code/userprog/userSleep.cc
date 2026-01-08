@@ -2,6 +2,7 @@
 #include "userSleep.h"
 #include "exception.h"
 #include "system.h"
+#include "thread.h"
 #include "syscall.h"
 
 

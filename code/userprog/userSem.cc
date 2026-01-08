@@ -3,8 +3,7 @@
 #include "syscall.h"
 #include "system.h"
 #include "syscall.h"
-#include "linked_list.h"
-#include "synch.h"
+#include "thread.h"
 
 void handle_SC_SemInit() {
     int initialValue = machine->ReadRegister(4);

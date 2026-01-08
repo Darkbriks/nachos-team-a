@@ -92,7 +92,7 @@ int posix_thread_attr_getdetachstate(const posix_thread_attr_t *attr, int *detac
 Thread::Thread(const char *threadName, Process *p, posix_thread_t tid) :
                 stackTop(NULL), process(p), TID(tid), joiner(nullptr),
                 join(nullptr), waitTime(0), flags(new BitMap(THREAD_FLAG_SIZE)),
-                retval(nullptr), stack(NULL), status(JUST_CREATED), name(new char[MAX_STRING_SIZE]) {
+                retval(nullptr), stack(NULL), status(JUST_CREATED) {
     snprintf(const_cast<char *>(name), MAX_STRING_SIZE - 1, "%s_%d_%d", threadName, process ? process->getPId() : 0, TID);
     sem = new Semaphore(name, 0);
 
@@ -120,10 +120,8 @@ Thread::Thread(const char *threadName, Process *p, posix_thread_t tid) :
 Thread::~Thread() {
     DEBUG('t', "Deleting thread \"%s\"\n", name);
 
-    delete name;
     delete sem;
     delete flags;
-    ASSERT(this != currentThread);
     if (stack != NULL)
         DeallocBoundedArray((char *)stack, StackSize * sizeof(int));
 }

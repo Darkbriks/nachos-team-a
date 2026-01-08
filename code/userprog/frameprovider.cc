@@ -5,6 +5,10 @@
 
 Semaphore *sem = new Semaphore("Frame_provider", 1);
 
+void FrameProvider::freeAllStatic(){
+    delete sem;
+}
+
 int SequentialAllocationStrategy::SelectFrame(BitMap* bitmap, unsigned int numFrames) {
     sem->P();
     int x = bitmap->Find();

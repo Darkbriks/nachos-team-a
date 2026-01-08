@@ -49,9 +49,8 @@ Argument passé à `start_routine`.
 
 | errno | Constante | Condition |
 |-------|-----------|-----------|
-| 1 | `E_INVAL` | `start_routine` invalide ou écriture mémoire échouée |
-| 2 | `E_FAULT` | Adresse `process` invalide |
-| 7 | `E_NOMEM` | Plus de TID disponibles (limite atteinte) |
+| 1 | `E_NOENT` | `file_name` invalide ou Fichier pas trouvé |
+| 7 | `E_NOMEM` | Plus de PID disponibles (limite atteinte) |
 
 ## Implémentation
 
@@ -124,4 +123,4 @@ Tommy, 7 Jan 2026
 
 ## Dernière révision
 
-7 Jan 2026
+8 Jan 2026

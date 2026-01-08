@@ -52,6 +52,7 @@
 
 #include "system.h"
 #include "utility.h"
+#include "thread.h"
 
 // External functions used by this file
 

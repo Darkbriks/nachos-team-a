@@ -11,7 +11,7 @@ class LinkedList {
             T* value;
             Node* next;
 
-            Node(T* v) { this->value = v; }
+            Node(T* v) { this->value = v; this->next = nullptr; }
 
             static void FreeNode(Node* elem) {
                 if (elem == nullptr) { return; }
