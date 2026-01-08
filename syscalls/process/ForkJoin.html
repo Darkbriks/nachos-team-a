@@ -37,7 +37,7 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-f04ee4d4.js";
+            window.path_to_searchindex_js = "../../searchindex-5b9cf70f.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc-ea31cd0b.js"></script>
@@ -184,7 +184,7 @@
 <h2 id="synopsis"><a class="header" href="#synopsis">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
-int ForkJoin(int PID);
+int ForkJoin(int PID, int *exitcode);
 </code></pre>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <p><code>ForkJoin</code> Fait attendre au thread du process appelant la terminaison d’un process qu’il a crée.</p>
@@ -193,12 +193,16 @@ int ForkJoin(int PID);
 <ol>
 <li>Vérification du PID donné</li>
 <li>Attente de la fin du processus</li>
-<li>Retour</li>
+<li>Retourne la valeur de l’exitcode du processus</li>
 </ol>
 <h2 id="paramètres"><a class="header" href="#paramètres">Paramètres</a></h2>
 <h3 id="pid"><a class="header" href="#pid"><code>PID</code></a></h3>
 <p>The process id for the process we want to wait</p>
 <p><strong>Type</strong> : <code>posix_process_t</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> : Le process doit exister et être un enfant du process appelant</p>
+<h3 id="exitcode"><a class="header" href="#exitcode"><code>exitcode</code></a></h3>
+<p>An adress to put the exitcode of the process</p>
+<p><strong>Type</strong> : <code>int *</code><br><strong>Direction</strong> : OUT
+<strong>Registre</strong> : <code>$5</code><br><strong>Contraintes</strong> : L’adresse doit être valide et initialisée</p>
 <h2 id="valeur-de-retour"><a class="header" href="#valeur-de-retour">Valeur de retour</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <div class="table-wrapper">
@@ -207,7 +211,7 @@ int ForkJoin(int PID);
 <tr><th>Valeur</th><th>Signification</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0</code></td><td>Succès</td></tr>
+<tr><td><code> 0</code></td><td>Succès et le retour est dans l’exitcode</td></tr>
 <tr><td><code>-1</code></td><td>Erreur (consulter <code>errno</code>)</td></tr>
 </tbody>
 </table>
@@ -219,7 +223,7 @@ int ForkJoin(int PID);
 <tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
 </thead>
 <tbody>
-<tr><td>1</td><td><code>E_INVAL</code></td><td><code>PID</code> invalid. Process try to wait himself</td></tr>
+<tr><td>1</td><td><code>E_INVAL</code></td><td><code>PID</code> invalid. Process try to wait himself. Or adress for exitcode is wrong</td></tr>
 <tr><td>9</td><td><code>E_NOSPC</code></td><td><code>PID</code> process is not found</td></tr>
 <tr><td>12</td><td><code>E_NOCPC</code></td><td><code>PID</code> is not a child of the current process</td></tr>
 </tbody>
@@ -239,17 +243,22 @@ int ForkJoin(int PID);
         ▼
     start.S: ForkJoin
         │ charge $4 = PID
+        │ charge $5 = addr_result
         ▼
     syscall SC_ForkJoin
         │
         ▼
     handle_SC_ForkJoin()
         │ ├─ lit $4
+        │ ├─ lit $5
         │ ├─ valide le PID
         │ └─ currentThread-&gt;getProcess()-&gt;WaitForChild(child)
         ▼
-    WaitForChild(child)
-        │ └─ Attend le process
+    WaitForChild(child, addr_result)
+        │ ├─ valide le PID
+        │ ├─ Attend le process 
+        │ ├─ Met l'exitcode dans la mémoire 
+        │ └─ Détruit le process finit
         ▼
 </code></pre>
 <h2 id="exemples"><a class="header" href="#exemples">Exemples</a></h2>
@@ -257,7 +266,8 @@ int ForkJoin(int PID);
 <pre><code class="language-c">#include "syscall.h"
 
 int main(){
-    ForkJoin(ForkJoin("./userpages0"));
+    int result = -1;
+    ForkJoin(ForkExec("./userpages0"), &amp;result);
     PutString("All processes are finished.\n", 27);
     return 0;
 }
