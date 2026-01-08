@@ -38,10 +38,10 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1fbd2d58.js";
+            window.path_to_searchindex_js = "searchindex-27adae00.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-523511c1.js"></script>
+        <script src="toc-694da981.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -233,6 +233,7 @@
 <ul>
 <li><a href="#vue-densemble---process">Process Overview</a></li>
 <li><a href="#forkexec">ForkExec</a></li>
+<li><a href="#forkjoin">ForkJoin</a></li>
 </ul>
 </li>
 </ul>
@@ -292,6 +293,7 @@
 <ul>
 <li><a href="#vue-densemble---process">Process Overview</a></li>
 <li><a href="#forkexec">ForkExec</a></li>
+<li><a href="#forkjoin">ForkJoin</a></li>
 </ul>
 </li>
 </ul>
@@ -435,6 +437,7 @@
 <ul>
 <li><a href="#vue-densemble---process">Vue d’ensemble</a></li>
 <li><a href="#forkexec">ForkExec</a></li>
+<li><a href="#forkjoin">ForkExec</a></li>
 </ul>
 </li>
 </ul>
@@ -487,6 +490,7 @@
 #define SC_SemDestroy 32
 #define SC_SetMaxSemForProcess 33
 #define SC_ForkExec 34
+#define SC_ForkJoin 35
 </code></pre>
 <h2 id="limitations-connues"><a class="header" href="#limitations-connues">Limitations connues</a></h2>
 <h3 id="thread-safety-partielle"><a class="header" href="#thread-safety-partielle">Thread-safety partielle</a></h3>
@@ -546,9 +550,9 @@ Programme utilisateur
 </ul>
 <h2 id="auteurs-1"><a class="header" href="#auteurs-1">Auteurs</a></h2>
 <p>Antoine, 07 Jan 2026
-Tommy, 05 Jan 2026</p>
+Tommy, 08 Jan 2026</p>
 <h2 id="dernière-révision-1"><a class="header" href="#dernière-révision-1">Dernière révision</a></h2>
-<p>07 Jan 2026</p>
+<p>08 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="system-control"><a class="header" href="#system-control">System Control</a></h1>
 <ul>
@@ -5744,6 +5748,7 @@ Tommy, 05 Jan 2026</p>
 <h1 id="appels-système-sur-les-process"><a class="header" href="#appels-système-sur-les-process">Appels système sur les Process</a></h1>
 <ul>
 <li><a href="#forkexec">ForkExec</a></li>
+<li><a href="#forkjoin">ForkJoin</a></li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="vue-densemble---process"><a class="header" href="#vue-densemble---process">Vue d’ensemble - Process</a></h1>
@@ -5792,9 +5797,8 @@ int ForkExec(char* file_name);
 <tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
 </thead>
 <tbody>
-<tr><td>1</td><td><code>E_INVAL</code></td><td><code>start_routine</code> invalide ou écriture mémoire échouée</td></tr>
-<tr><td>2</td><td><code>E_FAULT</code></td><td>Adresse <code>process</code> invalide</td></tr>
-<tr><td>7</td><td><code>E_NOMEM</code></td><td>Plus de TID disponibles (limite atteinte)</td></tr>
+<tr><td>1</td><td><code>E_NOENT</code></td><td><code>file_name</code> invalide ou Fichier pas trouvé</td></tr>
+<tr><td>7</td><td><code>E_NOMEM</code></td><td>Plus de PID disponibles (limite atteinte)</td></tr>
 </tbody>
 </table>
 </div>
@@ -5860,7 +5864,95 @@ int main(){
 <h2 id="auteurs-24"><a class="header" href="#auteurs-24">Auteurs</a></h2>
 <p>Tommy, 7 Jan 2026</p>
 <h2 id="dernière-révision-24"><a class="header" href="#dernière-révision-24">Dernière révision</a></h2>
-<p>7 Jan 2026</p>
+<p>8 Jan 2026</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="forkjoin"><a class="header" href="#forkjoin">ForkJoin</a></h1>
+<p><code>ForkJoin</code> - Attend la fin d’un autre process</p>
+<h2 id="synopsis-20"><a class="header" href="#synopsis-20">Synopsis</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+int ForkJoin(int PID);
+</code></pre>
+<h2 id="description-20"><a class="header" href="#description-20">Description</a></h2>
+<p><code>ForkJoin</code> Fait attendre au thread du process appelant la terminaison d’un process qu’il a crée.</p>
+<p><strong>Numéro d’appel système</strong> : <code>SC_ForkJoin</code> (35)</p>
+<h3 id="comportement-nominal-19"><a class="header" href="#comportement-nominal-19">Comportement nominal</a></h3>
+<ol>
+<li>Vérification du PID donné</li>
+<li>Attente de la fin du processus</li>
+<li>Retour</li>
+</ol>
+<h2 id="paramètres-20"><a class="header" href="#paramètres-20">Paramètres</a></h2>
+<h3 id="pid"><a class="header" href="#pid"><code>PID</code></a></h3>
+<p>The process id for the process we want to wait</p>
+<p><strong>Type</strong> : <code>posix_process_t</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> : Le process doit exister et être un enfant du process appelant</p>
+<h2 id="valeur-de-retour-20"><a class="header" href="#valeur-de-retour-20">Valeur de retour</a></h2>
+<p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Valeur</th><th>Signification</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0</code></td><td>Succès</td></tr>
+<tr><td><code>-1</code></td><td>Erreur (consulter <code>errno</code>)</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="codes-derreur-17"><a class="header" href="#codes-derreur-17">Codes d’erreur</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td><code>E_INVAL</code></td><td><code>PID</code> invalid. Process try to wait himself</td></tr>
+<tr><td>9</td><td><code>E_NOSPC</code></td><td><code>PID</code> process is not found</td></tr>
+<tr><td>12</td><td><code>E_NOCPC</code></td><td><code>PID</code> is not a child of the current process</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="implémentation-20"><a class="header" href="#implémentation-20">Implémentation</a></h2>
+<h3 id="localisation-du-code-20"><a class="header" href="#localisation-du-code-20">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/userprocess.cc:handle_SC_ForkJoin()</code></li>
+<li><strong>Implémentation</strong> : <code>code/userprog/userprocess.cc:handle_SC_ForkJoin()</code></li>
+<li><strong>Attente</strong> : <code>code/userprog/process.cc:WaitForChild(Process* child)</code></li>
+</ul>
+<h3 id="flux-dexécution-8"><a class="header" href="#flux-dexécution-8">Flux d’exécution</a></h3>
+<pre><code>ForkJoin(PID)
+        │
+        ▼
+    start.S: ForkJoin
+        │ charge $4 = PID
+        ▼
+    syscall SC_ForkJoin
+        │
+        ▼
+    handle_SC_ForkJoin()
+        │ ├─ lit $4
+        │ ├─ valide le PID
+        │ └─ currentThread-&gt;getProcess()-&gt;WaitForChild(child)
+        ▼
+    WaitForChild(child)
+        │ └─ Attend le process
+        ▼
+</code></pre>
+<h2 id="exemples-20"><a class="header" href="#exemples-20">Exemples</a></h2>
+<h3 id="exemple-1--création-simple-de-deux-processus-1"><a class="header" href="#exemple-1--création-simple-de-deux-processus-1">Exemple 1 : Création simple de deux processus</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main(){
+    ForkJoin(ForkJoin("./userpages0"));
+    PutString("All processes are finished.\n", 27);
+    return 0;
+}
+</code></pre>
+<h2 id="auteurs-25"><a class="header" href="#auteurs-25">Auteurs</a></h2>
+<p>Tommy, 8 Jan 2026</p>
+<h2 id="dernière-révision-25"><a class="header" href="#dernière-révision-25">Dernière révision</a></h2>
+<p>8 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="gestion-des-erreurs-3"><a class="header" href="#gestion-des-erreurs-3">Gestion des erreurs</a></h1>
 <p>Ce document décrit le mécanisme de gestion des erreurs dans NachOS et l’utilisation de la variable globale <code>errno</code>.</p>
@@ -5970,7 +6062,7 @@ int main() {
     return 0;
 }
 </code></pre>
-<h2 id="codes-derreur-17"><a class="header" href="#codes-derreur-17">Codes d’erreur</a></h2>
+<h2 id="codes-derreur-18"><a class="header" href="#codes-derreur-18">Codes d’erreur</a></h2>
 <p>Voir <a href="#liste-des-codes-errno">Liste des codes errno</a> pour la documentation complète de chaque code.</p>
 <h3 id="codes-principaux"><a class="header" href="#codes-principaux">Codes principaux</a></h3>
 <div class="table-wrapper">
@@ -6133,9 +6225,9 @@ int main() {
 <li><a href="#vue-densemble---console-io">Console I/O Overview</a> - Appels système avec gestion errno</li>
 <li><a href="userspace/my_stdlib.html">my_stdlib</a> - Fonctions utilitaires pour errno</li>
 </ul>
-<h2 id="auteurs-25"><a class="header" href="#auteurs-25">Auteurs</a></h2>
+<h2 id="auteurs-26"><a class="header" href="#auteurs-26">Auteurs</a></h2>
 <p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision-25"><a class="header" href="#dernière-révision-25">Dernière révision</a></h2>
+<h2 id="dernière-révision-26"><a class="header" href="#dernière-révision-26">Dernière révision</a></h2>
 <p>20 Dec 2025 par Antoine</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="liste-des-codes-errno"><a class="header" href="#liste-des-codes-errno">Liste des codes errno</a></h1>
@@ -6266,9 +6358,9 @@ if (result != -1) {
 <li><a href="#vue-densemble---console-io">Console I/O</a> - Appels avec gestion d’erreur</li>
 <li><a href="userspace/my_stdlib.html">my_stdlib</a> - Fonctions print_error()</li>
 </ul>
-<h2 id="auteurs-26"><a class="header" href="#auteurs-26">Auteurs</a></h2>
+<h2 id="auteurs-27"><a class="header" href="#auteurs-27">Auteurs</a></h2>
 <p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision-26"><a class="header" href="#dernière-révision-26">Dernière révision</a></h2>
+<h2 id="dernière-révision-27"><a class="header" href="#dernière-révision-27">Dernière révision</a></h2>
 <p>20 Dec 2025 par Antoine</p>
 
                     </main>

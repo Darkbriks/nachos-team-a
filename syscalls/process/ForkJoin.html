@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>GetString - NachOS Manual</title>
+        <title>ForkJoin - NachOS Manual</title>
 
 
         <!-- Custom HTML head -->
@@ -179,285 +179,103 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="getstring"><a class="header" href="#getstring">GetString</a></h1>
-<p><code>GetString</code> - Lit une chaîne de caractères depuis la console d’entrée standard</p>
-<h2 id="synopsis"><a class="header" href="#synopsis">SYNOPSIS</a></h2>
+                        <h1 id="forkjoin"><a class="header" href="#forkjoin">ForkJoin</a></h1>
+<p><code>ForkJoin</code> - Attend la fin d’un autre process</p>
+<h2 id="synopsis"><a class="header" href="#synopsis">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
-int GetString(char *s, int n);
+int ForkJoin(int PID);
 </code></pre>
-<h2 id="description"><a class="header" href="#description">DESCRIPTION</a></h2>
-<p><code>GetString</code> lit jusqu’à <code>n-1</code> caractères depuis la console d’entrée et les stocke dans le buffer pointé par <code>s</code>. La lecture s’arrête lorsqu’un caractère newline (<code>\n</code>) est rencontré ou après <code>n-1</code> caractères. Un caractère null (<code>\0</code>) est toujours ajouté à la fin, ce qui justifie la lecture de <code>n-1</code> caractères maximum.</p>
-<p>Numéro d’appel système : <code>14</code></p>
+<h2 id="description"><a class="header" href="#description">Description</a></h2>
+<p><code>ForkJoin</code> Fait attendre au thread du process appelant la terminaison d’un process qu’il a crée.</p>
+<p><strong>Numéro d’appel système</strong> : <code>SC_ForkJoin</code> (35)</p>
 <h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
-<ul>
-<li>Lit jusqu’à <code>n-1</code> caractères (réserve 1 octet pour <code>\0</code>)</li>
-<li>S’arrête au premier <code>\n</code> (inclus dans la chaîne)</li>
-<li>Ajoute automatiquement <code>\0</code> terminal</li>
-<li>Retourne le nombre de caractères lus (hors <code>\0</code>)</li>
-<li>Bloque jusqu’à ce que <code>\n</code> soit tapé ou <code>n-1</code> caractères lus</li>
-<li>Thread-safe via <code>IO_Lock</code></li>
-</ul>
-<h3 id="cas-particuliers"><a class="header" href="#cas-particuliers">Cas particuliers</a></h3>
-<ul>
-<li><strong>n = 0</strong> : Retourne 0, aucune lecture effectuée</li>
-<li><strong>n &lt; 0</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
-<li><strong>n = 1</strong> : Lit 0 caractère, écrit seulement <code>\0</code></li>
-<li><strong>n &gt; MAX_STRING_SIZE</strong> : Tronqué à <code>MAX_STRING_SIZE</code> (256)</li>
-<li><strong>EOF</strong> : Retourne nombre de caractères lus jusqu’à EOF</li>
-<li><strong>Pointeur NULL</strong> : Comportement indéfini (pas de vérification)</li>
-</ul>
-<h2 id="paramètres"><a class="header" href="#paramètres">PARAMÈTRES</a></h2>
-<h3 id="s"><a class="header" href="#s"><code>s</code></a></h3>
-<p>Pointeur vers le buffer où stocker la chaîne lue.</p>
-<p><strong>Type</strong> : <code>char *</code><br><strong>Direction</strong> : OUT<br><strong>Registre</strong> : <code>$4</code> (adresse virtuelle)<br><strong>Contraintes</strong> :</p>
-<ul>
-<li>Doit pointer vers mémoire accessible en écriture</li>
-<li>Doit être alloué par l’appelant</li>
-<li>Doit avoir au moins <code>n</code> octets d’espace</li>
-<li><strong>NON VÉRIFIÉ</strong> : Peut être dans l’espace noyau</li>
-<li><strong>NON VÉRIFIÉ</strong> : Peut être NULL</li>
-</ul>
-<p><strong>Résponsabilité de l’appelant</strong> : S’assurer que <code>s</code> est valide et suffisamment grand, sinon, des données adjacentes peuvent être corrompues.</p>
-<h3 id="n"><a class="header" href="#n"><code>n</code></a></h3>
-<p>Taille du buffer (incluant l’espace pour <code>\0</code>).</p>
-<p><strong>Type</strong> : <code>int</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$5</code><br><strong>Contraintes</strong> :</p>
-<ul>
-<li>Doit être ≥ 0</li>
-<li>Si &gt; <code>MAX_STRING_SIZE</code>, tronqué automatiquement</li>
-<li>Au plus n-1 caractères lus</li>
-</ul>
-<h2 id="valeur-de-retour"><a class="header" href="#valeur-de-retour">VALEUR DE RETOUR</a></h2>
+<ol>
+<li>Vérification du PID donné</li>
+<li>Attente de la fin du processus</li>
+<li>Retour</li>
+</ol>
+<h2 id="paramètres"><a class="header" href="#paramètres">Paramètres</a></h2>
+<h3 id="pid"><a class="header" href="#pid"><code>PID</code></a></h3>
+<p>The process id for the process we want to wait</p>
+<p><strong>Type</strong> : <code>posix_process_t</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> : Le process doit exister et être un enfant du process appelant</p>
+<h2 id="valeur-de-retour"><a class="header" href="#valeur-de-retour">Valeur de retour</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
-<p><strong>En cas de succès</strong> : Nombre de caractères lus (hors <code>\0</code>), peut être 0</p>
-<p><strong>En cas d’erreur</strong> : <code>-1</code> et <code>errno</code> est défini</p>
-<h2 id="codes-derreur"><a class="header" href="#codes-derreur">CODES D’ERREUR</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Valeur</th><th>Signification</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0</code></td><td>Succès</td></tr>
+<tr><td><code>-1</code></td><td>Erreur (consulter <code>errno</code>)</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="codes-derreur"><a class="header" href="#codes-derreur">Codes d’erreur</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
 <tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
 </thead>
 <tbody>
-<tr><td>1</td><td><code>E_INVAL</code></td><td><code>n &lt; 0</code></td></tr>
-<tr><td>2</td><td><code>E_FAULT</code></td><td><code>addr &lt; 0</code></td></tr>
+<tr><td>1</td><td><code>E_INVAL</code></td><td><code>PID</code> invalid. Process try to wait himself</td></tr>
+<tr><td>9</td><td><code>E_NOSPC</code></td><td><code>PID</code> process is not found</td></tr>
+<tr><td>12</td><td><code>E_NOCPC</code></td><td><code>PID</code> is not a child of the current process</td></tr>
 </tbody>
 </table>
 </div>
-<h2 id="implémentation"><a class="header" href="#implémentation">IMPLÉMENTATION</a></h2>
+<h2 id="implémentation"><a class="header" href="#implémentation">Implémentation</a></h2>
 <h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
-<li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handler_SC_getString()</code></li>
-<li><strong>Implémentation</strong> : <code>code/userprog/synchconsole.cc:SynchConsole::SynchGetString()</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/userprocess.cc:handle_SC_ForkJoin()</code></li>
+<li><strong>Implémentation</strong> : <code>code/userprog/userprocess.cc:handle_SC_ForkJoin()</code></li>
+<li><strong>Attente</strong> : <code>code/userprog/process.cc:WaitForChild(Process* child)</code></li>
 </ul>
-<h3 id="synchronisation"><a class="header" href="#synchronisation">Synchronisation</a></h3>
-<p><strong>Sémaphore <code>IO_Lock</code></strong></p>
-<ul>
-<li>Acquis par <code>SynchGetChar</code> pour chaque caractère</li>
-<li>Libéré après chaque lecture</li>
-<li>Garantit atomicité de la lecture de chaque caractère, mais pas de la chaîne complète</li>
-</ul>
-<p><strong>Sémaphore <code>readAvail</code></strong></p>
-<ul>
-<li>P() pour chaque caractère attendu</li>
-<li>V() lorsqu’un caractère est disponible</li>
-</ul>
-<h3 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h3>
-<p><strong>Caractères</strong> : Pas de corruption de caractères individuels</p>
-<p><strong>Chaînes</strong> : Deux threads peuvent recevoir des caractères entrelacés :</p>
-<pre><code>User types: "ABCD\n"
-Thread 1: GetString(buf1, 10)
-Thread 2: GetString(buf2, 10)
-
-Résultat possible:
-buf1 = "AC\n"
-buf2 = "BD\n"
+<h3 id="flux-dexécution"><a class="header" href="#flux-dexécution">Flux d’exécution</a></h3>
+<pre><code>ForkJoin(PID)
+        │
+        ▼
+    start.S: ForkJoin
+        │ charge $4 = PID
+        ▼
+    syscall SC_ForkJoin
+        │
+        ▼
+    handle_SC_ForkJoin()
+        │ ├─ lit $4
+        │ ├─ valide le PID
+        │ └─ currentThread-&gt;getProcess()-&gt;WaitForChild(child)
+        ▼
+    WaitForChild(child)
+        │ └─ Attend le process
+        ▼
 </code></pre>
-<h2 id="décisions-de-conception"><a class="header" href="#décisions-de-conception">DÉCISIONS DE CONCEPTION</a></h2>
-<p><em>TODO : A compléter (Inclure <code>\n</code>, taille max, arrêt au <code>\n</code>)</em></p>
-<h2 id="exemples"><a class="header" href="#exemples">EXEMPLES</a></h2>
-<h3 id="exemple-1--utilisation-basique"><a class="header" href="#exemple-1--utilisation-basique">Exemple 1 : Utilisation basique</a></h3>
+<h2 id="exemples"><a class="header" href="#exemples">Exemples</a></h2>
+<h3 id="exemple-1--création-simple-de-deux-processus"><a class="header" href="#exemple-1--création-simple-de-deux-processus">Exemple 1 : Création simple de deux processus</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
-int main() {
-    char buffer[100];
-    
-    PutString("Enter your name: ", 17);
-    int n = GetString(buffer, 100);
-    
-    PutString("Hello, ", 7);
-    PutString(buffer, n);
-    
+int main(){
+    ForkJoin(ForkJoin("./userpages0"));
+    PutString("All processes are finished.\n", 27);
     return 0;
 }
 </code></pre>
-<p><strong>Interaction</strong> :</p>
-<pre><code>Enter your name: Bjarn Stroustrup
-Hello, Bjarn Stroustrup
-</code></pre>
-<h3 id="exemple-2--buffer-petit"><a class="header" href="#exemple-2--buffer-petit">Exemple 2 : Buffer petit</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-int main() {
-    char buffer[5];  // Seulement 4 chars + \0
-    
-    PutString("Type: ", 6);
-    int n = GetString(buffer, 5);
-    
-    // Si l'utilisateur tape "Hello\n":
-    // buffer = "Hell" (tronqué, pas de \n)
-    // n = 4
-    
-    PutString("Got: ", 5);
-    PutString(buffer, n);
-    
-    return 0;
-}
-</code></pre>
-<h3 id="exemple-3--gestion-derreur"><a class="header" href="#exemple-3--gestion-derreur">Exemple 3 : Gestion d’erreur</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-#include "my_stdlib.h"
-
-int main() {
-    char buffer[64];
-    
-    int n = GetString(buffer, -10);  // Taille négative
-    // n = -1
-    
-    if (n == -1) {
-        // errno contient E_INVAL
-    }
-    
-    return 0;
-}
-</code></pre>
-<h3 id="exemple-4--retirer-le-newline"><a class="header" href="#exemple-4--retirer-le-newline">Exemple 4 : Retirer le newline</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-int main() {
-    char buffer[100];
-    
-    int n = GetString(buffer, 100);
-    
-    // Retirer le \n si présent
-    if (n &gt; 0 &amp;&amp; buffer[n-1] == '\n') {
-        buffer[n-1] = '\0';
-        n--;
-    }
-    
-    PutString("Without newline: ", 17);
-    PutString(buffer, n);
-    
-    return 0;
-}
-</code></pre>
-<h2 id="comportement-détaillé"><a class="header" href="#comportement-détaillé">COMPORTEMENT DÉTAILLÉ</a></h2>
-<h3 id="états-de-la-machine"><a class="header" href="#états-de-la-machine">États de la machine</a></h3>
-<p><strong>Avant l’appel</strong> :</p>
-<ul>
-<li><code>$4</code> : Adresse buffer utilisateur</li>
-<li><code>$5</code> : Taille du buffer</li>
-<li>Buffer peut contenir n’importe quoi</li>
-</ul>
-<p><strong>Pendant l’appel</strong> :</p>
-<ul>
-<li>Buffer noyau alloué sur stack (max 256 octets)</li>
-<li>Boucle de lecture caractère par caractère</li>
-<li>Thread bloqué sur chaque <code>SynchGetChar</code></li>
-</ul>
-<p><strong>Après l’appel</strong> :</p>
-<ul>
-<li><code>$2</code> : Nombre de caractères lus (ou -1)</li>
-<li>Buffer utilisateur : Contient la chaîne + <code>\0</code></li>
-<li><code>errno</code> : 0 ou code d’erreur</li>
-</ul>
-<h2 id="performances"><a class="header" href="#performances">PERFORMANCES</a></h2>
-<h3 id="complexité"><a class="header" href="#complexité">Complexité</a></h3>
-<ul>
-<li><strong>Temporelle</strong> : O(n) où n = nombre de caractères lus</li>
-<li><strong>Spatiale</strong> : O(min(n, MAX_STRING_SIZE)) - buffer sur stack</li>
-</ul>
-<h2 id="notes"><a class="header" href="#notes">NOTES</a></h2>
-<ul>
-<li><strong>Buffer stack</strong> : Limité à 256 octets</li>
-<li><strong>Newline inclus</strong> : L’appel retourne le <code>\n</code> dans la chaîne mais le charactère n’est pas compté dans le retour</li>
-<li><strong>EOF</strong> : En fin de fichier, retourne caractères lus</li>
-</ul>
-<h2 id="failles-et-vulnérabilités"><a class="header" href="#failles-et-vulnérabilités">FAILLES ET VULNÉRABILITÉS</a></h2>
-<div class="vulnerability-section severity-critical">
-<h4 id="aucune-validation-de-lespace-dadressage"><a class="header" href="#aucune-validation-de-lespace-dadressage">Aucune validation de l’espace d’adressage</a></h4>
-<p><strong>Description</strong> : Seul <code>addr &lt; 0</code> est vérifié, pas si l’adresse est dans l’espace utilisateur valide.</p>
-<p><strong>Impact</strong> :</p>
-<ul>
-<li><strong>Écriture arbitraire en mémoire noyau</strong> : Corruption mémoire noyau</li>
-<li><strong>Ascension de privilèges</strong> : Modification de structures sensibles</li>
-</ul>
-<p><strong>Exploitation</strong> :</p>
-<pre><code class="language-c">// Écrire dans la mémoire noyau
-char *kernel_addr = (char *)0x00000000;
-GetString(kernel_addr, 100);
-// L'utilisateur peut injecter du code/données en mémoire noyau
-</code></pre>
-</div>
-
-<div class="vulnerability-section severity-critical">
-<h4 id="copystringtomachine-ignore-les-erreurs-décriture-de-machine-writemem"><a class="header" href="#copystringtomachine-ignore-les-erreurs-décriture-de-machine-writemem">copyStringToMachine ignore les erreurs d’écriture de <code>machine-&gt;WriteMem</code></a></h4>
-<p><strong>Description</strong> : <code>copyStringToMachine</code> ne vérifie pas les erreurs lors de l’écriture en mémoire utilisateur.</p>
-<p><strong>Impact</strong> :</p>
-<ul>
-<li><strong>Corruption mémoire utilisateur</strong> : Données incomplètes ou corrompues</li>
-<li><strong>Comportement indéfini</strong> : Programme utilisateur peut planter</li>
-<li><strong>Vulnérabilité de sécurité</strong> : Potentielle exploitation via des pointeurs invalides</li>
-</ul>
-</div>
-
-<div class="vulnerability-section severity-info">
-<h4 id="limitation-max_string_size"><a class="header" href="#limitation-max_string_size">Limitation MAX_STRING_SIZE</a></h4>
-<p><strong>Description</strong> : Ajouter une constante MAX_GET_STRING sur le modèle de MAX_PUT_STRING, et remplir plusieurs fois le buffer si nécessaire.</p>
-<p><strong>Workaround</strong> :</p>
-<pre><code class="language-c">char big_buffer[1000];
-int offset = 0;
-while (offset &lt; 999) {
-    int n = GetString(big_buffer + offset, 256);
-    if (big_buffer[offset + n - 1] == '\n') break;
-    offset += n;
-}
-</code></pre>
-</div>
-
-<div class="vulnerability-section severity-info">
-<h4 id="pas-de-timeout"><a class="header" href="#pas-de-timeout">Pas de timeout</a></h4>
-<p><strong>Description</strong> : Peut bloquer indéfiniment en attendant l’utilisateur.</p>
-<p><strong>Impact</strong> : Pas de mécanisme pour timeout programmatique</p>
-</div>
-
-<h2 id="bugs-connus"><a class="header" href="#bugs-connus">BUGS CONNUS</a></h2>
-<p>Aucun bug connu à ce jour.</p>
-<h2 id="historique-des-versions"><a class="header" href="#historique-des-versions">Historique des versions</a></h2>
-<ul>
-<li><strong>v1.0</strong> : Implémentation initiale</li>
-<li><strong>v2.0</strong> : Ajout de la valeur de retour</li>
-</ul>
-<h2 id="voir-aussi"><a class="header" href="#voir-aussi">VOIR AUSSI</a></h2>
-<ul>
-<li><a href="./PutString.html">PutString</a> - Écriture de chaîne</li>
-<li><a href="./GetChar.html">GetChar</a> - Lecture d’un caractère</li>
-<li><a href="./GetInt.html">GetInt</a> - Lecture d’un entier</li>
-</ul>
-<h2 id="auteurs"><a class="header" href="#auteurs">AUTEURS</a></h2>
-<p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision"><a class="header" href="#dernière-révision">DERNIÈRE RÉVISION</a></h2>
-<p>20 Dec 2025 par Antoine</p>
+<h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
+<p>Tommy, 8 Jan 2026</p>
+<h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
+<p>8 Jan 2026</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../syscalls/console/PutString.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../syscalls/process/ForkExec.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../syscalls/console/PutInt.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../syscalls/errors.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -467,11 +285,11 @@ while (offset &lt; 999) {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../syscalls/console/PutString.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../syscalls/process/ForkExec.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../syscalls/console/PutInt.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../syscalls/errors.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
