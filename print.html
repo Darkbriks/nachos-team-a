@@ -38,7 +38,7 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-27adae00.js";
+            window.path_to_searchindex_js = "searchindex-f19b851d.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-694da981.js"></script>
@@ -724,12 +724,11 @@ int main() {
 void Halt(void);
 </code></pre>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
-<p><code>Halt</code> arrête complètement le système Nachos. Cette fonction termine immédiatement l’exécution de tous les processus et threads, puis affiche les statistiques de performance du système avant de quitter.</p>
+<p><code>Halt</code> arrête complètement le système Nachos.Cette fonction affiche les statistiques de performance du système avant de quitter, puis termine immédiatement l’exécution de tous les processus et threads.</p>
 <p><strong>Numéro d’appel système</strong> : <code>SC_Halt</code> (0)</p>
 <h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
 <ol>
-<li>Appel de <code>interrupt-&gt;Halt()</code> qui déclenche l’arrêt du système</li>
-<li>Affichage des statistiques de performance (cycles CPU, interruptions, etc.)</li>
+<li>Appel de <code>interrupt-&gt;Halt()</code> qui affiche les statistiques de performance (cycles CPU, interruptions, etc.) puis déclenche l’arrêt du système</li>
 <li>Terminaison complète du système Nachos</li>
 <li>Cette fonction ne retourne jamais</li>
 </ol>
