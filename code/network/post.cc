@@ -18,6 +18,7 @@
 
 #include "copyright.h"
 #include "post.h"
+#include "process.h"
 
 #include <strings.h> /* for bzero */
 
@@ -188,10 +189,10 @@ PostOffice::PostOffice(NetworkAddress addr, double reliability, int nBoxes)
 // Third, initialize the network; tell it which interrupt handlers to call
     network = new Network(addr, reliability, ReadAvail, WriteDone, (int) this);
 
-
+    Process* main = Process::FindProcessByPID(0);
 // Finally, create a thread whose sole job is to wait for incoming messages,
 //   and put them in the right mailbox. 
-    Thread *t = new Thread("postal worker");
+    Thread *t = main->CreateThread("postal worker");
 
     t->Fork(PostalHelper, (int) this);
 }

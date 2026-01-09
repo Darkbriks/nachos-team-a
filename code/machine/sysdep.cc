@@ -73,8 +73,8 @@ int unlink(char *name);
 // definition varies slightly from platform to platform, so don't
 // define unless gcc complains
 // extern int recvfrom(int s, void *buf, int len, int flags, void *from, int
-// *fromlen); extern int sendto(int s, void *msg, int len, int flags, void *to,
-// int tolen);
+// *fromlen); 
+//extern int sendto(int s, void *msg, int len, int flags, void *to,int tolen);
 
 void srand(unsigned seed);
 int rand(void);
@@ -86,7 +86,7 @@ int mprotect(char *addr, int len, int prot);
 int socket(int, int, int);
 int bind(int, const void *, int);
 int recvfrom(int, void *, int, int, void *, int *);
-int sendto(int, const void *, int, int, void *, int);
+// int sendto(int, const void *, int, int, void *, int);
 #endif
 }
 
