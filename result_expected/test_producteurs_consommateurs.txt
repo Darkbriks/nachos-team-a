@@ -1,6 +1,6 @@
 Machine halting!
 
-Ticks: total 38483, idle 0, system 12810, user 25673
+Ticks: total 38473, idle 0, system 12800, user 25673
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 0
 Paging: faults 0

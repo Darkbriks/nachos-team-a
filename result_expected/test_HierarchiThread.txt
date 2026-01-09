@@ -2,7 +2,7 @@
 Thread 1 executed
 Machine halting!
 
-Ticks: total 12182, idle 6400, system 5650, user 132
+Ticks: total 12812, idle 6400, system 6280, user 132
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 64
 Paging: faults 0

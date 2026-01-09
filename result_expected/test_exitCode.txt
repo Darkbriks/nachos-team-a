@@ -1,0 +1,13 @@
+our_shell >  
+voici le code de retour du process : 1
+our_shell >  
+session terminée
+Machine halting!
+
+Ticks: total 21987, idle 9162, system 11340, user 1485
+Disk I/O: reads 0, writes 0
+Console I/O: reads 10, writes 85
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...
