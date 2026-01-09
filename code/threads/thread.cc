@@ -34,7 +34,7 @@
  * @param attr Pointer to the thread attributes object to initialize.
  * @return int 0 on success, -E_INVAL if attr is nullptr.
  */
-int posix_thread_attr_init(posix_thread_attr_t *attr) {
+int posix_thread_attr_init(posix_thread_attr_t* attr) {
     if (attr == nullptr) { return -E_INVAL; }
     attr->detachstate = JOINABLE;
     return 0;
@@ -46,7 +46,7 @@ int posix_thread_attr_init(posix_thread_attr_t *attr) {
  * @param attr Pointer to the thread attributes object to destroy.
  * @return int 0 on success, -E_INVAL if attr is nullptr.
  */
-int posix_thread_attr_destroy(posix_thread_attr_t *attr) {
+int posix_thread_attr_destroy(const posix_thread_attr_t* attr) {
     if (attr == nullptr) { return -E_INVAL; }
     // No dynamic resources to free for now
     return 0;
@@ -59,7 +59,7 @@ int posix_thread_attr_destroy(posix_thread_attr_t *attr) {
  * @param detachstate Desired detach state (JOINABLE or DETACHED).
  * @return int 0 on success, -E_INVAL if attr is nullptr or detachstate is invalid.
  */
-int posix_thread_attr_setdetachstate(posix_thread_attr_t *attr, int detachstate) {
+int posix_thread_attr_setdetachstate(posix_thread_attr_t* attr, int detachstate) {
     if (attr == nullptr) { return -E_INVAL; }
     if (detachstate != JOINABLE && detachstate != DETACHED) {
         return -E_INVAL;
@@ -75,7 +75,7 @@ int posix_thread_attr_setdetachstate(posix_thread_attr_t *attr, int detachstate)
  * @param detachstate Pointer to store the retrieved detach state.
  * @return int 0 on success, -E_INVAL if attr or detachstate is nullptr.
  */
-int posix_thread_attr_getdetachstate(const posix_thread_attr_t *attr, int *detachstate) {
+int posix_thread_attr_getdetachstate(const posix_thread_attr_t* attr, int* detachstate) {
     if (attr == nullptr || detachstate == nullptr) { return -E_INVAL; }
     *detachstate = static_cast<int>(attr->detachstate);
     return 0;
@@ -89,19 +89,15 @@ int posix_thread_attr_getdetachstate(const posix_thread_attr_t *attr, int *detac
 //      "threadName" is an arbitrary string, useful for debugging.
 //----------------------------------------------------------------------
 
-Thread::Thread(const char *threadName, Process *p, posix_thread_t tid) :
-                stackTop(NULL), process(p), TID(tid), joiner(nullptr),
-                join(nullptr), waitTime(0), flags(new BitMap(THREAD_FLAG_SIZE)),
-                retval(nullptr), stack(NULL), status(JUST_CREATED) {
-    snprintf(const_cast<char *>(name), MAX_STRING_SIZE - 1, "%s_%d_%d", threadName, process ? process->getPId() : 0, TID);
-    sem = new Semaphore(name, 0);
-
+Thread::Thread(const char* debugName, Process* p, const posix_thread_t tid)
+                : name(debugName), process(p), TID(tid), sem(Semaphore(debugName, 0)), flags(BitMap(THREAD_FLAG_SIZE)) {
 #ifdef USER_PROGRAM
     // FBT: Need to initialize special registers of simulator to 0
     // in particular LoadReg or it could crash when switching
     // user threads.
-    for (int r = NumGPRegs; r < NumTotalRegs; r++)
+    for (int r = NumGPRegs; r < NumTotalRegs; r++) {
         userRegisters[r] = 0;
+    }
 #endif
 }
 
@@ -120,33 +116,32 @@ Thread::Thread(const char *threadName, Process *p, posix_thread_t tid) :
 Thread::~Thread() {
     DEBUG('t', "Deleting thread \"%s\"\n", name);
 
-    delete sem;
-    delete flags;
-    if (stack != NULL)
-        DeallocBoundedArray((char *)stack, StackSize * sizeof(int));
+    if (stack != nullptr) {
+        DeallocBoundedArray(reinterpret_cast<char *>(stack), StackSize * sizeof(int));
+    }
 }
 
-AddrSpace * Thread::getAddrSpace(){
-    if (process != nullptr){
+AddrSpace*  Thread::getAddrSpace() const {
+    if (process != nullptr) {
         return process->getSpace();
     }
     return nullptr;
 }
 
-void Thread::setDetached(const bool d){
-    if (d){
-        flags->Mark(DETACHED_FLAG_POS);
+void Thread::setDetached(const bool d) {
+    if (d) {
+        flags.Mark(DETACHED_FLAG_POS);
     } else {
-        flags->Clear(DETACHED_FLAG_POS);
+        flags.Clear(DETACHED_FLAG_POS);
     }
 }
 
-void Thread::Joiner(){
-    sem->V();
+void Thread::Joiner() {
+    sem.V();
 }
 
-void Thread::Join(){
-    sem->P();
+void Thread::Join() {
+    sem.P();
 }
 
 //----------------------------------------------------------------------
@@ -169,9 +164,9 @@ void Thread::Join(){
 //      "arg" is a single argument to be passed to the procedure.
 //----------------------------------------------------------------------
 
-void Thread::Fork(VoidFunctionPtr func, int arg) {
+void Thread::Fork(VoidFunctionPtr func, const int arg) {
     DEBUG('t', "Forking thread \"%s\" with func = 0x%x, arg = %d\n", name,
-          (int)func, arg);
+          reinterpret_cast<int>(func), arg);
 
     StackAllocate(func, arg);
 
@@ -187,7 +182,7 @@ void Thread::Fork(VoidFunctionPtr func, int arg) {
 
 #endif // USER_PROGRAM
 
-    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+    const IntStatus oldLevel = interrupt->SetLevel(IntOff);
     scheduler->ReadyToRun(this); // ReadyToRun assumes that interrupts
     // are disabled!
     (void)interrupt->SetLevel(oldLevel);
@@ -209,11 +204,11 @@ void Thread::Fork(VoidFunctionPtr func, int arg) {
 //----------------------------------------------------------------------
 
 void Thread::CheckOverflow() {
-    if (stack != NULL)
+    if (stack != nullptr)
 #ifdef HOST_SNAKE // Stacks grow upward on the Snakes
         ASSERT(stack[StackSize - 1] == STACK_FENCEPOST);
 #else
-        ASSERT(*stack == (int)STACK_FENCEPOST);
+        ASSERT(*stack == static_cast<int>(STACK_FENCEPOST));
 #endif
 }
 
@@ -241,7 +236,7 @@ void Thread::Finish() {
 
     // LB: Be careful to guarantee that no thread to be destroyed
     // is ever lost
-    ASSERT(threadToBeDestroyed == NULL);
+    ASSERT(threadToBeDestroyed == nullptr);
     // End of addition
 
     threadToBeDestroyed = currentThread;
@@ -268,15 +263,13 @@ void Thread::Finish() {
 //----------------------------------------------------------------------
 
 void Thread::Yield() {
-    Thread *nextThread;
-    IntStatus oldLevel = interrupt->SetLevel(IntOff);
+    const IntStatus oldLevel = interrupt->SetLevel(IntOff);
 
     ASSERT(this == currentThread);
 
     DEBUG('t', "Yielding thread \"%s\"\n", getName());
 
-    nextThread = scheduler->FindNextToRun();
-    if (nextThread != NULL) {
+    if (Thread* nextThread = scheduler->FindNextToRun();nextThread != nullptr) {
         scheduler->ReadyToRun(this);
         scheduler->Run(nextThread);
     }
@@ -303,7 +296,7 @@ void Thread::Yield() {
 //      off the ready list, and switching to it.
 //----------------------------------------------------------------------
 void Thread::Sleep() {
-    Thread *nextThread;
+    Thread* nextThread;
 
     ASSERT(this == currentThread);
     ASSERT(interrupt->getLevel() == IntOff);
@@ -311,7 +304,7 @@ void Thread::Sleep() {
     DEBUG('t', "Sleeping thread \"%s\"\n", getName());
 
     status = BLOCKED;
-    while ((nextThread = scheduler->FindNextToRun()) == NULL) {
+    while ((nextThread = scheduler->FindNextToRun()) == nullptr) {
         interrupt->Idle(); // no one to run, wait for an interrupt
         scheduler->WakeUpThreads();
     }
@@ -324,7 +317,7 @@ void Thread::Sleep() {
 //      Put the thread to sleep until the specified tick
 //----------------------------------------------------------------------
 
-void Thread::SleepUntil(long long tick) {
+void Thread::SleepUntil(const long long tick) {
     ASSERT(this == currentThread);
     ASSERT(interrupt->getLevel() == IntOff);
 
@@ -333,7 +326,7 @@ void Thread::SleepUntil(long long tick) {
     waitTime = tick;
     scheduler->AddToSleepList(this);
 
-    Thread *nextThread;
+    Thread* nextThread;
     while ((nextThread = scheduler->FindNextToRun()) == nullptr) {
         interrupt->Idle();
         scheduler->WakeUpThreads();
@@ -364,9 +357,9 @@ void SetupThreadState() {
     // done each time a thread is scheduled, either by SWITCH, or by
     // getting created.
 
-    if (threadToBeDestroyed != NULL) {
+    if (threadToBeDestroyed != nullptr) {
         delete threadToBeDestroyed;
-        threadToBeDestroyed = NULL;
+        threadToBeDestroyed = nullptr;
     }
 
     if (processToBeDestroyed != nullptr) {
@@ -395,7 +388,7 @@ void SetupThreadState() {
     }*/
 
     if (currentThread->getProcess() != nullptr) {
-        if (AddrSpace *space = currentThread->getProcess()->getSpace(); space != nullptr) {
+        if (const AddrSpace* space = currentThread->getProcess()->getSpace(); space != nullptr) {
             currentThread->RestoreUserState();
             space->RestoreState();
         }
@@ -409,8 +402,8 @@ void SetupThreadState() {
 
 // End of addition
 
-void ThreadPrint(int arg) {
-    Thread *t = (Thread *)arg;
+void ThreadPrint(const int arg) {
+    auto* t = reinterpret_cast<Thread *>(arg);
     t->Print();
 }
 
@@ -426,8 +419,8 @@ void ThreadPrint(int arg) {
 //      "arg" is the parameter to be passed to the procedure
 //----------------------------------------------------------------------
 
-void Thread::StackAllocate(VoidFunctionPtr func, int arg) {
-    stack = (int *)AllocBoundedArray(StackSize * sizeof(int));
+void Thread::StackAllocate(VoidFunctionPtr func, const int arg) {
+    stack = reinterpret_cast<int *>(AllocBoundedArray(StackSize * sizeof(int)));
 
 #ifdef HOST_SNAKE
     // HP stack works from low addresses to high addresses
@@ -445,23 +438,23 @@ void Thread::StackAllocate(VoidFunctionPtr func, int arg) {
     // SWITCH() to go to ThreadRoot when we switch to this thread, the
     // return addres used in SWITCH() must be the starting address of
     // ThreadRoot.
-    *(--stackTop) = (int)ThreadRoot;
+    *(--stackTop) = reinterpret_cast<int>(ThreadRoot);
 #endif
 #endif // HOST_SPARC
     *stack = STACK_FENCEPOST;
 #endif // HOST_SNAKE
 
-    machineState[PCState] = (int)ThreadRoot;
+    machineState[PCState] = reinterpret_cast<int>(ThreadRoot);
 
     // LB: It is not sufficient to enable interrupts!
     // A more complex function has to be called here...
     // machineState[StartupPCState] = (int) InterruptEnable;
-    machineState[StartupPCState] = (int)SetupThreadState;
+    machineState[StartupPCState] = reinterpret_cast<int>(SetupThreadState);
     // End of modification
 
-    machineState[InitialPCState] = (int)func;
+    machineState[InitialPCState] = reinterpret_cast<int>(func);
     machineState[InitialArgState] = arg;
-    machineState[WhenDonePCState] = (int)ThreadFinish;
+    machineState[WhenDonePCState] = reinterpret_cast<int>(ThreadFinish);
 }
 
 #ifdef USER_PROGRAM
@@ -477,8 +470,9 @@ void Thread::StackAllocate(VoidFunctionPtr func, int arg) {
 //----------------------------------------------------------------------
 
 void Thread::SaveUserState() {
-    for (int i = 0; i < NumTotalRegs; i++)
+    for (int i = 0; i < NumTotalRegs; i++) {
         userRegisters[i] = machine->ReadRegister(i);
+    }
 }
 
 //----------------------------------------------------------------------
@@ -490,8 +484,9 @@ void Thread::SaveUserState() {
 //      while executing kernel code.  This routine restores the former.
 //----------------------------------------------------------------------
 
-void Thread::RestoreUserState() {
-    for (int i = 0; i < NumTotalRegs; i++)
+void Thread::RestoreUserState() const {
+    for (int i = 0; i < NumTotalRegs; i++) {
         machine->WriteRegister(i, userRegisters[i]);
+    }
 }
 #endif
