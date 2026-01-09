@@ -17,7 +17,7 @@ SUCCESS: All join error tests passed
 Thread executing
 Machine halting!
 
-Ticks: total 77211, idle 53377, system 23230, user 604
+Ticks: total 77231, idle 53377, system 23250, user 604
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 535
 Paging: faults 0

@@ -7,7 +7,7 @@ PASS: attr_destroy
 SUCCESS: All attr tests passed
 Machine halting!
 
-Ticks: total 30336, idle 18300, system 11810, user 226
+Ticks: total 30356, idle 18300, system 11830, user 226
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 183
 Paging: faults 0

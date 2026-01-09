@@ -5,7 +5,7 @@ Thread 2 executed
 SUCCESS: All threads created and joined correctly
 Machine halting!
 
-Ticks: total 24660, idle 13586, system 10720, user 354
+Ticks: total 24680, idle 13586, system 10740, user 354
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 137
 Paging: faults 0
