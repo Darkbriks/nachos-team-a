@@ -15,7 +15,6 @@ int main() {
             break;
         } else{
             pid = ForkExec(buffer);
-            PutInt(pid);
             if (pid < 0){
 
                 print_error("Pas de process crée");
@@ -25,8 +24,9 @@ int main() {
                 continue;;
             }
             ForkJoin(pid, &exitCode);
-            printf_simple("voici le code de retour du process\n");
+            printf_simple("\nvoici le code de retour du process : ");
             PutInt(exitCode);
+            printf_simple("\n");
         }     
     }
 }

@@ -406,6 +406,13 @@ if __name__ == "__main__":
                         description = "Lance un thread depuis main puis appelle PthreadExit. Le thread crée par main doit devenir le principal"
                     )
                 )
+    all_test.append(Test(
+                        file_expect ="test_exitCode.txt",
+                        line_to_execute = f'echo "exitCode1" | ./nachos-step{CURRENT_STEP} {RS} -x ./our_shell',
+                        name = "Test main thread create a process and check his exitCode",
+                        description = "Lance le shell pour lui faire exexuter un processus puis verifie son exitCode" 
+                    )
+                )
 
 
     total : int = 0
