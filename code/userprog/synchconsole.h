@@ -8,7 +8,6 @@
 
 class SynchConsole {
     public:
-        static class Semaphore* IO_Lock;
         SynchConsole(char *readFile, char *writeFile);
         // initialize the hardware console device
         ~SynchConsole(); // clean up console emulation
@@ -41,6 +40,12 @@ class SynchConsole {
 
     private:
         Console *console;
+        static Semaphore *readAvail;
+        static Semaphore *writeAvail;
+        static Semaphore *writeDone;
+        static Semaphore *IO_Lock;
+        static void ReadAvail(int arg); 
+        static void WriteDone(int arg); 
 };
 
 #endif // SYNCHCONSOLE_H
