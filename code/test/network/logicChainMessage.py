@@ -7,17 +7,32 @@ import time
 PROJECT_ROOT= subprocess.check_output("git rev-parse --show-toplevel", shell=True).decode("utf-8")
 PROJECT_ROOT = PROJECT_ROOT[:-1]
 BUILD_DIR=PROJECT_ROOT + "/code/build"
-TIMEOUT=1
+TEST_DIR=PROJECT_ROOT + "/code/test/network/"
 
 
-prog = "./nachos-step6 -m 0 -o 1"
-prog2 = "./nachos-step6 -m 1 -o 0"
+def testChainNMachine(n):
 
-print(BUILD_DIR)
-s1 = subprocess.Popen(f"cd {BUILD_DIR} ; {prog}", shell=True, stderr=subprocess.STDOUT)
-s2 = subprocess.Popen(f"cd {BUILD_DIR} ; {prog}", shell=True, stderr=subprocess.STDOUT)
+    command = f"cd {BUILD_DIR}" 
 
-s1.wait()
-print(s1)
-s2.wait()
-print(s2)
+    for i in range(n):
+        prog = f"./nachos-step6 -m {i} -o {i+1}"
+
+        if (i == n-1):
+            prog = f"./nachos-step6 -m {i} -o 0"
+
+        command += f"; {prog}  & cd {BUILD_DIR}"
+        
+
+
+    s1 = subprocess.Popen(f"{command}", shell=True, stdout=subprocess.PIPE , stderr=subprocess.STDOUT)
+    s1.wait()
+    out, err = s1.communicate()
+
+    res = str(out).replace('"',"'").replace("\\n","\n")
+    res = res[2:res.find("Machine"):]
+    print(res)
+    
+        
+
+if __name__ == "__main__":
+    testChainNMachine(10)

@@ -57,6 +57,7 @@ void MailTest(int farAddr)
         printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
         fflush(stdout);
 
+        Delay(2);
         // Send acknowledgement to the other machine (using "reply to" mailbox
         // in the message that just arrived
         outPktHdr.to = inPktHdr.from;
