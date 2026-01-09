@@ -131,6 +131,11 @@ void* mem_alloc(size_t size) {
     mem_init_block_t* init = (mem_init_block_t*)mem_space_get_addr();
     mem_fit_function_t* fit_strategy = init->alloc;
 
+    if (fit_strategy != mem_first_fit && fit_strategy != mem_best_fit && fit_strategy != mem_worst_fit){
+        PRINT_STRING("mem_alloc : Fit function has changed not allow !!\n");
+        fit_strategy = mem_first_fit;
+        init->alloc = fit_strategy;
+    }
     // Chercher un bloc libre approprié
     mem_block_t* chosen_block = fit_strategy(init->first, final_user_size);
 
