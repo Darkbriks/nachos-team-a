@@ -113,6 +113,10 @@ void handle_SC_Exit() {
     ASSERT(FALSE);
 }
 
+void handle_SC_Yield() {
+    currentThread->Yield();
+}
+
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2);
 
@@ -124,6 +128,7 @@ void ExceptionHandler(ExceptionType which) {
     switch (type){
         CASE_HANDLER_RETURN(Halt)
         CASE_HANDLER_RETURN(Exit)
+        CASE_HANDLER(Yield)
 
         CASE_HANDLER(PutChar)
         CASE_HANDLER(PutString)
@@ -157,6 +162,10 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(ForkJoin)
 
         CASE_HANDLER(Sbrk);
+
+        CASE_HANDLER(SetTLS);
+        CASE_HANDLER(GetTLS);
+        CASE_HANDLER(GetTID);
 
         default:
             printf("Unknow syscall :%d\n", type);

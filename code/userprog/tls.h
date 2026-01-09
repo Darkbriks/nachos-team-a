@@ -20,6 +20,25 @@ typedef struct _tls {
     void* tsd[TLS_MAX_KEYS];   // Thread-specific data slots
 } tls_t;
 
+/**
+ * @brief Retrieve the current thread's TLS structure.
+ *
+ * This function reads the global pointer register to obtain
+ * the address of the TLS structure for the currently executing thread.
+ *
+ * This is more efficient than making a system call to get the TLS.
+ *
+ * @return Pointer to the current thread's TLS structure.
+ */
+static inline tls_t* __get_tls() {
+    tls_t* tls;
+    __asm__ __volatile__ (
+        "move %0, $gp"
+        : "=r" (tls)
+    );
+    return tls;
+}
+
 static_assert(sizeof(void*) == 4, "Working with a kernel space in 64 bits and a user space in 32 bits is very funny, isn't it?");
 
 #else

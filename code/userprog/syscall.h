@@ -77,6 +77,11 @@
 /* --- Memory Management --- */
 #define SC_Sbrk 36
 
+/* Rework of threads */
+#define SC_SetTLS 50
+#define SC_GetTLS 51
+#define SC_GetTID 52
+
 /* ============================================================
  * ERROR CODES
  * Returned as negative values by syscalls, stored as positive in errno
@@ -501,6 +506,32 @@ int ForkJoin(posix_process_t PID, int *adrr_result);
  * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/memory/Sbrk.html">Full documentation</a>
  */
 int Sbrk(int n);
+
+/* -------------------------------------------------------------
+ * REWORK OF THREADS
+ * -------------------------------------------------------------
+ */
+
+/**
+ * @brief Set the Thread Local Storage base address for the current thread
+ * The TLS block must be allocated in user space before calling.
+ * @param addr Base address of the TLS area
+ * @return 0 on success, negative error code on failure
+ */
+int SetTLS(void* addr);
+
+/**
+ * @brief Get the Thread Local Storage base address for the current thread
+ * @return Base address of the TLS area, or 0 on error
+ */
+void* GetTLS();
+
+/**
+ * @brief Get the TID of the current thread
+ *
+ * @return The TID on success ( >= 0 ), -1 on error (check errno)
+ */
+int GetTID();
 
 #endif // IN_USER_MODE
 

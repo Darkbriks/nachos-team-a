@@ -649,6 +649,43 @@ Sbrk_ok:
     sw     $0,errno
     j      $31
     .end Sbrk
+    
+/* SetTLS : Set TLS pointer - with error handling */
+    .globl SetTLS
+    .ent   SetTLS
+SetTLS:
+    addiu $2,$0,SC_SetTLS
+    syscall
+    bgez  $2,SetTLS_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+SetTLS_ok:
+    sw     $0,errno
+    j      $31
+    .end SetTLS
+
+/* GetTLS  : Get TLS pointer - no error handling needed */
+    .globl GetTLS 
+    .ent   GetTLS 
+GetTLS :
+    addiu $2,$0,SC_GetTLS 
+    syscall
+    j      $31
+    .end GetTLS 
+
+/* GetTID  : Get kernel TID - no error handling needed */
+    .globl GetTID 
+    .ent   GetTID 
+GetTID :
+    addiu $2,$0,SC_GetTID 
+    syscall
+    j      $31
+    .end GetTID 
 
 /* -------------------------------------------------------------
  * Posix thread exit wrapper

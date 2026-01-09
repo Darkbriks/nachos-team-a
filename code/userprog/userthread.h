@@ -52,6 +52,10 @@ void handle_SC_Pthread_attr_destroy();
 void handle_SC_Pthread_attr_setdetachstate();
 void handle_SC_Pthread_attr_getdetachstate();
 
+void handle_SC_SetTLS();
+void handle_SC_GetTLS();
+void handle_SC_GetTID();
+
 class Param{
     private:
         ptr_32 function ;

@@ -2,6 +2,7 @@
 #include "syscall.h"
 #include "process.h"
 #include "thread.h"
+#include "tls.h"
 
 /**
  * @brief Start function for Nachos user thread.
@@ -220,4 +221,45 @@ void handle_SC_Pthread_attr_getdetachstate() {
     if (!machine->WriteMem(result_ptr, sizeof(int), detachstate)) { RETURN(-E_FAULT); }
 
     RETURN(0);
+}
+
+void handle_SC_SetTLS() {
+    const int tlsPtr = machine->ReadRegister(4);
+
+    DEBUG('t', "sys_set_tls: thread %s setting TLS to 0x%x\n", currentThread->getName(), tlsPtr);
+
+    if (tlsPtr == 0) {
+        DEBUG('t', "sys_set_tls: NULL pointer rejected\n");
+        RETURN(-E_INVAL);
+    }
+
+    int testValue;
+    if (!machine->ReadMem(tlsPtr, 4, &testValue)) {
+        DEBUG('t', "sys_set_tls: Invalid TLS address 0x%x on read test\n", tlsPtr);
+        RETURN(-E_FAULT);
+    }
+
+    if (!machine->WriteMem(tlsPtr, 4, testValue)) {
+        DEBUG('t', "sys_set_tls: Invalid TLS address 0x%x on write test\n", tlsPtr);
+        RETURN(-E_FAULT);
+    }
+
+    currentThread->setTlsBase(static_cast<unsigned int>(tlsPtr));
+
+    machine->WriteRegister(TLS_REGISTER, tlsPtr);
+
+    DEBUG('t', "sys_set_tls: TLS set successfully to 0x%x\n", tlsPtr);
+    RETURN(0);
+}
+
+void handle_SC_GetTLS() {
+    const unsigned int tlsBase = currentThread->getTlsBase();
+    DEBUG('t', "sys_get_tls: returning 0x%x\n", tlsBase);
+    RETURN(static_cast<int>(tlsBase));
+}
+
+void handle_SC_GetTID() {
+    const unsigned int tid = currentThread->getTID();
+    DEBUG('t', "sys_get_tid: returning %d\n", tid);
+    machine->WriteRegister(2, static_cast<int>(tid));
 }
