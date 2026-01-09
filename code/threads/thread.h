@@ -73,10 +73,10 @@ typedef struct {
     // Add more attributes as needed
 } posix_thread_attr_t;
 
-int posix_thread_attr_init(posix_thread_attr_t *attr);
-int posix_thread_attr_destroy(posix_thread_attr_t *attr);
-int posix_thread_attr_setdetachstate(posix_thread_attr_t *attr, int detachstate);
-int posix_thread_attr_getdetachstate(const posix_thread_attr_t *attr, int *detachstate);
+int posix_thread_attr_init(posix_thread_attr_t* attr);
+int posix_thread_attr_destroy(const posix_thread_attr_t* attr);
+int posix_thread_attr_setdetachstate(posix_thread_attr_t* attr, int detachstate);
+int posix_thread_attr_getdetachstate(const posix_thread_attr_t* attr, int* detachstate);
 
 // Thread state
 enum ThreadStatus { JUST_CREATED, RUNNING, READY, BLOCKED, TERMINATED };
@@ -102,22 +102,32 @@ class Thread {
     private:
         // NOTE: DO NOT CHANGE the order of these first two members.
         // THEY MUST be in this position for SWITCH to work.
-        int *stackTop;                      // the current stack pointer
-        int machineState[MachineStateSize]; // all registers except for stackTop
+        int* stackTop = nullptr;                 // the current stack pointer
+        int machineState[MachineStateSize] = {}; // all registers except for stackTop
 
-        Process *process;
-        unsigned int TID; // The TID for this thread
+        const char* name = {};
+        int* stack = nullptr; // Bottom of the stack. NULL if this is the main thread (If NULL, don't deallocate stack)
+        ThreadStatus status = JUST_CREATED; // ready, running or blocked
 
-        Thread *joiner;
-        Thread *join;
-        Semaphore *sem;
+        Process* process = nullptr;
+        unsigned int TID = 0; // The TID for this thread
 
-        long long waitTime; // Used to wake up sleeping threads
+        Thread* joiner = nullptr;
+        Thread* join = nullptr;
+        Semaphore sem;
 
-        BitMap* flags;
-        void* retval;
+        long long waitTime = 0; // Used to wake up sleeping threads
 
-        Thread(const char *debugName, Process *p, posix_thread_t tid);
+        BitMap flags;
+        void* retval = nullptr;
+
+        unsigned int userTlsBase = 0;
+        unsigned int userStackBase = 0;
+        unsigned int userStackLimit = 0;
+        unsigned int userStackSize = 0;
+        int* clearChildTid = nullptr;
+
+        Thread(const char* debugName, Process* p, posix_thread_t tid);
 
     public:
         Thread() = delete; // explicitly disable the default constructor
@@ -126,25 +136,38 @@ class Thread {
         // must not be running when delete
         // is called
 
-        char *getName() { return name; }
-        unsigned int getTID() { return TID; }
-        Process *getProcess() { return process; }
-        AddrSpace *getAddrSpace();
+        [[nodiscard]] const char* getName()const { return name; }
+        [[nodiscard]] ThreadStatus getStatus() const { return status; }
 
-        bool hasJoiner() { return joiner != nullptr; }
+        [[nodiscard]] Process* getProcess()const { return process; }
+        [[nodiscard]] unsigned int getTID() const { return TID; }
 
-        long long getWaitTime() { return waitTime; }
+        [[nodiscard]] bool hasJoiner()const { return joiner != nullptr; }
 
-        void setJoiner(Thread *thread) {joiner = thread;}
-        void setJoin(Thread *thread) {join = thread;}
-        void setStatus(ThreadStatus st) { status = st; }
+        [[nodiscard]] long long getWaitTime() const { return waitTime; }
 
-        bool isDetached() const { return flags->Test(DETACHED_FLAG_POS); }
-        bool isTerminated() const { return status == TERMINATED; }
-        void *getReturnValue() const { return retval; }
+        [[nodiscard]] bool isDetached() { return flags.Test(DETACHED_FLAG_POS); }
+        [[nodiscard]] bool isTerminated() const { return status == TERMINATED; }
+        [[nodiscard]] void* getReturnValue() const { return retval; }
+
+        [[nodiscard]] unsigned int getTlsBase() const { return userTlsBase; }
+        [[nodiscard]] unsigned int getUserStackBase() const { return userStackBase; }
+        [[nodiscard]] unsigned int getUserStackLimit() const { return userStackLimit; }
+        [[nodiscard]] unsigned int getUserStackSize() const { return userStackSize; }
+        [[nodiscard]] int* getClearChildTid() const { return clearChildTid; }
+
+        [[nodiscard]] AddrSpace* getAddrSpace()const;
+
+        void setJoiner(Thread* thread) {joiner = thread;}
+        void setJoin(Thread* thread) {join = thread;}
+        void setStatus(const ThreadStatus st) { status = st; }
 
         void setDetached(bool d);
-        void setReturnValue(void *val) { retval = val; }
+        void setReturnValue(void* val) { retval = val; }
+
+        void setTlsBase(const unsigned int addr) { userTlsBase = addr; }
+        void setUserStack(const unsigned int base, const unsigned int size, const unsigned int limit) { userStackBase = base; userStackSize = size; userStackLimit = limit; }
+        void setClearChildTid(int* addr) { clearChildTid = addr; }
 
         // basic thread operations
         void Joiner();
@@ -156,16 +179,10 @@ class Thread {
         void Finish();                            // The thread is done executing
         void CheckOverflow();                     // Check if thread has overflowed its stack
 
-        void Print() { printf("%s, ", name); }
+        void Print() const { printf("%s, ", name); }
 
     private:
         // some of the private data for this class is listed above
-
-        int *stack; // Bottom of the stack
-        // NULL if this is the main thread
-        // (If NULL, don't deallocate stack)
-        ThreadStatus status; // ready, running or blocked
-        char name[MAX_STRING_SIZE];
 
         void StackAllocate(VoidFunctionPtr func, int arg);
         // Allocate a stack for thread.
@@ -176,11 +193,11 @@ class Thread {
         // -- one for its state while executing user code, one for its state while
         // executing kernel code.
 
-        int userRegisters[NumTotalRegs]; // user-level CPU register state
+        int userRegisters[NumTotalRegs] = {}; // user-level CPU register state
 
     public:
         void SaveUserState();    // save user-level register state
-        void RestoreUserState(); // restore user-level register state
+        void RestoreUserState() const; // restore user-level register state
 #endif
 };
 
@@ -194,7 +211,7 @@ extern "C" {
 void ThreadRoot();
 
 // Stop running oldThread and start running newThread
-void SWITCH(Thread *oldThread, Thread *newThread);
+void SWITCH(Thread* oldThread, Thread* newThread);
 }
 
 #endif // THREAD_H
