@@ -10,17 +10,24 @@ int main() {
     while (1) {
         printf_simple(prompt);
         i = scanf_simple("%s", buffer);
-        if (i >= 0) {
+        if (i < 0) {
+            printf_simple("\nsession terminée\n");
+            break;
+        } else{
             pid = ForkExec(buffer);
             PutInt(pid);
             if (pid < 0){
-                print_error("Pas de process crée\n");
+
+                print_error("Pas de process crée");
+                printf_simple(" pour mot entré = "); 
+                printf_simple(buffer); 
+                PutInt(buffer[0]); 
                 continue;;
             }
             ForkJoin(pid, &exitCode);
             printf_simple("voici le code de retour du process\n");
             PutInt(exitCode);
-        }
+        }     
     }
 }
 
