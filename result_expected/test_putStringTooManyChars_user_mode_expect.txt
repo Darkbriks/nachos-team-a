@@ -2,7 +2,7 @@ MLgvkmwRQGgyZlZdszeQRJWUoBGTFzjsGwyLzIqTvKAejLPvDRMHmiQUQZxVMrdNXBRLvlzrhohZkgAO
 
 Machine halting!
 
-Ticks: total 1014031, idle 844900, system 169070, user 61
+Ticks: total 1106011, idle 844900, system 261050, user 61
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 8449
 Paging: faults 0

@@ -25,6 +25,7 @@
 #include "copyright.h"
 #include "system.h"
 #include <vector>
+#include "thread.h"
 
 //----------------------------------------------------------------------
 // Semaphore::Semaphore
@@ -61,6 +62,7 @@ Semaphore::~Semaphore() { delete queue; }
 void Semaphore::P() {
     IntStatus oldLevel = interrupt->SetLevel(IntOff); // disable interrupts
 
+    DEBUG('c', "Semaphore %s fait un P sur thread = %s\n", getName(), currentThread ?  currentThread->getName() : " aucun ");
     while (value == 0) {                      // semaphore not available
         queue->Append((void *)currentThread); // so go to sleep
         currentThread->Sleep();
@@ -82,6 +84,7 @@ void Semaphore::P() {
 void Semaphore::V() {
     Thread *thread;
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
+    DEBUG('c', "Semaphore %s fait un V sur thread = %s\n", getName(), currentThread ?  currentThread->getName() : " aucun ");
 
     thread = (Thread *)queue->Remove();
     if (thread != NULL) // make thread ready, consuming the V immediately
@@ -94,7 +97,9 @@ void Semaphore::V() {
 // Note -- without a correct implementation of Condition::Wait(),
 // the test case in the network assignment won't work!
 Lock::Lock(const char *debugName) {
-    sem = new Semaphore(debugName, 1);  
+    name = debugName;
+    sem = new Semaphore(debugName, 1);
+    holder = nullptr;
 }
 
 Lock::~Lock() {
@@ -103,24 +108,54 @@ Lock::~Lock() {
 
 void Lock::Acquire() {
     sem->P();
+    holder = currentThread;
 }
 
 void Lock::Release() {
+    ASSERT(isHeldByCurrentThread());
+    holder = nullptr;
     sem->V();
 }
 
+bool Lock::isHeldByCurrentThread() {
+    return holder == currentThread;
+}
+
 Condition::Condition(const char *debugName) {
-    std::vector<int> v = {8, 4, 5, 9};
+    name = debugName;
+    sem = new Semaphore(debugName, 0);
+    waiters = 0;
 }
 
 Condition::~Condition() {
-
+    delete sem;
 }
 
 void Condition::Wait(Lock *conditionLock) { 
-    ASSERT(FALSE);
+    ASSERT(conditionLock->isHeldByCurrentThread());
+
+    waiters++;
+    conditionLock->Release();
+
+    sem->P();
+
+    conditionLock->Acquire();
 }
 
-void Condition::Signal(Lock *conditionLock) {}
+void Condition::Signal(Lock *conditionLock) {
+    ASSERT(conditionLock->isHeldByCurrentThread());
 
-void Condition::Broadcast(Lock *conditionLock) {}
+    if (waiters > 0) {
+        waiters--;
+        sem->V();
+    }
+}
+
+void Condition::Broadcast(Lock *conditionLock) {
+    ASSERT(conditionLock->isHeldByCurrentThread());
+
+    while (waiters > 0) {
+        waiters--;
+        sem->V();
+    }
+}

@@ -72,9 +72,10 @@
 
 /* --- Process Management --- */
 #define SC_ForkExec 34
+#define SC_ForkJoin 35
 
 /* --- Memory Management --- */
-#define SC_Sbrk 35
+#define SC_Sbrk 36
 
 /* ============================================================
  * ERROR CODES
@@ -94,6 +95,7 @@
 #define E_NOSPC         9   /* No such process */
 #define E_FTABLE        10  /* Allocation table full (file table, semaphore table, etc.) */
 #define E_NOENT         11  /* No such file or directory or table entry */
+#define E_NOCPC         12   /* Not a child process */
 
 #ifdef IN_USER_MODE
 
@@ -300,6 +302,7 @@ int GetInt(int *n);
  */
 
 typedef unsigned int posix_thread_t;
+typedef int posix_process_t;
 typedef struct {} pthread_attr_t;
 
 /**
@@ -473,7 +476,16 @@ int SetMaxSemForProcess(unsigned int maxSemaphores);
  * @param name Name of the executable file
  * @return Process ID on success, negative error code on failure
  */
-int ForkExec(char *name);
+posix_process_t ForkExec(char *name);
+
+/**
+ * @brief  Wait for the process finish
+ *
+ * @param PID the PID of the process to wait
+ * @param addr_result A previously allocated adress where the exitcode will be put
+ * @return 0 on sucess and -1 on error
+ */
+int ForkJoin(posix_process_t PID, int *adrr_result);
 
 /* -------------------------------------------------------------
  * MEMORY MANAGEMENT

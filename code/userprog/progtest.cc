@@ -26,6 +26,7 @@ void StartProcess(char *filename) {
 
     if (executable == nullptr) {
         printf("Unable to open file %s\n", filename);
+        interrupt->Halt();
         return;
     }
 

@@ -105,7 +105,8 @@ void handle_SC_Exit() {
     }
 
     ASSERT(processToBeDestroyed == nullptr);
-    processToBeDestroyed = process;
+    process->setExitCode(return_code);
+    process->AncestorSigChild();
 
     currentThread->Finish();
 
@@ -153,6 +154,7 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(SetMaxSemForProcess)
 
         CASE_HANDLER(ForkExec)
+        CASE_HANDLER(ForkJoin)
 
         CASE_HANDLER(Sbrk);
 

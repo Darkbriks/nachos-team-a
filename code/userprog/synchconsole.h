@@ -8,7 +8,6 @@
 
 class SynchConsole {
     public:
-        static class Semaphore* IO_Lock;
         SynchConsole(char *readFile, char *writeFile);
         // initialize the hardware console device
         ~SynchConsole(); // clean up console emulation
@@ -33,8 +32,20 @@ class SynchConsole {
          * @return The real number of bytes read
          */
         int SynchGetString(char *s, int n); // Unix fgets(3S)
+                                            
+        /**
+         * @brief This function is called only by Cleanup at the end of the program
+         */
+        static void freeAllStatic();
+
     private:
         Console *console;
+        static Semaphore *readAvail;
+        static Semaphore *writeAvail;
+        static Semaphore *writeDone;
+        static Semaphore *IO_Lock;
+        static void ReadAvail(int arg); 
+        static void WriteDone(int arg); 
 };
 
 #endif // SYNCHCONSOLE_H

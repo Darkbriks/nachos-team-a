@@ -41,6 +41,7 @@
 #include "synch.h"
 #include "utility.h"
 
+#include "system.h"
 #include "bitmap.h"
 
 #ifdef USER_PROGRAM
@@ -125,7 +126,7 @@ class Thread {
         // must not be running when delete
         // is called
 
-        const char *getName() { return name; }
+        char *getName() { return name; }
         unsigned int getTID() { return TID; }
         Process *getProcess() { return process; }
         AddrSpace *getAddrSpace();
@@ -164,7 +165,7 @@ class Thread {
         // NULL if this is the main thread
         // (If NULL, don't deallocate stack)
         ThreadStatus status; // ready, running or blocked
-        const char *name;
+        char name[MAX_STRING_SIZE];
 
         void StackAllocate(VoidFunctionPtr func, int arg);
         // Allocate a stack for thread.

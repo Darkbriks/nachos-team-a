@@ -2,6 +2,13 @@
 
 [Vue d'ensemble](Syscalls.md)
 
+# Contrôle Système
+
+- [System Control](./system/SUMMARY.md)
+    - [Vue d'ensemble](./system/System.md)
+    - [Halt](./system/Halt.md)
+    - [Exit](./system/Exit.md)
+
 # Gestion des erreurs
 
 - [Gestion des erreurs](./errors.md)
@@ -28,7 +35,15 @@
     - [PthreadDetach](./threads/PthreadDetach.md)
     - [SelfThread](./threads/PthreadSelf.md)
     - [Attributs de thread](./threads/attrs.md)
-    
+
+# Opérations temporelles
+
+- [Opérations temporelles](./time/SUMMARY.md)
+    - [Vue d'ensemble](./time/Time.md)
+    - [Sleep](./time/Sleep.md)
+    - [SleepUntil](./time/SleepUntil.md)
+    - [GetCurrentTick](./time/GetCurrentTick.md)
+
 # Sémaphores
 
 - [Sémaphores](./sync/SUMMARY.md)
@@ -44,4 +59,5 @@
 - [Process](./process/SUMMARY.md)
     - [Vue d'ensemble](./process/Process.md)
     - [ForkExec](./process/ForkExec.md)
+    - [ForkExec](./process/ForkJoin.md)
 

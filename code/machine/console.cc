@@ -87,6 +87,7 @@ Console::~Console() {
 //      put into the buffer.
 //----------------------------------------------------------------------
 
+bool first_time = true;
 void Console::CheckCharAvail() {
     char c;
 
@@ -99,10 +100,14 @@ void Console::CheckCharAvail() {
     // otherwise, read character and tell user about it
     if (const int n = ReadPartial(readFileNo, &c, sizeof(char)); n == 1) {
         incoming = c; stats->numConsoleCharsRead++;
+        (*readHandler)(handlerArg);
     } else {
         incoming = EOF;
+        if (first_time){
+            (*readHandler)(handlerArg);
+        }
+        first_time = false;
     }
-    (*readHandler)(handlerArg);
 }
 
 //----------------------------------------------------------------------

@@ -11,6 +11,7 @@
 
 #include "copyright.h"
 #include "system.h"
+#include "thread.h"
 
 //----------------------------------------------------------------------
 // SimpleThread

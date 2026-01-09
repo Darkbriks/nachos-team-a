@@ -23,6 +23,15 @@ void printf_simple(char *buf);
  */
 void print_error(char *msg);
 
+/**
+ * @brief Get a value from the console
+ *
+ * @param format The format we want to read like %s, %d, %c
+ * @param result a pointer on a type accorded to the one ask in format
+ * @return 0 if everything is ok -1 else
+ */
+int scanf_simple(char *format, void *result);
+
 /* ============================================================
  * Conversion functions
  * ============================================================

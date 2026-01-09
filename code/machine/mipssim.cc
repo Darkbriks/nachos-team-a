@@ -15,6 +15,7 @@
 #include "machine.h"
 #include "mipssim.h"
 #include "system.h"
+#include "thread.h"
 
 static void Mult(int a, int b, bool signedArith, int *hiPtr, int *loPtr);
 

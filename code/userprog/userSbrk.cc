@@ -1,3 +1,4 @@
+#include "thread.h"
 #include "userSbrk.h"
 #include "system.h"
 #include "addrspace.h"

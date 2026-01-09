@@ -10,7 +10,7 @@ Detached thread executing
 Detached thread executing
 Machine halting!
 
-Ticks: total 39927, idle 32728, system 6890, user 309
+Ticks: total 49437, idle 32728, system 16400, user 309
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 328
 Paging: faults 0

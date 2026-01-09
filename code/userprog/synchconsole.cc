@@ -3,26 +3,23 @@
 #include "synchconsole.h"
 #include "synch.h"
 
-static Semaphore *readAvail;
-static Semaphore *writeDone;
 
-Semaphore *SynchConsole::IO_Lock = new Semaphore("a", 1);
 
-static void ReadAvail(int arg) { 
-    readAvail->V();
-    SynchConsole::IO_Lock->V();
-}
+Semaphore* SynchConsole::readAvail = new Semaphore("read avail", 0);
+Semaphore* SynchConsole::writeDone = new Semaphore("write done", 0);
+Semaphore* SynchConsole::IO_Lock = new Semaphore("IO_Lock", 1);
 
-static void WriteDone(int arg) { 
-    writeDone->V();
-    SynchConsole::IO_Lock->V();
+Semaphore* SynchConsole::writeAvail = new Semaphore("write avail", 1);
+
+void SynchConsole::freeAllStatic(){
+    // delete SynchConsole::readAvail;
+    // delete SynchConsole::writeDone;
+    // delete SynchConsole::IO_Lock;
 }
 
 
 SynchConsole::SynchConsole(char *readFile, char *writeFile)
 {
-    readAvail = new Semaphore("read avail", 0);
-    writeDone = new Semaphore("write done", 0);
     console = new Console(readFile, writeFile, ReadAvail, WriteDone, 0);
 }
 
@@ -31,12 +28,25 @@ SynchConsole::~SynchConsole()
     delete console;
     delete writeDone;
     delete readAvail;
+    delete writeAvail;
+}
+
+void SynchConsole::ReadAvail(int arg) { 
+    readAvail->V();
+    IO_Lock->V();
+}
+
+void SynchConsole::WriteDone(int arg) { 
+    writeDone->V();
+    writeAvail->V();
+    IO_Lock->V();
 }
 
 void SynchConsole::SynchPutChar(const char ch)
 {
 
     IO_Lock->P();
+    writeAvail->P();
     console->PutChar(ch);
     writeDone->P(); 
 }

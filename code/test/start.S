@@ -612,6 +612,25 @@ ForkExec_ok:
     j      $31
     .end ForkExec
 
+/* ForkJoin : no error handling */
+    .globl ForkJoin
+    .ent	ForkJoin
+ForkJoin:
+    addiu $2,$0,SC_ForkJoin
+    syscall
+    bgez  $2,ForkJoin_ok
+    nop
+    # Error handling
+    subu   $3,$0,$2
+    sw     $3,errno
+    addiu  $2,$0,-1
+    j      $31
+    nop
+ForkJoin_ok:
+    sw     $0,errno
+    j      $31
+    .end ForkJoin
+
 /* Sbrk : with error handling */
     .globl Sbrk
     .ent	Sbrk
