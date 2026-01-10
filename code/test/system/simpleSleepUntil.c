@@ -1,5 +1,6 @@
 #include "syscall.h"
 #include "nos_stdlib.h"
+#include "nos_errno.h"
 
 int main() {
     long long current_tick;
@@ -23,7 +24,7 @@ int main() {
     int errcode;
     int result = SleepUntil(-100);
     if (result == -1) {
-        errcode = GetLastError();
+        errcode = __get_errno();
         printf_simple("Main: SleepUntil(-100) failed as expected with errno = ");
         PutInt(errcode);
         printf_simple("\n");

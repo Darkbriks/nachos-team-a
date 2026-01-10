@@ -48,7 +48,7 @@ static_assert(sizeof(void*) == 4, "Working with a kernel space in 64 bits and a 
 #define TLS_OFFSET_SELF        0
 #define TLS_OFFSET_TID         4
 #define TLS_OFFSET_PID         8
-#define TLS_OFFSET_ERRNO       12
+#define TLS_OFFSET_ERRNO       12 // WARNING: Any change here must be reflected in syscall_macro.S
 #define TLS_OFFSET_STACK_BASE  16
 #define TLS_OFFSET_STACK_SIZE  20
 #define TLS_OFFSET_FLAGS       24

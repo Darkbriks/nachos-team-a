@@ -23,10 +23,6 @@
 #define SC_Halt 0
 #define SC_Exit 1
 
-/* --- Process Management --- */
-#define SC_Exec 2
-#define SC_Join 3
-
 /* --- File System --- */
 #define SC_Create 4
 #define SC_Open 5
@@ -34,7 +30,6 @@
 #define SC_Write 7
 #define SC_Close 8
 
-#define SC_Fork 9
 #define SC_Yield 10
 
 /* --- Console I/O --- */
@@ -117,35 +112,6 @@
  * from the system call entry point in exception.cc.
  */
 
-
-/* ============================================================
- * ERROR HANDLING
- * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/errors.html">Documentation</a>
- * ============================================================
- */
-
-/**
- * @brief Global error variable (defined in start.S)
- * Set to 0 on successful syscall, or error code (E_xxx) on failure
- */
-extern int errno;
-
-/**
- * @brief Get the last error code
- * @return Current value of errno
- *
- * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/errors.html#GetLastError">Full documentation</a>
- */
-int GetLastError(void);
-
-/**
- * @brief Clear the error code (set errno to 0)
- *
- * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/errors.html#ClearError">Full documentation</a>
- */
-void ClearError(void);
-
-
 /* -------------------------------------------------------------
  * SYSTEM CONTROL
  * -------------------------------------------------------------
@@ -164,19 +130,6 @@ void Halt() __attribute__((noreturn));
 
 /* This user program is done (status = 0 means exited normally). */
 void Exit(int status) __attribute__((noreturn));
-
-/* A unique identifier for an executing user program (address space) */
-typedef int SpaceId;
-
-/* Run the executable, stored in the Nachos file "name", and return the
- * address space identifier
- */
-SpaceId Exec(char *name);
-
-/* Only return once the the user program "id" has finished.
- * Return the exit status.
- */
-int Join(SpaceId id);
 
 
 /* -------------------------------------------------------------
@@ -230,11 +183,6 @@ void Close(OpenFileId id);
  * USER-LEVEL THREAD OPERATIONS
  * -------------------------------------------------------------
  */
-
-/* Fork a thread to run a procedure ("func") in the *same* address space
- * as the current thread.
- */
-void Fork(void (*func)());
 
 /* Yield the CPU to another runnable thread, whether in this address space
  * or not.

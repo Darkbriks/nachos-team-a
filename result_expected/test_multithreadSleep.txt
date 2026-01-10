@@ -5,24 +5,24 @@ ain: CreaTted thread with ID 3
 hrMTead 2: Starting sleep test
 hread 3: StartTing sleep test
 hread 1: Woke up afterT 1000 ticks
-Thread 1: Slept for 1101 ticks (expected ~1000)
+Thread 1: Slept for 1105 ticks (expected ~1000)
 hread 2: Woke up after 2000 ticks
-Thread 2: Slept for 2082 ticks (expected ~2000)
+Thread 2: Slept for 2090 ticks (expected ~2000)
 ain: Created thread with ID 4
 hrMTead 3: Woke up after 3000 ticks
-Thread 3: Slept for 3100 ticks (expected ~3000)
+Thread 3: Slept for 3118 ticks (expected ~3000)
 hread 4: Starting sleep test
 ain: Created thread with ID 5
 TMThread 4: Woke up after 4000 ticks
-Thread 4: Slept for 4041 ticks (expected ~4000)
+Thread 4: Slept for 4065 ticks (expected ~4000)
 hread 5: Starting sleep test
 ain: Created thread with ID 6
 MainT thread finished.
 hread 5: Woke up after 5000 ticks
-Thread 5: Slept for 5044 ticks (expected ~5000)
+Thread 5: Slept for 5117 ticks (expected ~5000)
 Machine halting!
 
-Ticks: total 121512, idle 77977, system 30770, user 12765
+Ticks: total 122150, idle 78056, system 31090, user 13004
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 791
 Paging: faults 0

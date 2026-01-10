@@ -1,7 +1,7 @@
 #include "syscall.h"
 
 int main() {
-    SpaceId newProc;
+  /*  SpaceId newProc;
     OpenFileId input = ConsoleInput;
     OpenFileId output = ConsoleOutput;
     char prompt[2], buffer[60];
@@ -27,5 +27,5 @@ int main() {
             newProc = Exec(buffer);
             Join(newProc);
         }
-    }
+    }*/
 }

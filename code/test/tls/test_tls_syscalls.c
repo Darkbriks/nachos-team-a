@@ -1,5 +1,6 @@
 #include "syscall.h"
 #include "tls.h"
+#include "nos_errno.h"
 
 int main(void) {
     tls_t my_tls;
@@ -31,7 +32,7 @@ int main(void) {
 
     PutString("\nTest 2: SetTLS with valid pointer\n", 45);
     ret = SetTLS(&my_tls);
-    err = GetLastError();
+    err = __get_errno();
     PutString("Return value: ", 20);
     PutInt(ret);
     if (ret == 0) {
@@ -85,7 +86,7 @@ int main(void) {
 
     PutString("\nTest 7: SetTLS with NULL\n", 35);
     ret = SetTLS((void*)0);
-    err = GetLastError();
+    err = __get_errno();
     PutString("Return value: ", 20);
     PutInt(ret);
     if (ret == -1) {

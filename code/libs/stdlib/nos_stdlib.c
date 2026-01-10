@@ -1,5 +1,6 @@
 #include "nos_stdlib.h"
 #include "nos_string.h"
+#include "nos_errno.h"
 
 #ifndef NOT_YET_IMPLEMENTED
 #define NOT_YET_IMPLEMENTED(func) PutString("Function " #func " is not yet implemented.\n", 39);
@@ -12,7 +13,7 @@ void printf_simple(char* buf) {
 }
 
 void print_error(char* msg) {
-    int err = GetLastError();
+    int err = __get_errno();
     // TODO: Optimize syscall number by using buffered and formattted output
     if (msg) { printf_simple(msg); }
     PutString(" (errno=", 8);

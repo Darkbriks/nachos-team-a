@@ -237,8 +237,8 @@ if __name__ == "__main__":
     all_test.append(Test(
                          file_expect = "test_getString_erno_negative_size.txt",
                          line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./system/getErrno",
-                         name = "Test GetString taille négative",
-                         description = "Test du syscall GetString depuis un programme utilisateur avec en paramètre une taille de chaîne négative. Doit échouer, et errno doit être mis à E_INVAL (1)."
+                         name = "Test Errno en contexte global",
+                         description = "Test des fonctions de récupération d'errno dans un contexte a thread unique, sans tls."
                          )
                    )
 
