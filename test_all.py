@@ -414,6 +414,54 @@ if __name__ == "__main__":
                     )
                 )
 
+    all_test.append(Test(
+                        file_expect ="test_malloc.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./memory_allocator/testMalloc",
+                        name = "Test malloc and free",
+                        description = "Test pour vérifier l'allocation et la libération de mémoire dynamique via malloc et free."
+                    )
+                )
+
+    all_test.append(Test(
+                        file_expect ="test_realloc.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./memory_allocator/testRealloc",
+                        name = "Test realloc",
+                        description = "Test pour vérifier le comportement de la fonction realloc pour la réallocation de mémoire dynamique."
+                    )
+                )
+
+    all_test.append(Test(
+                        file_expect ="test_corruption_fonction.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./memory_allocator/testCorruptionFonction",
+                        name = "Test détection de corruption mémoire",
+                        description = "Test pour vérifier la détection de corruption de la fonction de recherche de bloc mémoire."
+                    )
+                )
+
+    all_test.append(Test(
+                        file_expect ="test_corruption_memoire.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./memory_allocator/testCorruptionMemoire",
+                        name = "Test détection de corruption mémoire",
+                        description = "Test pour vérifier la détection de corruption mémoire lors de l'utilisation de malloc et free."
+                    )
+                )
+
+    all_test.append(Test(
+                        file_expect ="test_errno_tls.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./system/errno_tls",
+                        name = "Test errno en contexte monothread avec TLS",
+                        description = "Test pour vérifier le comportement de errno dans un contexte monothread avec Thread Local Storage (TLS)."
+                    )
+                )
+
+    all_test.append(Test(
+                        file_expect ="test_errno_multithread.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./system/errno_multithread",
+                        name = "Test errno en contexte multithread avec TLS",
+                        description = "Test pour vérifier le comportement de errno dans un contexte multithread avec Thread Local Storage (TLS)."
+                    )
+                )
+
 
     total : int = 0
 
