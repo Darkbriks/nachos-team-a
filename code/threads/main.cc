@@ -61,7 +61,7 @@ extern void ThreadTest(void),
 extern void Print(char *file), PerformanceTest(void);
 extern void StartProcess(char *file), ConsoleTest(char *in, char *out), SynchConsoleTest(char *in, char *out);
 extern void MailTest(int networkID);
-
+extern void RingTest(int myAddr, int numMachines); 
 //----------------------------------------------------------------------
 // main
 //      Bootstrap the operating system kernel.
@@ -149,7 +149,13 @@ int main(int argc, char **argv) {
             // start up another nachos
             MailTest(atoi(*(argv + 1)));
             argCount = 2;
+        } else if (!strcmp(*argv, "-g")) {
+            ASSERT(argc > 2);
+            RingTest(atoi(*(argv + 1)), atoi(*(argv + 2)));
+            argCount = 3;
         }
+
+
 #endif // NETWORK
     }
 
