@@ -30,8 +30,6 @@
 #define SC_Write 7
 #define SC_Close 8
 
-#define SC_Yield 10
-
 /* --- Console I/O --- */
 #define SC_PutChar 11
 #define SC_PutString 12
@@ -45,13 +43,6 @@
 #define SC_PthreadExit 18
 #define SC_PthreadJoin 19
 #define SC_PthreadDetach 20
-#define SC_PthreadSelf 21
-
-/* --- Pthread attributes --- */
-#define SC_Pthread_attr_init 22
-#define SC_Pthread_attr_destroy 23
-#define SC_Pthread_attr_setdetachstate 24
-#define SC_Pthread_attr_getdetachstate 25
 
 /* --- Time --- */
 #define SC_Sleep 26
@@ -75,7 +66,11 @@
 /* Rework of threads */
 #define SC_SetTLS 50
 #define SC_GetTLS 51
-#define SC_GetTID 52
+#define SC_thread_create 52
+#define SC_thread_exit 53
+#define SC_thread_join 54
+#define SC_thread_self 55
+#define SC_thread_yield 56
 
 /* ============================================================
  * ERROR CODES
@@ -98,6 +93,7 @@
 #define E_NOCPC         12  /* Not a child process */
 #define E_THREAD_LIMIT  13  /* Maximum threads reached */
 #define E_STACK_ADDR    14  /* Invalid stack address */
+#define E_BUSY          15  /* Resource busy */
 
 #ifdef IN_USER_MODE
 
@@ -180,18 +176,6 @@ int Read(char *buffer, int size, OpenFileId id);
 /* Close the file, we're done reading and writing to it. */
 void Close(OpenFileId id);
 
-
-/* -------------------------------------------------------------
- * USER-LEVEL THREAD OPERATIONS
- * -------------------------------------------------------------
- */
-
-/* Yield the CPU to another runnable thread, whether in this address space
- * or not.
- */
-void Yield();
-
-
 /* -------------------------------------------------------------
  * CONSOLE I/O
  * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/console/Console.html">Full documentation</a>
@@ -256,7 +240,7 @@ int GetInt(int *n);
  * -------------------------------------------------------------
  */
 
-typedef unsigned int posix_thread_t;
+typedef unsigned int tid_t;
 typedef int posix_process_t;
 typedef struct {} pthread_attr_t;
 
@@ -269,7 +253,7 @@ typedef struct {} pthread_attr_t;
  * @param arg The argument to be passed to the function
  * @return 0 on success, -1 on error (check errno)
  */
-int PthreadCreate(posix_thread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg);
+int PthreadCreate(tid_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg);
 
 /**
  * @brief Destruct the caller thread
@@ -286,7 +270,7 @@ void PthreadExit(void *retval);
  * @param retval A pointer to store the return value of the joined thread (can be nullptr)
  * @return 0 on success, -1 on error (check errno)
  */
-int PthreadJoin(posix_thread_t thread, void **retval);
+int PthreadJoin(tid_t thread, void **retval);
 
 /**
  * @brief Detach a thread
@@ -294,52 +278,7 @@ int PthreadJoin(posix_thread_t thread, void **retval);
  * @param thread The thread to detach
  * @return 0 on success, -1 on error (check errno)
  */
-int PthreadDetach(posix_thread_t thread);
-
-/**
- * @brief Get the TID of the current thread
- *
- * @return The TID on success ( >= 0 ), -1 on error (check errno)
- */
-int PthreadSelf();
-
-/* -------------------------------------------------------------
- * POSIX THREAD ATTRIBUTES OPERATIONS
- * -------------------------------------------------------------
- */
-/**
- * @brief Initialize thread attributes object.
- *
- * @param attr Pointer to the thread attributes object to initialize.
- * @return 0 on success, -1 on error (check errno)
- */
-int Pthread_attr_init(pthread_attr_t *attr);
-
-/**
- * @brief Destroy thread attributes object.
- *
- * @param attr Pointer to the thread attributes object to destroy.
- * @return 0 on success, -1 on error (check errno)
- */
-int Pthread_attr_destroy(pthread_attr_t *attr);
-
-/**
- * @brief Set the detach state attribute in the thread attributes object.
- *
- * @param attr Pointer to the thread attributes object.
- * @param detachstate Desired detach state (JOINABLE or DETACHED).
- * @return 0 on success, -1 on error (check errno)
- */
-int Pthread_attr_setdetachstate(pthread_attr_t *attr, int detachstate);
-
-/**
- * @brief Get the detach state attribute from the thread attributes object.
- *
- * @param attr Pointer to the thread attributes object.
- * @param detachstate Pointer to store the retrieved detach state.
- * @return 0 on success, -1 on error (check errno)
- */
-int Pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate);
+int PthreadDetach(tid_t thread);
 
 /* -------------------------------------------------------------
  * TIME OPERATIONS
@@ -477,11 +416,39 @@ int SetTLS(void* addr);
 void* GetTLS();
 
 /**
- * @brief Get the TID of the current thread
+ * @brief Create a new thread in the current process
  *
- * @return The TID on success ( >= 0 ), -1 on error (check errno)
+ * @param args Pointer to a thread_args structure containing thread parameters
+ * @return 0 on success, negative error code on failure
  */
-int GetTID();
+int thread_create(void* args);
+
+/**
+ * @brief Exit the current thread
+ *
+ * @param retval The return value of the thread
+ */
+void thread_exit(void* retval);
+
+/**
+ * @brief Wait for a thread to finish
+ *
+ * @param tid The TID of the thread to wait
+ * @param retval A pointer to store the return value of the joined thread (can be nullptr)
+ * @return 0 on success, negative error code on failure
+ */
+int thread_join(int tid, void** retval);
+
+/**
+ * @brief Get the TID of the current thread
+ * @return The TID of the current thread
+ */
+int thread_self();
+
+/**
+ * @brief Yield the CPU to another thread
+ */
+void thread_yield();
 
 #endif // IN_USER_MODE
 

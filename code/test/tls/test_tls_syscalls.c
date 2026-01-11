@@ -73,8 +73,8 @@ int main(void) {
         PutString("self->self MISMATCH\n", 25);
     }
 
-    PutString("\nTest 6: GetTID\n", 25);
-    int tid = GetTID();
+    PutString("\nTest 6: thread_self\n", 25);
+    int tid = thread_self();
     PutString("Kernel TID: ", 15);
     PutInt(tid);
     PutChar('\n');

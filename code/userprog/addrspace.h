@@ -34,6 +34,10 @@ struct semaphore_descriptor {
     bool valid;
 };
 
+static inline bool IsAligned(const unsigned int addr, const unsigned int align) {
+    return (addr & (align - 1)) == 0;
+}
+
 class AddrSpace {
     public:
         /**
@@ -93,10 +97,19 @@ class AddrSpace {
 
         int AllocateSemaphoreTable(unsigned int maxSem);
 
+        [[nodiscard]] bool IsUserAddress(unsigned int addr) const;
+        [[nodiscard]] bool IsValidUserRange(unsigned int addr, unsigned int size) const;
+        [[nodiscard]] bool IsInCodeSegment(unsigned int addr) const;
+        [[nodiscard]] bool IsInHeap(unsigned int addr) const;
+        [[nodiscard]] bool IsInStackArea(unsigned int addr) const;
+        [[nodiscard]] bool IsValidTLS(unsigned int tlsAddr) const;
+
     private:
         TranslationEntry *pageTable; // Assume linear page table translation for now!
         unsigned int numPages; // Number of pages in the virtual address space
 
+        unsigned int codeStart = 0;
+        unsigned int codeSize = 0;
         unsigned int heapStart = 0;
         unsigned int brk = 0;
         unsigned int stackLimit = 0;

@@ -47,7 +47,7 @@ void thread_function(int thread_id) {
 }
 
 int main(void) {
-    posix_thread_t threads[NUM_THREADS];
+    tid_t threads[NUM_THREADS];
 
     PutString("=== Errno Multithreaded Test ===\n", 35);
 

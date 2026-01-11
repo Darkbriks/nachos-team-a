@@ -14,7 +14,7 @@ void *simple_thread(void *arg) {
 int main() {
     PutString("=== Test PthreadCreate Basic ===\n", 35);
     
-    posix_thread_t tid1, tid2, tid3;
+    tid_t tid1, tid2, tid3;
     void *retval1, *retval2, *retval3;
     
     if (PthreadCreate(&tid1, 0, simple_thread, (void *)1) != 0) {

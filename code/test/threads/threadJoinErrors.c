@@ -6,7 +6,7 @@ void *simple_thread(void *arg) {
 }
 
 void *joining_thread(void *arg) {
-    posix_thread_t tid = (posix_thread_t)arg;
+    tid_t tid = (tid_t)arg;
     PutString("Attempting to join from child thread\n", 38);
     return (void *)(long)PthreadJoin(tid, 0);
 }
@@ -15,7 +15,7 @@ int main() {
     PutString("=== Test PthreadJoin Error Cases ===\n", 39);
     
     PutString("Test 1: Join non-existent thread\n", 34);
-    posix_thread_t fake_tid = 9999;
+    tid_t fake_tid = 9999;
     
     if (PthreadJoin(fake_tid, 0) == 0) {
         PutString("ERROR: Join succeeded on non-existent thread\n", 46);
@@ -25,7 +25,7 @@ int main() {
     PutString("Test 1: PASS - Cannot join non-existent thread\n", 48);
     
     PutString("Test 2: Self-join\n", 15);
-    posix_thread_t self_tid = 0; // Main thread TID is assumed to be 0
+    tid_t self_tid = 0; // Main thread TID is assumed to be 0
     if (PthreadJoin(self_tid, 0) == 0) {
         PutString("ERROR: Self-join succeeded (should fail)\n", 42);
         return 1;
@@ -33,7 +33,7 @@ int main() {
     PutString("Test 2: PASS - Cannot self-join\n", 33);
     
     PutString("Test 3: Double join\n", 20);
-    posix_thread_t tid1;
+    tid_t tid1;
     void *retval;
     
     if (PthreadCreate(&tid1, 0, simple_thread, 0) != 0) {
@@ -59,7 +59,7 @@ int main() {
     PutString("Test 3: PASS - Cannot join twice\n", 34);
     
     PutString("Test 4: Two threads joining same thread\n", 41);
-    posix_thread_t tid2, tid3, tid4;
+    tid_t tid2, tid3, tid4;
     void *ret1, *ret2;
     
     if (PthreadCreate(&tid2, 0, simple_thread, 0) != 0) {
@@ -94,7 +94,7 @@ int main() {
     PutString("Test 4: PASS - Only one joiner succeeded\n", 42);
     
     PutString("Test 5: Join detached thread\n", 30);
-    posix_thread_t tid5;
+    tid_t tid5;
     
     if (PthreadCreate(&tid5, 0, simple_thread, 0) != 0) {
         PutString("ERROR: Failed to create thread\n", 31);

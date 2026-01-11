@@ -240,30 +240,45 @@ void Cleanup() {
 }
 
 #ifdef USER_PROGRAM
-//----------------------------------------------------------------------
-// CopyStringFromMachine
-//      Copy a mips string from the user memory to the system memory.
-//----------------------------------------------------------------------
-void copyStringFromMachine(int from, char *to, unsigned size) {
-    unsigned i = 0; int ch;
-    while (machine->ReadMem(from + i, 1, &ch) && i < size - 1) {
-        to[i] = (char)ch;
-        if (to[i] == '\0') { return; }
-        i++;
+
+bool CopyFromUserRaw(void* dst, const unsigned src, const size_t size) {
+    int ch;
+    for (unsigned int i = 0; i < size; i++) {
+        if (machine->ReadMem(static_cast<int>(src + i), 1, &ch) == false) {
+            return false;
+        }
+        static_cast<char*>(dst)[i] = static_cast<char>(ch);
     }
-    to[i] = '\0';
+    return true;
 }
 
-//----------------------------------------------------------------------
-// CopyStringToMachine
-//      Copy a string from Linux memory to MIPS memory
-//----------------------------------------------------------------------
-void copyStringToMachine(char *from, int to, unsigned size) {
-    unsigned int i;
-
-    for (i = 0; i < size && from[i] != '\0'; i++) {
-        machine->WriteMem(to + i, 1, (int) from[i]);
+bool CopyToUserRaw(const unsigned dst, const void* src, const size_t size) {
+    for (unsigned int i = 0; i < size; i++) {
+        if (machine->WriteMem(static_cast<int>(dst + i), 1, static_cast<const char*>(src)[i]) == false) {
+            return false;
+        }
     }
-    machine->WriteMem(to + i, 1, 0);
+    return true;
 }
+
+bool CopyStringFromUser(const unsigned src, char* dst, const size_t max) {
+    for (size_t i = 0; i < max - 1; i++) {
+        int ch;
+        if (!machine->ReadMem(static_cast<int>(src + i), 1, &ch)) { return false; }
+        dst[i] = static_cast<char>(ch);
+        if (dst[i] == '\0') { return true; }
+    }
+    dst[max - 1] = '\0';
+    return true;
+}
+
+bool CopyStringToUser(const char* src, const unsigned dst, const size_t max) {
+    size_t i;
+    for (i = 0; i < max - 1 && src[i] != '\0'; i++) {
+        if (!machine->WriteMem(static_cast<int>(dst + i), 1, src[i])) { return false; }
+    }
+    if (!machine->WriteMem(static_cast<int>(dst + i), 1, 0)) { return false; }
+    return true;
+}
+
 #endif

@@ -1,5 +1,6 @@
 #include "syscall.h"
 #include "nos_stdlib.h"
+#include "nos_threads.h"
 
 // Don't work
 void very_long_function(void *arg) {
@@ -11,7 +12,7 @@ void very_long_function(void *arg) {
 int main() {
     printf_simple("c");
 
-    posix_thread_t tid;
+    tid_t tid;
     PthreadCreate(&tid, 0, (void *(*)(void *)) &very_long_function, 0);
     PthreadJoin(tid, 0);
 

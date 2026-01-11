@@ -232,8 +232,8 @@ Thread * Process::FindThread(const unsigned int TID) const {
 }
 
 Thread* Process::CreateThread(const char * name) {
-    const posix_thread_t tid = threads_bitmap->Find();
-    if (tid == static_cast<posix_thread_t>(-1)) { return nullptr; }
+    const tid_t tid = threads_bitmap->Find();
+    if (tid == static_cast<tid_t>(-1)) { return nullptr; }
 
     const auto thread_name = new char[MAX_STRING_SIZE];
     snprintf(thread_name, MAX_STRING_SIZE - 1, "%s_%d_%d", name, PID, tid);

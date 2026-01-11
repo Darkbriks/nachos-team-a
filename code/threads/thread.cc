@@ -20,66 +20,12 @@
 #include "switch.h"
 #include "synch.h"
 #include "system.h"
-
-#include "syscall.h"
+#include "tls.h"
 
 #define STACK_FENCEPOST                                                        \
     0xdeadbeef // this is put at the top of the
                // execution stack, for detecting
                // stack overflows
-
-/**
- *@brief Initialize thread attributes object with default values.
- *
- * @param attr Pointer to the thread attributes object to initialize.
- * @return int 0 on success, -E_INVAL if attr is nullptr.
- */
-int posix_thread_attr_init(posix_thread_attr_t* attr) {
-    if (attr == nullptr) { return -E_INVAL; }
-    attr->detachstate = JOINABLE;
-    return 0;
-}
-
-/**
- *@brief Destroy thread attributes object.
- *
- * @param attr Pointer to the thread attributes object to destroy.
- * @return int 0 on success, -E_INVAL if attr is nullptr.
- */
-int posix_thread_attr_destroy(const posix_thread_attr_t* attr) {
-    if (attr == nullptr) { return -E_INVAL; }
-    // No dynamic resources to free for now
-    return 0;
-}
-
-/**
- *@brief Set the detach state attribute in the thread attributes object.
- *
- * @param attr Pointer to the thread attributes object.
- * @param detachstate Desired detach state (JOINABLE or DETACHED).
- * @return int 0 on success, -E_INVAL if attr is nullptr or detachstate is invalid.
- */
-int posix_thread_attr_setdetachstate(posix_thread_attr_t* attr, int detachstate) {
-    if (attr == nullptr) { return -E_INVAL; }
-    if (detachstate != JOINABLE && detachstate != DETACHED) {
-        return -E_INVAL;
-    }
-    attr->detachstate = static_cast<posix_thread_detachstate_t>(detachstate);
-    return 0;
-}
-
-/**
- *@brief Get the detach state attribute from the thread attributes object.
- *
- * @param attr Pointer to the thread attributes object.
- * @param detachstate Pointer to store the retrieved detach state.
- * @return int 0 on success, -E_INVAL if attr or detachstate is nullptr.
- */
-int posix_thread_attr_getdetachstate(const posix_thread_attr_t* attr, int* detachstate) {
-    if (attr == nullptr || detachstate == nullptr) { return -E_INVAL; }
-    *detachstate = static_cast<int>(attr->detachstate);
-    return 0;
-}
 
 //----------------------------------------------------------------------
 // Thread::Thread
@@ -89,8 +35,8 @@ int posix_thread_attr_getdetachstate(const posix_thread_attr_t* attr, int* detac
 //      "threadName" is an arbitrary string, useful for debugging.
 //----------------------------------------------------------------------
 
-Thread::Thread(const char* debugName, Process* p, const posix_thread_t tid)
-                : name(debugName), process(p), TID(tid), sem(Semaphore(debugName, 0)), flags(BitMap(THREAD_FLAG_SIZE)) {
+Thread::Thread(const char* debugName, Process* p, const tid_t tid)
+                : name(debugName), process(p), TID(tid), sem(Semaphore(debugName, 0)) {
 #ifdef USER_PROGRAM
     // FBT: Need to initialize special registers of simulator to 0
     // in particular LoadReg or it could crash when switching
@@ -130,10 +76,32 @@ AddrSpace*  Thread::getAddrSpace() const {
 
 void Thread::setDetached(const bool d) {
     if (d) {
-        flags.Mark(DETACHED_FLAG_POS);
+        flags |= USER_THREAD_FLAG_DETACHED;
     } else {
-        flags.Clear(DETACHED_FLAG_POS);
+        flags &= ~USER_THREAD_FLAG_DETACHED;
     }
+}
+
+void Thread::InitUserContext(const unsigned int entryPoint, const unsigned int user_sp) {
+    ASSERT(process != nullptr)
+    const AddrSpace* space = process->getSpace();
+    ASSERT(space != nullptr)
+
+    for (int & userRegister : userRegisters) {
+        userRegister = 0;
+    }
+
+    userRegisters[PCReg] = static_cast<int>(entryPoint);
+    userRegisters[NextPCReg] = static_cast<int>(entryPoint + 4);
+    userRegisters[StackReg] = static_cast<int>(user_sp);
+    userRegisters[RetAddrReg] = 0; // TODO
+
+    if (userTlsBase != 0) {
+        userRegisters[TLS_REGISTER] = static_cast<int>(userTlsBase);
+    }
+
+    DEBUG('t', "Thread::InitUserContext: Initialized user context for thread \"%s\" with entryPoint=0x%x, user_sp=0x%x, tls_base=0x%x\n",
+          name, entryPoint, user_sp, userTlsBase);
 }
 
 void Thread::Joiner() {

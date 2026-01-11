@@ -103,6 +103,9 @@ public:
     [[nodiscard]] unsigned int GetStackAreaTop() const { return stackAreaTop; }
     [[nodiscard]] unsigned int GetStackAreaBottom() const { return stackAreaBottom; }
 
+    [[nodiscard]] bool IsValidUserStackPointer(unsigned int sp) const;
+    [[nodiscard]] bool IsKnownStackBase(unsigned int base) const;
+
     /**
      * @brief Debug: print all stack regions
      */

@@ -6,6 +6,14 @@
         machine->WriteRegister(2, (int)(value)); \
         return;
 
+#define VALIDATE_ARG(cond, errcode) \
+    do { \
+        if (!(cond)) { \
+            DEBUG('e', "Exception handler: argument validation failed: " #cond "\n"); \
+            RETURN(-(errcode)) \
+        } \
+    } while (0)
+
 #define INT32_MAX 2147483647
 
 #define MAX_PUT_STRING 8192

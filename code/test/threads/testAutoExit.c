@@ -30,7 +30,7 @@ int main() {
     PutString("=== Test Automatic Thread Termination ===\n", 43);
 
     // Create threads that will return without calling ExitThread
-    posix_thread_t tid1, tid2;
+    tid_t tid1, tid2;
     PthreadCreate(&tid1, NULL, (void *(*)(void *))thread_func, (void *)1);
     PthreadCreate(&tid2, NULL, (void *(*)(void *))thread_func, (void *)2);
 

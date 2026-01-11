@@ -32,7 +32,7 @@ void *exit_in_middle(void *arg) {
 int main() {
     PutString("=== Test PthreadExit Return Values ===\n", 41);
     
-    posix_thread_t tid;
+    tid_t tid;
     void *retval;
     
     PutString("Test 1: Return 0\n", 17);

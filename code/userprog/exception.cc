@@ -35,13 +35,13 @@
 
 #define CASE_HANDLER(syscall_name)                      \
     case SC_##syscall_name:                             \
-        DEBUG('a', "%s exception.cc\n", #syscall_name); \
+        DEBUG('e', "%s exception.cc\n", #syscall_name); \
         handle_SC_##syscall_name();                     \
         break;
 
 #define CASE_HANDLER_RETURN(syscall_name)               \
     case SC_##syscall_name:                             \
-        DEBUG('a', "%s exception.cc\n", #syscall_name); \
+        DEBUG('e', "%s exception.cc\n", #syscall_name); \
         handle_SC_##syscall_name();                     \
         return;
 
@@ -83,7 +83,7 @@ static void UpdatePC() {
 //----------------------------------------------------------------------
 
 void handle_SC_Halt() {
-    DEBUG('a', "Shutdown, initiated by user program.\n");
+    DEBUG('e', "Shutdown, initiated by user program.\n");
     interrupt->Halt();
 }
 
@@ -113,10 +113,6 @@ void handle_SC_Exit() {
     ASSERT(FALSE);
 }
 
-void handle_SC_Yield() {
-    currentThread->Yield();
-}
-
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2);
 
@@ -128,7 +124,6 @@ void ExceptionHandler(ExceptionType which) {
     switch (type){
         CASE_HANDLER_RETURN(Halt)
         CASE_HANDLER_RETURN(Exit)
-        CASE_HANDLER(Yield)
 
         CASE_HANDLER(PutChar)
         CASE_HANDLER(PutString)
@@ -141,12 +136,6 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER_RETURN(PthreadExit)
         CASE_HANDLER(PthreadJoin)
         CASE_HANDLER(PthreadDetach)
-        CASE_HANDLER(PthreadSelf)
-
-        CASE_HANDLER(Pthread_attr_init)
-        CASE_HANDLER(Pthread_attr_destroy)
-        CASE_HANDLER(Pthread_attr_setdetachstate)
-        CASE_HANDLER(Pthread_attr_getdetachstate)
 
         CASE_HANDLER(Sleep)
         CASE_HANDLER(SleepUntil)
@@ -165,7 +154,12 @@ void ExceptionHandler(ExceptionType which) {
 
         CASE_HANDLER(SetTLS);
         CASE_HANDLER(GetTLS);
-        CASE_HANDLER(GetTID);
+
+        CASE_HANDLER(thread_create);
+        CASE_HANDLER_RETURN(thread_exit);
+        CASE_HANDLER(thread_join);
+        CASE_HANDLER(thread_self);
+        CASE_HANDLER(thread_yield);
 
         default:
             printf("Unknow syscall :%d\n", type);

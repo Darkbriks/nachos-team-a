@@ -40,9 +40,8 @@
 #include "copyright.h"
 #include "synch.h"
 #include "utility.h"
-
 #include "system.h"
-#include "bitmap.h"
+#include "nos_threads.h"
 
 #ifdef USER_PROGRAM
 #include "addrspace.h"
@@ -58,25 +57,7 @@
 // WATCH OUT IF THIS ISN'T BIG ENOUGH!!!!!
 #define StackSize (4 * 1024) // in words
 
-#define DETACHED_FLAG_POS 0
-
-#define THREAD_FLAG_SIZE 1
-
 class Process;
-
-typedef unsigned int posix_thread_t;
-
-typedef enum : unsigned char { JOINABLE = 0, DETACHED = 1 } posix_thread_detachstate_t;
-
-typedef struct {
-    posix_thread_detachstate_t detachstate;
-    // Add more attributes as needed
-} posix_thread_attr_t;
-
-int posix_thread_attr_init(posix_thread_attr_t* attr);
-int posix_thread_attr_destroy(const posix_thread_attr_t* attr);
-int posix_thread_attr_setdetachstate(posix_thread_attr_t* attr, int detachstate);
-int posix_thread_attr_getdetachstate(const posix_thread_attr_t* attr, int* detachstate);
 
 // Thread state
 enum ThreadStatus { JUST_CREATED, RUNNING, READY, BLOCKED, TERMINATED };
@@ -110,7 +91,7 @@ class Thread {
         ThreadStatus status = JUST_CREATED; // ready, running or blocked
 
         Process* process = nullptr;
-        unsigned int TID = 0; // The TID for this thread
+        tid_t TID = 0; // The TID for this thread
 
         Thread* joiner = nullptr;
         Thread* join = nullptr;
@@ -118,7 +99,7 @@ class Thread {
 
         long long waitTime = 0; // Used to wake up sleeping threads
 
-        BitMap flags;
+        unsigned char flags = 0;
         void* retval = nullptr;
 
         unsigned int userTlsBase = 0;
@@ -127,7 +108,7 @@ class Thread {
         unsigned int userStackSize = 0;
         int* clearChildTid = nullptr;
 
-        Thread(const char* debugName, Process* p, posix_thread_t tid);
+        Thread(const char* debugName, Process* p, tid_t tid);
 
     public:
         Thread() = delete; // explicitly disable the default constructor
@@ -140,13 +121,13 @@ class Thread {
         [[nodiscard]] ThreadStatus getStatus() const { return status; }
 
         [[nodiscard]] Process* getProcess()const { return process; }
-        [[nodiscard]] unsigned int getTID() const { return TID; }
+        [[nodiscard]] tid_t getTID() const { return TID; }
 
         [[nodiscard]] bool hasJoiner()const { return joiner != nullptr; }
 
         [[nodiscard]] long long getWaitTime() const { return waitTime; }
 
-        [[nodiscard]] bool isDetached() { return flags.Test(DETACHED_FLAG_POS); }
+        [[nodiscard]] bool isDetached() const { return (flags & USER_THREAD_FLAG_DETACHED) != 0; }
         [[nodiscard]] bool isTerminated() const { return status == TERMINATED; }
         [[nodiscard]] void* getReturnValue() const { return retval; }
 
@@ -168,6 +149,10 @@ class Thread {
         void setTlsBase(const unsigned int addr) { userTlsBase = addr; }
         void setUserStack(const unsigned int base, const unsigned int size, const unsigned int limit) { userStackBase = base; userStackSize = size; userStackLimit = limit; }
         void setClearChildTid(int* addr) { clearChildTid = addr; }
+
+        void clearUserStack() { userStackBase = 0; userStackSize = 0; userStackLimit = 0; }
+
+        void InitUserContext(unsigned int entryPoint, unsigned int user_sp);
 
         // basic thread operations
         void Joiner();

@@ -13,7 +13,7 @@ void *thread_func(void *arg) {
 int main() {
     PutString("=== Test Join on Terminated Thread ===\n", 40);
 
-    posix_thread_t tid;
+    tid_t tid;
 
     join_sem = SemInit(0);
 

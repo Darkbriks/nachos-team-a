@@ -25,9 +25,11 @@ void handle_SC_PutString(){
     char buffer[MAX_STRING_SIZE];
 
     while (offset < n) {
-        copyStringFromMachine(addr + offset, buffer, MAX_STRING_SIZE);
+        if (!CopyStringFromUser(addr + offset, buffer, MAX_STRING_SIZE)) {
+            RETURN(-E_FAULT);
+        }
         DEBUG('a', "PutString got string: %s\n", buffer);
-        if (int res = synchConsole->SynchPutString(buffer, MAX_STRING_SIZE); res <= 0) { break; }
+        if (const int res = synchConsole->SynchPutString(buffer, MAX_STRING_SIZE); res <= 0) { break; }
         else { offset += res; }
     }
     RETURN(n);
@@ -49,7 +51,9 @@ void handle_SC_GetString(){
     {
         char buffer[n];
         int res = synchConsole->SynchGetString(buffer, n);
-        copyStringToMachine(buffer, addr, n);
+        if (!CopyStringToUser(buffer, addr, n)) {
+            RETURN(-E_FAULT);
+        }
         RETURN(res);
     }
 }

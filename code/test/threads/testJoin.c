@@ -5,7 +5,7 @@ void *thread_func(void *arg) {
 }
 
 int main() {
-    posix_thread_t tid;
+    tid_t tid;
     void *retval;
     
     PthreadCreate(&tid, 0, thread_func, 0);

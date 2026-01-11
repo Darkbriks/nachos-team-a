@@ -12,7 +12,7 @@ void thread_func(void *arg) {
 
 int main() {
 
-    posix_thread_t tids[NB_ITER];
+    tid_t tids[NB_ITER];
     for (int i = 0; i < NB_ITER; i++){
         PthreadCreate(&tids[i], NULL, (void *(*)(void *))thread_func, (void *)i);
         PthreadJoin(tids[i], NULL);

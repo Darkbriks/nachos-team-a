@@ -60,7 +60,7 @@ void * producteurs(void *args) {
             Sleep(300);
             SemWait(d->producteurs_consommateur.resource);
         }
-        valeur = PthreadSelf() * 30 + i;
+        valeur = thread_self() * 30 + i;
 
         d->nb_data_dispo++;
         if (d->nb_data_dispo < 0 || d->nb_data_dispo >= SIZE_LIST){
@@ -81,7 +81,7 @@ void * producteurs(void *args) {
 
 
 int main(int argc, char *argv[]) {
-    posix_thread_t threads[20];
+    tid_t threads[20];
     donnees_thread_t donnees_thread;
     int i, nb_consommateurs, nb_producteurs;
     void *resultat;

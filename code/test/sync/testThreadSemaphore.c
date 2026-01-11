@@ -20,7 +20,7 @@ int main() {
         return -1;
     }
 
-    posix_thread_t tid1, tid2;
+    tid_t tid1, tid2;
     PthreadCreate(&tid1, NULL, (void *(*)(void *))increment_thread, NULL);
     PthreadCreate(&tid2, NULL, (void *(*)(void *))increment_thread, NULL);
 

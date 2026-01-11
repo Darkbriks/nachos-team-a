@@ -25,6 +25,7 @@
 #include "stackmanager.h"
 #include "synch.h"
 #include "system.h"
+#include "tls.h"
 
 //----------------------------------------------------------------------
 // SwapHeader
@@ -83,6 +84,8 @@ AddrSpace::AddrSpace(OpenFile *executable) {
 
     numPages = staticPages + MAX_HEAP_PAGES + stackPages;
     stackLimit = (staticPages + MAX_HEAP_PAGES) * PageSize;
+    codeStart = noffH.code.virtualAddr;
+    codeSize = noffH.code.size;
 
     DEBUG('a', "AddrSpace::AddrSpace: staticPages=%u, heapPages=%u, stackPages=%u, total=%u\n", staticPages, heapPages, stackPages, numPages);
     DEBUG('a', "AddrSpace::AddrSpace: stackLimit=0x%x\n", stackLimit);
@@ -377,4 +380,34 @@ int AddrSpace::AllocateSemaphoreTable(const unsigned int maxSem) {
 
     this->maxSemaphores = maxSem;
     return 0;
+}
+
+bool AddrSpace::IsUserAddress(const unsigned int addr) const {
+    return addr < numPages * PageSize;
+}
+
+bool AddrSpace::IsValidUserRange(const unsigned int addr, const unsigned int size) const {
+    if (size == 0) { return true; }
+    if (addr + size < addr) { return false; } // overflow protection
+    if (const unsigned int end = addr + size - 1; !IsUserAddress(addr) || !IsUserAddress(end)) { return false; }
+    return true;
+}
+
+bool AddrSpace::IsInCodeSegment(const unsigned int addr) const {
+    return addr >= codeStart && addr <  codeStart + codeSize;
+}
+
+bool AddrSpace::IsInHeap(const unsigned int addr) const {
+    return addr >= heapStart && addr < brk;
+}
+
+bool AddrSpace::IsInStackArea(const unsigned int addr) const {
+    return addr >= stackLimit && addr < GetStackTop();
+}
+
+bool AddrSpace::IsValidTLS(const unsigned int tlsAddr) const {
+    if (tlsAddr == 0) { return true; } // TLS is optional
+    if (!IsValidUserRange(tlsAddr, TLS_TOTAL_SIZE)) { return false; }
+    if (!IsAligned(tlsAddr, 4)) { return false; }
+    return true;
 }

@@ -1,4 +1,6 @@
 #include "stackmanager.h"
+
+#include "addrspace.h"
 #include "syscall.h"
 #include "tls.h"
 #include "../machine/machine.h"
@@ -190,6 +192,16 @@ bool StackManager::IsInStack(const unsigned int addr) const {
 
     lock->Release();
     return false;
+}
+
+bool StackManager::IsValidUserStackPointer(const unsigned int sp) const {
+    if (sp < stackAreaBottom || sp > stackAreaTop) { return false; }
+    if (!IsAligned(sp, 4)) { return false; }
+    return true;
+}
+
+bool StackManager::IsKnownStackBase(const unsigned int base) const {
+    return FindByBase(base) >= 0;
 }
 
 void StackManager::Print() {

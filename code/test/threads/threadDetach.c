@@ -11,7 +11,7 @@ void *detached_thread(void *arg) {
 int main() {
     PutString("=== Test PthreadDetach ===\n", 29);
     
-    posix_thread_t tid;
+    tid_t tid;
     
     PutString("Test 1: Detach then try to join\n", 33);
     if (PthreadCreate(&tid, 0, detached_thread, 0) != 0) {
@@ -32,7 +32,7 @@ int main() {
     PutString("Test 1: PASS - Cannot join detached thread\n", 44);
     
     PutString("Test 2: Double detach\n", 22);
-    posix_thread_t tid2;
+    tid_t tid2;
     
     if (PthreadCreate(&tid2, 0, detached_thread, 0) != 0) {
         PutString("ERROR: Failed to create thread\n", 31);
@@ -52,7 +52,7 @@ int main() {
     PutString("Test 2: PASS - Cannot detach twice\n", 36);
     
     PutString("Test 3: Detach non-existent thread\n", 36);
-    posix_thread_t fake_tid = 9999;
+    tid_t fake_tid = 9999;
     
     if (PthreadDetach(fake_tid) == 0) {
         PutString("ERROR: Detach succeeded on non-existent thread\n", 48);

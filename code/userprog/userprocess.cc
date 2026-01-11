@@ -27,7 +27,10 @@ void handle_SC_ForkExec() {
     if (filenameAddr <= 0) { RETURN(-E_FAULT); } // TODO Add more checks (addr is in valid user space, for example)
 
     char filename[MAX_PATH_SIZE];
-    copyStringFromMachine(filenameAddr, filename, MAX_PATH_SIZE);
+    if (!CopyStringFromUser(filenameAddr, filename, MAX_PATH_SIZE)) {
+        DEBUG('p', "ForkExec: Failed to copy filename from user memory at address 0x%x\n", filenameAddr);
+        RETURN(-E_FAULT);
+    }
     DEBUG('p', "ForkExec: Request to execute '%s'\n", filename);
 
     OpenFile* executable = fileSystem->Open(filename);

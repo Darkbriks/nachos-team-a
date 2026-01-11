@@ -74,8 +74,6 @@ DEFINE_SIMPLE_SYSCALL Read, SC_Read
 DEFINE_SIMPLE_SYSCALL Write, SC_Write
 DEFINE_SIMPLE_SYSCALL Close, SC_Close
 
-DEFINE_SIMPLE_SYSCALL Yield, SC_Yield
-
 DEFINE_SIMPLE_SYSCALL PutChar, SC_PutChar
 DEFINE_SYSCALL_STUB PutString, SC_PutString
 DEFINE_SIMPLE_SYSCALL GetChar, SC_GetChar
@@ -88,12 +86,6 @@ DEFINE_SYSCALL_STUB GetInt, SC_GetInt
 DEFINE_SIMPLE_SYSCALL PthreadExit, SC_PthreadExit
 DEFINE_SYSCALL_STUB PthreadJoin, SC_PthreadJoin
 DEFINE_SYSCALL_STUB PthreadDetach, SC_PthreadDetach
-DEFINE_SYSCALL_STUB PthreadSelf, SC_PthreadSelf
-
-DEFINE_SYSCALL_STUB Pthread_attr_init, SC_Pthread_attr_init
-DEFINE_SYSCALL_STUB Pthread_attr_destroy, SC_Pthread_attr_destroy
-DEFINE_SYSCALL_STUB Pthread_attr_setdetachstate, SC_Pthread_attr_setdetachstate
-DEFINE_SYSCALL_STUB Pthread_attr_getdetachstate, SC_Pthread_attr_getdetachstate
 
 DEFINE_SYSCALL_STUB Sleep, SC_Sleep
 DEFINE_SYSCALL_STUB SleepUntil, SC_SleepUntil
@@ -112,7 +104,12 @@ DEFINE_SYSCALL_STUB Sbrk, SC_Sbrk
 
 DEFINE_SYSCALL_STUB SetTLS, SC_SetTLS
 DEFINE_SIMPLE_SYSCALL GetTLS, SC_GetTLS
-DEFINE_SIMPLE_SYSCALL GetTID, SC_GetTID
+
+DEFINE_SYSCALL_STUB thread_create, SC_thread_create
+DEFINE_SIMPLE_SYSCALL thread_exit, SC_thread_exit
+DEFINE_SYSCALL_STUB thread_join, SC_thread_join
+DEFINE_SIMPLE_SYSCALL thread_self, SC_thread_self
+DEFINE_SIMPLE_SYSCALL thread_yield, SC_thread_yield
 
 /* -------------------------------------------------------------
  * PthreadCreate wrapper
