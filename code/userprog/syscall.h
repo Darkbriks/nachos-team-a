@@ -95,7 +95,9 @@
 #define E_NOSPC         9   /* No such process */
 #define E_FTABLE        10  /* Allocation table full (file table, semaphore table, etc.) */
 #define E_NOENT         11  /* No such file or directory or table entry */
-#define E_NOCPC         12   /* Not a child process */
+#define E_NOCPC         12  /* Not a child process */
+#define E_THREAD_LIMIT  13  /* Maximum threads reached */
+#define E_STACK_ADDR    14  /* Invalid stack address */
 
 #ifdef IN_USER_MODE
 

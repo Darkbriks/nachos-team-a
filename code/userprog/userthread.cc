@@ -1,6 +1,7 @@
 #include "userthread.h"
 #include "syscall.h"
 #include "process.h"
+#include "stackmanager.h"
 #include "thread.h"
 #include "tls.h"
 
@@ -14,23 +15,35 @@
 static void StartUserThread(const int f) {
     const Param *param = reinterpret_cast<Param *>(f);
 
-    // Initialize the stack pointer with 2 pages below the main thread stack
-    // TODO: Fix this when step 4 is done
-    const unsigned int numPages = currentThread->getAddrSpace()->GetNumPages();
-    const unsigned int stackSize = 6 * PageSize; // User Thread or AddrSpace defined stack size ?
-    const int stackAddr = static_cast<int>(numPages * PageSize - (currentThread->getTID() + 1) * stackSize);
+    Thread* thread = currentThread;
+    const AddrSpace* space = thread->getAddrSpace();
 
-    if (stackAddr < 0) {
-        DEBUG('t', "StartUserThread: Invalid stack address 0x%x for thread TID=%d\n", stackAddr, currentThread->getTID());
+    if (!space) {
+        DEBUG('t', "StartUserThread: No address space for thread TID=%d\n", thread->getTID());
         delete param;
-        currentThread->Finish();
+        thread->Finish();
         return;
     }
 
+    const unsigned int stackBase = thread->getUserStackBase();
+    const unsigned int stackLimit = thread->getUserStackLimit();
+
+    if (stackBase == 0) {
+        DEBUG('t', "StartUserThread: No stack allocated for thread TID=%d\n", thread->getTID());
+        delete param;
+        thread->Finish();
+        return;
+    }
+
+    int stackAddr = static_cast<int>(stackBase - 16);
+
+    DEBUG('t', "StartUserThread: Initializing thread TID=%d with stack [0x%x - 0x%x], SP=0x%x\n",
+          thread->getTID(), stackLimit, stackBase, stackAddr);
+
     const int prevPC = machine->ReadRegister(PCReg);
 
-    currentThread->getAddrSpace()->InitRegisters();
-    currentThread->getAddrSpace()->RestoreState();
+    space->InitRegisters();
+    space->RestoreState();
 
     machine->WriteRegister(PCReg, param->get_function());
     machine->WriteRegister(NextPCReg, param->get_function() + 4);
@@ -39,6 +52,13 @@ static void StartUserThread(const int f) {
     machine->WriteRegister(RetAddrReg, param->get_exit_addr());
     machine->WriteRegister(4, param->get_arg());
 
+    if (const unsigned int tlsBase = thread->getTlsBase(); tlsBase != 0) {
+        machine->WriteRegister(TLS_REGISTER, static_cast<int>(tlsBase));
+        DEBUG('t', "StartUserThread: Set TLS base to 0x%x for thread TID=%d\n", tlsBase, thread->getTID());
+    } else {
+        DEBUG('t', "StartUserThread: No TLS base set for thread TID=%d\n", thread->getTID());
+    }
+
     delete param;
     machine->Run();
 }
@@ -46,6 +66,15 @@ static void StartUserThread(const int f) {
 int do_PthreadCreate(const int thread_ptr, const int attr_ptr, int start_routine, int arg, int wrapper_addr) {
     if (start_routine <= 0) { return -E_INVAL; }
     // TODO : Add more checks (addr is in valid user space, for example)
+
+    Process *process = currentThread->getProcess();
+    if (process == nullptr) { return -E_FAULT; }
+
+    const AddrSpace *space = process->getSpace();
+    if (space == nullptr) { return -E_FAULT; }
+
+    StackManager *stackMgr = space->GetStackManager();
+    if (stackMgr == nullptr) { return -E_FAULT; }
 
     posix_thread_attr_t attr;
     if (attr_ptr != 0) {
@@ -58,22 +87,36 @@ int do_PthreadCreate(const int thread_ptr, const int attr_ptr, int start_routine
         posix_thread_attr_init(&attr);
     }
 
-    Thread *thread = currentThread->getProcess()->CreateThread((char *)"user_thread");
-    if (!thread) { return -E_NOMEM; }
+    unsigned int stackBase, stackLimit;
+    if (const int ret = stackMgr->AllocateStack(USER_STACK_DEFAULT_SIZE, &stackBase, &stackLimit); ret < 0) {
+        DEBUG('t', "do_PthreadCreate: Failed to allocate stack for new thread\n");
+        return ret;
+    }
+
+    Thread *thread = process->CreateThread("user_thread");
+    if (!thread) {
+        stackMgr->FreeStack(stackBase);
+        DEBUG('t', "do_PthreadCreate: Failed to create thread object\n");
+        return -E_NOMEM;
+    }
 
     thread->setDetached(attr.detachstate == DETACHED);
+    thread->setUserStack(stackBase, stackBase - stackLimit, stackLimit);
+    stackMgr->MarkInUse(stackBase, thread->getTID());
+
+    DEBUG('t', "do_PthreadCreate: created thread TID=%d with stack 0x%x-0x%x\n",
+          thread->getTID(), stackLimit, stackBase);
 
     if (thread_ptr > 0) {
         posix_thread_t tid = thread->getTID();
         if (machine->WriteMem(thread_ptr, sizeof(posix_thread_t), static_cast<int>(tid)) == FALSE) {
-            currentThread->getProcess()->RemoveThread(thread);
+            process->RemoveThread(thread);
+            stackMgr->FreeStack(stackBase);
             return -E_INVAL;
         }
     }
 
     Param *param = new Param(start_routine, arg, wrapper_addr);
-    DEBUG('t', "Creating user thread TID=%d, start_routine=0x%x, arg=0x%x, wrapper_addr=0x%x\n",
-          thread->getTID(), param->get_function(), param->get_arg(), param->get_exit_addr());
     thread->Fork(StartUserThread, reinterpret_cast<int>(param));
 
     return 0;
@@ -81,11 +124,24 @@ int do_PthreadCreate(const int thread_ptr, const int attr_ptr, int start_routine
 
 void do_PthreadExit(void *retval) {
     Thread* thread = currentThread;
+    Process* process = thread->getProcess();
+
+    DEBUG('t', "do_PthreadExit: thread TID=%d exiting with retval=0x%x\n", thread->getTID(), retval);
 
     thread->setReturnValue(retval);
     thread->setStatus(TERMINATED);
 
-    thread->getProcess()->ThreadTerminated(thread);
+    if (process) {
+        if (const AddrSpace* space = process->getSpace()) {
+            StackManager* stackMgr = space->GetStackManager();
+            if (const unsigned int stackBase = thread->getUserStackBase();stackMgr && stackBase != 0) {
+                DEBUG('t', "do_PthreadExit: freeing stack 0x%x for thread TID=%d\n", stackBase, thread->getTID());
+                stackMgr->FreeStack(stackBase);
+                thread->setUserStack(0, 0, 0);
+            }
+        }
+        process->ThreadTerminated(thread);
+    }
 
     if (thread->isDetached()) {
         thread->getProcess()->RemoveThread(thread);

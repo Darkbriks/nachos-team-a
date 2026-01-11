@@ -15,9 +15,10 @@
 
 #include "copyright.h"
 #include "filesys.h"
+#include "machine.h"
 #include "translate.h"
 
-#define UserStackSize 16384 // increase this as necessary!
+#define UserStackSize (8196*4) // increase this as necessary!
 #define INITIAL_SEMAPHORE_TABLE_SIZE 16
 #define MAX_SEMAPHORES_PER_PROCESS 512 // Arbitrary limit, can be adjusted as needed
 
@@ -25,6 +26,7 @@
 #define MAX_HEAP_PAGES  256
 
 class BitMapThreadSafe;
+class StackManager;
 class Process;
 
 struct semaphore_descriptor {
@@ -34,10 +36,27 @@ struct semaphore_descriptor {
 
 class AddrSpace {
     public:
-        explicit AddrSpace(OpenFile *executable); // Create an address space,
-        // initializing it with the program
-        // stored in the file "executable"
-        ~AddrSpace(); // De-allocate an address space
+        /**
+         * @brief Create an address space for a user program
+         *
+         * Loads the program from the given executable file in NOFF format,
+         * sets up the page table, and allocates physical frames for
+         * the static segments (code, data, bss) and initial heap and stack.
+         *
+         * Memory scheme:
+         * | code segment | data segment | bss segment | heap | ... free ... | stack |
+         *
+         * @param executable The executable file in NOFF format
+         */
+        explicit AddrSpace(OpenFile *executable);
+
+        /**
+         * @brief De-allocate an address space
+         *
+         * Release all physical frames used by this address space,
+         * and clean up allocated data structures.
+         */
+        ~AddrSpace();
 
         void InitRegisters() const; // Initialize user-level CPU registers, before jumping to user code
 
@@ -63,6 +82,10 @@ class AddrSpace {
         [[nodiscard]] unsigned int GetHeapStart() const { return heapStart; }
         [[nodiscard]] unsigned int GetHeapSize() const { return brk - heapStart; }
 
+        [[nodiscard]] StackManager* GetStackManager() const { return stackManager; }
+        [[nodiscard]] unsigned int GetStackTop() const { return numPages * PageSize; }
+        [[nodiscard]] unsigned int GetStackBottom() const;
+
         int SemaphoreCreate(int initialValue);
         [[nodiscard]] int SemaphoreWait(int semId) const;
         [[nodiscard]] int SemaphorePost(int semId) const;
@@ -73,19 +96,18 @@ class AddrSpace {
     private:
         TranslationEntry *pageTable; // Assume linear page table translation for now!
         unsigned int numPages; // Number of pages in the virtual address space
-        unsigned int maxPages;
 
         unsigned int heapStart = 0;
         unsigned int brk = 0;
         unsigned int stackLimit = 0;
+
+        StackManager* stackManager = nullptr;
 
         unsigned int maxSemaphores = 0;
         BitMapThreadSafe* semaphoreBitmap = nullptr;
         semaphore_descriptor* semaphoreTable = nullptr;
 
         [[nodiscard]] class Semaphore* GetSemaphore(int semId)const;
-
-        [[nodiscard]] bool ExtendPageTable(unsigned int newNumPages) const;
 };
 
 #endif // ADDRSPACE_H

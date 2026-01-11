@@ -58,6 +58,10 @@ static_assert(sizeof(void*) == 4, "Working with a kernel space in 64 bits and a 
 #define TLS_HEADER_SIZE        32
 #define TLS_TOTAL_SIZE         (TLS_HEADER_SIZE + (TLS_MAX_KEYS * 4))
 
+#define USER_STACK_MIN_SIZE (2 * PageSize)
+#define USER_STACK_DEFAULT_SIZE (8 * PageSize)
+#define USER_STACK_MAX_SIZE (64 * PageSize)
+
 #endif
 
 #endif

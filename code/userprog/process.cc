@@ -3,7 +3,9 @@
 #include "addrspace.h"
 #include "bitmap_thread_safe.h"
 #include "bitmap.h"
+#include "stackmanager.h"
 #include "thread.h"
+#include "tls.h"
 #include "../threads/system.h"
 
 BitMapThreadSafe* Process::all_process = new BitMapThreadSafe(MAX_PROCESS);
@@ -92,15 +94,24 @@ Process::Process(OpenFile * executable, char* return_code) {
 
     exitCode = 0;
     threadNumber = 0; // The main thread
-    Thread * firstThread = CreateThread(executable ? "main" : "kernel");
+    mainThread = CreateThread(executable ? "main" : "kernel");
     this->space = nullptr;
 
     if (executable != nullptr) {
         this->space = new AddrSpace(executable);
         delete executable; // close file
+
+        unsigned int mainStackTop, mainStackLimit;
+
+        StackManager* stackMgr = space->GetStackManager();
+        if (stackMgr->AllocateStack(USER_STACK_DEFAULT_SIZE, &mainStackTop, &mainStackLimit) < 0) {
+            *return_code = -1;
+            return;
+        }
+        mainThread->setUserStack(mainStackTop, USER_STACK_DEFAULT_SIZE, mainStackLimit);
+        stackMgr->MarkInUse(mainStackTop, mainThread->getTID());
     }
 
-    mainThread = firstThread;
     ancestor = currentThread ? currentThread->getProcess() : nullptr;
     if (ancestor != nullptr ){
         DEBUG('p', "Process %d have process %d for ancestor\n", PID, ancestor->getPId());

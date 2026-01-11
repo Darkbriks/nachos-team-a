@@ -1,7 +1,7 @@
-TLS block address: 41732
+TLS block address: 90756
 
 Test 0: errno address != __global_errno address
-errno address: 41744
+errno address: 90768
 __global_errno address: 21776
  OK
 
@@ -19,7 +19,7 @@ SemWait(-1) returned: -1
 errno = 11 OK
 Machine halting!
 
-Ticks: total 58144, idle 39000, system 18400, user 744
+Ticks: total 60764, idle 39000, system 21020, user 744
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 390
 Paging: faults 0
