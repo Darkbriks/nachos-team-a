@@ -99,7 +99,7 @@ $(eval $(call define-flavor,step3,userprog filesys-stub,synchconsole.cc userthre
 	userIO.cc userSem.cc userSleep.cc ))
 
 $(eval $(call define-flavor,step4,userprog filesys-stub, \
-    bitmap_thread_safe.cc frameprovider.cc process.cc synchconsole.cc \
+    bitmap_thread_safe.cc frameprovider.cc process.cc stackmanager.cc synchconsole.cc \
     userIO.cc userprocess.cc userSbrk.cc userSem.cc userSleep.cc userthread.cc))
 
 # $(eval $(call define-flavor,step5,userprog filesys,\
