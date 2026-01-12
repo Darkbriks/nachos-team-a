@@ -51,7 +51,7 @@ class List {
 
     void Mapcar(VoidFunctionPtr func); // Apply "func" to every element
     // on the list
-    bool IsEmpty(); // is the list empty?
+    [[nodiscard]] bool IsEmpty() const; // is the list empty?
 
     // Routines to put/get items on/off list in order (sorted by key)
     void SortedInsert(void *item, long long sortKey); // Put item into list

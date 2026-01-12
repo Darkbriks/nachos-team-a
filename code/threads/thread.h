@@ -60,7 +60,7 @@
 class Process;
 
 // Thread state
-enum ThreadStatus { JUST_CREATED, RUNNING, READY, BLOCKED, TERMINATED };
+enum ThreadStatus { JUST_CREATED, RUNNING, READY, BLOCKED, SLEEP, TERMINATED };
 
 // external function, dummy routine whose sole job is to call Thread::Print
 extern void ThreadPrint(int arg);
@@ -161,6 +161,7 @@ class Thread {
         void Yield();                             // Relinquish the CPU if any other thread is runnable
         void Sleep();                             // Put the thread to sleep and relinquish the processor
         void SleepUntil(long long tick);          // Sleep until specified tick
+        void WakeUp();                            // Wake up the thread
         void Finish();                            // The thread is done executing
         void CheckOverflow();                     // Check if thread has overflowed its stack
 

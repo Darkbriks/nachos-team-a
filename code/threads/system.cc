@@ -7,6 +7,7 @@
 
 #include "system.h"
 #include "copyright.h"
+#include "futex.h"
 #include "frameprovider.h"
 #include "process.h"
 #include "thread.h"
@@ -14,6 +15,7 @@
 // This defines *all* of the global data structures used by Nachos.
 // These are all initialized and de-allocated by this file.
 
+FutexQueue* futexQueue;        // Global futex queue
 FrameProvider* frameProvider;  // Physical memory frame provider
 Thread *currentThread;         // the thread we are running now
 Thread *threadToBeDestroyed;   // the thread that just finished
@@ -155,6 +157,7 @@ void Initialize(int argc, char **argv) {
     interrupt->Enable();
     CallOnUserAbort(Cleanup); // if user hits ctl-C
 
+    futexQueue = new FutexQueue();
     frameProvider = new FrameProvider(nullptr);
 
 #ifdef USER_PROGRAM
@@ -232,6 +235,7 @@ void Cleanup() {
     delete timer;
     delete scheduler;
     delete interrupt;
+    delete futexQueue;
     delete frameProvider;
     freeAllStatic();
     delete stats;

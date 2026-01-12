@@ -177,6 +177,7 @@ void handle_SC_thread_create() {
     RETURN(thread->getTID());
 }
 
+// TODO: A thread can be destroyed only if state isn't RUNNING, BLOCKED or SLEEP
 void handle_SC_thread_exit() {
     const auto retval = reinterpret_cast<void*>(machine->ReadRegister(4));
 

@@ -73,6 +73,11 @@
 #define SC_thread_self 55
 #define SC_thread_yield 56
 
+#define SC_futex_wait 60
+#define SC_futex_wake 61
+#define SC_atomic_cmpxchg 62
+#define SC_atomic_store 63
+
 /* ============================================================
  * ERROR CODES
  * Returned as negative values by syscalls, stored as positive in errno
@@ -95,6 +100,7 @@
 #define E_THREAD_LIMIT  13  /* Maximum threads reached */
 #define E_STACK_ADDR    14  /* Invalid stack address */
 #define E_BUSY          15  /* Resource busy */
+#define E_AGAIN         16  /* Resource temporarily unavailable */
 
 #ifdef IN_USER_MODE
 
@@ -456,6 +462,38 @@ int thread_self();
  * @brief Yield the CPU to another thread
  */
 void thread_yield();
+
+/**
+ * @brief Wait on a futex
+ * @param uaddr Address of the futex
+ * @param expected Expected value at the futex address
+ * @return 0 on success, negative error code on failure
+ */
+int futex_wait(int* uaddr, int expected);
+
+/**
+ * @brief Wake up threads waiting on a futex
+ * @param uaddr Address of the futex
+ * @param num_wake Number of threads to wake up
+ * @return Number of threads actually woken up, negative error code on failure
+ */
+int futex_wake(int* uaddr, int num_wake);
+
+/**
+ * @brief Atomic compare and exchange operation
+ * @param uaddr Address of the integer to operate on
+ * @param expected Expected value
+ * @param desired Desired value to set if comparison succeeds
+ * @return The original value at the address
+ */
+int atomic_cmpxchg(int* uaddr, int expected, int desired);
+
+/**
+ * @brief Atomic store operation
+ * @param uaddr Address of the integer to store to
+ * @param value Value to store
+ */
+void atomic_store(int* uaddr, int value);
 
 #endif // IN_USER_MODE
 

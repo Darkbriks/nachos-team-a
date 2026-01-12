@@ -27,6 +27,7 @@
 #include "userthread.h"
 #include "process.h"
 #include "exception.h"
+#include "futex.h"
 #include "userIO.h"
 #include "userSbrk.h"
 #include "userprocess.h"
@@ -188,6 +189,11 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(thread_join);
         CASE_HANDLER(thread_self);
         CASE_HANDLER(thread_yield);
+
+        CASE_HANDLER(futex_wait);
+        CASE_HANDLER(futex_wake);
+        CASE_HANDLER(atomic_cmpxchg);
+        CASE_HANDLER(atomic_store);
 
         default:
             Process * process = currentThread->getProcess();

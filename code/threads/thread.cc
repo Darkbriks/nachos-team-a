@@ -272,13 +272,28 @@ void Thread::Sleep() {
 
     DEBUG('t', "Sleeping thread \"%s\"\n", getName());
 
-    status = BLOCKED;
+    status = SLEEP;
     while ((nextThread = scheduler->FindNextToRun()) == nullptr) {
         interrupt->Idle(); // no one to run, wait for an interrupt
         scheduler->WakeUpThreads();
     }
 
     scheduler->Run(nextThread); // returns when we've been signalled
+}
+
+//----------------------------------------------------------------------
+// Thread::WakeUp
+//      Wake up a thread that is sleeping
+//     and put it back on the ready queue.
+//      Assumes Sleep was called previously,
+//      but no SleepUntil.
+//----------------------------------------------------------------------
+void Thread::WakeUp() {
+    ASSERT(status == SLEEP);
+
+    DEBUG('t', "Waking up thread \"%s\"\n", getName());
+
+    scheduler->ReadyToRun(this);
 }
 
 //----------------------------------------------------------------------
