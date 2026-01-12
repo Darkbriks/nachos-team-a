@@ -1,7 +1,7 @@
 coucou
 Machine halting!
 
-Ticks: total 7229, idle 700, system 6370, user 159
+Ticks: total 10072, idle 700, system 9210, user 162
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 7
 Paging: faults 0

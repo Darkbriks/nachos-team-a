@@ -15,14 +15,14 @@ Test 5: Multi-threaded usage
   Main: Sleeping briefly...
   Thread: Waiting on semaphore...
   Main: Signaling semaphore
-  PThread: Got semaphore
+  Thread: Got semaphore
   Thread: Released semaphore
-ASS: Multi-threaded test complete
+PASS: Multi-threaded test complete
 
 === All tests completed ===
 Machine halting!
 
-Ticks: total 73603, idle 48690, system 24270, user 643
+Ticks: total 73536, idle 48663, system 24230, user 643
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 488
 Paging: faults 0

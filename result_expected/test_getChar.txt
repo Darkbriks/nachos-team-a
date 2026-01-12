@@ -1,7 +1,7 @@
 Type here: You typed: a
 Machine halting!
 
-Ticks: total 9386, idle 2400, system 6920, user 66
+Ticks: total 12211, idle 2400, system 9740, user 71
 Disk I/O: reads 0, writes 0
 Console I/O: reads 2, writes 24
 Paging: faults 0

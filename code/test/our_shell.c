@@ -26,7 +26,9 @@ int main() {
             }
             ForkJoin(pid, &exitCode);
             if (exitCode < 0){
-                printf_simple("shell voit une mauvaise terminaison\n");
+                printf_simple("shell voit une mauvaise terminaison avec code :");
+                PutInt(exitCode);
+                printf_simple(" \n");
             }
         }     
     }

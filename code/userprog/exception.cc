@@ -45,6 +45,19 @@
         handle_SC_##syscall_name();                     \
         return;
 
+#define EXCEPTION_ERROR(error_name, error_code) \
+    if (process == nullptr) { currentThread->Finish(); return; }   \
+    process->KillAllThreads(false);   \
+    printf(error_name);   \
+    if (Process::isLastActiveProcess()) {   \
+        interrupt->Halt();   \
+    }   \
+    process->setExitCode(-error_code);   \
+    process->AncestorSigChild();   \
+    currentThread->Finish();  \
+    break;
+
+
 
 //----------------------------------------------------------------------
 // UpdatePC : Increments the Program Counter register in order to resume
@@ -117,33 +130,13 @@ void handle_Error(ExceptionType which, int type){
     Process* process = currentThread->getProcess();
     switch (which){
         case AddressErrorException:
-            if (process == nullptr) { currentThread->Finish(); return; }
-            process->KillAllThreads(false);
-            if (Process::isLastActiveProcess()) {
-                delete process;
-                interrupt->Halt();
-            }
-            process->setExitCode(-1);
-            process->AncestorSigChild();
-
-            printf("Erreur de segmentation (core dumped)\n");
-            currentThread->Finish();
-            break;
-
-        case SyscallException:
-            ASSERT(FALSE); // On ne se fait appeler que si which est différent de ça
-            break;
-
-        case NoException:
-        case PageFaultException:
+            EXCEPTION_ERROR("Erreur de segmentation (core dumped)\n", 3);
         case ReadOnlyException:
-        case BusErrorException:
-        case OverflowException:
-        case IllegalInstrException:
-        case NumExceptionTypes:
-            printf("Unexpected user mode exception %d %d\n", which, type);
-            ASSERT(FALSE);
-              break;
+            EXCEPTION_ERROR("Write on a read-only address\n", 4);
+        case PageFaultException:
+            EXCEPTION_ERROR("Access on an invalid address . Allocate more memory\n", 5);
+        default:
+            EXCEPTION_ERROR("Not yet manage exception, just kill the process\n", 1);
         }
 }
 
@@ -196,9 +189,8 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(thread_yield);
 
         default:
-            printf("Unknow syscall :%d\n", type);
-            ASSERT(FALSE);
-            break;
+            Process * process = currentThread->getProcess();
+            EXCEPTION_ERROR("Unknow syscall", 2);
     }
 
     // LB: Do not forget to increment the pc before returning!

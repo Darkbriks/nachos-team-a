@@ -37,9 +37,11 @@ void handle_SC_PthreadCreate(){
     machine->WriteRegister(4, (int) &args);
     handle_SC_thread_create();
     int TID = machine->ReadRegister(2);
-    if (!CopyToUserType<int>(thread_ptr, &TID)) {
-        DEBUG('t', "handle_SC_thread_create: Failed to copy user_thread_args from user space\n");
-        RETURN(-E_FAULT);
+    if (thread_ptr > 0){
+        if (!CopyToUserType<int>(thread_ptr, &TID)) {
+            DEBUG('t', "handle_SC_thread_create: Failed to copy user_thread_args from user space\n");
+            RETURN(-E_FAULT);
+        }
     }
     RETURN(0);
 }

@@ -138,6 +138,9 @@ AddrSpace::AddrSpace(OpenFile *executable) {
     if (noffH.code.size > 0) {
         DEBUG('a', "AddrSpace::AddrSpace: Initializing code segment, at 0x%x, size %d\n", noffH.code.virtualAddr, noffH.code.size);
         ReadAtVirtual(executable, noffH.code.virtualAddr, noffH.code.size, noffH.code.inFileAddr, pageTable, numPages);
+        for (unsigned int j = 0; j < divRoundUp(codeSize, PageSize) - 1; j++){
+            pageTable[j].readOnly = true; // TODO we don't protect the last page of code because data can be a little inside think about it
+        }
     }
     if (noffH.initData.size > 0) {
         DEBUG('a', "AddrSpace::AddrSpace: Initializing data segment, at 0x%x, size %d\n", noffH.initData.virtualAddr, noffH.initData.size);

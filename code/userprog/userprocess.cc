@@ -83,7 +83,7 @@ void handle_SC_ForkJoin() {
 
     delete child;
 
-    if (addr_return >= 0) {
+    if (addr_return > 0) {
         if (machine->WriteMem(addr_return, sizeof(void*), reinterpret_cast<int>(result)) == FALSE) {
             RETURN(-E_INVAL);
         }
