@@ -86,7 +86,7 @@ bool Machine::ReadMem(int addr, int size, int *value) {
     ExceptionType exception;
     int physicalAddress;
 
-    DEBUG('a', "Reading VA 0x%x, size %d\n", addr, size);
+    DEBUG('z', "Reading VA 0x%x, size %d\n", addr, size);
 
     exception = Translate(addr, &physicalAddress, size, FALSE);
     if (exception != NoException) {
@@ -113,7 +113,7 @@ bool Machine::ReadMem(int addr, int size, int *value) {
         ASSERT(FALSE);
     }
 
-    DEBUG('a', "\tvalue read = %8.8x\n", *value);
+    DEBUG('z', "\tvalue read = %8.8x\n", *value);
     return (TRUE);
 }
 
@@ -134,7 +134,7 @@ bool Machine::WriteMem(int addr, int size, int value) {
     ExceptionType exception;
     int physicalAddress;
 
-    DEBUG('a', "Writing VA 0x%x, size %d, value 0x%x\n", addr, size, value);
+    DEBUG('z', "Writing VA 0x%x, size %d, value 0x%x\n", addr, size, value);
 
     exception = Translate(addr, &physicalAddress, size, TRUE);
     if (exception != NoException) {
@@ -185,12 +185,12 @@ ExceptionType Machine::Translate(int virtAddr, int *physAddr, int size,
     TranslationEntry *entry;
     unsigned int pageFrame;
 
-    DEBUG('a', "\tTranslate 0x%x, %s: ", virtAddr, writing ? "write" : "read");
+    DEBUG('z', "\tTranslate 0x%x, %s: ", virtAddr, writing ? "write" : "read");
 
     // check for alignment errors
     if (((size == 4) && (virtAddr & 0x3)) ||
         ((size == 2) && (virtAddr & 0x1))) {
-        DEBUG('a', "alignment problem at %d, size %d!\n", virtAddr, size);
+        DEBUG('z', "alignment problem at %d, size %d!\n", virtAddr, size);
         return AddressErrorException;
     }
 
@@ -205,11 +205,11 @@ ExceptionType Machine::Translate(int virtAddr, int *physAddr, int size,
 
     if (tlb == NULL) { // => page table => vpn is index into table
         if (vpn >= pageTableSize) {
-            DEBUG('a', "virtual page # %d too large for page table size %d!\n",
+            DEBUG('z', "virtual page # %d too large for page table size %d!\n",
                   virtAddr, pageTableSize);
             return AddressErrorException;
         } else if (!pageTable[vpn].valid) {
-            DEBUG('a', "virtual page # %d is not valid!\n", virtAddr,
+            DEBUG('z', "virtual page # %d is not valid!\n", virtAddr,
                   pageTableSize);
             return PageFaultException;
         }
@@ -221,7 +221,7 @@ ExceptionType Machine::Translate(int virtAddr, int *physAddr, int size,
                 break;
             }
         if (entry == NULL) { // not found
-            DEBUG('a', "*** no valid TLB entry found for this virtual page!\n");
+            DEBUG('z', "*** no valid TLB entry found for this virtual page!\n");
             return PageFaultException; // really, this is a TLB fault,
                                        // the page may be in memory,
                                        // but not in the TLB
@@ -229,7 +229,7 @@ ExceptionType Machine::Translate(int virtAddr, int *physAddr, int size,
     }
 
     if (entry->readOnly && writing) { // trying to write to a read-only page
-        DEBUG('a', "%d mapped read-only at %d in TLB!\n", virtAddr, i);
+        DEBUG('z', "%d mapped read-only at %d in TLB!\n", virtAddr, i);
         return ReadOnlyException;
     }
     pageFrame = entry->physicalPage;
@@ -237,7 +237,7 @@ ExceptionType Machine::Translate(int virtAddr, int *physAddr, int size,
     // if the pageFrame is too big, there is something really wrong!
     // An invalid translation was loaded into the page table or TLB.
     if (pageFrame >= NumPhysPages) {
-        DEBUG('a', "*** frame %d > %d!\n", pageFrame, NumPhysPages);
+        DEBUG('z', "*** frame %d > %d!\n", pageFrame, NumPhysPages);
         return BusErrorException;
     }
     entry->use = TRUE; // set the use, dirty bits
@@ -245,6 +245,6 @@ ExceptionType Machine::Translate(int virtAddr, int *physAddr, int size,
         entry->dirty = TRUE;
     *physAddr = pageFrame * PageSize + offset;
     ASSERT((*physAddr >= 0) && ((*physAddr + size) <= MemorySize));
-    DEBUG('a', "phys addr = 0x%x\n", *physAddr);
+    DEBUG('z', "phys addr = 0x%x\n", *physAddr);
     return NoException;
 }
