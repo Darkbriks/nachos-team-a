@@ -104,7 +104,7 @@ $(eval $(call define-flavor,step4,userprog filesys-stub, \
 
 $(eval $(call define-flavor,step6,userprog filesys-stub network, \
     bitmap_thread_safe.cc frameprovider.cc process.cc synchconsole.cc \
-    userIO.cc userprocess.cc userSem.cc userSleep.cc userthread.cc ))
+    userIO.cc userprocess.cc userSem.cc userSleep.cc userthread.cc reliablepost.cc ))
 
 # $(eval $(call define-flavor,final,userprog filesys network,\
 #     synchconsole.cc userthread.cc))
