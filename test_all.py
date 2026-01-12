@@ -58,7 +58,7 @@ def exec_nachos(prog : str, tmp_file : str) -> bool:
     # Si le test prend plus de 5 secondes, on le tue
     with open(tmp_file, "w+") as f:
         try:
-            s = subprocess.check_output(f"cd {BUILD_DIR} ; timeout {TIMEOUT}s {prog}", shell=True, stderr=subprocess.STDOUT).decode("utf-8")
+            s = subprocess.check_output(f"cd {BUILD_DIR} ; timeout {TIMEOUT}s {prog}", shell=True, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL).decode("utf-8")
             f.write(s)
             if "Machine halting!" in s: # En cas d'arrêt brutal de la machine, par exemple un SEGV, la chaine "Machine halting!" n'est pas présente
                 return False
