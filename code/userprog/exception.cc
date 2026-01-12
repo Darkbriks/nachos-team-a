@@ -176,6 +176,7 @@ void ExceptionHandler(ExceptionType which) {
 
         CASE_HANDLER(ForkExec)
         CASE_HANDLER(ForkJoin)
+        CASE_HANDLER(ForkSelf)
 
         CASE_HANDLER(Sbrk);
 

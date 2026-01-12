@@ -59,9 +59,10 @@
 /* --- Process Management --- */
 #define SC_ForkExec 34
 #define SC_ForkJoin 35
+#define SC_ForkSelf 36
 
 /* --- Memory Management --- */
-#define SC_Sbrk 36
+#define SC_Sbrk 37
 
 /* Rework of threads */
 #define SC_SetTLS 50
@@ -242,8 +243,8 @@ int GetInt(int *n);
 
 typedef unsigned int tid_t;
 typedef int posix_process_t;
-typedef struct {} pthread_attr_t;
 
+#include "pthread.h" // TODO l'enlever
 /**
  * @brief Create a new thread
  *
@@ -380,6 +381,12 @@ posix_process_t ForkExec(char *name);
  * @return 0 on sucess and -1 on error
  */
 int ForkJoin(posix_process_t PID, int *adrr_result);
+
+/**
+ * @brief Get the PID of the current process 
+ * @return The PID of the current process 
+ */
+int ForkSelf();
 
 /* -------------------------------------------------------------
  * MEMORY MANAGEMENT

@@ -99,6 +99,7 @@ DEFINE_SYSCALL_STUB SetMaxSemForProcess, SC_SetMaxSemForProcess
 
 DEFINE_SYSCALL_STUB ForkExec, SC_ForkExec
 DEFINE_SYSCALL_STUB ForkJoin, SC_ForkJoin
+DEFINE_SIMPLE_SYSCALL ForkSelf, SC_ForkSelf
 
 DEFINE_SYSCALL_STUB Sbrk, SC_Sbrk
 

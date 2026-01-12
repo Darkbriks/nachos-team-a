@@ -92,3 +92,7 @@ void handle_SC_ForkJoin() {
     
     RETURN(0);
 }
+
+void handle_SC_ForkSelf() {
+    RETURN(currentThread->getProcess()->getPId());
+}
