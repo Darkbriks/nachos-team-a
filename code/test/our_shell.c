@@ -21,13 +21,13 @@ int main() {
                 printf_simple(" pour mot entré = "); 
                 printf_simple(buffer); 
                 PutInt(buffer[0]); 
+                printf_simple("\n");
                 continue;;
             }
             ForkJoin(pid, &exitCode);
-            printf_simple("\nvoici le code de retour du process : ");
-            PutInt(exitCode);
-            printf_simple("\n");
+            if (exitCode < 0){
+                printf_simple("shell voit une mauvaise terminaison\n");
+            }
         }     
     }
 }
-

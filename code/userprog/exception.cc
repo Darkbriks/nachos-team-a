@@ -113,12 +113,46 @@ void handle_SC_Exit() {
     ASSERT(FALSE);
 }
 
+void handle_Error(ExceptionType which, int type){
+    Process* process = currentThread->getProcess();
+    switch (which){
+        case AddressErrorException:
+            if (process == nullptr) { currentThread->Finish(); return; }
+            process->KillAllThreads(false);
+            if (Process::isLastActiveProcess()) {
+                delete process;
+                interrupt->Halt();
+            }
+            process->setExitCode(-1);
+            process->AncestorSigChild();
+
+            printf("Erreur de segmentation (core dumped)\n");
+            currentThread->Finish();
+            break;
+
+        case SyscallException:
+            ASSERT(FALSE); // On ne se fait appeler que si which est différent de ça
+            break;
+
+        case NoException:
+        case PageFaultException:
+        case ReadOnlyException:
+        case BusErrorException:
+        case OverflowException:
+        case IllegalInstrException:
+        case NumExceptionTypes:
+            printf("Unexpected user mode exception %d %d\n", which, type);
+            ASSERT(FALSE);
+              break;
+        }
+}
+
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2);
 
     if (which != SyscallException){
-        printf("Unexpected user mode exception %d %d\n", which, type);
-        ASSERT(FALSE);
+        handle_Error(which, type);
+        return;
     }
 
     switch (type){

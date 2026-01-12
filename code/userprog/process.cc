@@ -165,9 +165,12 @@ Process::~Process() {
     }
 }
 
-void Process::KillAllThreads(){
+void Process::KillAllThreads(bool include_current){
     Thread * thread = nullptr;
     while ( ( thread = all_threads_addr->RemoveFront()) != nullptr){
+        if (thread == currentThread && !include_current){
+            continue;
+        }
         delete thread;
     }
 }

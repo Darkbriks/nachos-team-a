@@ -109,7 +109,7 @@ class Process {
         /**
          * @brief Delete all threads linked to a process
          */
-        void KillAllThreads();
+        void KillAllThreads(bool include_current = true);
 
         /**
          * @brief This function is called only by Cleanup at the end of the program
