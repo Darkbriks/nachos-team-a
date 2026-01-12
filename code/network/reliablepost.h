@@ -55,7 +55,7 @@ class ReliablePost {
     bool *receivedAcks;         // Array of received ACK flags (indexed by seqNum % MAX_PENDING)
     unsigned int maxPendingAcks;// Maximum number of pending ACKs to track
     bool stopAckReceiver;       // Signal to stop ACK received from thread
-    Thread *ackReceiverThread;  // Background thread for reciving ACHs
+    Thread *ackReceiverThread;  // Background thread for receiving ACKs
 
     // Helper: Check if ACK is available without blocking
     bool CheckForAck(int ackBox, unsigned int expectedSeqNum);

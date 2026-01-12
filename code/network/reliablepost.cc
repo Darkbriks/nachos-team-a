@@ -59,7 +59,7 @@ ReliablePost::~ReliablePost() {
 bool ReliablePost::SendReliable(PacketHeader pktHdr, MailHeader mailHdr, const char *data) {
     sendLock->Acquire();
 
-    unsigned int seqNum = nextSeqNum+= 1; // seq nu of the mnessage
+    unsigned int seqNum = nextSeqNum+= 1; // seq num of the message
     
     // Create extended head with seq num n type 
     char buffer[MaxMailSize];
@@ -79,9 +79,9 @@ bool ReliablePost::SendReliable(PacketHeader pktHdr, MailHeader mailHdr, const c
 
     extMailHdr.length = headerSize + mailHdr.length;
 
-    DEBUG('n', "SnedReliable : Sending message with seq %d to machine %d\n", seqNum, pktHdr.to);
+    DEBUG('n', "SendReliable : Sending message with seq %d to machine %d\n", seqNum, pktHdr.to);
 
-    // Try senbding with retransmission 
+    // Try sending with retransmission 
     for (int attempt = 0 ; attempt < MAXREEMISSIONS ; attempt+= 1) {
        if (attempt > 0) { 
             printf ("Retransmitting message (seq %d), attempt %d/%d\n", seqNum, attempt+1, MAXREEMISSIONS+1);
@@ -104,7 +104,8 @@ bool ReliablePost::SendReliable(PacketHeader pktHdr, MailHeader mailHdr, const c
     }
 
     // Failed after MAXREEMISSIONS retries
-    printf("SendReliable : FGaield to deliver message (seq %d) after %d attempts\n", seqNum, MAXREEMISSIONS +1);    fflush(stdout);
+    printf("SendReliable : Failed to deliver message (seq %d) after %d attempts\n", seqNum, MAXREEMISSIONS +1);
+    fflush(stdout);
     sendLock->Release();
     return false;
 
