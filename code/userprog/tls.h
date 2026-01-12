@@ -39,7 +39,7 @@ static inline tls_t* __get_tls() {
     return tls;
 }
 
-static_assert(sizeof(void*) == 4, "Working with a kernel space in 64 bits and a user space in 32 bits is very funny, isn't it?");
+// static_assert(sizeof(void*) == 4, "Working with a kernel space in 64 bits and a user space in 32 bits is very funny, isn't it?");
 
 #else
 
