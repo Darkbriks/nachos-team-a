@@ -5,6 +5,7 @@ typedef unsigned int tid_t;
 
 typedef struct {
     unsigned int entry;
+    void *arg;
     unsigned int user_sp;
     unsigned int tls_base;
     unsigned int flags;

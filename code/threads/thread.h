@@ -152,7 +152,7 @@ class Thread {
 
         void clearUserStack() { userStackBase = 0; userStackSize = 0; userStackLimit = 0; }
 
-        void InitUserContext(unsigned int entryPoint, unsigned int user_sp);
+        void InitUserContext(unsigned int entryPoint, unsigned int arg, unsigned int user_sp);
 
         // basic thread operations
         void Joiner();

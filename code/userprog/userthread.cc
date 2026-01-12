@@ -6,111 +6,6 @@
 #include "tls.h"
 #include "nos_threads.h"
 
-/**
- * @brief Start function for Nachos user thread.
- * This function initializes the user thread's registers and stack,
- * then starts executing the user program.
- *
- * @param f A pointer to a Param object containing thread parameters
- */
-static void StartUserThread(const int f) {
-    const Param *param = reinterpret_cast<Param *>(f);
-
-    Thread* thread = currentThread;
-    const AddrSpace* space = thread->getAddrSpace();
-
-    if (!space) {
-        DEBUG('t', "StartUserThread: No address space for thread TID=%d\n", thread->getTID());
-        delete param;
-        thread->Finish();
-        return;
-    }
-
-    const unsigned int stackBase = thread->getUserStackBase();
-    const unsigned int stackLimit = thread->getUserStackLimit();
-
-    if (stackBase == 0) {
-        DEBUG('t', "StartUserThread: No stack allocated for thread TID=%d\n", thread->getTID());
-        delete param;
-        thread->Finish();
-        return;
-    }
-
-    int stackAddr = static_cast<int>(stackBase - 16);
-
-    DEBUG('t', "StartUserThread: Initializing thread TID=%d with stack [0x%x - 0x%x], SP=0x%x\n",
-          thread->getTID(), stackLimit, stackBase, stackAddr);
-
-    const int prevPC = machine->ReadRegister(PCReg);
-
-    space->InitRegisters();
-    space->RestoreState();
-
-    machine->WriteRegister(PCReg, param->get_function());
-    machine->WriteRegister(NextPCReg, param->get_function() + 4);
-    machine->WriteRegister(PrevPCReg, prevPC);
-    machine->WriteRegister(StackReg, stackAddr);
-    machine->WriteRegister(RetAddrReg, param->get_exit_addr());
-    machine->WriteRegister(4, param->get_arg());
-
-    if (const unsigned int tlsBase = thread->getTlsBase(); tlsBase != 0) {
-        machine->WriteRegister(TLS_REGISTER, static_cast<int>(tlsBase));
-        DEBUG('t', "StartUserThread: Set TLS base to 0x%x for thread TID=%d\n", tlsBase, thread->getTID());
-    } else {
-        DEBUG('t', "StartUserThread: No TLS base set for thread TID=%d\n", thread->getTID());
-    }
-
-    delete param;
-    machine->Run();
-}
-
-int do_PthreadCreate(const int thread_ptr, int start_routine, int arg, int wrapper_addr) {
-    if (start_routine <= 0) { return -E_INVAL; }
-    // TODO : Add more checks (addr is in valid user space, for example)
-
-    Process *process = currentThread->getProcess();
-    if (process == nullptr) { return -E_FAULT; }
-
-    const AddrSpace *space = process->getSpace();
-    if (space == nullptr) { return -E_FAULT; }
-
-    StackManager *stackMgr = space->GetStackManager();
-    if (stackMgr == nullptr) { return -E_FAULT; }
-
-    unsigned int stackBase, stackLimit;
-    if (const int ret = stackMgr->AllocateStack(USER_STACK_DEFAULT_SIZE, &stackBase, &stackLimit); ret < 0) {
-        DEBUG('t', "do_PthreadCreate: Failed to allocate stack for new thread\n");
-        return ret;
-    }
-
-    Thread *thread = process->CreateThread("user_thread");
-    if (!thread) {
-        stackMgr->FreeStack(stackBase);
-        DEBUG('t', "do_PthreadCreate: Failed to create thread object\n");
-        return -E_NOMEM;
-    }
-
-    thread->setDetached(false);
-    thread->setUserStack(stackBase, stackBase - stackLimit, stackLimit);
-    stackMgr->MarkInUse(stackBase, thread->getTID());
-
-    DEBUG('t', "do_PthreadCreate: created thread TID=%d with stack 0x%x-0x%x\n",
-          thread->getTID(), stackLimit, stackBase);
-
-    if (thread_ptr > 0) {
-        tid_t tid = thread->getTID();
-        if (machine->WriteMem(thread_ptr, sizeof(tid_t), static_cast<int>(tid)) == FALSE) {
-            process->RemoveThread(thread);
-            stackMgr->FreeStack(stackBase);
-            return -E_INVAL;
-        }
-    }
-
-    Param *param = new Param(start_routine, arg, wrapper_addr);
-    thread->Fork(StartUserThread, reinterpret_cast<int>(param));
-
-    return 0;
-}
 
 int do_PthreadDetach(tid_t tid) {
     Thread* thread = currentThread->getProcess()->FindThread(tid);
@@ -128,15 +23,25 @@ int do_PthreadDetach(tid_t tid) {
     return 0;
 }
 
+
 void handle_SC_PthreadCreate(){
+    user_thread_args args = {
+        (unsigned int) machine->ReadRegister(6),
+        (void *) machine->ReadRegister(7),
+        0,
+        0,
+        0,
+        0,
+    };
     const int thread_ptr = machine->ReadRegister(4);
-    const int attr_ptr = machine->ReadRegister(5);
-    const int start_routine = machine->ReadRegister(6);
-    const int arg = machine->ReadRegister(7);
-    const int wrapper_addr = machine->ReadRegister(8);
-    DEBUG('t', "SC_PthreadCreate called with thread_ptr=%d, attr_ptr=%d, start_routine=0x%x, arg=0x%x, wrapper_addr=0x%x\n",
-          thread_ptr, attr_ptr, start_routine, arg, wrapper_addr);
-    RETURN(do_PthreadCreate(thread_ptr, start_routine, arg, wrapper_addr) );
+    machine->WriteRegister(4, (int) &args);
+    handle_SC_thread_create();
+    int TID = machine->ReadRegister(2);
+    if (!CopyToUserType<int>(thread_ptr, &TID)) {
+        DEBUG('t', "handle_SC_thread_create: Failed to copy user_thread_args from user space\n");
+        RETURN(-E_FAULT);
+    }
+    RETURN(0);
 }
 
 void handle_SC_PthreadExit(){
@@ -212,8 +117,12 @@ bool ValidateThreadArgs(const user_thread_args& args, const AddrSpace* space, co
     return true;
 }
 
+void StartThread(int param){
+    machine->Run();
+}
+
 void handle_SC_thread_create() {
-    const int args_ptr = machine->ReadRegister(4);
+    user_thread_args kargs = *(user_thread_args *)machine->ReadRegister(4);
 
     Process *process = currentThread->getProcess();
     VALIDATE_ARG(process != nullptr, E_FAULT);
@@ -225,12 +134,12 @@ void handle_SC_thread_create() {
     VALIDATE_ARG(stackMgr != nullptr, E_FAULT);
 
     // Copy user_thread_args from user space to kernel space to avoid TOCTOU issues
-    user_thread_args kargs;
-    if (!CopyFromUserType<user_thread_args>(&kargs, args_ptr)) {
-        DEBUG('t', "handle_SC_thread_create: Failed to copy user_thread_args from user space\n");
-        RETURN(-E_FAULT);
-    }
-
+    // user_thread_args kargs;
+    // if (!CopyFromUserType<user_thread_args>(&kargs, args_ptr)) {
+    //     DEBUG('t', "handle_SC_thread_create: Failed to copy user_thread_args from user space\n");
+    //     RETURN(-E_FAULT);
+    // }
+    //
     VALIDATE_ARG(ValidateThreadArgs(kargs, space, stackMgr), E_INVAL);
 
     Thread* thread = process->CreateThread("user_thread");
@@ -260,9 +169,8 @@ void handle_SC_thread_create() {
               kargs.user_sp, thread->getTID());
     }
 
-    thread->InitUserContext(kargs.entry, kargs.user_sp);
-
-    scheduler->ReadyToRun(thread);
+    thread->InitUserContext(kargs.entry, reinterpret_cast<unsigned int>(kargs.arg), kargs.user_sp);
+    thread->Fork(StartThread, 0); // no parameter
 
     RETURN(thread->getTID());
 }

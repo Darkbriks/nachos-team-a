@@ -82,7 +82,7 @@ void Thread::setDetached(const bool d) {
     }
 }
 
-void Thread::InitUserContext(const unsigned int entryPoint, const unsigned int user_sp) {
+void Thread::InitUserContext(const unsigned int entryPoint, const unsigned int arg, const unsigned int user_sp) {
     ASSERT(process != nullptr)
     const AddrSpace* space = process->getSpace();
     ASSERT(space != nullptr)
@@ -94,7 +94,8 @@ void Thread::InitUserContext(const unsigned int entryPoint, const unsigned int u
     userRegisters[PCReg] = static_cast<int>(entryPoint);
     userRegisters[NextPCReg] = static_cast<int>(entryPoint + 4);
     userRegisters[StackReg] = static_cast<int>(user_sp);
-    userRegisters[RetAddrReg] = 0; // TODO
+    userRegisters[RetAddrReg] = machine->ReadRegister(5);
+    userRegisters[4] = arg; // 4 is the arg Register
 
     if (userTlsBase != 0) {
         userRegisters[TLS_REGISTER] = static_cast<int>(userTlsBase);

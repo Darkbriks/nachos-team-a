@@ -105,7 +105,6 @@ DEFINE_SYSCALL_STUB Sbrk, SC_Sbrk
 DEFINE_SYSCALL_STUB SetTLS, SC_SetTLS
 DEFINE_SIMPLE_SYSCALL GetTLS, SC_GetTLS
 
-DEFINE_SYSCALL_STUB thread_create, SC_thread_create
 DEFINE_SIMPLE_SYSCALL thread_exit, SC_thread_exit
 DEFINE_SYSCALL_STUB thread_join, SC_thread_join
 DEFINE_SIMPLE_SYSCALL thread_self, SC_thread_self
@@ -120,7 +119,7 @@ DEFINE_SIMPLE_SYSCALL thread_yield, SC_thread_yield
      .globl PthreadCreate
      .ent   PthreadCreate
  PthreadCreate:
-     la    $8, PthreadExit_wrapper
+     la    $5, PthreadExit_wrapper
 
      addiu $2,$0,SC_PthreadCreate
      syscall
@@ -153,6 +152,44 @@ DEFINE_SIMPLE_SYSCALL thread_yield, SC_thread_yield
      j     $31
      nop
      .end PthreadCreate
+
+.globl thread_create
+     .ent   thread_create
+ thread_create:
+     la    $5, PthreadExit_wrapper
+
+     addiu $2,$0,SC_thread_create
+     syscall
+     bgez  $2, 1f
+     nop
+
+     # Error
+     subu  $3,$0,$2
+     beqz  $gp, 2f
+     nop
+     sw    $3, TLS_OFFSET_ERRNO($gp)
+     j     3f
+     nop
+ 2:
+     sw    $3, __global_errno
+ 3:
+     addiu $2,$0,-1
+     j     $31
+     nop
+
+ 1:
+     beqz  $gp, 4f
+     nop
+     sw    $0, TLS_OFFSET_ERRNO($gp)
+     j     5f
+     nop
+ 4:
+     sw    $0, __global_errno
+ 5:
+     j     $31
+     nop
+     .end thread_create
+
 
 /* -------------------------------------------------------------
  * Posix thread exit wrapper
