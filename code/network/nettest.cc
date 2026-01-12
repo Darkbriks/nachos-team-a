@@ -21,6 +21,7 @@
 #include "system.h"
 #include "network.h"
 #include "post.h"
+#include "reliablepost.h"
 #include "interrupt.h"
 #include "machine.h"
 
@@ -125,6 +126,60 @@ void RingTest(int myAddr, int numMachines) {
         postOffice->Send(outPktHdr, outMailHdr, buffer);
     }
     Delay(5);
+    interrupt->Halt();
+}
+
+
+void ReliableMailTest(int farAddr) {
+    PacketHeader outPktHdr, inPktHdr;
+    MailHeader outMailHdr, inMailHdr;
+    const char *data = "Hello reliable!";
+    char buffer[MaxMailSize];
+
+    // Create ReliablePost wrapper around the existing PostOffice
+    ReliablePost *reliablePost = new ReliablePost(postOffice);
+
+    printf("ReliableMailTest: Starting test with machine %d (netAddr=%d)\n", farAddr, postOffice->GetNetAddr());
+    fflush(stdout);
+
+    // Both machines use same communication pattern (like original MailTest)
+    // This allows proper interleaving and network message processing
+    for (int i = 0; i < 1; i++) {
+        // Prepare headers
+        outPktHdr.to = farAddr;
+        outMailHdr.to = 0;
+        outMailHdr.from = 1;
+        outMailHdr.length = strlen(data) + 1;
+
+        printf("ReliableMailTest: Sending message %d...\n", i + 1);
+        fflush(stdout);
+
+        // Send message reliably
+        bool success = reliablePost->SendReliable(outPktHdr, outMailHdr, data);
+
+        if (success) {
+            printf("ReliableMailTest: Message %d delivered successfully!\n", i + 1);
+        } else {
+            printf("ReliableMailTest: Message %d FAILED to deliver after retries!\n", i + 1);
+        }
+        fflush(stdout);
+
+        // Wait for message from other machine
+        printf("ReliableMailTest: Waiting for incoming message %d...\n", i + 1);
+        fflush(stdout);
+
+        reliablePost->ReceiveReliable(0, &inPktHdr, &inMailHdr, buffer);
+        printf("ReliableMailTest: Got message \"%s\" from machine %d\n",
+               buffer, inPktHdr.from);
+        fflush(stdout);
+
+        Delay(2);
+    }
+
+    printf("ReliableMailTest: Test completed!\n");
+    fflush(stdout);
+
+    delete reliablePost;
     interrupt->Halt();
 }
 
