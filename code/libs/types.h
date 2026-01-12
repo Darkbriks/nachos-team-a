@@ -31,6 +31,10 @@ typedef int32_t  intptr_t;
 #define NULL ((void*)0)
 #endif
 
+#ifndef PAGE_SIZE 
+#define PAGE_SIZE 128 
+#endif
+
 #ifndef TRUE
 #define TRUE 1
 #endif
