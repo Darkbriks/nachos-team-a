@@ -23,6 +23,7 @@
 #include "post.h"
 #include "interrupt.h"
 #include "machine.h"
+#include "reliablepost.h"
 
 // Test out message delivery, by doing the following:
 //	1. send a message to the machine with ID "farAddr", at mail box #0
@@ -128,3 +129,93 @@ void RingTest(int myAddr, int numMachines) {
     interrupt->Halt();
 }
 
+void MailTestReliable(int farAddr)
+{
+    PacketHeader outPktHdr, inPktHdr;
+    MailHeader outMailHdr, inMailHdr;
+    const char *data = "Hello there!";
+    char buffer[MaxMailSize];
+    ReliablePost *reliablePost = new ReliablePost(postOffice);
+
+
+     for (int i = 0; i<10; i++){
+        // construct packet, mail header for original message
+        // To: destination machine, mailbox 0
+        // From: our machine, reply to: mailbox 1
+        outPktHdr.to = farAddr;		
+        outMailHdr.to = 0;
+        outMailHdr.from = 1;
+        outMailHdr.length = strlen(data) + 1;
+
+        // Send the first message
+        reliablePost->SendReliable(outPktHdr, outMailHdr, data);
+
+        // Wait for the first message from the other machine
+        reliablePost->ReceiveReliable(0, &inPktHdr, &inMailHdr, buffer);
+        printf("Got \"%s\" from %d, box %d\n",buffer,inPktHdr.from,inMailHdr.from);
+        fflush(stdout);
+
+        Delay(2);
+     }
+
+    delete reliablePost;
+    // Then we're done!
+    interrupt->Halt();
+}
+
+
+//  Test ring topology : token passing between n machines
+//  Machine start by sending initial token then each machine forwards it to the next one
+//  Test ends when token returns to machine 0
+
+void RingTestReliable(int myAddr, int numMachines) {
+    PacketHeader outPktHdr, inPktHdr;
+    MailHeader outMailHdr, inMailHdr;
+
+    const char * token = "TOKEN";
+    char buffer[MaxMailSize];
+    ReliablePost *reliablePost = new ReliablePost(postOffice);
+
+
+    int nextAddr = (myAddr + 1) % numMachines;
+
+    if (myAddr == 0) { // Machine 0 ( init token) 
+        printf("Machine %d : Sending initial token to machine %d.\n", myAddr, nextAddr);
+        fflush(stdout);
+
+        outPktHdr.to = nextAddr;		
+        outMailHdr.to = 0;
+        outMailHdr.from = myAddr;
+        outMailHdr.length = strlen(token) + 1;
+
+        reliablePost->SendReliable(outPktHdr, outMailHdr, token);
+
+        // Wait for round trip
+        reliablePost->ReceiveReliable(0, &inPktHdr, &inMailHdr, buffer);
+        printf("Machine %d: Token returned, ring tour completed !\n", myAddr);
+        fflush(stdout);
+
+    } else { // Other machines, just hold a moment then forward the token
+        reliablePost->ReceiveReliable(0, &inPktHdr, &inMailHdr, buffer);
+
+        printf("Machine %d : Received token from machine %d.\n", myAddr, inPktHdr.from);
+        fflush(stdout);
+
+        Delay(5);
+
+        printf("Machine %d: Forwarding token to machine %d\n", myAddr, nextAddr);
+        fflush(stdout);
+
+
+        outPktHdr.to = nextAddr;		
+        outMailHdr.to = 0;
+        outMailHdr.from = myAddr;
+        outMailHdr.length = strlen(buffer) + 1;
+
+        reliablePost->SendReliable(outPktHdr, outMailHdr, buffer);
+
+    }
+    Delay(5);
+    delete reliablePost;
+    interrupt->Halt();
+}
