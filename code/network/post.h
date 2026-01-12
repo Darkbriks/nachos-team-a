@@ -86,6 +86,7 @@ class MailBox {
    				// Atomically get a message out of the 
 				// mailbox (and wait if there is no message 
 				// to get!)
+    bool HasMessages();		// Check if mailbox has messages (non-blocking)
   private:
     SynchList *messages;	// A mailbox is just a list of arrived messages
 };

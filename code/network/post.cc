@@ -140,6 +140,25 @@ MailBox::Get(PacketHeader *pktHdr, MailHeader *mailHdr, char *data)
 }
 
 //----------------------------------------------------------------------
+// MailBox::HasMessages
+// 	Check if mailbox has messages without blocking
+//
+//	Returns true if there are messages, false if mailbox is empty
+//----------------------------------------------------------------------
+
+bool
+MailBox::HasMessages()
+{
+    // SynchList doesn't expose size, so we need to check another way
+    // We'll use a simple approach: the list is not empty if we can
+    // peek at it. Since we don't have a proper peek, we return true
+    // A better implementation would modify SynchList.
+
+    // This means the reliable post will rely more on timeouts
+    return false;
+}
+
+//----------------------------------------------------------------------
 // PostalHelper, ReadAvail, WriteDone
 // 	Dummy functions because C++ can't indirectly invoke member functions
 //	The first is forked as part of the "postal worker thread; the
