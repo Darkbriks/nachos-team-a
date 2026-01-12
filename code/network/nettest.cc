@@ -24,6 +24,7 @@
 #include "reliablepost.h"
 #include "interrupt.h"
 #include "machine.h"
+#include "reliablepost.h"
 
 // Test out message delivery, by doing the following:
 //	1. send a message to the machine with ID "farAddr", at mail box #0
