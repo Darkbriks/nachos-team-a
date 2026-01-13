@@ -39,6 +39,8 @@ typedef int MailBoxAddress;
 // This is prepended to the message by the PostOffice, before the message 
 // is sent to the Network.
 
+#define ACK_BOX 1
+#define MAIL_BOX 0
 class MailHeader {
   public:
     MailBoxAddress to;		// Destination mail box

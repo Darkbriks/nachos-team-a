@@ -80,8 +80,8 @@ MailBox::~MailBox()
 static void 
 PrintHeader(PacketHeader pktHdr, MailHeader mailHdr)
 {
-    printf("From (%d, %d) to (%d, %d) bytes %d\n",
-    	    pktHdr.from, mailHdr.from, pktHdr.to, mailHdr.to, mailHdr.length);
+    printf("From (%d, %s) to (%d, %s) bytes %d\n",
+    	    pktHdr.from, mailHdr.from == ACK_BOX ? "ACK_BOX" : "MAIL_BOX", pktHdr.to, mailHdr.to== ACK_BOX ? "ACK_BOX" : "MAIL_BOX", mailHdr.length);
 }
 
 //----------------------------------------------------------------------
