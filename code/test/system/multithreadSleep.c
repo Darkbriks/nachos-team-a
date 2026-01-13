@@ -1,5 +1,6 @@
 #include "syscall.h"
 #include "nos_stdlib.h"
+#include "pthread.h"
 
 void func2(void *arg) {
     long long before_sleep;
@@ -21,25 +22,25 @@ void func2(void *arg) {
     PutInt(after_sleep - before_sleep);
     printf_simple(" ticks (expected ~"); PutInt(1000 * thread_id); printf_simple(")\n");
 
-    PthreadExit(0);
+    pthread_exit(0);
 }
 
 void func1(void *arg) {
     for (int i = 1; i <= 5; i++) {
         int thread_id;
-        PthreadCreate((tid_t *)&thread_id, NULL, (void *(*)(void *))func2, (void *)(long)i);
+        pthread_create((pthread_t *)&thread_id, NULL, (void *(*)(void *))func2, (void *)(long)i);
         printf_simple("Main: Created thread with ID "); PutInt(thread_id); printf_simple("\n");
         Sleep(100);
     }
-    PthreadExit(0);
+    pthread_exit(0);
 }
 
 int main() {
     printf_simple("=== Test Sleep syscall with multiple threads ===\n");
 
     int main_thread_id;
-    PthreadCreate((tid_t *)&main_thread_id, NULL, (void *(*)(void *))func1, NULL);
-    PthreadJoin(main_thread_id, NULL);
+    pthread_create((pthread_t *)&main_thread_id, NULL, (void *(*)(void *))func1, NULL);
+    pthread_join(main_thread_id, NULL);
 
     printf_simple("Main thread finished.\n");
     return 0;

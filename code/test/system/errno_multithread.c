@@ -3,6 +3,7 @@
 #include "nos_errno.h"
 #include "nos_mem_space.h"
 #include "nos_stdlib.h"
+#include "pthread.h"
 
 #define NUM_THREADS 20
 
@@ -47,19 +48,19 @@ void thread_function(int thread_id) {
 }
 
 int main(void) {
-    tid_t threads[NUM_THREADS];
+    pthread_t threads[NUM_THREADS];
 
     PutString("=== Errno Multithreaded Test ===\n", 35);
 
     for (int i = 0; i < NUM_THREADS; i++) {
-        if (PthreadCreate(&threads[i], NULL, (void*(*)(void*))thread_function, (void*)(long)i) != 0) {
+        if (pthread_create(&threads[i], NULL, (void*(*)(void*))thread_function, (void*)(long)i) != 0) {
             print_error("Failed to create thread "); PutInt(i); PutChar('\n');
             return -1;
         }
     }
 
     for (int i = 0; i < NUM_THREADS; i++) {
-        PthreadJoin(threads[i], NULL);
+        pthread_join(threads[i], NULL);
     }
 
     PutString("=== Errno Multithreaded Test Complete ===\n", 45);

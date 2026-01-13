@@ -1,4 +1,5 @@
 #include "syscall.h"
+#include "pthread.h"
 
 void *return_zero(void *arg) {
     return 0;
@@ -13,8 +14,8 @@ void *return_negative(void *arg) {
 }
 
 void *explicit_exit(void *arg) {
-    PthreadExit((void *)999);
-    PutString("ERROR: Code after PthreadExit executed!\n", 42);
+    pthread_exit((void *)999);
+    PutString("ERROR: Code after pthread_exit executed!\n", 42);
     return (void *)(-1);
 }
 
@@ -23,25 +24,25 @@ void *exit_in_middle(void *arg) {
     for (int i = 0; i < 5; i++) {
         counter++;
         if (i == 2) {
-            PthreadExit((void *)(long)counter);
+            pthread_exit((void *)(long)counter);
         }
     }
     return (void *)(long)counter;
 }
 
 int main() {
-    PutString("=== Test PthreadExit Return Values ===\n", 41);
+    PutString("=== Test pthread_exit Return Values ===\n", 41);
     
-    tid_t tid;
+    pthread_t tid;
     void *retval;
     
     PutString("Test 1: Return 0\n", 17);
-    if (PthreadCreate(&tid, 0, return_zero, 0) != 0) {
+    if (pthread_create(&tid, 0, return_zero, 0) != 0) {
         PutString("ERROR: Failed to create thread\n", 31);
         return 1;
     }
     
-    if (PthreadJoin(tid, &retval) != 0) {
+    if (pthread_join(tid, &retval) != 0) {
         PutString("ERROR: Join failed\n", 19);
         return 1;
     }
@@ -56,12 +57,12 @@ int main() {
     PutString("Test 1: PASS\n", 13);
     
     PutString("Test 2: Return positive value\n", 30);
-    if (PthreadCreate(&tid, 0, return_positive, 0) != 0) {
+    if (pthread_create(&tid, 0, return_positive, 0) != 0) {
         PutString("ERROR: Failed to create thread\n", 31);
         return 1;
     }
     
-    if (PthreadJoin(tid, &retval) != 0) {
+    if (pthread_join(tid, &retval) != 0) {
         PutString("ERROR: Join failed\n", 19);
         return 1;
     }
@@ -76,12 +77,12 @@ int main() {
     PutString("Test 2: PASS\n", 13);
     
     PutString("Test 3: Return negative value\n", 30);
-    if (PthreadCreate(&tid, 0, return_negative, 0) != 0) {
+    if (pthread_create(&tid, 0, return_negative, 0) != 0) {
         PutString("ERROR: Failed to create thread\n", 31);
         return 1;
     }
     
-    if (PthreadJoin(tid, &retval) != 0) {
+    if (pthread_join(tid, &retval) != 0) {
         PutString("ERROR: Join failed\n", 19);
         return 1;
     }
@@ -95,13 +96,13 @@ int main() {
     
     PutString("Test 3: PASS\n", 13);
     
-    PutString("Test 4: Explicit PthreadExit\n", 31);
-    if (PthreadCreate(&tid, 0, explicit_exit, 0) != 0) {
+    PutString("Test 4: Explicit pthread_exit\n", 31);
+    if (pthread_create(&tid, 0, explicit_exit, 0) != 0) {
         PutString("ERROR: Failed to create thread\n", 31);
         return 1;
     }
     
-    if (PthreadJoin(tid, &retval) != 0) {
+    if (pthread_join(tid, &retval) != 0) {
         PutString("ERROR: Join failed\n", 19);
         return 1;
     }
@@ -113,15 +114,15 @@ int main() {
         return 1;
     }
     
-    PutString("Test 4: PASS - PthreadExit does not return\n", 45);
+    PutString("Test 4: PASS - pthread_exit does not return\n", 45);
     
-    PutString("Test 5: PthreadExit in middle of function\n", 44);
-    if (PthreadCreate(&tid, 0, exit_in_middle, 0) != 0) {
+    PutString("Test 5: pthread_exit in middle of function\n", 44);
+    if (pthread_create(&tid, 0, exit_in_middle, 0) != 0) {
         PutString("ERROR: Failed to create thread\n", 31);
         return 1;
     }
     
-    if (PthreadJoin(tid, &retval) != 0) {
+    if (pthread_join(tid, &retval) != 0) {
         PutString("ERROR: Join failed\n", 19);
         return 1;
     }
@@ -136,12 +137,12 @@ int main() {
     PutString("Test 5: PASS\n", 13);
     
     PutString("Test 6: Join with NULL retval pointer\n", 39);
-    if (PthreadCreate(&tid, 0, return_positive, 0) != 0) {
+    if (pthread_create(&tid, 0, return_positive, 0) != 0) {
         PutString("ERROR: Failed to create thread\n", 31);
         return 1;
     }
     
-    if (PthreadJoin(tid, 0) != 0) {
+    if (pthread_join(tid, 0) != 0) {
         PutString("ERROR: Join with NULL retval failed\n", 37);
         return 1;
     }
