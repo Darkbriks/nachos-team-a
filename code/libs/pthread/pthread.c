@@ -10,8 +10,8 @@ int mem_alloc_init = 0;
 int mem_init_amount = 10000; // TODO adjust initial memory size
 
 #define INIT_MEMORY_ALLOCATOR()    \
-    if (mem_alloc_init == 0) {      \
-        mem_alloc_init = 1;         \
+    if (mem_alloc_init == 0) {     \
+        mem_alloc_init = 1;        \
         mem_init(mem_init_amount); \
     }
 
@@ -183,7 +183,7 @@ void thread_start_wrapper(void *arg) {
 pthread_lib* array_tid[MAX_PROCESS][MAX_THREAD];
 
 static inline pthread_lib* __pthread_self(){
-    return (pthread_lib*)__get_tls()->tsd[0]; // Assuming TSD index 0 stores pthread_t pointer
+    return (pthread_lib*)__get_tls()->pthread_ptr;
 }
 
 pthread_lib* get_thread_by_tid(pthread_t thread){
@@ -218,13 +218,10 @@ int pthread_create(pthread_t *thread, pthread_attr_t * attr, typeof(void *(void 
         return -1;
     }
 
-    // TODO: Initialize TLS structure
     tls_t* tls = (tls_t*)t->tls_base;
     tls->self = tls;
-    tls->stack_base = t->stack_base;
-    tls->stack_size = t->stack_size;
-    tls->retval = NULL;
-    tls->tsd[0] = (void*)t;
+    tls->errno_val = 0;
+    tls->pthread_ptr = (int)t;
 
     struct thread_start_args* start_args = (struct thread_start_args*) mem_alloc(sizeof(struct thread_start_args));
     if (start_args == NULL) {

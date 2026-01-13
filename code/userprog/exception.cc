@@ -166,11 +166,6 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(PutInt)
         CASE_HANDLER(GetInt)
 
-        CASE_HANDLER(PthreadCreate)
-        CASE_HANDLER_RETURN(PthreadExit)
-        CASE_HANDLER(PthreadJoin)
-        CASE_HANDLER(PthreadDetach)
-
         CASE_HANDLER(Sleep)
         CASE_HANDLER(SleepUntil)
         CASE_HANDLER(GetCurrentTick)
@@ -188,9 +183,6 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(Sbrk);
         CASE_HANDLER(mmap);
         CASE_HANDLER(munmap);
-
-        CASE_HANDLER(SetTLS);
-        CASE_HANDLER(GetTLS);
 
         CASE_HANDLER(thread_create);
         CASE_HANDLER_RETURN(thread_exit);

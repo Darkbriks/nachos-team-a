@@ -10,6 +10,7 @@ typedef struct pthread_attr_t pthread_attr_t;
 typedef int pthread_t;
 typedef struct pthread{
     pthread_t tid;
+    unsigned int pid;
 
     int exited;
     int detached;

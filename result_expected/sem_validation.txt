@@ -22,7 +22,7 @@ PASS: Multi-threaded test complete
 === All tests completed ===
 Machine halting!
 
-Ticks: total 78451, idle 48577, system 26430, user 3444
+Ticks: total 78369, idle 48577, system 26350, user 3442
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 488
 Paging: faults 0

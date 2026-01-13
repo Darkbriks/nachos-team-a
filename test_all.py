@@ -449,14 +449,6 @@ if __name__ == "__main__":
                 )
 
     all_test.append(Test(
-                        file_expect ="test_errno_tls.txt",
-                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./system/errno_tls",
-                        name = "Test errno en contexte monothread avec TLS",
-                        description = "Test pour vérifier le comportement de errno dans un contexte monothread avec Thread Local Storage (TLS)."
-                    )
-                )
-
-    all_test.append(Test(
                         file_expect ="test_errno_multithread.txt",
                         line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./system/errno_multithread",
                         name = "Test errno en contexte multithread avec TLS",

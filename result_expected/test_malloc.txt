@@ -1,80 +1,80 @@
 === Test allocateur memoire NachOS ===
 --- Test 0: Initialisation de l'allocateur ---
-Allocateur initialise a l'adresse: 30464
+Allocateur initialise a l'adresse: 29952
 
 --- Test 0: Etat initial memoire ---
-  Block at 30484, size=616 [FREE]
+  Block at 29972, size=616 [FREE]
 
 --- Test 1: Allocation simple ---
-Alloue 32 bytes a: 30476
-Alloue 64 bytes a: 30516
-Alloue 16 bytes a: 30588
+Alloue 32 bytes a: 29964
+Alloue 64 bytes a: 30004
+Alloue 16 bytes a: 30076
 
 --- Test 1: Etat memoire apres allocations ---
-  Block at 30476, size=32 [USED]
-  Block at 30516, size=64 [USED]
-  Block at 30588, size=16 [USED]
-  Block at 30620, size=480 [FREE]
+  Block at 29964, size=32 [USED]
+  Block at 30004, size=64 [USED]
+  Block at 30076, size=16 [USED]
+  Block at 30108, size=480 [FREE]
 
 --- Test 2: Ecriture/Lecture ---
 Ecrit 'Hello' dans ptr1: Hello
 
 --- Test 2: Etat memoire apres ecriture ---
-  Block at 30476, size=32 [USED]
-  Block at 30516, size=64 [USED]
-  Block at 30588, size=16 [USED]
-  Block at 30620, size=480 [FREE]
+  Block at 29964, size=32 [USED]
+  Block at 30004, size=64 [USED]
+  Block at 30076, size=16 [USED]
+  Block at 30108, size=480 [FREE]
 
 --- Test 3: mem_get_size ---
 Taille de ptr1: 32 (attendu 32)
 Taille de ptr2: 64 (attendu 64)
 
 --- Test 3: Etat memoire apres get_size ---
-  Block at 30476, size=32 [USED]
-  Block at 30516, size=64 [USED]
-  Block at 30588, size=16 [USED]
-  Block at 30620, size=480 [FREE]
+  Block at 29964, size=32 [USED]
+  Block at 30004, size=64 [USED]
+  Block at 30076, size=16 [USED]
+  Block at 30108, size=480 [FREE]
 
 --- Test 4: Liberation ---
 Liberation de ptr2...
 
 --- Test 4: Etat memoire apres liberation ---
-  Block at 30476, size=32 [USED]
-  Block at 30524, size=56 [FREE]
-  Block at 30588, size=16 [USED]
-  Block at 30620, size=480 [FREE]
+  Block at 29964, size=32 [USED]
+  Block at 30012, size=56 [FREE]
+  Block at 30076, size=16 [USED]
+  Block at 30108, size=480 [FREE]
 
 --- Test 5: Reallocation du trou ---
-Alloue 32 bytes a: 30516
+Alloue 32 bytes a: 30004
 
 --- Test 5: Etat memoire apres realloc ---
-  Block at 30476, size=32 [USED]
-  Block at 30516, size=32 [USED]
-  Block at 30564, size=16 [FREE]
-  Block at 30588, size=16 [USED]
-  Block at 30620, size=480 [FREE]
+  Block at 29964, size=32 [USED]
+  Block at 30004, size=32 [USED]
+  Block at 30052, size=16 [FREE]
+  Block at 30076, size=16 [USED]
+  Block at 30108, size=480 [FREE]
 
 --- Test 6: mem_calloc ---
-Calloc 10 ints a: 30612
+Calloc 10 ints a: 30100
 Verification zeros: OK
 
 --- Test 6: Etat memoire apres calloc ---
-  Block at 30476, size=32 [USED]
-  Block at 30516, size=32 [USED]
-  Block at 30564, size=16 [FREE]
-  Block at 30588, size=16 [USED]
-  Block at 30612, size=40 [USED]
-  Block at 30668, size=432 [FREE]
+  Block at 29964, size=32 [USED]
+  Block at 30004, size=32 [USED]
+  Block at 30052, size=16 [FREE]
+  Block at 30076, size=16 [USED]
+  Block at 30100, size=40 [USED]
+  Block at 30156, size=432 [FREE]
 
 --- Nettoyage ---
 
 Etat apres liberation totale:
-  Block at 30484, size=616 [FREE]
+  Block at 29972, size=616 [FREE]
 
 === Tests termines avec succes ===
 Machine halting!
 
-Ticks: total 279445, idle 194500, system 68550, user 16395
+Ticks: total 279365, idle 194500, system 68470, user 16395
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 1945
 Paging: faults 0

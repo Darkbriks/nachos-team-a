@@ -3,73 +3,7 @@
 #include "process.h"
 #include "stackmanager.h"
 #include "thread.h"
-#include "tls.h"
 #include "nos_threads.h"
-
-void handle_SC_PthreadCreate(){
-   /* user_thread_args args = {
-        (unsigned int) machine->ReadRegister(6),
-        (void *) machine->ReadRegister(7),
-        0,
-        0,
-        0,
-        0,
-    };
-    const int thread_ptr = machine->ReadRegister(4);
-    machine->WriteRegister(4, (int) &args);
-    handle_SC_thread_create();
-    int TID = machine->ReadRegister(2);
-    if (thread_ptr > 0){
-        if (!CopyToUserType<int>(thread_ptr, &TID)) {
-            DEBUG('t', "handle_SC_thread_create: Failed to copy user_thread_args from user space\n");
-            RETURN(-E_FAULT);
-        }
-    }*/
-    RETURN(0);
-}
-
-void handle_SC_PthreadExit(){
-    handle_SC_thread_exit();
-}
-
-void handle_SC_PthreadJoin() {}
-
-void handle_SC_PthreadDetach() {}
-
-void handle_SC_SetTLS() {
-    const int tlsPtr = machine->ReadRegister(4);
-
-    DEBUG('t', "sys_set_tls: thread %s setting TLS to 0x%x\n", currentThread->getName(), tlsPtr);
-
-    if (tlsPtr == 0) {
-        DEBUG('t', "sys_set_tls: NULL pointer rejected\n");
-        RETURN(-E_INVAL);
-    }
-
-    int testValue;
-    if (!machine->ReadMem(tlsPtr, 4, &testValue)) {
-        DEBUG('t', "sys_set_tls: Invalid TLS address 0x%x on read test\n", tlsPtr);
-        RETURN(-E_FAULT);
-    }
-
-    if (!machine->WriteMem(tlsPtr, 4, testValue)) {
-        DEBUG('t', "sys_set_tls: Invalid TLS address 0x%x on write test\n", tlsPtr);
-        RETURN(-E_FAULT);
-    }
-
-    //currentThread->setTlsBase(static_cast<unsigned int>(tlsPtr));
-
-    machine->WriteRegister(TLS_REGISTER, tlsPtr);
-
-    DEBUG('t', "sys_set_tls: TLS set successfully to 0x%x\n", tlsPtr);
-    RETURN(0);
-}
-
-void handle_SC_GetTLS() {
-    const unsigned int tlsBase = currentThread->getUserTlsBase();
-    DEBUG('t', "sys_get_tls: returning 0x%x\n", tlsBase);
-    RETURN(static_cast<int>(tlsBase));
-}
 
 bool ValidateThreadArgs(const user_thread_args& args, const AddrSpace* space, const StackManager* stackMgr) {
     // entry : must be a valid user address, aligned to 4 bytes, and in code segment
