@@ -18,7 +18,7 @@
 #include "copyright.h"
 #include "process.h"
 #include "switch.h"
-#include "synch.h"
+#include "sysdep.h"
 #include "system.h"
 #include "tls.h"
 
@@ -35,8 +35,9 @@
 //      "threadName" is an arbitrary string, useful for debugging.
 //----------------------------------------------------------------------
 
-Thread::Thread(const char* debugName, Process* p, const tid_t tid)
-                : name(debugName), process(p), TID(tid), sem(Semaphore(debugName, 0)) {
+Thread::Thread(const tid_t t, Process* p, const ptr_32 tlsBase)
+                : tid(t), process(p), userTlsBase(tlsBase) {
+    name = "unknown";
 #ifdef USER_PROGRAM
     // FBT: Need to initialize special registers of simulator to 0
     // in particular LoadReg or it could crash when switching
@@ -74,15 +75,7 @@ AddrSpace*  Thread::getAddrSpace() const {
     return nullptr;
 }
 
-void Thread::setDetached(const bool d) {
-    if (d) {
-        flags |= USER_THREAD_FLAG_DETACHED;
-    } else {
-        flags &= ~USER_THREAD_FLAG_DETACHED;
-    }
-}
-
-void Thread::InitUserContext(const unsigned int entryPoint, const unsigned int arg, const unsigned int user_sp) {
+void Thread::InitUserContext(const ptr_32 entryPoint, const ptr_32 arg, const ptr_32 user_sp) {
     ASSERT(process != nullptr)
     const AddrSpace* space = process->getSpace();
     ASSERT(space != nullptr)
@@ -92,25 +85,17 @@ void Thread::InitUserContext(const unsigned int entryPoint, const unsigned int a
     }
 
     userRegisters[PCReg] = static_cast<int>(entryPoint);
-    userRegisters[NextPCReg] = static_cast<int>(entryPoint + 4);
+    userRegisters[NextPCReg] = entryPoint + 4;
     userRegisters[StackReg] = static_cast<int>(user_sp);
     userRegisters[RetAddrReg] = machine->ReadRegister(5);
     userRegisters[4] = arg; // 4 is the arg Register
 
     if (userTlsBase != 0) {
-        userRegisters[TLS_REGISTER] = static_cast<int>(userTlsBase);
+        userRegisters[TLS_REGISTER] = userTlsBase;
     }
 
     DEBUG('t', "Thread::InitUserContext: Initialized user context for thread \"%s\" with entryPoint=0x%x, user_sp=0x%x, tls_base=0x%x\n",
           name, entryPoint, user_sp, userTlsBase);
-}
-
-void Thread::Joiner() {
-    sem.V();
-}
-
-void Thread::Join() {
-    sem.P();
 }
 
 //----------------------------------------------------------------------

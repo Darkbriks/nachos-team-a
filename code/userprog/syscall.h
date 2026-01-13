@@ -38,12 +38,6 @@
 #define SC_PutInt 15
 #define SC_GetInt 16
 
-/* --- Pthreads --- */
-#define SC_PthreadCreate 17
-#define SC_PthreadExit 18
-#define SC_PthreadJoin 19
-#define SC_PthreadDetach 20
-
 /* --- Time --- */
 #define SC_Sleep 26
 #define SC_SleepUntil 27
@@ -63,20 +57,20 @@
 
 /* --- Memory Management --- */
 #define SC_Sbrk 37
+#define SC_mmap 38
+#define SC_munmap 39
 
 /* Rework of threads */
-#define SC_SetTLS 50
-#define SC_GetTLS 51
 #define SC_thread_create 52
 #define SC_thread_exit 53
-#define SC_thread_join 54
-#define SC_thread_self 55
-#define SC_thread_yield 56
+#define SC_thread_self 54
+#define SC_thread_yield 55
 
 #define SC_futex_wait 60
 #define SC_futex_wake 61
 #define SC_atomic_cmpxchg 62
 #define SC_atomic_store 63
+#define SC_atomic_load 64
 
 /* ============================================================
  * ERROR CODES
@@ -243,51 +237,6 @@ int GetString(char *s, int n);
 int GetInt(int *n);
 
 /* -------------------------------------------------------------
- * POSIX THREAD OPERATIONS
- * -------------------------------------------------------------
- */
-
-typedef unsigned int tid_t;
-typedef int posix_process_t;
-
-#include "pthread.h" // TODO l'enlever
-/**
- * @brief Create a new thread
- *
- * @param thread A pointer to store the created thread id
- * @param attr Thread attributes (can be nullptr for default attributes)
- * @param start_routine The function to be executed by the thread
- * @param arg The argument to be passed to the function
- * @return 0 on success, -1 on error (check errno)
- */
-int PthreadCreate(tid_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg);
-
-/**
- * @brief Destruct the caller thread
- *
- * @param retval The return value of the thread
- * @return This function does not return
- */
-void PthreadExit(void *retval);
-
-/**
- * @brief Caller will wait other thread to finish
- *
- * @param thread The thread to wait
- * @param retval A pointer to store the return value of the joined thread (can be nullptr)
- * @return 0 on success, -1 on error (check errno)
- */
-int PthreadJoin(tid_t thread, void **retval);
-
-/**
- * @brief Detach a thread
- *
- * @param thread The thread to detach
- * @return 0 on success, -1 on error (check errno)
- */
-int PthreadDetach(tid_t thread);
-
-/* -------------------------------------------------------------
  * TIME OPERATIONS
  * -------------------------------------------------------------
  */
@@ -372,6 +321,8 @@ int SetMaxSemForProcess(unsigned int maxSemaphores);
  * -------------------------------------------------------------
  */
 
+typedef int posix_process_t;
+
 /**
  * @brief Fork and execute a new process
  * @param name Name of the executable file
@@ -409,24 +360,25 @@ int ForkSelf();
  */
 int Sbrk(int n);
 
+/**
+ * @brief Create a new memory mapping in the process's address space
+ * @param addr Desired starting address for the mapping (can be nullptr)
+ * @param length Length of the mapping in bytes (must be multiple of page size)
+ * @return Starting address of the mapping on success, negative error code on failure
+ */
+int mmap(void* addr, int length);
+
+/**
+ * @brief Remove a memory mapping from the process's address space
+ * @param addr Starting address of the mapping
+ * @return 0 on success, negative error code on failure
+ */
+int munmap(void* addr);
+
 /* -------------------------------------------------------------
  * REWORK OF THREADS
  * -------------------------------------------------------------
  */
-
-/**
- * @brief Set the Thread Local Storage base address for the current thread
- * The TLS block must be allocated in user space before calling.
- * @param addr Base address of the TLS area
- * @return 0 on success, negative error code on failure
- */
-int SetTLS(void* addr);
-
-/**
- * @brief Get the Thread Local Storage base address for the current thread
- * @return Base address of the TLS area, or 0 on error
- */
-void* GetTLS();
 
 /**
  * @brief Create a new thread in the current process
@@ -438,19 +390,8 @@ int thread_create(void* args);
 
 /**
  * @brief Exit the current thread
- *
- * @param retval The return value of the thread
  */
-void thread_exit(void* retval);
-
-/**
- * @brief Wait for a thread to finish
- *
- * @param tid The TID of the thread to wait
- * @param retval A pointer to store the return value of the joined thread (can be nullptr)
- * @return 0 on success, negative error code on failure
- */
-int thread_join(int tid, void** retval);
+void thread_exit();
 
 /**
  * @brief Get the TID of the current thread
@@ -494,6 +435,13 @@ int atomic_cmpxchg(int* uaddr, int expected, int desired);
  * @param value Value to store
  */
 void atomic_store(int* uaddr, int value);
+
+/**
+ * @brief Atomic load operation
+ * @param uaddr Address of the integer to load from
+ * @return The loaded value
+ */
+int atomic_load(int* uaddr);
 
 #endif // IN_USER_MODE
 

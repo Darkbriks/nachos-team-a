@@ -2,6 +2,7 @@
 #include "syscall.h"
 #include "types.h"
 #include "nos_threads.h"
+#include "pthread.h"
 
 pthread_mutex_t mutex;
 int shared_counter = 0;
@@ -20,14 +21,14 @@ void* thread_function(void* arg) {
 int main() {
     pthread_mutex_init(&mutex);
 
-    tid_t threads[NUM_THREADS];
+    pthread_t threads[NUM_THREADS];
 
     for (int i = 0; i < NUM_THREADS; i++) {
-        PthreadCreate(&threads[i], NULL, thread_function, NULL);
+        pthread_create(&threads[i], NULL, thread_function, NULL);
     }
 
     for (int i = 0; i < NUM_THREADS; i++) {
-        PthreadJoin(threads[i], NULL);
+        pthread_join(threads[i], NULL);
     }
 
     int expected_value = NUM_THREADS * INCREMENTS_PER_THREAD;

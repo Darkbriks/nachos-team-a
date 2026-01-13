@@ -38,7 +38,6 @@
 #define THREAD_H
 
 #include "copyright.h"
-#include "synch.h"
 #include "utility.h"
 #include "system.h"
 #include "nos_threads.h"
@@ -60,7 +59,7 @@
 class Process;
 
 // Thread state
-enum ThreadStatus { JUST_CREATED, RUNNING, READY, BLOCKED, SLEEP, TERMINATED };
+enum ThreadStatus { JUST_CREATED, RUNNING, READY, BLOCKED, SLEEP, ZOMBIE, TERMINATED };
 
 // external function, dummy routine whose sole job is to call Thread::Print
 extern void ThreadPrint(int arg);
@@ -78,113 +77,81 @@ extern void ThreadPrint(int arg);
 
 class Thread {
 
-    friend Process;
+friend Process;
 
-    private:
-        // NOTE: DO NOT CHANGE the order of these first two members.
-        // THEY MUST be in this position for SWITCH to work.
-        int* stackTop = nullptr;                 // the current stack pointer
-        int machineState[MachineStateSize] = {}; // all registers except for stackTop
+private:
+    // NOTE: DO NOT CHANGE the order of these first two members.
+    // THEY MUST be in this position for SWITCH to work.
+    int* stackTop = nullptr;                 // the current stack pointer
+    int machineState[MachineStateSize] = {}; // all registers except for stackTop
 
-        const char* name = {};
-        int* stack = nullptr; // Bottom of the stack. NULL if this is the main thread (If NULL, don't deallocate stack)
-        ThreadStatus status = JUST_CREATED; // ready, running or blocked
-
-        Process* process = nullptr;
-        tid_t TID = 0; // The TID for this thread
-
-        Thread* joiner = nullptr;
-        Thread* join = nullptr;
-        Semaphore sem;
-
-        long long waitTime = 0; // Used to wake up sleeping threads
-
-        unsigned char flags = 0;
-        void* retval = nullptr;
-
-        unsigned int userTlsBase = 0;
-        unsigned int userStackBase = 0;
-        unsigned int userStackLimit = 0;
-        unsigned int userStackSize = 0;
-        int* clearChildTid = nullptr;
-
-        Thread(const char* debugName, Process* p, tid_t tid);
-
-    public:
-        Thread() = delete; // explicitly disable the default constructor
-        ~Thread();                     // deallocate a Thread
-        // NOTE -- thread being deleted
-        // must not be running when delete
-        // is called
-
-        [[nodiscard]] const char* getName()const { return name; }
-        [[nodiscard]] ThreadStatus getStatus() const { return status; }
-
-        [[nodiscard]] Process* getProcess()const { return process; }
-        [[nodiscard]] tid_t getTID() const { return TID; }
-
-        [[nodiscard]] bool hasJoiner()const { return joiner != nullptr; }
-
-        [[nodiscard]] long long getWaitTime() const { return waitTime; }
-
-        [[nodiscard]] bool isDetached() const { return (flags & USER_THREAD_FLAG_DETACHED) != 0; }
-        [[nodiscard]] bool isTerminated() const { return status == TERMINATED; }
-        [[nodiscard]] void* getReturnValue() const { return retval; }
-
-        [[nodiscard]] unsigned int getTlsBase() const { return userTlsBase; }
-        [[nodiscard]] unsigned int getUserStackBase() const { return userStackBase; }
-        [[nodiscard]] unsigned int getUserStackLimit() const { return userStackLimit; }
-        [[nodiscard]] unsigned int getUserStackSize() const { return userStackSize; }
-        [[nodiscard]] int* getClearChildTid() const { return clearChildTid; }
-
-        [[nodiscard]] AddrSpace* getAddrSpace()const;
-
-        void setJoiner(Thread* thread) {joiner = thread;}
-        void setJoin(Thread* thread) {join = thread;}
-        void setStatus(const ThreadStatus st) { status = st; }
-
-        void setDetached(bool d);
-        void setReturnValue(void* val) { retval = val; }
-
-        void setTlsBase(const unsigned int addr) { userTlsBase = addr; }
-        void setUserStack(const unsigned int base, const unsigned int size, const unsigned int limit) { userStackBase = base; userStackSize = size; userStackLimit = limit; }
-        void setClearChildTid(int* addr) { clearChildTid = addr; }
-
-        void clearUserStack() { userStackBase = 0; userStackSize = 0; userStackLimit = 0; }
-
-        void InitUserContext(unsigned int entryPoint, unsigned int arg, unsigned int user_sp);
-
-        // basic thread operations
-        void Joiner();
-        void Join();
-        void Fork(VoidFunctionPtr func, int arg); // Make thread run (*func)(arg)
-        void Yield();                             // Relinquish the CPU if any other thread is runnable
-        void Sleep();                             // Put the thread to sleep and relinquish the processor
-        void SleepUntil(long long tick);          // Sleep until specified tick
-        void WakeUp();                            // Wake up the thread
-        void Finish();                            // The thread is done executing
-        void CheckOverflow();                     // Check if thread has overflowed its stack
-
-        void Print() const { printf("%s, ", name); }
-
-    private:
-        // some of the private data for this class is listed above
-
-        void StackAllocate(VoidFunctionPtr func, int arg);
-        // Allocate a stack for thread.
-        // Used internally by Fork()
+    int* stack = nullptr; // Bottom of the stack. NULL if this is the main thread (If NULL, don't deallocate stack)
 
 #ifdef USER_PROGRAM
-        // A thread running a user program actually has *two* sets of CPU registers
-        // -- one for its state while executing user code, one for its state while
-        // executing kernel code.
-
-        int userRegisters[NumTotalRegs] = {}; // user-level CPU register state
-
-    public:
-        void SaveUserState();    // save user-level register state
-        void RestoreUserState() const; // restore user-level register state
+    // A thread running a user program actually has *two* sets of CPU registers
+    // -- one for its state while executing user code, one for its state while
+    // executing kernel code.
+    int userRegisters[NumTotalRegs] = {}; // user-level CPU register state
 #endif
+
+    const char* name = {};
+    tid_t tid = 0; // The TID for this thread
+    Process* process = nullptr;
+
+    ThreadStatus status = JUST_CREATED; // ready, running or blocked
+    long long waitTime = 0; // Used to wake up sleeping threads
+
+    ptr_32 userTlsBase = 0;
+    bool exiting = false;
+
+    Thread(tid_t tid, Process* process, ptr_32 tlsBase = 0);
+
+    void StackAllocate(VoidFunctionPtr func, int arg); // Allocate a stack for thread. Used internally by Fork()
+
+    void SetDebugName(const char* debugName) { name = debugName; }
+    void set_sp(int* sp) { stackTop = sp; } // For first created thread
+
+public:
+    Thread() = delete; // explicitly disable the default constructor
+    ~Thread();                     // deallocate a Thread
+    // NOTE -- thread being deleted
+    // must not be running when delete
+    // is called
+
+    [[nodiscard]] const char* getName()const { return name; }
+    [[nodiscard]] tid_t getTID() const { return tid; }
+    [[nodiscard]] Process* getProcess()const { return process; }
+
+    [[nodiscard]] ThreadStatus getStatus() const { return status; }
+    [[nodiscard]] long long getWaitTime() const { return waitTime; }
+
+    [[nodiscard]] ptr_32 getUserTlsBase() const { return userTlsBase; }
+    [[nodiscard]] bool getExiting() const { return exiting; }
+
+    [[nodiscard]] bool isTerminated() const { return status == TERMINATED; }
+    [[nodiscard]] bool canExit() const { return status != RUNNING && status != BLOCKED && status != SLEEP; }
+
+    [[nodiscard]] AddrSpace* getAddrSpace() const;
+
+    void setStatus(const ThreadStatus st) { status = st; }
+
+    void InitUserContext(ptr_32 entryPoint, ptr_32 arg, ptr_32 user_sp);
+
+    // basic thread operations
+    void Fork(VoidFunctionPtr func, int arg); // Make thread run (*func)(arg)
+    void Yield();                             // Relinquish the CPU if any other thread is runnable
+    void Sleep();                             // Put the thread to sleep and relinquish the processor
+    void SleepUntil(long long tick);          // Sleep until specified tick
+    void WakeUp();                            // Wake up the thread
+    void Finish();                            // The thread is done executing
+    void CheckOverflow();                     // Check if thread has overflowed its stack
+
+#ifdef USER_PROGRAM
+    void SaveUserState();    // save user-level register state
+    void RestoreUserState() const; // restore user-level register state
+#endif
+
+    void Print() const { printf("%s, ", name); }
 };
 
 // Magical machine-dependent routines, defined in switch.s

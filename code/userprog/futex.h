@@ -42,5 +42,6 @@ void handle_SC_futex_wait();
 void handle_SC_futex_wake();
 void handle_SC_atomic_cmpxchg();
 void handle_SC_atomic_store();
+void handle_SC_atomic_load();
 
 #endif

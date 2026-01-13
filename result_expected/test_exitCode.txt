@@ -2,7 +2,7 @@ our_shell >  our_shell >
 session terminée
 Machine halting!
 
-Ticks: total 25740, idle 5190, system 19640, user 910
+Ticks: total 26780, idle 5150, system 20720, user 910
 Disk I/O: reads 0, writes 0
 Console I/O: reads 10, writes 45
 Paging: faults 0

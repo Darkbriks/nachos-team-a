@@ -81,12 +81,6 @@ DEFINE_SYSCALL_STUB GetString, SC_GetString
 DEFINE_SYSCALL_STUB PutInt, SC_PutInt
 DEFINE_SYSCALL_STUB GetInt, SC_GetInt
 
-/* PthreadCreate is defined at the end of this file, because it needs
-   a wrapper function for proper argument passing */
-DEFINE_SIMPLE_SYSCALL PthreadExit, SC_PthreadExit
-DEFINE_SYSCALL_STUB PthreadJoin, SC_PthreadJoin
-DEFINE_SYSCALL_STUB PthreadDetach, SC_PthreadDetach
-
 DEFINE_SYSCALL_STUB Sleep, SC_Sleep
 DEFINE_SYSCALL_STUB SleepUntil, SC_SleepUntil
 DEFINE_SYSCALL_STUB GetCurrentTick, SC_GetCurrentTick
@@ -102,12 +96,11 @@ DEFINE_SYSCALL_STUB ForkJoin, SC_ForkJoin
 DEFINE_SIMPLE_SYSCALL ForkSelf, SC_ForkSelf
 
 DEFINE_SYSCALL_STUB Sbrk, SC_Sbrk
+DEFINE_SYSCALL_STUB mmap, SC_mmap
+DEFINE_SYSCALL_STUB munmap, SC_munmap
 
-DEFINE_SYSCALL_STUB SetTLS, SC_SetTLS
-DEFINE_SIMPLE_SYSCALL GetTLS, SC_GetTLS
-
+DEFINE_SYSCALL_STUB thread_create, SC_thread_create
 DEFINE_SIMPLE_SYSCALL thread_exit, SC_thread_exit
-DEFINE_SYSCALL_STUB thread_join, SC_thread_join
 DEFINE_SIMPLE_SYSCALL thread_self, SC_thread_self
 DEFINE_SIMPLE_SYSCALL thread_yield, SC_thread_yield
 
@@ -115,99 +108,7 @@ DEFINE_SYSCALL_STUB futex_wait, SC_futex_wait
 DEFINE_SYSCALL_STUB futex_wake, SC_futex_wake
 DEFINE_SYSCALL_STUB atomic_cmpxchg, SC_atomic_cmpxchg
 DEFINE_SYSCALL_STUB atomic_store, SC_atomic_store
-
-/* -------------------------------------------------------------
- * PthreadCreate wrapper
- * MIPS calling convention only allows 4 arguments in registers,
- * so we need a wrapper to pass the 5th argument on the stack.
- * -------------------------------------------------------------
- */
-     .globl PthreadCreate
-     .ent   PthreadCreate
- PthreadCreate:
-     la    $5, PthreadExit_wrapper
-
-     addiu $2,$0,SC_PthreadCreate
-     syscall
-     bgez  $2, 1f
-     nop
-
-     # Error
-     subu  $3,$0,$2
-     beqz  $gp, 2f
-     nop
-     sw    $3, TLS_OFFSET_ERRNO($gp)
-     j     3f
-     nop
- 2:
-     sw    $3, __global_errno
- 3:
-     addiu $2,$0,-1
-     j     $31
-     nop
-
- 1:
-     beqz  $gp, 4f
-     nop
-     sw    $0, TLS_OFFSET_ERRNO($gp)
-     j     5f
-     nop
- 4:
-     sw    $0, __global_errno
- 5:
-     j     $31
-     nop
-     .end PthreadCreate
-
-.globl thread_create
-     .ent   thread_create
- thread_create:
-     la    $5, PthreadExit_wrapper
-
-     addiu $2,$0,SC_thread_create
-     syscall
-     bgez  $2, 1f
-     nop
-
-     # Error
-     subu  $3,$0,$2
-     beqz  $gp, 2f
-     nop
-     sw    $3, TLS_OFFSET_ERRNO($gp)
-     j     3f
-     nop
- 2:
-     sw    $3, __global_errno
- 3:
-     addiu $2,$0,-1
-     j     $31
-     nop
-
- 1:
-     beqz  $gp, 4f
-     nop
-     sw    $0, TLS_OFFSET_ERRNO($gp)
-     j     5f
-     nop
- 4:
-     sw    $0, __global_errno
- 5:
-     j     $31
-     nop
-     .end thread_create
-
-
-/* -------------------------------------------------------------
- * Posix thread exit wrapper
- * -------------------------------------------------------------
- */
-    .globl  PthreadExit_wrapper
-    .ent    PthreadExit_wrapper
-PthreadExit_wrapper:
-    move   $4,$2
-    j     PthreadExit
-    nop
-    .end    PthreadExit_wrapper
+DEFINE_SYSCALL_STUB atomic_load, SC_atomic_load
 
 /* dummy function to keep gcc happy */
         .globl  __main

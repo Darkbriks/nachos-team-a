@@ -1,6 +1,7 @@
 #include "types.h"
 #include "nos_stdlib.h"
 #include "syscall.h"
+#include "pthread.h"
 
 #define SIZE_LIST 100
 
@@ -81,7 +82,7 @@ void * producteurs(void *args) {
 
 
 int main(int argc, char *argv[]) {
-    tid_t threads[20];
+    pthread_t threads[20];
     donnees_thread_t donnees_thread;
     int i, nb_consommateurs, nb_producteurs;
     void *resultat;
@@ -99,17 +100,17 @@ int main(int argc, char *argv[]) {
     unsigned int index = 0;
 
     for (i=0; i<nb_producteurs; i++){
-        PthreadCreate(&threads[index ++], NULL, producteurs, &donnees_thread);
+        pthread_create(&threads[index ++], NULL, producteurs, &donnees_thread);
     } 
     for (i=0; i<nb_consommateurs; i++){
-        if ( PthreadCreate(&threads[index ++], NULL, consommateur, &donnees_thread) != 0){
+        if ( pthread_create(&threads[index ++], NULL, consommateur, &donnees_thread) != 0){
             print_error("ça a pas crée le thread\n");
         }
     }
 
 
     for (i=0; i<nb_consommateurs+nb_producteurs; i++)
-        PthreadJoin(threads[i], &resultat);
+        pthread_join(threads[i], &resultat);
 
     if (donnees_thread.nb_data_dispo != -1){
         printf_simple("ERREUR Ca casse !\n");

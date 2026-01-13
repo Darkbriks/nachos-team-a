@@ -3,7 +3,20 @@
 #include "syscall.h"
 #include "nos_threads.h"
 #include "nos_string.h"
+#include "nos_mem.h"
 #include "types.h"
+
+int mem_alloc_init = 0;
+int mem_init_amount = 10000; // TODO adjust initial memory size
+
+#define INIT_MEMORY_ALLOCATOR()    \
+    if (mem_alloc_init == 0) {     \
+        mem_alloc_init = 1;        \
+        mem_init(mem_init_amount); \
+    }
+
+#define DEFAULT_STACK_SIZE (8 * 128)
+#define INT32_MAX 2147483647
 
 typedef struct pthread_attr_t {
     char flag; //DETACH_STATE SCOPE INHERIT_SCHEDULER SCHEDULING_POLICY
@@ -17,6 +30,20 @@ typedef struct pthread_attr_t {
 #define SCOPE(value) (value<<1)
 #define INHERIT_SCHEDULER(value) (value<<2)
 #define SCHEDULING_POLICY(value) (value<<3)
+
+
+#define GET_PTR_AND_CATCH_NULL_RETUN0(TID)    \
+    pthread_lib* thread_ptr = get_thread_by_tid(TID);  \
+    if (! thread_ptr){                                 \
+        return -1;                                     \
+    }
+                                                        
+#define GET_PTR_AND_CATCH_NULL(TID)    \
+    pthread_lib* thread_ptr = get_thread_by_tid(TID);  \
+    if (! thread_ptr){                                 \
+        return;                                        \
+    }
+    
 
 int pthread_attr_init(pthread_attr_t *attr){
     memset(attr, 0, sizeof(pthread_attr_t));
@@ -136,30 +163,158 @@ int pthread_attr_getstack_size(pthread_attr_t * attr, size_t *value){
     return 0;
 }
 
+struct thread_start_args {
+    void *(*start_routine)(void *);
+    void *arg;
+};
 
-int pthread_create(tid_t *tid, pthread_attr_t * attr, typeof(void *(void *)) *fun, void * arg){
+void thread_start_wrapper(void *arg) {
+    struct thread_start_args* start_args = (struct thread_start_args*) arg;
+    void *(*start_routine)(void *) = start_args->start_routine;
+    void *routine_arg = start_args->arg;
 
-    tls_t tls = {
-        &tls, 
-        0, 
-        ForkSelf(), 
-        0, 
-        attr ? (void *) attr->stack_address : NULL, 
-        attr ? (unsigned int) attr->stack_size: 0, 
-        attr ? attr->flag: 0,
-        0,
-        {NULL}
-    };
+    mem_free(start_args);
 
+    void* retval = start_routine(routine_arg);
 
-    user_thread_args args = { 
-        (unsigned int) fun, 
-        arg, 
-        attr ? attr->stack_address : 0,
-        (unsigned int) &tls,
-        attr ? attr->flag : 0,
-        0
-    };
-    thread_create(&args);
+    pthread_exit(retval); // No longer need to manipulate asm registers to auto exit
+}
+
+pthread_lib* array_tid[MAX_PROCESS][MAX_THREAD];
+
+static inline pthread_lib* __pthread_self(){
+    return (pthread_lib*)__get_tls()->pthread_ptr;
+}
+
+pthread_lib* get_thread_by_tid(pthread_t thread){
+    return array_tid[ForkSelf()][thread];
+}
+
+int pthread_create(pthread_t *thread, pthread_attr_t * attr, typeof(void *(void *)) *fun, void * arg) {
+    INIT_MEMORY_ALLOCATOR();
+
+    pthread_lib* t = (pthread_lib*) mem_alloc(sizeof(pthread_lib));
+    if (t == NULL) {
+        return -1;
+    }
+
+    t->exited = 0;
+    t->detached = attr ? (attr->flag & DETACH_STATE(1)) != 0 : 0;
+    t->futex = 0;
+    t->retval = NULL;
+    t->stack_size = attr && attr->stack_size > 0 ? attr->stack_size : DEFAULT_STACK_SIZE;
+
+    // Use mmap to allocate stack without guard page for now
+    t->stack_base = (void *)mmap(NULL, t->stack_size);
+    if (t->stack_base == NULL) {
+        mem_free(t);
+        return -1;
+    }
+
+    t->tls_base = mem_alloc(sizeof(tls_t));
+    if (t->tls_base == NULL) {
+        munmap(t->stack_base);
+        mem_free(t);
+        return -1;
+    }
+
+    tls_t* tls = (tls_t*)t->tls_base;
+    tls->self = tls;
+    tls->errno_val = 0;
+    tls->pthread_ptr = (int)t;
+
+    struct thread_start_args* start_args = (struct thread_start_args*) mem_alloc(sizeof(struct thread_start_args));
+    if (start_args == NULL) {
+        mem_free(t->tls_base);
+        munmap(t->stack_base);
+        mem_free(t);
+        return -1;
+    }
+
+    start_args->start_routine = fun;
+    start_args->arg = arg;
+
+    user_thread_args uargs;
+    uargs.entry = (unsigned int)thread_start_wrapper;
+    uargs.arg = (unsigned int)start_args;
+    uargs.user_sp = (unsigned int)((char *)t->stack_base + t->stack_size);
+    uargs.tls_base = (unsigned int)t->tls_base;
+
+    int result = thread_create((void *)&uargs);
+    if (result < 0) {
+        mem_free(start_args);
+        mem_free(t->tls_base);
+        munmap(t->stack_base);
+        mem_free(t);
+        return -1;
+    }
+
+    t->tid = (tid_t)result;
+    if (thread != NULL) {
+        *thread = t->tid;
+    }
+    array_tid[ForkSelf()][t->tid] = t;
+
     return 0;
+}
+
+void pthread_exit(void *retval){
+    pthread_lib* self = __pthread_self();
+
+    self->retval = retval;
+    self->exited = 1;
+
+    atomic_store(&self->futex, 1);
+    futex_wake(&self->futex, INT32_MAX);
+
+    if (self->detached) {
+        pthread_destroy(self->tid);
+    }
+
+    thread_exit();
+}
+
+int pthread_join(pthread_t thread, void **retval){
+    GET_PTR_AND_CATCH_NULL_RETUN0(thread)
+    if (thread_ptr->detached) {
+        return -1;
+    }
+
+    while (atomic_load(&thread_ptr->futex) == 0) {
+        futex_wait(&thread_ptr->futex, 0);
+    }
+
+    if (retval != NULL) {
+        *retval = thread_ptr->retval;
+    }
+
+    pthread_destroy(thread);
+    return 0;
+}
+
+int pthread_detach(pthread_t thread){
+    GET_PTR_AND_CATCH_NULL_RETUN0(thread)
+    if (thread_ptr->detached) {
+        return -1;
+    }
+    thread_ptr->detached = 1;
+
+    if (thread_ptr->exited) {
+        pthread_destroy(thread);
+    }
+
+    return 0;
+}
+
+void pthread_destroy(pthread_t thread){
+    GET_PTR_AND_CATCH_NULL(thread)
+    munmap(thread_ptr->stack_base);
+    mem_free(thread_ptr->tls_base);
+    mem_free(thread_ptr);
+    array_tid[ForkSelf()][thread] = NULL;
+}
+
+pthread_t pthread_self(){
+    pthread_lib* thread = __pthread_self();
+    return thread ? thread->tid : -1;
 }

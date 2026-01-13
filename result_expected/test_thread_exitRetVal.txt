@@ -1,22 +1,22 @@
-=== Test PthreadExit Return Values ===
+=== Test pthread_exit Return Values ===
 Test 1: Return 0
 Test 1: PASS
 Test 2: Return positive value
 Test 2: PASS
 Test 3: Return negative value
 Test 3: PASS
-Test 4: Explicit PthreadExit
-Test 4: PASS - PthreadExit does not return
-Test 5: PthreadExit in middle of function
+Test 4: Explicit pthread_exit
+Test 4: PASS - pthread_exit does not return
+Test 5: pthread_exit in middle of function
 Test 5: PASS
 Test 6: Join with NULL retval pointer
 Test 6: PASS - Join with NULL retval works
 SUCCESS: All exit/return value tests passed
 Machine halting!
 
-Ticks: total 63947, idle 40700, system 22630, user 617
+Ticks: total 95328, idle 41100, system 24910, user 29318
 Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 407
+Console I/O: reads 0, writes 411
 Paging: faults 0
 Network I/O: packets received 0, sent 0
 
