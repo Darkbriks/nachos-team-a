@@ -14,7 +14,7 @@ static void insert_into_free_list(mem_block_t* new_block);
 static int coalesce_blocks(mem_block_t* first, mem_block_t* second);
 static mem_block_t* get_block_from_footer(mem_footer_t* footer);
 
-#define VERBOSE_ALLOCATOR 1
+#define VERBOSE_ALLOCATOR 0
 #define DEBUG_ALLOCATOR 1
 
 #define PRINT_STRING(str)        \

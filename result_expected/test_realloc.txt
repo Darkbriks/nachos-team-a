@@ -1,399 +1,101 @@
-mem_init: Espace mémoire initialisé de 896 bytes
-mem_init: Espace utilisable de 888 bytes
-mem_init: Espace utilisable aligné de 888 bytes (aligné à 4)
-mem_init: Premier bloc libre à 24328, taille=872
-mem_init: Taille de l'header : 4
-mem_init: Taille du footer : 4
-mem_init: Taille totale d'un bloc libre vide : 16
-mem_init: Taille totale d'un bloc occupé vide : 8
-mem_alloc: Demande d'allocation de 450 bytes
-mem_alloc: Taille alignée à 452 bytes
-mem_alloc: Taille finale du bloc utilisateur : 452 bytes
-mem_alloc: Partitionnement du bloc libre de taille 888 bytes
-mem_alloc: Nouveau bloc occupé de taille 460 bytes
-mem_alloc: Bloc résiduel libre de taille 428 bytes
 hey
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 428 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 412 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 412 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 396 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 396 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 380 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 380 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 364 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 364 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 348 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 348 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 332 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 332 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 316 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 316 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 300 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 300 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 284 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 284 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 268 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 268 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 252 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 252 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 236 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 236 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 220 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 220 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 204 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 204 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 188 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 188 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 172 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 172 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 156 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 156 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 140 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 140 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 124 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 124 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 108 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 108 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 92 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 92 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 76 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 76 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 60 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 60 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 44 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Partitionnement du bloc libre de taille 44 bytes
-mem_alloc: Nouveau bloc occupé de taille 16 bytes
-mem_alloc: Bloc résiduel libre de taille 28 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Pas de partitionnement (résidu trop petit: 12 bytes)
-mem_alloc: Conversion libre -> occupé, taille du bloc : 28 bytes, taille utilisateur : 20 bytes
-mem_alloc: Demande d'allocation de 7 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Allocation d'un nouveau bloc pour la taille 24 bytes
-mem_alloc: Demande d'allocation de 24 bytes
-mem_alloc: Taille alignée à 24 bytes
-mem_alloc: Taille finale du bloc utilisateur : 24 bytes
-mem_alloc: Aucune mémoire libre disponible pour l'allocation
 mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
@@ -403,33 +105,16 @@ mem_realloc: Next block is corrupted
 bar
 hey2
 ça marche :) !
-mem_free: Libération du bloc à 24328, taille=452 bytes
-mem_free: Bloc libre inséré à 24328, taille=460 bytes
 1
-mem_realloc: Allocation d'un nouveau bloc pour la taille 450 bytes
-mem_alloc: Demande d'allocation de 450 bytes
-mem_alloc: Taille alignée à 452 bytes
-mem_alloc: Taille finale du bloc utilisateur : 452 bytes
-mem_alloc: Pas de partitionnement (résidu trop petit: 0 bytes)
-mem_alloc: Conversion libre -> occupé, taille du bloc : 460 bytes, taille utilisateur : 452 bytes
-mem_free: Libération du bloc à 24820, taille=8 bytes
-mem_free: Bloc libre inséré à 24820, taille=16 bytes
 ça marche :) !
 2
-mem_alloc: Demande d'allocation de 8 bytes
-mem_alloc: Taille alignée à 8 bytes
-mem_alloc: Taille finale du bloc utilisateur : 8 bytes
-mem_alloc: Pas de partitionnement (résidu trop petit: 0 bytes)
-mem_alloc: Conversion libre -> occupé, taille du bloc : 16 bytes, taille utilisateur : 8 bytes
 ça marche :) !
-mem_free: Libération du bloc à 24868, taille=8 bytes
-mem_free: Bloc libre inséré à 24868, taille=16 bytes
 3
 Machine halting!
 
-Ticks: total 2658823, idle 1811800, system 552820, user 294203
+Ticks: total 304800, idle 177400, system 63120, user 64280
 Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 18118
+Console I/O: reads 0, writes 1774
 Paging: faults 0
 Network I/O: packets received 0, sent 0
 

@@ -1,136 +1,82 @@
 === Test allocateur memoire NachOS ===
 --- Test 0: Initialisation de l'allocateur ---
-mem_init: Espace mémoire initialisé de 640 bytes
-mem_init: Espace utilisable de 632 bytes
-mem_init: Espace utilisable aligné de 632 bytes (aligné à 4)
-mem_init: Premier bloc libre à 26504, taille=616
-mem_init: Taille de l'header : 4
-mem_init: Taille du footer : 4
-mem_init: Taille totale d'un bloc libre vide : 16
-mem_init: Taille totale d'un bloc occupé vide : 8
-Allocateur initialise a l'adresse: 26496
+Allocateur initialise a l'adresse: 30464
 
 --- Test 0: Etat initial memoire ---
-  Block at 26516, size=616 [FREE]
+  Block at 30484, size=616 [FREE]
 
 --- Test 1: Allocation simple ---
-mem_alloc: Demande d'allocation de 32 bytes
-mem_alloc: Taille alignée à 32 bytes
-mem_alloc: Taille finale du bloc utilisateur : 32 bytes
-mem_alloc: Partitionnement du bloc libre de taille 632 bytes
-mem_alloc: Nouveau bloc occupé de taille 40 bytes
-mem_alloc: Bloc résiduel libre de taille 592 bytes
-Alloue 32 bytes a: 26508
-mem_alloc: Demande d'allocation de 64 bytes
-mem_alloc: Taille alignée à 64 bytes
-mem_alloc: Taille finale du bloc utilisateur : 64 bytes
-mem_alloc: Partitionnement du bloc libre de taille 592 bytes
-mem_alloc: Nouveau bloc occupé de taille 72 bytes
-mem_alloc: Bloc résiduel libre de taille 520 bytes
-Alloue 64 bytes a: 26548
-mem_alloc: Demande d'allocation de 16 bytes
-mem_alloc: Taille alignée à 16 bytes
-mem_alloc: Taille finale du bloc utilisateur : 16 bytes
-mem_alloc: Partitionnement du bloc libre de taille 520 bytes
-mem_alloc: Nouveau bloc occupé de taille 24 bytes
-mem_alloc: Bloc résiduel libre de taille 496 bytes
-Alloue 16 bytes a: 26620
+Alloue 32 bytes a: 30476
+Alloue 64 bytes a: 30516
+Alloue 16 bytes a: 30588
 
 --- Test 1: Etat memoire apres allocations ---
-  Block at 26508, size=32 [USED]
-  Block at 26548, size=64 [USED]
-  Block at 26620, size=16 [USED]
-  Block at 26652, size=480 [FREE]
+  Block at 30476, size=32 [USED]
+  Block at 30516, size=64 [USED]
+  Block at 30588, size=16 [USED]
+  Block at 30620, size=480 [FREE]
 
 --- Test 2: Ecriture/Lecture ---
 Ecrit 'Hello' dans ptr1: Hello
 
 --- Test 2: Etat memoire apres ecriture ---
-  Block at 26508, size=32 [USED]
-  Block at 26548, size=64 [USED]
-  Block at 26620, size=16 [USED]
-  Block at 26652, size=480 [FREE]
+  Block at 30476, size=32 [USED]
+  Block at 30516, size=64 [USED]
+  Block at 30588, size=16 [USED]
+  Block at 30620, size=480 [FREE]
 
 --- Test 3: mem_get_size ---
 Taille de ptr1: 32 (attendu 32)
 Taille de ptr2: 64 (attendu 64)
 
 --- Test 3: Etat memoire apres get_size ---
-  Block at 26508, size=32 [USED]
-  Block at 26548, size=64 [USED]
-  Block at 26620, size=16 [USED]
-  Block at 26652, size=480 [FREE]
+  Block at 30476, size=32 [USED]
+  Block at 30516, size=64 [USED]
+  Block at 30588, size=16 [USED]
+  Block at 30620, size=480 [FREE]
 
 --- Test 4: Liberation ---
 Liberation de ptr2...
-mem_free: Libération du bloc à 26544, taille=64 bytes
-mem_free: Bloc libre inséré à 26544, taille=72 bytes
 
 --- Test 4: Etat memoire apres liberation ---
-  Block at 26508, size=32 [USED]
-  Block at 26556, size=56 [FREE]
-  Block at 26620, size=16 [USED]
-  Block at 26652, size=480 [FREE]
+  Block at 30476, size=32 [USED]
+  Block at 30524, size=56 [FREE]
+  Block at 30588, size=16 [USED]
+  Block at 30620, size=480 [FREE]
 
 --- Test 5: Reallocation du trou ---
-mem_alloc: Demande d'allocation de 32 bytes
-mem_alloc: Taille alignée à 32 bytes
-mem_alloc: Taille finale du bloc utilisateur : 32 bytes
-mem_alloc: Partitionnement du bloc libre de taille 72 bytes
-mem_alloc: Nouveau bloc occupé de taille 40 bytes
-mem_alloc: Bloc résiduel libre de taille 32 bytes
-Alloue 32 bytes a: 26548
+Alloue 32 bytes a: 30516
 
 --- Test 5: Etat memoire apres realloc ---
-  Block at 26508, size=32 [USED]
-  Block at 26548, size=32 [USED]
-  Block at 26596, size=16 [FREE]
-  Block at 26620, size=16 [USED]
-  Block at 26652, size=480 [FREE]
+  Block at 30476, size=32 [USED]
+  Block at 30516, size=32 [USED]
+  Block at 30564, size=16 [FREE]
+  Block at 30588, size=16 [USED]
+  Block at 30620, size=480 [FREE]
 
 --- Test 6: mem_calloc ---
-mem_calloc: Demande d'allocation de 10 membres de taille 4 bytes (total 40 bytes)
-mem_alloc: Demande d'allocation de 40 bytes
-mem_alloc: Taille alignée à 40 bytes
-mem_alloc: Taille finale du bloc utilisateur : 40 bytes
-mem_alloc: Partitionnement du bloc libre de taille 496 bytes
-mem_alloc: Nouveau bloc occupé de taille 48 bytes
-mem_alloc: Bloc résiduel libre de taille 448 bytes
-Calloc 10 ints a: 26644
+Calloc 10 ints a: 30612
 Verification zeros: OK
 
 --- Test 6: Etat memoire apres calloc ---
-  Block at 26508, size=32 [USED]
-  Block at 26548, size=32 [USED]
-  Block at 26596, size=16 [FREE]
-  Block at 26620, size=16 [USED]
-  Block at 26644, size=40 [USED]
-  Block at 26700, size=432 [FREE]
+  Block at 30476, size=32 [USED]
+  Block at 30516, size=32 [USED]
+  Block at 30564, size=16 [FREE]
+  Block at 30588, size=16 [USED]
+  Block at 30612, size=40 [USED]
+  Block at 30668, size=432 [FREE]
 
 --- Nettoyage ---
-mem_free: Libération du bloc à 26504, taille=32 bytes
-mem_free: Bloc libre inséré à 26504, taille=40 bytes
-mem_free: Libération du bloc à 26616, taille=16 bytes
-mem_free: Fusion avec le bloc précédent à 26584, taille=32 bytes
-mem_free: Bloc libre inséré à 26584, taille=56 bytes
-mem_free: Libération du bloc à 26544, taille=32 bytes
-mem_free: Fusion avec le bloc précédent à 26504, taille=40 bytes
-mem_free: Fusion avec le bloc suivant à 26584, taille=56 bytes
-mem_free: Bloc libre inséré à 26504, taille=136 bytes
-mem_free: Libération du bloc à 26640, taille=40 bytes
-mem_free: Fusion avec le bloc précédent à 26504, taille=136 bytes
-mem_free: Fusion avec le bloc suivant à 26688, taille=448 bytes
-mem_free: Bloc libre inséré à 26504, taille=632 bytes
 
 Etat apres liberation totale:
-  Block at 26516, size=616 [FREE]
+  Block at 30484, size=616 [FREE]
 
 === Tests termines avec succes ===
 Machine halting!
 
-Ticks: total 692422, idle 480700, system 153790, user 57932
+Ticks: total 279445, idle 194500, system 68550, user 16395
 Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 4807
+Console I/O: reads 0, writes 1945
 Paging: faults 0
 Network I/O: packets received 0, sent 0
 

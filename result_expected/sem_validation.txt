@@ -12,8 +12,8 @@ PASS: Rejected destroyed semaphore
 
 Test 5: Multi-threaded usage
   Main: Creating thread...
-  Main: Sleeping briefly...
-  Thread: Waiting on semaphore...
+   Main: Sleeping briefly...
+ Thread: Waiting on semaphore...
   Main: Signaling semaphore
   Thread: Got semaphore
   Thread: Released semaphore
@@ -22,7 +22,7 @@ PASS: Multi-threaded test complete
 === All tests completed ===
 Machine halting!
 
-Ticks: total 73536, idle 48663, system 24230, user 643
+Ticks: total 78451, idle 48577, system 26430, user 3444
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 488
 Paging: faults 0

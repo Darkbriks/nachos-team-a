@@ -1,13 +1,13 @@
-=== Test PthreadCreate Basic ===
-Thread 1 executed
-Thread 2 executed
-Thread 3 executed
+=== Test pthread_create Basic ===
+TTThread 1 executed
+hread 2 executed
+hread 3 executed
 SUCCESS: All threads created and joined correctly
 Machine halting!
 
-Ticks: total 27657, idle 13508, system 13760, user 389
+Ticks: total 44775, idle 13390, system 16020, user 15365
 Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 137
+Console I/O: reads 0, writes 138
 Paging: faults 0
 Network I/O: packets received 0, sent 0
 

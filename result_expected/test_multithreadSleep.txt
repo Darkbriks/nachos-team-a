@@ -1,28 +1,28 @@
 === Test Sleep syscall with multiple threads ===
 MTain: Created thread with ID 2
 hrMTead 1: Starting sleep test
-ain: CreTated thread with ID 3
+ain: CreaTted thread with ID 3
 hrMTead 2: Starting sleep test
-hread 1: Woke Tup after 1000 ticks
-Thread 1: Slept for 1045 ticks (expected ~1000)
+hread 1: Woke uTp after 1000 ticks
+Thread 1: Slept for 1099 ticks (expected ~1000)
 ain: Created thread with ID 4
-hrMTead 2: Woke up after 2000 ticks
-Thread 2: Slept for 2088 ticks (expected ~2000)
-hread 3: Starting sleep test
-hread 4: Starting sleeTp test
+hrMTead 3: Starting sleep test
+hread 2: Woke up afterT 2000 ticks
+Thread 2: Slept for 2146 ticks (expected ~2000)
 ain: Created thread with ID 5
-hTMTread 3: Woke up after 3000 ticks
-Thread 3: Slept for 3120 ticks (expected ~3000)
-hread 4: Woke up after 4000 ticks
-Thread 4: Slept for 4127 ticks (expected ~4000)
-ain: Created thread with ID 6
-hrMead 5: Starting sleep test
+hrMTead 3: Woke up after 3000 ticks
+Thread 3: Slept for 3076 ticks (expected ~3000)
+hread 4: Starting sleep test
+hread 5: Starting sleep test
+Tain: Created thread with ID 6
+hreMTad 4: Woke up after 4000 ticks
+Thread 4: Slept for 4118 ticks (expected ~4000)
 ain thread finished.
-Thread 5: Woke up after 5000 ticks
-Thread 5: Slept for 5102 ticks (expected ~5000)
+hread 5: Woke up after 5000 ticks
+Thread 5: Slept for 6735 ticks (expected ~5000)
 Machine halting!
 
-Ticks: total 126842, idle 79868, system 33970, user 13004
+Ticks: total 144500, idle 77371, system 36180, user 30949
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 791
 Paging: faults 0
