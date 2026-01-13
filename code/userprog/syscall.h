@@ -63,20 +63,22 @@
 
 /* --- Memory Management --- */
 #define SC_Sbrk 37
+#define SC_mmap 38
+#define SC_munmap 39
 
 /* Rework of threads */
 #define SC_SetTLS 50
 #define SC_GetTLS 51
 #define SC_thread_create 52
 #define SC_thread_exit 53
-#define SC_thread_join 54
-#define SC_thread_self 55
-#define SC_thread_yield 56
+#define SC_thread_self 54
+#define SC_thread_yield 55
 
 #define SC_futex_wait 60
 #define SC_futex_wake 61
 #define SC_atomic_cmpxchg 62
 #define SC_atomic_store 63
+#define SC_atomic_load 64
 
 /* ============================================================
  * ERROR CODES
@@ -409,6 +411,21 @@ int ForkSelf();
  */
 int Sbrk(int n);
 
+/**
+ * @brief Create a new memory mapping in the process's address space
+ * @param addr Desired starting address for the mapping (can be nullptr)
+ * @param length Length of the mapping in bytes (must be multiple of page size)
+ * @return Starting address of the mapping on success, negative error code on failure
+ */
+int mmap(void* addr, int length);
+
+/**
+ * @brief Remove a memory mapping from the process's address space
+ * @param addr Starting address of the mapping
+ * @return 0 on success, negative error code on failure
+ */
+int munmap(void* addr);
+
 /* -------------------------------------------------------------
  * REWORK OF THREADS
  * -------------------------------------------------------------
@@ -438,19 +455,8 @@ int thread_create(void* args);
 
 /**
  * @brief Exit the current thread
- *
- * @param retval The return value of the thread
  */
-void thread_exit(void* retval);
-
-/**
- * @brief Wait for a thread to finish
- *
- * @param tid The TID of the thread to wait
- * @param retval A pointer to store the return value of the joined thread (can be nullptr)
- * @return 0 on success, negative error code on failure
- */
-int thread_join(int tid, void** retval);
+void thread_exit();
 
 /**
  * @brief Get the TID of the current thread
@@ -494,6 +500,13 @@ int atomic_cmpxchg(int* uaddr, int expected, int desired);
  * @param value Value to store
  */
 void atomic_store(int* uaddr, int value);
+
+/**
+ * @brief Atomic load operation
+ * @param uaddr Address of the integer to load from
+ * @return The loaded value
+ */
+int atomic_load(int* uaddr);
 
 #endif // IN_USER_MODE
 

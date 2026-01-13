@@ -4,18 +4,10 @@
 typedef unsigned int tid_t;
 
 typedef struct {
-    unsigned int entry;
-    void *arg;
-    unsigned int user_sp;
-    unsigned int tls_base;
-    unsigned int flags;
-    unsigned int clear_tid;
+    int entry;
+    int arg;
+    int user_sp;
+    int tls_base;
 } user_thread_args;
-
-// Thread flags
-
-// First bit: detached / joinable
-#define USER_THREAD_FLAG_DETACHED  (1 << 0)
-#define USER_THREAD_FLAG_JOINABLE  (0 << 0)
 
 #endif

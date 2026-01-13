@@ -23,7 +23,6 @@ void handle_SC_GetTLS();
 
 void handle_SC_thread_create();
 void handle_SC_thread_exit();
-void handle_SC_thread_join();
 void handle_SC_thread_self();
 void handle_SC_thread_yield();
 

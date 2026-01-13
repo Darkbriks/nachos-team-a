@@ -3,7 +3,20 @@
 #include "syscall.h"
 #include "nos_threads.h"
 #include "nos_string.h"
+#include "nos_mem.h"
 #include "types.h"
+
+int mem_alloc_init = 0;
+int mem_init_amount = 10000; // TODO adjust initial memory size
+
+#define INIT_MEMORY_ALLOCATOR()    \
+    if (mem_alloc_init == 0) {      \
+        mem_alloc_init = 1;         \
+        mem_init(mem_init_amount); \
+    }
+
+#define DEFAULT_STACK_SIZE (8 * 128)
+#define INT32_MAX 2147483647
 
 typedef struct pthread_attr_t {
     char flag; //DETACH_STATE SCOPE INHERIT_SCHEDULER SCHEDULING_POLICY
@@ -12,6 +25,22 @@ typedef struct pthread_attr_t {
     int stack_address;
     unsigned int stack_size;
 } pthread_attr_t;
+
+typedef struct pthread_t {
+    tid_t tid;
+
+    int exited;
+    int detached;
+
+    int futex;
+
+    void *retval;
+
+    void *stack_base;
+    size_t stack_size;
+
+    void *tls_base;
+} pthread_t;
 
 #define DETACH_STATE(value) (value<<0)
 #define SCOPE(value) (value<<1)
@@ -136,30 +165,153 @@ int pthread_attr_getstack_size(pthread_attr_t * attr, size_t *value){
     return 0;
 }
 
+struct thread_start_args {
+    void *(*start_routine)(void *);
+    void *arg;
+};
 
-int pthread_create(tid_t *tid, pthread_attr_t * attr, typeof(void *(void *)) *fun, void * arg){
+void thread_start_wrapper(void *arg) {
+    struct thread_start_args* start_args = (struct thread_start_args*) arg;
+    void *(*start_routine)(void *) = start_args->start_routine;
+    void *routine_arg = start_args->arg;
 
-    tls_t tls = {
-        &tls, 
-        0, 
-        ForkSelf(), 
-        0, 
-        attr ? (void *) attr->stack_address : NULL, 
-        attr ? (unsigned int) attr->stack_size: 0, 
-        attr ? attr->flag: 0,
-        0,
-        {NULL}
-    };
+    mem_free(start_args);
 
+    void* retval = start_routine(routine_arg);
 
-    user_thread_args args = { 
-        (unsigned int) fun, 
-        arg, 
-        attr ? attr->stack_address : 0,
-        (unsigned int) &tls,
-        attr ? attr->flag : 0,
-        0
-    };
-    thread_create(&args);
+    pthread_exit(retval); // No longer need to manipulate asm registers to auto exit
+}
+
+int pthread_create(pthread_t *thread, pthread_attr_t * attr, typeof(void *(void *)) *fun, void * arg) {
+    INIT_MEMORY_ALLOCATOR();
+
+    pthread_t* t = (pthread_t*) mem_alloc(sizeof(pthread_t));
+    if (t == NULL) {
+        return -1;
+    }
+
+    t->exited = 0;
+    t->detached = attr ? (attr->flag & DETACH_STATE(1)) != 0 : 0;
+    t->futex = 0;
+    t->retval = NULL;
+    t->stack_size = attr && attr->stack_size > 0 ? attr->stack_size : DEFAULT_STACK_SIZE;
+
+    // Use mmap to allocate stack without guard page for now
+    t->stack_base = (void *)mmap(NULL, t->stack_size);
+    if (t->stack_base == NULL) {
+        mem_free(t);
+        return -1;
+    }
+
+    t->tls_base = mem_alloc(sizeof(tls_t));
+    if (t->tls_base == NULL) {
+        munmap(t->stack_base);
+        mem_free(t);
+        return -1;
+    }
+
+    // TODO: Initialize TLS structure
+    tls_t* tls = (tls_t*)t->tls_base;
+    tls->self = tls;
+    tls->stack_base = t->stack_base;
+    tls->stack_size = t->stack_size;
+    tls->retval = NULL;
+    tls->tsd[0] = (void*)t;
+
+    struct thread_start_args* start_args = (struct thread_start_args*) mem_alloc(sizeof(struct thread_start_args));
+    if (start_args == NULL) {
+        mem_free(t->tls_base);
+        munmap(t->stack_base);
+        mem_free(t);
+        return -1;
+    }
+
+    start_args->start_routine = fun;
+    start_args->arg = arg;
+
+    user_thread_args uargs;
+    uargs.entry = (unsigned int)thread_start_wrapper;
+    uargs.arg = (unsigned int)start_args;
+    uargs.user_sp = (unsigned int)((char *)t->stack_base + t->stack_size);
+    uargs.tls_base = (unsigned int)t->tls_base;
+
+    int result = thread_create((void *)&uargs);
+    if (result < 0) {
+        mem_free(start_args);
+        mem_free(t->tls_base);
+        munmap(t->stack_base);
+        mem_free(t);
+        return -1;
+    }
+
+    t->tid = (tid_t)result;
+    if (thread != NULL) {
+        *thread = *t;
+    }
+
     return 0;
+}
+
+void pthread_exit(void *retval){
+    pthread_t self = pthread_self();
+
+    self.retval = retval;
+    self.exited = 1;
+
+    atomic_store(&self.futex, 1);
+    futex_wake(&self.futex, INT32_MAX);
+
+    if (self.detached) {
+        pthread_destroy(self);
+    }
+
+    thread_exit();
+}
+
+int pthread_join(pthread_t thread, void **retval){
+    if (thread.detached) {
+        return -1;
+    }
+
+    while (atomic_load(&thread.futex) == 0) {
+        futex_wait(&thread.futex, 0);
+    }
+
+    if (retval != NULL) {
+        *retval = thread.retval;
+    }
+
+    pthread_destroy(thread);
+    return 0;
+}
+
+int pthread_detach(pthread_t thread){
+    if (thread.detached) {
+        return -1;
+    }
+    thread.detached = 1;
+
+    if (thread.exited) {
+        pthread_destroy(thread);
+    }
+
+    return 0;
+}
+
+void pthread_destroy(pthread_t thread){
+    munmap(thread.stack_base);
+    mem_free(thread.tls_base);
+    mem_free(&thread);
+}
+
+pthread_t pthread_self(){
+    pthread_t t;
+    tls_t* tls = __get_tls();
+    pthread_t* current_pthread = (pthread_t*)tls->tsd[0]; // Assuming TSD index 0 stores pthread_t pointer
+    if (current_pthread != NULL) {
+        t = *current_pthread;
+    } else {
+        memset(&t, 0, sizeof(pthread_t));
+    }
+    return t;
 }

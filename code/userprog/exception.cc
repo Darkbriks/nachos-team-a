@@ -51,11 +51,13 @@
     process->KillAllThreads(false);   \
     printf(error_name);   \
     if (Process::isLastActiveProcess()) {   \
+        ASSERT(false) /* To hit gdb */ \
         interrupt->Halt();   \
     }   \
     process->setExitCode(-error_code);   \
     process->AncestorSigChild();   \
     currentThread->Finish();  \
+    ASSERT(false) /* To hit gdb */ \
     break;
 
 
@@ -129,6 +131,10 @@ void handle_SC_Exit() {
 
 void handle_Error(ExceptionType which, int type){
     Process* process = currentThread->getProcess();
+
+    DEBUG('e', "Exception: %d, type: %d in process %d (thread %d)\n", which, type,
+          process ? process->getPId() : -1, currentThread->getTID());
+
     switch (which){
         case AddressErrorException:
             EXCEPTION_ERROR("Erreur de segmentation (core dumped)\n", 3);
@@ -180,13 +186,14 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(ForkSelf)
 
         CASE_HANDLER(Sbrk);
+        CASE_HANDLER(mmap);
+        CASE_HANDLER(munmap);
 
         CASE_HANDLER(SetTLS);
         CASE_HANDLER(GetTLS);
 
         CASE_HANDLER(thread_create);
         CASE_HANDLER_RETURN(thread_exit);
-        CASE_HANDLER(thread_join);
         CASE_HANDLER(thread_self);
         CASE_HANDLER(thread_yield);
 
@@ -194,6 +201,7 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(futex_wake);
         CASE_HANDLER(atomic_cmpxchg);
         CASE_HANDLER(atomic_store);
+        CASE_HANDLER(atomic_load);
 
         default:
             Process * process = currentThread->getProcess();

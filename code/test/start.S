@@ -102,12 +102,13 @@ DEFINE_SYSCALL_STUB ForkJoin, SC_ForkJoin
 DEFINE_SIMPLE_SYSCALL ForkSelf, SC_ForkSelf
 
 DEFINE_SYSCALL_STUB Sbrk, SC_Sbrk
+DEFINE_SYSCALL_STUB mmap, SC_mmap
+DEFINE_SYSCALL_STUB munmap, SC_munmap
 
 DEFINE_SYSCALL_STUB SetTLS, SC_SetTLS
 DEFINE_SIMPLE_SYSCALL GetTLS, SC_GetTLS
 
 DEFINE_SIMPLE_SYSCALL thread_exit, SC_thread_exit
-DEFINE_SYSCALL_STUB thread_join, SC_thread_join
 DEFINE_SIMPLE_SYSCALL thread_self, SC_thread_self
 DEFINE_SIMPLE_SYSCALL thread_yield, SC_thread_yield
 
@@ -115,6 +116,7 @@ DEFINE_SYSCALL_STUB futex_wait, SC_futex_wait
 DEFINE_SYSCALL_STUB futex_wake, SC_futex_wake
 DEFINE_SYSCALL_STUB atomic_cmpxchg, SC_atomic_cmpxchg
 DEFINE_SYSCALL_STUB atomic_store, SC_atomic_store
+DEFINE_SYSCALL_STUB atomic_load, SC_atomic_load
 
 /* -------------------------------------------------------------
  * PthreadCreate wrapper

@@ -108,7 +108,7 @@ Process::Process(OpenFile * executable, char* return_code) {
             *return_code = -1;
             return;
         }
-        mainThread->setUserStack(mainStackTop, USER_STACK_DEFAULT_SIZE, mainStackLimit);
+        mainThread->set_sp(reinterpret_cast<int *>(mainStackTop));
         stackMgr->MarkInUse(mainStackTop, mainThread->getTID());
     }
 
@@ -234,18 +234,21 @@ Thread * Process::FindThread(const unsigned int TID) const {
     return all_threads_addr->FindInList( std::function<bool (Thread *, unsigned int)> (search), TID );
 }
 
-Thread* Process::CreateThread(const char * name) {
+Thread* Process::CreateThread(const char * name, const ptr_32 tlsBase) {
     const tid_t tid = threads_bitmap->Find();
     if (tid == static_cast<tid_t>(-1)) { return nullptr; }
 
     const auto thread_name = new char[MAX_STRING_SIZE];
     snprintf(thread_name, MAX_STRING_SIZE - 1, "%s_%d_%d", name, PID, tid);
 
-    auto* newThread = new Thread(thread_name, this, tid);
+    auto* newThread = new Thread(tid, this, tlsBase);
+    newThread->SetDebugName(thread_name);
+
     threadNumberLock->Acquire();
     threadNumber++;
     all_threads_addr->AddInList(newThread);
     threadNumberLock->Release();
+
     DEBUG('t', "Process %p : Added thread, now %d threads we create %d with name %s\n", this, threadNumber, newThread->getTID(), newThread->getName());
     return newThread;
 }

@@ -162,3 +162,27 @@ void handle_SC_atomic_store() {
     interrupt->SetLevel(oldLevel);
     RETURN(0);
 }
+
+void handle_SC_atomic_load() {
+    const int uaddr = machine->ReadRegister(4);
+
+    const Process* process = currentThread->getProcess();
+    VALIDATE_ARG(process != nullptr, -E_FAULT);
+
+    const AddrSpace* space = process->getSpace();
+    VALIDATE_ARG(space != nullptr, -E_FAULT);
+
+    VALIDATE_ARG(space->IsUserAddress(uaddr), -E_FAULT);
+
+    const IntStatus oldLevel = interrupt->SetLevel(IntOff);
+
+    int value;
+    if (CopyFromUserType<int>(&value, uaddr) == false) {
+        DEBUG('y', "Atomic load: invalid user address %d\n", uaddr);
+        interrupt->SetLevel(oldLevel);
+        RETURN(-E_FAULT);
+    }
+
+    interrupt->SetLevel(oldLevel);
+    RETURN(value);
+}
