@@ -1,3 +1,4 @@
+#include "syscall.h"
 #include "nos_mem.h"
 #include "nos_stdlib.h"
 

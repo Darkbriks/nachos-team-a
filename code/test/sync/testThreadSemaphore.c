@@ -1,5 +1,5 @@
 #include "syscall.h"
-#include "types.h"
+#include "nos_stddef.h"
 #include "pthread.h"
 
 int counter = 0;

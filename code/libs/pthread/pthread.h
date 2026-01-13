@@ -9,7 +9,6 @@
 #define MAX_PROCESS 15
 
 #define DEFAULT_STACK_SIZE (8 * 128)
-#define INT32_MAX 2147483647
 
 typedef int pthread_t;
 

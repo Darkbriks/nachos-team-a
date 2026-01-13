@@ -1,6 +1,6 @@
 #include "pthread_mutex.h"
 #include "syscall.h"
-#include "types.h"
+#include "nos_stddef.h"
 #include "nos_threads.h"
 #include "pthread.h"
 

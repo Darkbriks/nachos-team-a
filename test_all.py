@@ -332,7 +332,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                         file_expect = "test_useLib.txt",
-                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./useLib",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./lib/useLib",
                         name = "Test utilisation de la librairie utilisateur",
                         description = "Test pour vérifier l'utilisation correcte de la librairie utilisateur fournie avec Nachos."
                     )

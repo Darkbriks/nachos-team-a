@@ -1,10 +1,241 @@
 #include "nos_stdlib.h"
 #include "nos_string.h"
 #include "nos_errno.h"
+#include "nos_mem.h"
+#include "syscall.h"
 
 #ifndef NOT_YET_IMPLEMENTED
 #define NOT_YET_IMPLEMENTED(func) PutString("Function " #func " is not yet implemented.\n", 39);
 #endif
+
+/* =============================================================
+ * Internal state
+ * =============================================================
+ */
+static int _mem_initialized = 0;
+
+#define DEFAULT_HEAP_SIZE 4096
+
+static int _ensure_mem_init(void) {
+    if (_mem_initialized) { return 0; }
+    if (mem_init(DEFAULT_HEAP_SIZE) == NULL) { return -1; }
+    _mem_initialized = 1;
+    return 0;
+}
+
+/* =============================================================
+ * Process Control Functions
+ * =============================================================
+ */
+void _exit(const int status) {
+    Exit(status);
+}
+
+#define MAX_ATEXIT_HANDLERS 32
+
+static void (*atexit_handlers[MAX_ATEXIT_HANDLERS])(void);
+static int atexit_count = 0;
+
+int atexit(void (*func)(void)) {
+    if (atexit_count >= MAX_ATEXIT_HANDLERS) {
+        return -1;
+    }
+    atexit_handlers[atexit_count++] = func;
+    return 0;
+}
+
+void abort(void) {
+    // TODO: Create a core dump or similar mechanism
+    _exit(EXIT_FAILURE);
+    __builtin_unreachable();
+}
+
+int exit(const int status) {
+    for (int i = atexit_count - 1; i >= 0; i--) {
+        atexit_handlers[i]();
+    }
+
+    // TODO: FLush all stdio buffers
+    // TODO: Close stdio streams (buffers, files, etc.)
+    // TODO: Free libc allocated memory
+
+    _exit(status);
+    __builtin_unreachable();
+}
+
+/* =============================================================
+ * Memory Management Functions
+ * =============================================================
+ */
+void* malloc(size_t size) {
+    if (size == 0) { return NULL; }
+    if (_ensure_mem_init() != 0) { return NULL; }
+    return mem_alloc(size);
+}
+
+void free(void *ptr) {
+    if (ptr == NULL) { return; }
+    if (!_mem_initialized) { return; }
+    mem_free(ptr);
+}
+
+void* calloc(size_t num, size_t size) {
+    if (num == 0 || size == 0) { return NULL; }
+    // Check for overflow
+    if (size > (size_t)-1 / num) { return NULL; }
+    if (_ensure_mem_init() != 0) { return NULL; }
+    return mem_calloc(num, size);
+}
+
+void* realloc(void* ptr, size_t size) {
+    if (ptr == NULL) { return malloc(size); }
+    if (size == 0) { free(ptr); return NULL; }
+    if (_ensure_mem_init() != 0) { return NULL; }
+    return mem_realloc(ptr, size);
+}
+
+/* =============================================================
+ * Numeric String Conversion Functions
+ * =============================================================
+ */
+static int is_space(const char c) {
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' || c == '\v';
+}
+
+static int char_to_digit(const char c) {
+    if (c >= '0' && c <= '9') { return c - '0'; }
+    if (c >= 'a' && c <= 'z') { return c - 'a' + 10; }
+    if (c >= 'A' && c <= 'Z') { return c - 'A' + 10; }
+    return -1;
+}
+
+/*double atof(const char* nptr) {
+    return strtol(nptr, NULL, 10);
+}*/
+
+int atoi(const char* str, const int base) {
+    return (int)strtol(str, NULL, base);
+}
+
+long atol(const char* str, const int base) {
+    return strtol(str, NULL, base);
+}
+
+long long atoll(const char* str, const int base) {
+    return (long long)strtol(str, NULL, base);
+}
+
+long strtol(const char* str, char** endptr, int base) {
+    const char* p = str;
+    while (is_space(*p)) { p++; }
+
+    int sign = 1;
+    if (*p == '-') { sign = -1; p++; }
+    else if (*p == '+') { p++; }
+
+    if (base == 0) {
+        if (*p == '0') {
+            if (*(p + 1) == 'x' || *(p + 1) == 'X') { base = 16; p += 2; }
+            else { base = 8; p++; }
+        } else { base = 10; }
+    } else if (base == 16) {
+        if (*p == '0' && (*(p + 1) == 'x' || *(p + 1) == 'X')) { p += 2; }
+    }
+
+    long result = 0;
+    int digit;
+    while ((digit = char_to_digit(*p)) >= 0 && digit < base) {
+        result = result * base + digit;
+        p++;
+    }
+
+    if (endptr) {
+        *endptr = (char*)p;
+    }
+
+    return sign * result;
+}
+
+long long strtoll(const char* str, char** endptr, int base) {
+    return (long long)strtol(str, endptr, base);
+}
+
+unsigned long strtoul(const char* str, char** endptr, int base) {
+    const char* p = str;
+    while (is_space(*p)) { p++; }
+
+    if (*p == '+') { p++; }
+
+    if (base == 0) {
+        if (*p == '0') {
+            if (*(p + 1) == 'x' || *(p + 1) == 'X') { base = 16; p += 2; }
+            else { base = 8; p++; }
+        } else { base = 10; }
+    } else if (base == 16) {
+        if (*p == '0' && (*(p + 1) == 'x' || *(p + 1) == 'X')) { p += 2; }
+    }
+
+    unsigned long result = 0;
+    int digit;
+    while ((digit = char_to_digit(*p)) >= 0 && digit < base) {
+        result = result * base + digit;
+        p++;
+    }
+
+    if (endptr) {
+        *endptr = (char*)p;
+    }
+
+    return result;
+}
+
+unsigned long long strtoull(const char* str, char** endptr, int base) {
+    return (unsigned long long)strtoul(str, endptr, base);
+}
+
+float strtof(const char* str, char** endptr) {
+    NOT_YET_IMPLEMENTED(strtof);
+    if (endptr) { *endptr = (char*)str; }
+    return 0.0f;
+}
+
+double strtod(const char* str, char** endptr) {
+    NOT_YET_IMPLEMENTED(strtod);
+    if (endptr) { *endptr = (char*)str; }
+    return 0.0;
+}
+
+long double strtold(const char* str, char** endptr) {
+    NOT_YET_IMPLEMENTED(strtold);
+    if (endptr) { *endptr = (char*)str; }
+    return 0.0L;
+}
+
+/* =============================================================
+ * Miscellaneous Algorithms and Math Functions
+ * =============================================================
+ */
+static unsigned int next_rand = 1;
+
+// Linear congruential generator, very simple, but also very bad
+int rand(void) {
+    next_rand = next_rand * 1103515245 + 12345;
+    return (unsigned int)(next_rand / 65536) % (RAND_MAX + 1);
+}
+
+void srand(const unsigned int seed) {
+    next_rand = seed;
+}
+
+#define ABS_MACRO(type, name) \
+type name(const type j) {      \
+    return (j < 0) ? -j : j;   \
+}
+
+ABS_MACRO(int, abs)
+ABS_MACRO(long int, labs)
+ABS_MACRO(long long int, llabs)
+
 
 void printf_simple(char* buf) {
     // TODO: Add support for format specifiers
@@ -29,7 +260,7 @@ int scanf_simple(char *format, void *result){
             if ( ( i = GetString(tmp, 255) )<  0 ){
                 return -1;
             }
-            *((int *) result) = (int) atoi(tmp, 10);   
+            *((int *) result) = (int) atoi(tmp, 10);
             return i;
 
         case 's':
@@ -79,252 +310,3 @@ char* itoa(int value, char* str, int base) {
 
     return str;
 }
-
-int atoi(const char* str, int base) {
-    if (base < 2 || base > 36) { return 0; }
-
-    int result = 0;
-    int negative = 0;
-    size_t i = 0;
-
-    if (str[0] == '-') { negative = 1; i++; }
-
-    for (; str[i] != '\0'; i++) {
-        char c = str[i];
-        int digit;
-
-        if (c >= '0' && c <= '9') { digit = c - '0'; }
-        else if (c >= 'A' && c <= 'Z') { digit = c - 'A' + 10; }
-        else if (c >= 'a' && c <= 'z') { digit = c - 'a' + 10; }
-        else { break; }
-
-        if (digit >= base) { break; }
-
-        result = result * base + digit;
-    }
-
-    return negative ? -result : result;
-}
-
-//int close(int){Halt();}
-//int open(char *, int){Halt();}
-//int write(int fd, char *buf, size_t size){Halt();}
-//ssize_t read(int fd, char *buf, size_t size){Halt();}
-
-//void * malloc(unsigned int){Halt();}
-//int free(void *){Halt();}
-
-//void my_scanf(char *format, ...){}
-
-/*void my_memcpy(void *dest, void *src, size_t size){
-    unsigned int i;
-    for (i = 0; i + sizeof(uint64_t) <= size; i += sizeof(uint64_t)){
-        *((uint64_t *)((char*)dest + i)) = * ((uint64_t *)((char*)src + i));
-    }
-
-    // Zero remaining bytes (less than 8)
-    for (; i < size; i++){
-        *((uint8_t *)((char*)dest + i)) = *((uint8_t *)((char*) src+ i));
-    }
-}*/
-
-/*IOBUF_FILE* iobuf_open(char* nom, char mode){
-    IOBUF_FILE* f = malloc(sizeof(IOBUF_FILE));
-    
-    if (mode == 'R'){
-        f->file_descriptor = open(nom, O_RDONLY);
-    }
-    else if (mode == 'W'){
-        f->file_descriptor = open(nom, O_WRONLY);
-    }
-    else{
-        f->file_descriptor = -1;
-    }
-
-    if (f->file_descriptor == -1){
-        free(f);
-        return NULL;
-    }
-
-    f->mode = mode;
-    f->start_buff = &f->buffer[0];
-    f->end_buff = &f->buffer[0];
-    f->empty = 1;
-
-    return f;
-}*/
-
-/*int iobuf_close(IOBUF_FILE* f) {
-    if (f == NULL) { return -1; }
-    if (f->mode == 'W' && f->empty == 0) { iobuf_flush(f); }
-    if (close(f->file_descriptor) == -1) { return -1; }
-    free(f);
-    return 0;
-}*/
-
-/*int iobuf_read(void* p, unsigned int taille, unsigned int nbelem, IOBUF_FILE * f) {
-    if (p == NULL || f == NULL || f->mode != 'R') { return -1; }
-    const unsigned int total_bytes = taille * nbelem;
-    if (total_bytes > f->end_buff - f->start_buff) {
-        ssize_t rval = iobuf_fill(f);
-        if (rval < 0) { return -1; }
-    }
-
-    unsigned int bytes_to_transfer = total_bytes;
-    if (bytes_to_transfer > (unsigned int)(f->end_buff - f->start_buff)) {
-        bytes_to_transfer = (unsigned int)(f->end_buff - f->start_buff);
-    }
-
-    unsigned int i = 0;
-    while (i < bytes_to_transfer) {
-      my_memcpy((char*)p + i, f->start_buff, taille);
-        i += taille;
-        f->start_buff += taille;
-    }
-    return (int)i;
-}*/
-
-// Write use a circular buffer
-/*int iobuf_write(void* p, unsigned int taille, unsigned int nbelem, IOBUF_FILE * f) {
-    if (p == NULL || f == NULL || f->mode != 'W') { return -1; }
-    unsigned int nbelem_written = 0;
-
-    if (f->start_buff == f->end_buff && f->empty == 0) {
-        ssize_t rval = iobuf_flush(f);
-        if (rval < 0) { return -1; }
-    }
-
-    unsigned int available_space;
-    if (f->start_buff <= f->end_buff) {
-        available_space = BUFFER_SIZE - (unsigned int)(f->end_buff - f->start_buff);
-    } else {
-        available_space = (unsigned int)(f->start_buff - f->end_buff);
-    }
-
-    while (taille <= available_space && nbelem_written < nbelem) {
-        if (f->end_buff + taille <= f->buffer + BUFFER_SIZE) {
-          my_memcpy(f->end_buff, (char*)p + nbelem_written * taille, taille);
-            f->end_buff += taille;
-            if (f->end_buff >= f->buffer + BUFFER_SIZE) {
-                f->end_buff = f->buffer;
-            }
-        } else {
-            unsigned int space_to_end = (unsigned int)(f->buffer + BUFFER_SIZE - f->end_buff);
-          my_memcpy(f->end_buff, (char*)p + nbelem_written * taille, space_to_end);
-            f->end_buff = f->buffer;
-          my_memcpy(f->end_buff, (char*)p + nbelem_written * taille + space_to_end, taille - space_to_end);
-            f->end_buff += taille - space_to_end;
-        }
-        nbelem_written++;
-        available_space -= taille;
-    }
-
-    if (nbelem_written != 0) {
-        f->empty = 0;
-    }
-
-    if (f->start_buff == f->end_buff) {
-        ssize_t rval = iobuf_flush(f);
-        if (rval < 0) { return -1; }
-    }
-
-    return (int)nbelem_written;
-}*/
-
-// int iobuf_fprintf(IOBUF_FILE* fp, char* format, ...) {
-//     int nbelem_written = 0;
-//
-//     va_list(args);
-//     va_start(args, format);
-//
-//     char* current_pos = format;
-//     while (*current_pos != '\0') {
-//         if (*current_pos == '%') {
-//             current_pos++;
-//             char* string_to_write = "%";
-//             if (*current_pos == '%') {
-//                 string_to_write = "%";
-//             } else if (*current_pos == 'c') {
-//                 const char char_to_write = (char)va_arg(args, int);
-//                 string_to_write = malloc(2*sizeof(char));
-//                 string_to_write[0] = char_to_write;
-//                 string_to_write[1] = '\0';
-//             } else if (*current_pos == 's') {
-//                 string_to_write = va_arg(args, char*);
-//             } else if (*current_pos == 'd') {
-//                 const int num = va_arg(args, int);
-//                 string_to_write = itos(num, 10);
-//             } else {
-//                 current_pos--;
-//             }
-//
-//             char* ptr = string_to_write;
-//             while (*ptr != '\0') {
-//                 if (iobuf_write(ptr, sizeof(char), 1, fp) != 1) {
-//                     if (*current_pos == 'c') {
-//                         free(string_to_write);
-//                     }
-//                     return -1;
-//                 }
-//                 nbelem_written++;
-//                 ptr++;
-//             }
-//
-//             if (*current_pos == 'c') {
-//                 free(string_to_write);
-//             }
-//
-//         } else {
-//             if (iobuf_write(current_pos, sizeof(char), 1, fp) != 1) {
-//                 return -1;
-//             }
-//             nbelem_written++;
-//         }
-//         current_pos++;
-//     }
-//     return nbelem_written;
-// }
-
-
-/*ssize_t iobuf_flush(IOBUF_FILE* f) {
-    if (f == NULL || f->mode != 'W') { return -1; }
-    ssize_t bytes_to_write = f->end_buff - f->start_buff;
-    if (f->start_buff >= f->end_buff) {
-        bytes_to_write = BUFFER_SIZE + f->buffer - f->start_buff;
-    }
-    ssize_t rval = write(f->file_descriptor, f->start_buff, bytes_to_write);
-
-    if (rval < 0){
-        return -1;
-    }
-
-    f->start_buff = f->start_buff + rval;
-    if (f->start_buff >= f->buffer + BUFFER_SIZE) {
-        f->start_buff -= BUFFER_SIZE;
-    }
-
-    if (f->start_buff == f->end_buff) {
-        f->empty = 1;
-    }
-
-    return rval;
-}*/
-
-/*ssize_t iobuf_fill(IOBUF_FILE* f) {
-    if (f == NULL || f->mode != 'R' || f->end_buff < f->start_buff) { return -1; }
-    if (f->start_buff == f->end_buff) {
-        f->start_buff = f->buffer;
-        f->end_buff = f->buffer;
-    }
-
-    ssize_t bytes_to_read = BUFFER_SIZE - (f->end_buff - f->start_buff);
-    ssize_t rval = read(f->file_descriptor, f->end_buff, bytes_to_read);
-
-    if (rval < 0){
-        return -1;
-    }
-
-    f->end_buff += rval;
-
-    return rval;
-}*/

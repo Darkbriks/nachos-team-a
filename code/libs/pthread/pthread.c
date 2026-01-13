@@ -3,7 +3,9 @@
 #include "syscall.h"
 #include "nos_threads.h"
 #include "nos_string.h"
+#include "nos_stddef.h"
 #include "nos_mem.h"
+#include "nos_limits.h"
 #include "types.h"
 
 int mem_alloc_init = 0;
@@ -162,7 +164,7 @@ void pthread_exit(void *retval){
     self->exited = 1;
 
     atomic_store(&self->futex, 1);
-    futex_wake(&self->futex, INT32_MAX);
+    futex_wake(&self->futex, INT_MAX);
 
     if (self->detached) {
         pthread_destroy(self->tid);

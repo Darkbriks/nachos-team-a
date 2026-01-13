@@ -1,8 +1,80 @@
 #ifndef STD_LIB_C
 #define STD_LIB_C
 
-#include "syscall.h"
+#include "nos_stddef.h"
 #include "types.h"
+
+/* ============================================================
+ * Constants
+ * ============================================================
+ */
+
+#ifndef EXIT_SUCCESS
+#define EXIT_SUCCESS 0
+#endif
+
+#ifndef EXIT_FAILURE
+#define EXIT_FAILURE 1
+#endif
+
+#ifndef RAND_MAX
+#define RAND_MAX 32767
+#endif
+
+/* ============================================================
+ * Utility macros
+ * ============================================================
+ */
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+
+/* =============================================================
+ * Process Control Functions
+ * =============================================================
+ */
+int atexit(void (*func)(void));
+void abort(void) NORETURN;
+int exit(int status) NORETURN;
+
+/* =============================================================
+ * Memory Management Functions
+ * =============================================================
+ */
+void* malloc(size_t size);
+void free(void *ptr);
+void* calloc(size_t num, size_t size);
+void* realloc(void* ptr, size_t size);
+
+/* =============================================================
+ * Numeric String Conversion Functions
+ * =============================================================
+ */
+//double atof(const char* nptr);
+int atoi(const char* str, int base);
+long atol(const char* str, int base);
+long long atoll(const char* str, int base);
+long strtol(const char* str, char** endptr, int base);
+long long strtoll(const char* str, char** endptr, int base);
+unsigned long strtoul(const char* str, char** endptr, int base);
+unsigned long long strtoull(const char* str, char** endptr, int base);
+float strtof(const char* str, char** endptr);
+double strtod(const char* str, char** endptr);
+long double strtold(const char* str, char** endptr);
+
+/* =============================================================
+ * Miscellaneous Algorithms and Math Functions
+ * =============================================================
+ */
+int rand(void);
+void srand(unsigned int seed);
+
+int abs(int j);
+long int labs(long int j);
+long long int llabs(long long int j);
+
+// TODO: Missing functions that can be fun to implement :
+// qsort, bsearch, div, ldiv, lldiv
+// See https://en.cppreference.com/w/cpp/header/cstdlib.html
 
 /* =============================================================
  * I/O Functions
@@ -46,68 +118,5 @@ int scanf_simple(char *format, void *result);
  * @return The output string buffer
  */
 char* itoa(int value, char* str, int base);
-
-/**
- * @brief Convert a string to an integer in a given base
- * @param str The input string
- * @param base The base for conversion (e.g., 10 for decimal, 16 for hexadecimal)
- * @return The converted integer value
- */
-int atoi(const char* str, int base);
-
-/* ============================================================
- * Other functions
- * ============================================================
- */
-#define MAX(a,b) ((a) > (b) ? (a) : (b))
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
-
-/* ============================================================
- * Old functions
- * ============================================================
- */
-
-//void my_scanf(char *format, ...);
-
-/*#ifndef BUFFER_SIZE
-#define BUFFER_SIZE 10
-#endif*/
-
-/*typedef struct IOBUF_FILE
-{
-    int file_descriptor;
-    char buffer[BUFFER_SIZE];
-    char* start_buff;
-    char* end_buff;
-    int empty;
-    char mode;
-} IOBUF_FILE;*/
-
-/* ----------------------------------------------------------*/
-/* Interface utilisateur bibliothèque d'entrées/sorties      */
-/* ----------------------------------------------------------*/
-/*IOBUF_FILE* iobuf_open(char* nom, char mode);
-int iobuf_close(IOBUF_FILE* f);
-int iobuf_read(void* p, unsigned int taille, unsigned int nbelem, IOBUF_FILE * f);
-int iobuf_write(void* p, unsigned int taille, unsigned int nbelem, IOBUF_FILE * f);
-
-int iobuf_fprintf(IOBUF_FILE* fp, char* format, ...);
-int iobuf_fscanf(IOBUF_FILE* fp, char* format, ...);
-
-ssize_t iobuf_flush(IOBUF_FILE* f);
-ssize_t iobuf_fill(IOBUF_FILE* f);
-
-int close(int);
-int open(char *, int);
-int write(int fd, char *buf, size_t size);
-ssize_t read(int fd, char *buf, size_t size);*/
-
-/*void * malloc(unsigned int);
-int free(void *);*/
-
-/*#define O_RDONLY 0
-#define O_WRONLY 1
-#define O_RDWR 2
-#define O_CREAT 3*/
 
 #endif //STD_LIB_C

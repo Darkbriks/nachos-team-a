@@ -76,4 +76,7 @@ static inline void __clear_errno() {
   *__errno_location() = 0;
 }
 
+// TODO: Define standard errno values here instead of in syscall.h
+// https://en.cppreference.com/w/cpp/header/cerrno.html
+
 #endif

@@ -1,5 +1,5 @@
 #include "syscall.h"
-#include "types.h"
+#include "nos_stddef.h"
 #include "pthread.h"
 
 /* Test automatic thread termination - thread function returns without calling ExitThread */

@@ -1,6 +1,7 @@
 #include "copyright.h"
 #include "syscall.h"
 #include "system.h"
+#include "nos_limits.h"
 
 #include "userIO.h"
 
@@ -19,7 +20,7 @@ void handle_SC_PutString(){
     if (addr < 0) { RETURN(-E_FAULT); } // TODO Add more checks (addr is in valid user space, for example)
     if (n < 0) { RETURN(-E_INVAL); }
     if (n == 0) { RETURN(0); }
-    if (n > INT32_MAX - addr) { RETURN(-E_OVERFLOW); } // Prevent overflow
+    if (n > INT_MAX - addr) { RETURN(-E_OVERFLOW); } // Prevent overflow
 
     int offset = 0;
     char buffer[MAX_STRING_SIZE];

@@ -1,7 +1,10 @@
 #include "nos_mem.h"
 #include "nos_stdlib.h"
+#include "nos_stddef.h"
 #include "nos_mem_macros.h"
 #include "types.h"
+#include "syscall.h"
+
 #define EXPECT_EQ(a,b) \
     if ((a) != (b)){   \
         printf_simple("ERREUR sur comparaiso\n"); \
@@ -39,7 +42,7 @@ int main(){
     }
     printf_simple("hey2\n");
 
-    EXPECT_EQ(TRUE, i > 16);
+    EXPECT_EQ(true, i > 16);
     mem_free(occupied[0]);
     printf_simple("1\n");
     EXPECT_EQ(occupied[0], mem_realloc(occupied[3], 450)); // relocalisation

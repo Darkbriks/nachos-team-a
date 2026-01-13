@@ -15,9 +15,17 @@ typedef signed int         int32_t;
 typedef unsigned long long uint64_t;
 typedef signed long long   int64_t;
 
+#ifndef _SIZE_T_DEFINED
+#define _SIZE_T_DEFINED
 typedef uint32_t size_t;
+#endif
+
 typedef int32_t  ssize_t;
+
+#ifndef _PTRDIFF_T_DEFINED
+#define _PTRDIFF_T_DEFINED
 typedef int32_t  ptrdiff_t;
+#endif
 
 typedef uint32_t uintptr_t;
 typedef int32_t  intptr_t;
@@ -27,20 +35,8 @@ typedef int32_t  intptr_t;
  * ============================================================
  */
 
-#ifndef NULL
-#define NULL ((void*)0)
-#endif
-
 #ifndef PAGE_SIZE 
 #define PAGE_SIZE 128 
-#endif
-
-#ifndef TRUE
-#define TRUE 1
-#endif
-
-#ifndef FALSE
-#define FALSE 0
 #endif
 
 /* ============================================================

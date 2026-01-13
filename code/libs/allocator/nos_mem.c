@@ -3,6 +3,8 @@
 #include "nos_mem_space.h"
 #include "nos_stdlib.h"
 #include "nos_string.h"
+#include "nos_stddef.h"
+#include "syscall.h"
 
 static int allocator_initialized = 0;
 
