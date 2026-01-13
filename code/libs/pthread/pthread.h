@@ -2,9 +2,27 @@
 #define PTHREAD_H
 
 #include "types.h"
+#include "nos_threads.h"
 
+#define MAX_THREAD 30
+#define MAX_PROCESS 15
 typedef struct pthread_attr_t pthread_attr_t;
-typedef struct pthread_t pthread_t;
+typedef int pthread_t;
+typedef struct pthread{
+    pthread_t tid;
+
+    int exited;
+    int detached;
+
+    int futex;
+
+    void *retval;
+
+    void *stack_base;
+    size_t stack_size;
+
+    void *tls_base;
+} pthread_lib;
 
 int pthread_attr_setdetachstate(pthread_attr_t * attr, int value);
 int pthread_attr_setscope(pthread_attr_t * attr, int value);

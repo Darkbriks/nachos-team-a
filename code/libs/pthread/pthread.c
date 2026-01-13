@@ -26,26 +26,24 @@ typedef struct pthread_attr_t {
     unsigned int stack_size;
 } pthread_attr_t;
 
-typedef struct pthread_t {
-    tid_t tid;
-
-    int exited;
-    int detached;
-
-    int futex;
-
-    void *retval;
-
-    void *stack_base;
-    size_t stack_size;
-
-    void *tls_base;
-} pthread_t;
-
 #define DETACH_STATE(value) (value<<0)
 #define SCOPE(value) (value<<1)
 #define INHERIT_SCHEDULER(value) (value<<2)
 #define SCHEDULING_POLICY(value) (value<<3)
+
+
+#define GET_PTR_AND_CATCH_NULL_RETUN0(TID)    \
+    pthread_lib* thread_ptr = get_thread_by_tid(TID);  \
+    if (! thread_ptr){                                 \
+        return 0;                                      \
+    }
+                                                        
+#define GET_PTR_AND_CATCH_NULL(TID)    \
+    pthread_lib* thread_ptr = get_thread_by_tid(TID);  \
+    if (! thread_ptr){                                 \
+        return;                                        \
+    }
+    
 
 int pthread_attr_init(pthread_attr_t *attr){
     memset(attr, 0, sizeof(pthread_attr_t));
@@ -182,10 +180,20 @@ void thread_start_wrapper(void *arg) {
     pthread_exit(retval); // No longer need to manipulate asm registers to auto exit
 }
 
+pthread_lib* array_tid[MAX_PROCESS][MAX_THREAD];
+
+static inline pthread_lib* __pthread_self(){
+    return (pthread_lib*)__get_tls()->tsd[0]; // Assuming TSD index 0 stores pthread_t pointer
+}
+
+pthread_lib* get_thread_by_tid(pthread_t thread){
+    return array_tid[ForkSelf()][thread];
+}
+
 int pthread_create(pthread_t *thread, pthread_attr_t * attr, typeof(void *(void *)) *fun, void * arg) {
     INIT_MEMORY_ALLOCATOR();
 
-    pthread_t* t = (pthread_t*) mem_alloc(sizeof(pthread_t));
+    pthread_lib* t = (pthread_lib*) mem_alloc(sizeof(pthread_lib));
     if (t == NULL) {
         return -1;
     }
@@ -246,39 +254,41 @@ int pthread_create(pthread_t *thread, pthread_attr_t * attr, typeof(void *(void 
 
     t->tid = (tid_t)result;
     if (thread != NULL) {
-        *thread = *t;
+        *thread = t->tid;
     }
+    array_tid[ForkSelf()][t->tid] = t;
 
     return 0;
 }
 
 void pthread_exit(void *retval){
-    pthread_t self = pthread_self();
+    pthread_lib* self = __pthread_self();
 
-    self.retval = retval;
-    self.exited = 1;
+    self->retval = retval;
+    self->exited = 1;
 
-    atomic_store(&self.futex, 1);
-    futex_wake(&self.futex, INT32_MAX);
+    atomic_store(&self->futex, 1);
+    futex_wake(&self->futex, INT32_MAX);
 
-    if (self.detached) {
-        pthread_destroy(self);
+    if (self->detached) {
+        pthread_destroy(self->tid);
     }
 
     thread_exit();
 }
 
 int pthread_join(pthread_t thread, void **retval){
-    if (thread.detached) {
+    GET_PTR_AND_CATCH_NULL_RETUN0(thread)
+    if (thread_ptr->detached) {
         return -1;
     }
 
-    while (atomic_load(&thread.futex) == 0) {
-        futex_wait(&thread.futex, 0);
+    while (atomic_load(&thread_ptr->futex) == 0) {
+        futex_wait(&thread_ptr->futex, 0);
     }
 
     if (retval != NULL) {
-        *retval = thread.retval;
+        *retval = thread_ptr->retval;
     }
 
     pthread_destroy(thread);
@@ -286,12 +296,13 @@ int pthread_join(pthread_t thread, void **retval){
 }
 
 int pthread_detach(pthread_t thread){
-    if (thread.detached) {
+    GET_PTR_AND_CATCH_NULL_RETUN0(thread)
+    if (thread_ptr->detached) {
         return -1;
     }
-    thread.detached = 1;
+    thread_ptr->detached = 1;
 
-    if (thread.exited) {
+    if (thread_ptr->exited) {
         pthread_destroy(thread);
     }
 
@@ -299,19 +310,14 @@ int pthread_detach(pthread_t thread){
 }
 
 void pthread_destroy(pthread_t thread){
-    munmap(thread.stack_base);
-    mem_free(thread.tls_base);
-    mem_free(&thread);
+    GET_PTR_AND_CATCH_NULL(thread)
+    munmap(thread_ptr->stack_base);
+    mem_free(thread_ptr->tls_base);
+    mem_free(thread_ptr);
+    array_tid[ForkSelf()][thread] = NULL;
 }
 
 pthread_t pthread_self(){
-    pthread_t t;
-    tls_t* tls = __get_tls();
-    pthread_t* current_pthread = (pthread_t*)tls->tsd[0]; // Assuming TSD index 0 stores pthread_t pointer
-    if (current_pthread != NULL) {
-        t = *current_pthread;
-    } else {
-        memset(&t, 0, sizeof(pthread_t));
-    }
-    return t;
+    pthread_lib* thread = __pthread_self();
+    return thread ? thread->tid : -1;
 }
