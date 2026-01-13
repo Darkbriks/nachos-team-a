@@ -136,7 +136,9 @@ void handle_SC_thread_exit() {
     process->ThreadTerminated(currentThread);
     process->RemoveThread(currentThread);
 
-    currentThread->Yield();
+    const IntStatus oldLevel = interrupt->SetLevel(IntOff);
+    currentThread->Sleep();
+    (void)interrupt->SetLevel(oldLevel);
     ASSERT(FALSE);
 }
 

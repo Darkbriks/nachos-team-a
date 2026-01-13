@@ -21,7 +21,7 @@ void handle_SC_Sbrk() {
 }
 
 void handle_SC_mmap() {
-    void* addr = reinterpret_cast<void*>(machine->ReadRegister(4));
+    //void* addr = reinterpret_cast<void*>(machine->ReadRegister(4));
     int length = machine->ReadRegister(5);
 
     Process* process = currentThread->getProcess();
@@ -35,10 +35,12 @@ void handle_SC_mmap() {
 
     // TODO: For now, we just allocate an area in the stack, without check addr
     //       In the future, we could implement a more complete mmap handling
+    unsigned int base;
     unsigned int limit;
-    int result = stackMgr->AllocateStack(length, reinterpret_cast<unsigned int*>(&addr), &limit);
+    int result = stackMgr->AllocateStack(length, &base, &limit);
     if (result < 0) { RETURN(-E_NOMEM); }
-    RETURN(reinterpret_cast<int>(addr));
+
+    RETURN(static_cast<int>(limit));
 }
 
 void handle_SC_munmap() {
