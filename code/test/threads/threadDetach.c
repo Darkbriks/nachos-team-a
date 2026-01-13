@@ -10,7 +10,7 @@ void *detached_thread(void *arg) {
 }
 
 int main() {
-    PutString("=== Test PthreadDetach ===\n", 29);
+    PutString("=== Test pthread_detach ===\n", 29);
     
     pthread_t tid;
     
@@ -20,7 +20,7 @@ int main() {
         return 1;
     }
     
-    if (PthreadDetach(tid) != 0) {
+    if (pthread_detach(tid) != 0) {
         PutString("ERROR: Failed to detach thread\n", 31);
         return 1;
     }
@@ -40,12 +40,12 @@ int main() {
         return 1;
     }
     
-    if (PthreadDetach(tid2) != 0) {
+    if (pthread_detach(tid2) != 0) {
         PutString("ERROR: First detach failed\n", 27);
         return 1;
     }
     
-    if (PthreadDetach(tid2) == 0) {
+    if (pthread_detach(tid2) == 0) {
         PutString("ERROR: Second detach succeeded (should fail)\n", 46);
         return 1;
     }
@@ -55,7 +55,7 @@ int main() {
     PutString("Test 3: Detach non-existent thread\n", 36);
     pthread_t fake_tid = 9999;
     
-    if (PthreadDetach(fake_tid) == 0) {
+    if (pthread_detach(fake_tid) == 0) {
         PutString("ERROR: Detach succeeded on non-existent thread\n", 48);
         return 1;
     }

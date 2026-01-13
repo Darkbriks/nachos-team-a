@@ -8,23 +8,9 @@
 #define NUM_THREADS 20
 
 void thread_function(int thread_id) {
-    tls_t my_tls;
-    my_tls.self = &my_tls;
-    my_tls.tid = thread_id;
-    my_tls.pid = 0;
-    my_tls.errno_val = 0;
-    my_tls.stack_base = (void*)0;
-    my_tls.stack_size = 0;
-    my_tls.flags = TLS_FLAG_JOINABLE;
-    my_tls.retval = (void*)0;
-
-    if (SetTLS(&my_tls) != 0) {
-        print_error("Thread "); PutInt(thread_id); PutString(": Failed to set TLS\n", 20);
-        return;
-    }
 
     int test_errno_value = thread_id;
-    errno = test_errno_value;
+    __set_errno(test_errno_value);
 
     // Simulate some processing
     for (volatile int i = 0; i < 10000; i++);

@@ -102,7 +102,7 @@ int main() {
         return 1;
     }
     
-    if (PthreadDetach(tid5) != 0) {
+    if (pthread_detach(tid5) != 0) {
         PutString("ERROR: Failed to detach thread\n", 31);
         return 1;
     }

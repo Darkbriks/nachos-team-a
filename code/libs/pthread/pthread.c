@@ -35,7 +35,7 @@ typedef struct pthread_attr_t {
 #define GET_PTR_AND_CATCH_NULL_RETUN0(TID)    \
     pthread_lib* thread_ptr = get_thread_by_tid(TID);  \
     if (! thread_ptr){                                 \
-        return 0;                                      \
+        return -1;                                     \
     }
                                                         
 #define GET_PTR_AND_CATCH_NULL(TID)    \

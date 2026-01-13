@@ -1,20 +1,6 @@
 our_shell >  shell voit une mauvaise terminaison avec code :-4 
 our_shell >  shell voit une mauvaise terminaison avec code :-5 
-our_shell >  mem_init: Espace mémoire initialisé de 128 bytes
-mem_init: Espace utilisable de 120 bytes
-mem_init: Espace utilisable aligné de 120 bytes (aligné à 4)
-mem_init: Premier bloc libre à 23432, taille=104
-mem_init: Taille de l'header : 4
-mem_init: Taille du footer : 4
-mem_init: Taille totale d'un bloc libre vide : 16
-mem_init: Taille totale d'un bloc occupé vide : 8
-mem_alloc: Demande d'allocation de 16 bytes
-mem_alloc: Taille alignée à 16 bytes
-mem_alloc: Taille finale du bloc utilisateur : 16 bytes
-mem_alloc: Partitionnement du bloc libre de taille 120 bytes
-mem_alloc: Nouveau bloc occupé de taille 24 bytes
-mem_alloc: Bloc résiduel libre de taille 96 bytes
-shell voit une mauvaise terminaison avec code :-5 
+our_shell >  shell voit une mauvaise terminaison avec code :-5 
 our_shell >  
 session terminée
 Write on a read-only address
@@ -22,9 +8,9 @@ Access on an invalid address . Allocate more memory
 Access on an invalid address . Allocate more memory
 Machine halting!
 
-Ticks: total 189194, idle 96180, system 64760, user 28254
+Ticks: total 94480, idle 28910, system 47050, user 18520
 Disk I/O: reads 0, writes 0
-Console I/O: reads 86, writes 897
+Console I/O: reads 86, writes 224
 Paging: faults 0
 Network I/O: packets received 0, sent 0
 
