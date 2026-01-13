@@ -8,7 +8,7 @@ Access on an invalid address . Allocate more memory
 Access on an invalid address . Allocate more memory
 Machine halting!
 
-Ticks: total 94090, idle 28860, system 46710, user 18520
+Ticks: total 94320, idle 29010, system 46790, user 18520
 Disk I/O: reads 0, writes 0
 Console I/O: reads 86, writes 224
 Paging: faults 0

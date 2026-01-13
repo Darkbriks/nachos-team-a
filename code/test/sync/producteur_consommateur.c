@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
     }
 
 
-    for (i=0; i<nb_consommateurs+nb_producteurs; i++)
+    for (i=0; i < index; i++)
         pthread_join(threads[i], &resultat);
 
     if (donnees_thread.nb_data_dispo != -1){
@@ -118,6 +118,7 @@ int main(int argc, char *argv[]) {
     }
     SemDestroy(donnees_thread.producteurs_consommateur.resource);
     SemDestroy(donnees_thread.producteurs_consommateur.empty_list);
+    printf_simple("Si pas de print avant alors tout a marché !! \n");
     return 0;
 }
 

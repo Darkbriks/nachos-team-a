@@ -2,7 +2,7 @@ hey
 Test passed: correct return value from joined thread: 42
 Machine halting!
 
-Ticks: total 24203, idle 6000, system 13150, user 5053
+Ticks: total 24306, idle 6000, system 13170, user 5136
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 61
 Paging: faults 0

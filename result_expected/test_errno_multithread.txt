@@ -22,7 +22,7 @@ hread 16: OK, errno = 16
 === Errno Multithreaded Test Complete ===
 Machine halting!
 
-Ticks: total 1994252, idle 55040, system 31810, user 1907402
+Ticks: total 1995932, idle 55040, system 31830, user 1909062
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 575
 Paging: faults 0

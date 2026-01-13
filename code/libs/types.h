@@ -55,13 +55,6 @@ typedef int32_t  intptr_t;
 #define LIKELY(x)    __builtin_expect(!!(x), 1)
 #define UNLIKELY(x)  __builtin_expect(!!(x), 0)
 
-/* ============================================================
- * Thread macros
- * ============================================================
- */
-
-#define JOINABLE 0
-#define DETACHED 1
 
 /* ============================================================
  * Semaphore macros

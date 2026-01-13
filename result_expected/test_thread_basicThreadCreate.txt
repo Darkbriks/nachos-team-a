@@ -5,7 +5,7 @@ hread 3 executed
 SUCCESS: All threads created and joined correctly
 Machine halting!
 
-Ticks: total 44689, idle 13390, system 15940, user 15359
+Ticks: total 44958, idle 13390, system 15960, user 15608
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 138
 Paging: faults 0

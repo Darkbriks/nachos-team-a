@@ -1,7 +1,7 @@
 abcd
 Machine halting!
 
-Ticks: total 10346, idle 500, system 9690, user 156
+Ticks: total 10386, idle 500, system 9730, user 156
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 5
 Paging: faults 0

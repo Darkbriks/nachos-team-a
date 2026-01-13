@@ -9,28 +9,13 @@
 int mem_alloc_init = 0;
 int mem_init_amount = 10000; // TODO adjust initial memory size
 
+pthread_lib* array_tid[MAX_PROCESS][MAX_THREAD];
+
 #define INIT_MEMORY_ALLOCATOR()    \
     if (mem_alloc_init == 0) {     \
         mem_alloc_init = 1;        \
         mem_init(mem_init_amount); \
     }
-
-#define DEFAULT_STACK_SIZE (8 * 128)
-#define INT32_MAX 2147483647
-
-typedef struct pthread_attr_t {
-    char flag; //DETACH_STATE SCOPE INHERIT_SCHEDULER SCHEDULING_POLICY
-    unsigned short scheduling_priority;
-    unsigned int guard_size;
-    int stack_address;
-    unsigned int stack_size;
-} pthread_attr_t;
-
-#define DETACH_STATE(value) (value<<0)
-#define SCOPE(value) (value<<1)
-#define INHERIT_SCHEDULER(value) (value<<2)
-#define SCHEDULING_POLICY(value) (value<<3)
-
 
 #define GET_PTR_AND_CATCH_NULL_RETUN0(TID)    \
     pthread_lib* thread_ptr = get_thread_by_tid(TID);  \
@@ -44,124 +29,6 @@ typedef struct pthread_attr_t {
         return;                                        \
     }
     
-
-int pthread_attr_init(pthread_attr_t *attr){
-    memset(attr, 0, sizeof(pthread_attr_t));
-    attr->guard_size = PAGE_SIZE;
-    return 0;
-}
-
-int pthread_attr_destroy(pthread_attr_t *attr){
-    return 0;
-}
-
-int pthread_attr_setdetachstate(pthread_attr_t * attr, int value){
-    if (value != 0 && value != 1){
-        attr->flag &= ~DETACH_STATE(0);
-        attr->flag |= DETACH_STATE(value);
-        return 0;
-    }
-    return 1;
-}
-
-int pthread_attr_setscope(pthread_attr_t * attr, int value){
-    if (value != 0 && value != 1){
-        attr->flag &= ~SCOPE(0);
-        attr->flag |= SCOPE(value);
-        return 0;
-    }
-    return 1;
-}
-
-int pthread_attr_setinheritscheduler(pthread_attr_t * attr, int value){
-    if (value != 0 && value != 1){
-        attr->flag &= ~INHERIT_SCHEDULER(0);
-        attr->flag |= INHERIT_SCHEDULER(value);
-        return 0;
-    }
-    return 1;
-}
-
-int pthread_attr_setschedulingpolicy(pthread_attr_t * attr, int value){
-    if (value != 0 && value != 1){
-        attr->flag &= ~SCHEDULING_POLICY(0);
-        attr->flag |= SCHEDULING_POLICY(value);
-        return 0;
-    }
-    return 1;
-}
-
-int pthread_attr_getdetachstate(pthread_attr_t * attr, int *value){
-   *value = DETACH_STATE(attr->flag);
-   return 0;
-}
-
-int pthread_attr_getscope(pthread_attr_t * attr, int *value){
-   *value = SCOPE(attr->flag);
-   return 0;
-}
-
-int pthread_attr_getinheritscheduler(pthread_attr_t * attr, int *value){
-   *value = INHERIT_SCHEDULER(attr->flag);
-   return 0;
-}
-
-int pthread_attr_getschedulingpolicy(pthread_attr_t * attr, int *value){
-   *value = SCHEDULING_POLICY(attr->flag);
-   return 0;
-}
-
-int pthread_attr_setscheduling_priority(pthread_attr_t * attr, size_t value){
-    attr->scheduling_priority = value;
-    return 0;
-}
-
-int pthread_attr_setguard_size(pthread_attr_t * attr, size_t value){
-    attr->guard_size = value;
-    return 0;
-}
-
-int pthread_attr_setstack_address(pthread_attr_t * attr, int value){
-    attr->stack_address = value;
-    return 0;
-}
-
-int pthread_attr_setstack_size(pthread_attr_t * attr, size_t value){
-    attr->stack_size = value;
-    return 0;
-}
-
-int pthread_attr_setstack(pthread_attr_t * attr, int addres, size_t size){
-    attr->stack_size = size;
-    attr->stack_address = addres;
-    return 0;
-}
-
-int pthread_attr_getstack(pthread_attr_t * attr, int *addres, size_t *size){
-    *size = attr->stack_size;
-    *addres = attr->stack_address;
-    return 0;
-}
-
-int pthread_attr_getscheduling_priority(pthread_attr_t * attr, size_t *value){
-    *value = attr->scheduling_priority;
-    return 0;
-}
-
-int pthread_attr_getguard_size(pthread_attr_t * attr, size_t *value){
-    *value = attr->guard_size;
-    return 0;
-}
-
-int pthread_attr_getstack_address(pthread_attr_t * attr, int *value){
-    *value = attr->stack_address;
-    return 0;
-}
-
-int pthread_attr_getstack_size(pthread_attr_t * attr, size_t *value){
-    *value = attr->stack_size;
-    return 0;
-}
 
 struct thread_start_args {
     void *(*start_routine)(void *);
@@ -180,29 +47,21 @@ void thread_start_wrapper(void *arg) {
     pthread_exit(retval); // No longer need to manipulate asm registers to auto exit
 }
 
-pthread_lib* array_tid[MAX_PROCESS][MAX_THREAD];
-
 static inline pthread_lib* __pthread_self(){
     return (pthread_lib*)__get_tls()->pthread_ptr;
 }
 
-pthread_lib* get_thread_by_tid(pthread_t thread){
+static inline pthread_lib* get_thread_by_tid(pthread_t thread){
     return array_tid[ForkSelf()][thread];
 }
 
-int pthread_create(pthread_t *thread, pthread_attr_t * attr, typeof(void *(void *)) *fun, void * arg) {
-    INIT_MEMORY_ALLOCATOR();
-
-    pthread_lib* t = (pthread_lib*) mem_alloc(sizeof(pthread_lib));
-    if (t == NULL) {
-        return -1;
-    }
-
+int init_pthread_lib(pthread_lib* t, char detach, int size){
     t->exited = 0;
-    t->detached = attr ? (attr->flag & DETACH_STATE(1)) != 0 : 0;
+    t->detached = detach;
     t->futex = 0;
     t->retval = NULL;
-    t->stack_size = attr && attr->stack_size > 0 ? attr->stack_size : DEFAULT_STACK_SIZE;
+    t->stack_size = size;
+    t->pid = ForkSelf();
 
     // Use mmap to allocate stack without guard page for now
     t->stack_base = (void *)mmap(NULL, t->stack_size);
@@ -217,23 +76,27 @@ int pthread_create(pthread_t *thread, pthread_attr_t * attr, typeof(void *(void 
         mem_free(t);
         return -1;
     }
+    return 0;
+}
 
+void init_tls(pthread_lib* t){
     tls_t* tls = (tls_t*)t->tls_base;
     tls->self = tls;
     tls->errno_val = 0;
     tls->pthread_ptr = (int)t;
+}
 
-    struct thread_start_args* start_args = (struct thread_start_args*) mem_alloc(sizeof(struct thread_start_args));
-    if (start_args == NULL) {
-        mem_free(t->tls_base);
-        munmap(t->stack_base);
-        mem_free(t);
-        return -1;
+struct thread_start_args* create_start_arg(typeof(void *(void *)) *fun, void * arg){
+    struct thread_start_args* result = mem_alloc(sizeof(struct thread_start_args));
+    if (result == NULL) {
+        return result;
     }
+    result->start_routine = fun;
+    result->arg = arg;
+    return result;
+}
 
-    start_args->start_routine = fun;
-    start_args->arg = arg;
-
+int try_to_launch_thread(pthread_lib* t, struct thread_start_args* start_args){
     user_thread_args uargs;
     uargs.entry = (unsigned int)thread_start_wrapper;
     uargs.arg = (unsigned int)start_args;
@@ -248,8 +111,38 @@ int pthread_create(pthread_t *thread, pthread_attr_t * attr, typeof(void *(void 
         mem_free(t);
         return -1;
     }
-
     t->tid = (tid_t)result;
+    return 0;
+}
+
+int pthread_create(pthread_t *thread, pthread_attr_t * attr, typeof(void *(void *)) *fun, void * arg) {
+    INIT_MEMORY_ALLOCATOR();
+
+    pthread_lib* t = (pthread_lib*) mem_alloc(sizeof(pthread_lib));
+    if (t == NULL) {
+        return -1;
+    }
+
+    char detacheState = attr ? (attr->flag & DETACH_STATE(DETACHED)) != 0  ? 1 : 0 : 0; 
+    int stack_size = attr && attr->stack_size > 0 ? attr->stack_size : DEFAULT_STACK_SIZE; 
+    if ( init_pthread_lib(t, detacheState, stack_size) != 0){
+        return -1;
+    }
+
+    init_tls(t);
+
+    struct thread_start_args* start_args;
+    if ( (start_args = create_start_arg(fun, arg)) == NULL){
+        mem_free(t->tls_base);
+        munmap(t->stack_base);
+        mem_free(t);
+        return -1;
+    }
+
+    if (  try_to_launch_thread(t, start_args) != 0){
+        return -1;
+    }
+
     if (thread != NULL) {
         *thread = t->tid;
     }
@@ -260,6 +153,10 @@ int pthread_create(pthread_t *thread, pthread_attr_t * attr, typeof(void *(void 
 
 void pthread_exit(void *retval){
     pthread_lib* self = __pthread_self();
+    if (! self){ // thread don't create with pthread lib but with syscall or first of process
+        thread_exit();
+        return;
+    }
 
     self->retval = retval;
     self->exited = 1;

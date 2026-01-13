@@ -362,13 +362,13 @@ if __name__ == "__main__":
                     )
                 )
 
-    # all_test.append(Test(
-    #                     file_expect ="test_thread_threadAttr.txt",
-    #                     line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./threads/threadAttr",
-    #                     name = "Test threadAttr",
-    #                     description = "Test pour vérifier les attributs des threads."
-    #                 )
-    #             )
+    all_test.append(Test(
+                        file_expect ="test_thread_threadAttr.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./threads/threadAttr",
+                        name = "Test threadAttr",
+                        description = "Test pour vérifier les attributs des threads."
+                    )
+                )
 
     all_test.append(Test(
                         file_expect ="test_thread_threadDetach.txt",
@@ -399,13 +399,13 @@ if __name__ == "__main__":
                         description = "Lance un premier process qui va en créer deux autres. Les trois doivent finir de s'éxècuter"
                     )
                 )
-    # all_test.append(Test(
-    #                     file_expect ="test_HierarchiThread.txt",
-    #                     line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./threads/firstThreadCanFinishFirst",
-    #                     name = "Test main thread call PthreadExit and others threads can finish",
-    #                     description = "Lance un thread depuis main puis appelle PthreadExit. Le thread crée par main doit devenir le principal"
-    #                 )
-    #             )
+    all_test.append(Test(
+                        file_expect ="test_HierarchiThread.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./threads/firstThreadCanFinishFirst",
+                        name = "Test main thread call PthreadExit and others threads can finish",
+                        description = "Lance un thread depuis main puis appelle PthreadExit. Le thread crée par main doit devenir le principal"
+                    )
+                )
     all_test.append(Test(
                         file_expect ="test_exitCode.txt",
                         line_to_execute = f'echo "exitCode1" | ./nachos-step{CURRENT_STEP} {RS} -x ./our_shell',

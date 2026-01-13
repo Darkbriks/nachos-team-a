@@ -1,10 +1,11 @@
 === Test pas de hiérarchie entre Threads ===
-Thread 1 executed
+=== MainFinish ===
+22646Thread 1 executed
 Machine halting!
 
-Ticks: total 14732, idle 6400, system 8200, user 132
+Ticks: total 177420, idle 158019, system 13990, user 5411
 Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 64
+Console I/O: reads 0, writes 88
 Paging: faults 0
 Network I/O: packets received 0, sent 0
 

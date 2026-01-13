@@ -32,6 +32,7 @@ USERPROG_LIBS=start.S                     \
               ../libs/allocator/nos_mem.c \
               ../libs/allocator/nos_mem_space.c \
               ../libs/pthread/pthread.c \
+              ../libs/pthread/pthread_attr.c \
 
 AUTOLOAD_CPPFLAGS=-DCHANGED               \
     -I$(topsrc_dir)/libs                  \
