@@ -106,7 +106,7 @@ USER_FLAVORS=step5
 #     bitmap_thread_safe.cc frameprovider.cc process.cc stackmanager.cc synchconsole.cc \
 #     futex.cc userIO.cc userprocess.cc userSbrk.cc userSem.cc userSleep.cc userthread.cc))
 
-$(eval $(call define-flavor,step5,userprog filesys,\
+$(eval $(call define-flavor,step5,userprog filesys-stub,\
     bitmap_thread_safe.cc frameprovider.cc process.cc stackmanager.cc synchconsole.cc \
     futex.cc userIO.cc userprocess.cc userSbrk.cc userSem.cc userSleep.cc userthread.cc))
 # $(eval $(call define-flavor,mynetwork,userprog filesys-stub network, \
