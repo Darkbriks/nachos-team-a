@@ -10,7 +10,7 @@
 //
 // Usage: nachos -d <debugflags> -rs <random seed #>
 //              -s -x <nachos file> -c <consoleIn> <consoleOut>
-//              -f -cp <unix file> <nachos file>
+//              -cp <unix file> <nachos file>
 //              -p <nachos file> -r <nachos file> -l -D -t
 //              -n <network reliability> -m <machine id>
 //              -o <other machine id>
@@ -26,7 +26,7 @@
 //    -c tests the console
 //
 //  FILESYS
-//    -f causes the physical disk to be formatted
+//    -f causes the physical disk to be formatted // TODO
 //    -cp copies a file from UNIX to Nachos
 //    -p prints a Nachos file to stdout
 //    -r removes a Nachos file from the file system
