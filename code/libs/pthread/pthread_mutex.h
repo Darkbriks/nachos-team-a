@@ -2,6 +2,7 @@
 #define PTHREAD_MUTEX_H
 
 #include "syscall.h"
+#include "nos_errno.h"
 
 // TODO: Premiére ébauche pour tester les futexs
 //       A améliorer pour mieux coller a la spéc POSIX
