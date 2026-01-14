@@ -89,6 +89,10 @@ class FileSystem {
 
     void Change_Directory(char * name);
 
+    void PrintWorkingDirectory();
+
+    void Tree();
+
   private:
    OpenFile* freeMapFile;		// Bit map of free disk blocks,
 					// represented as a file

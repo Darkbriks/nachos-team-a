@@ -142,6 +142,36 @@ int main(int argc, char **argv) {
         } else if (!strcmp(*argv, "-cd")) { // list Nachos directory
             ASSERT(argc > 1);
             fileSystem->Change_Directory(*(argv + 1));
+        } else if (!strcmp(*argv, "-shell")) { // print entire filesystem
+            char line[100];
+            while(strcmp("q", line) != 0 ){
+                printf("shell > ");
+                scanf("%s", line);
+                if ( strcmp(line, "cd") == 0){
+                    scanf("%s", line);
+                    fileSystem->Change_Directory(line);
+                } else if ( strcmp(line, "cp") == 0){
+                    printf("Enter file <source linux> <dest nachos>\n");
+                    char line2[100];
+                    scanf("%s %s", line, line2);
+                    Copy(line, line2);
+                } else if ( strcmp(line, "D") == 0){
+                    fileSystem->Print();
+                } else if ( strcmp(line, "ls") == 0){
+                    fileSystem->List();
+                } else if ( strcmp(line, "mkdir") == 0){
+                    scanf("%s", line);
+                    fileSystem->Create(line, DirectoryFileSize, DIRECTORY_T);
+                } else if ( strcmp(line, "rm") == 0){
+                    scanf("%s", line);
+                    fileSystem->Remove(line);
+                } else if ( strcmp(line, "tree") == 0){
+                    fileSystem->Tree();
+                }
+
+
+
+            }
         } else if (!strcmp(*argv, "-D")) { // print entire filesystem
             fileSystem->Print();
         } else if (!strcmp(*argv, "-t")) { // performance test

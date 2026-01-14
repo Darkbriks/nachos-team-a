@@ -25,6 +25,13 @@
 #include "filehdr.h"
 #include "directory.h"
 
+
+Directory* getDirectory(int sector){
+    Directory* result = new Directory(NumDirEntries);
+    result->FetchFrom(new OpenFile(sector));
+    return result;
+}
+
 //----------------------------------------------------------------------
 // Directory::Directory
 // 	Initialize a directory; initially, the directory is completely
@@ -146,6 +153,21 @@ bool Directory::Add(const char *name, int newSector, File_Type type){
     return FALSE;	// no space.  Fix when we have extensible files.
 }
 
+/**
+ * @brief TODO choose if we count "." and ".." 
+ *
+ * @return  The number of file and directory in this directory
+ */
+unsigned int Directory::NbEntry(){
+    unsigned int result = 0;
+    for (int i = 0; i < tableSize; i++){
+        if (table[i].inUse) {
+            result++;
+        }
+    }
+    return result;
+}
+
 //----------------------------------------------------------------------
 // Directory::Remove
 // 	Remove a file name from the directory.  Return TRUE if successful;
@@ -158,8 +180,19 @@ bool Directory::Remove(const char *name){
     int i = FindIndex(name);
 
     if (i == -1){
+        DEBUG('f', "Don't found file %s to remove it\n", name);
         return FALSE; 		// name not in directory
     }
+    if (table[i].type == DIRECTORY_T){
+        DEBUG('f', "Try to remove directory %s\n", name);
+        Directory* child = getDirectory(table[i].sector);
+        if ( int nb = child->NbEntry(); nb != 0 ){ // TODO maybe 2 if we count hidden
+            DEBUG('f', "Directory %s is not empty and contains %d iterms\n", name, nb);
+            return FALSE;
+        }
+    }
+
+    DEBUG('f', "Succesfully deleted file %s\n", name);
     table[i].inUse = FALSE;
     return TRUE;	
 }
@@ -173,6 +206,23 @@ void Directory::List(){
     for (int i = 0; i < tableSize; i++){
         if (table[i].inUse){
             printf("%c %s\n", file_type_to_char(table[i].type), table[i].name);
+        }
+    }
+}
+
+#define TAB(n) \
+    for (unsigned int xyz = 0; xyz < n; xyz++){ \
+        printf(" ");             \
+    }
+
+void Directory::Tree(unsigned int tabulation){
+    for (int i = 0; i < tableSize; i++){
+        if (table[i].inUse){
+            TAB(tabulation);
+            printf("%c %s\n", file_type_to_char(table[i].type), table[i].name);
+            if (table[i].type == DIRECTORY_T){
+                getDirectory(table[i].sector)->Tree(tabulation + 3);
+            }
         }
     }
 }

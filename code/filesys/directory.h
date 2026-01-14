@@ -50,6 +50,10 @@ class Directory {
 
     bool Remove(const char *name);	// Remove a file from the directory
 
+    unsigned int NbEntry();
+
+    void Tree(unsigned int tabulation = 3);
+
     File_Type GetType(const char* name);
 
     void List();			// Print the names of all the files

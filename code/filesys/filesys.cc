@@ -251,6 +251,10 @@ bool FileSystem::Remove(const char *name){
         DEBUG('f', "File %s is not found\n", name);
         return FALSE;			 // file not found 
     }
+    if ( ! directory->Remove(name)){
+        DEBUG('f', "Can't delete file %s\n", name);
+        return FALSE;
+    }
     fileHdr = new FileHeader;
     fileHdr->FetchFrom(sector);
 
@@ -259,7 +263,6 @@ bool FileSystem::Remove(const char *name){
 
     fileHdr->Deallocate(freeMap);  		// remove data blocks
     freeMap->Clear(sector);			// remove header block
-    directory->Remove(name);
 
     freeMap->WriteBack(freeMapFile);		// flush to disk
     directory->WriteBack(directoryFile);        // flush to disk
@@ -283,6 +286,19 @@ void FileSystem::List(){
     delete directory;
 }
 
+void FileSystem::Tree(){
+    printf("d /\n");
+    Directory *directory = new Directory(NumDirEntries);
+
+    directory->FetchFrom(directoryFile);
+    directory->Tree();
+}
+
+
+void FileSystem::PrintWorkingDirectory(){
+    printf("Working directory = %s\n","a");
+}
+
 void FileSystem::Change_Directory(char * name){
     OpenFile * file;
     Directory *directory = new Directory(NumDirEntries);
@@ -290,14 +306,15 @@ void FileSystem::Change_Directory(char * name){
     directory->FetchFrom(directoryFile);
     if (directory->GetType(name) != DIRECTORY_T){
         DEBUG('f', "Directory %s can't be the active directory because it doesn't exist\n", name);
+        return;
     }
     if ( ( file = Open(name) ) == nullptr){
         ASSERT(FALSE);
         return;
     }
     DEBUG('f', "Change directory now in %s \n", name);
+    directoryFile = file;
     directory->FetchFrom(file);
-    directory->List();
 }
 
 //----------------------------------------------------------------------
