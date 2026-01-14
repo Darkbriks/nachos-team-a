@@ -72,30 +72,6 @@
 #define SC_atomic_store 63
 #define SC_atomic_load 64
 
-/* ============================================================
- * ERROR CODES
- * Returned as negative values by syscalls, stored as positive in errno
- * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/errno.html">Documentation</a>
- * ============================================================
- */
-#define E_SUCCESS       0   /* No error */
-#define E_INVAL         1   /* Invalid argument */
-#define E_FAULT         2   /* Bad address / memory access error */
-#define E_OVERFLOW      3   /* Arithmetic overflow */
-#define E_IO            4   /* I/O error */
-#define E_FORMAT        5   /* Invalid format */
-#define E_EOF           6   /* End of file */
-#define E_NOMEM         7   /* Out of memory */
-#define E_RANGE         8   /* Result out of range */
-#define E_NOSPC         9   /* No such process */
-#define E_FTABLE        10  /* Allocation table full (file table, semaphore table, etc.) */
-#define E_NOENT         11  /* No such file or directory or table entry */
-#define E_NOCPC         12  /* Not a child process */
-#define E_THREAD_LIMIT  13  /* Maximum threads reached */
-#define E_STACK_ADDR    14  /* Invalid stack address */
-#define E_BUSY          15  /* Resource busy */
-#define E_AGAIN         16  /* Resource temporarily unavailable */
-
 #ifdef IN_USER_MODE
 
 // LB: This part is read only on compiling the test/*.c files.

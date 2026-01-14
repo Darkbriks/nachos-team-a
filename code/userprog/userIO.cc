@@ -1,5 +1,5 @@
 #include "copyright.h"
-#include "syscall.h"
+#include "nos_errno.h"
 #include "system.h"
 #include "nos_limits.h"
 

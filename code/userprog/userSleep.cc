@@ -3,7 +3,7 @@
 #include "exception.h"
 #include "system.h"
 #include "thread.h"
-#include "syscall.h"
+#include "nos_errno.h"
 
 
 int do_UserSleep(const int numTicks) {

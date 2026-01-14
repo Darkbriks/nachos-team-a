@@ -1,8 +1,9 @@
 #include "userSem.h"
 
+#include "exception.h"
 #include "syscall.h"
 #include "system.h"
-#include "syscall.h"
+#include "nos_errno.h"
 #include "thread.h"
 
 void handle_SC_SemInit() {

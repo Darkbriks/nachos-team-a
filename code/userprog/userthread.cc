@@ -1,5 +1,5 @@
 #include "userthread.h"
-#include "syscall.h"
+#include "nos_errno.h"
 #include "process.h"
 #include "stackmanager.h"
 #include "thread.h"

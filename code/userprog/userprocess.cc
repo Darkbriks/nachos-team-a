@@ -3,7 +3,7 @@
 #include "process.h"
 #include "filesys.h"
 #include "exception.h"
-#include "syscall.h"
+#include "nos_errno.h"
 
 static void StartProcess(const int arg) {
     const auto* process = reinterpret_cast<Process*>(arg);

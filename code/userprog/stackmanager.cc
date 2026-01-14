@@ -1,7 +1,7 @@
 #include "stackmanager.h"
 
 #include "addrspace.h"
-#include "syscall.h"
+#include "nos_errno.h"
 #include "tls.h"
 #include "../machine/machine.h"
 #include "../threads/synch.h"

@@ -3,7 +3,7 @@
 #include "system.h"
 #include "addrspace.h"
 #include "exception.h"
-#include "syscall.h"
+#include "nos_errno.h"
 #include "process.h"
 #include "stackmanager.h"
 

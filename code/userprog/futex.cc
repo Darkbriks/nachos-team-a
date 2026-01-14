@@ -5,6 +5,7 @@
 #include "process.h"
 #include "syscall.h"
 #include "system.h"
+#include "nos_errno.h"
 #include "../machine/interrupt.h"
 
 FutexQueue::FutexQueue() = default;
