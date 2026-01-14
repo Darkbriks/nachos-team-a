@@ -140,7 +140,7 @@ void ReliableMailTest(int farAddr) {
     // Create ReliablePost wrapper around the existing PostOffice
     ReliablePost *reliablePost = new ReliablePost(postOffice);
 
-    printf("ReliableMailTest: Starting test with machine %d (netAddr=%d)\n", farAddr, postOffice->GetNetAddr());
+    // printf("ReliableMailTest: Starting test with machine %d (netAddr=%d)\n", farAddr, postOffice->GetNetAddr());
     fflush(stdout);
 
     // Both machines use same communication pattern (like original MailTest)

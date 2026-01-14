@@ -88,3 +88,23 @@ void SynchList::Mapcar(VoidFunctionPtr func) {
     list->Mapcar(func);
     lock->Release();
 }
+
+int SynchList::GetSize(){
+    int size;
+    
+    lock->Acquire();
+    if (list->IsEmpty()){
+        size = 0;
+    }
+    else{
+        ListElement* currentElement = (ListElement *)list->GetFirst();
+        size = 1;
+        while(currentElement->next != NULL){
+            size ++;
+            currentElement = currentElement->next;
+        }
+    }
+    lock->Release();
+
+    return size;
+}

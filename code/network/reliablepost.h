@@ -10,6 +10,7 @@
 
 #include "post.h"
 #include "network.h"
+#include "process.h"
 
 // Timeout and retransmission parameters
 #define TEMPO 10000              // Increased for testing TODO : Modifiy later for a smaller value
@@ -50,30 +51,34 @@ class ReliablePost {
     unsigned int nextSeqNum;    // Next sequence number to use
     Lock *sendLock;             // Ensure only one send at a time
 
+    // MAIL management
+    SynchList *pendingMails;   // Pennding mails to send
+    bool receivedMessages[MAX_THREAD];
+    Thread *mailManagerThread; // Background thread to receive and send mails
+
     // ACK reception infrastructure
-    Lock *ackLock;              // Protect ACK map
-    bool *receivedAcks;         // Array of received ACK flags (indexed by seqNum % MAX_PENDING)
-    unsigned int maxPendingAcks;// Maximum number of pending ACKs to track
-    bool stopAckReceiver;       // Signal to stop ACK received from thread
-    Thread *ackReceiverThread;  // Background thread for receiving ACKs
+    Lock *ackLock;                  // Protect ACK map
+    bool receivedAcks[MAX_THREAD];  // Array of received ACK flags (indexed by seqNum % MAX_PENDING)
+    unsigned int maxPendingAcks;    // Maximum number of pending ACKs to track
+    Thread *ackManagerThread;       // Background thread to receive and send ACKs
 
-    // Helper: Check if ACK is available without blocking
-    bool CheckForAck(int ackBox, unsigned int expectedSeqNum);
 
-    // Helper: Wait for ACK with timeout
-    bool WaitForAckWithTimeout(int ackBox, unsigned int seqNum, long long timeout);
 
-    // Helper: Send an ACK message
+    void Run();
+
     void SendAck(PacketHeader inPktHdr, MailHeader inMailHdr, unsigned int seqNum);
 
-    // Helper: ACK receiver thread function (static wrapper)
-    static void AckReceiverHelper(int arg);
+    void AddPendingMessage(Mail mail);
 
-    // Helper: ACK receiver loop
-    void AckReceiverLoop();
+    void RemovePendingMessage();
 
-    // Helper: Mark ACK as received
-    void MarkAckReceived(unsigned int seqNum);
+    void MailHandler(PacketHeader pktHdr, MailHeader mailHdr, const char *data);
+
+    static void MailHandlerHelper(int arg);
+
+    void AckHandler(PacketHeader pktHdr, MailHeader mailHdr, const char *data);
+
+    static void AckHandlerHelper(int arg);
 };
 
 #endif // RELIABLEPOST_H

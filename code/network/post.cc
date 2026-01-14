@@ -155,7 +155,8 @@ MailBox::HasMessages()
     // A better implementation would modify SynchList.
 
     // This means the reliable post will rely more on timeouts
-    return false;
+
+    return messages->GetSize()>0;
 }
 
 //----------------------------------------------------------------------
@@ -364,3 +365,11 @@ PostOffice::PacketSent()
     messageSent->V();
 }
 
+
+bool PostOffice::MailMailBoxHasMessage(){
+    return boxes[MAIL_BOX].HasMessages();
+}
+
+bool PostOffice::AckMailBoxHasMessage(){
+    return boxes[ACK_BOX].HasMessages();
+}

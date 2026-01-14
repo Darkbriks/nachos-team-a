@@ -33,6 +33,8 @@ class SynchList {
     // apply function to every item in the list
     void Mapcar(VoidFunctionPtr func);
 
+    int GetSize();
+
   private:
     List *list;           // the unsynchronized list
     Lock *lock;           // enforce mutual exclusive access to the list
