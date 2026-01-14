@@ -39,6 +39,9 @@ extern "C" {
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/un.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 #include <unistd.h>
 
 // UNIX routines called by procedures in this file
@@ -92,6 +95,34 @@ int recvfrom(int, void *, int, int, void *, int *);
 
 #include "interrupt.h"
 #include "system.h"
+
+//----------------------------------------------------------------------
+// TCP/IP Network Configuration
+//----------------------------------------------------------------------
+
+// Enable TCP/IP networking instead of Unix domain sockets
+// Set to 0 to use Unix domain sockets (local machine only)
+// Set to 1 to use TCP/IP sockets (cross-machine communication)
+#define USE_TCPIP_NETWORK 1
+
+#define BASE_PORT 9000        // Base port for NachOS network
+#define MAX_MACHINES 10       // Maximum number of machines
+
+// Machine address mapping: maps machine ID to IP address
+// Default is localhost for all machines (for local testing)
+// Modify these for cross-machine communication
+static const char* machineHosts[MAX_MACHINES] = {
+    "127.0.0.1",  // Machine 0
+    "127.0.0.1",  // Machine 1
+    "127.0.0.1",  // Machine 2
+    "127.0.0.1",  // Machine 3
+    "127.0.0.1",  // Machine 4
+    "127.0.0.1",  // Machine 5
+    "127.0.0.1",  // Machine 6
+    "127.0.0.1",  // Machine 7
+    "127.0.0.1",  // Machine 8
+    "127.0.0.1"   // Machine 9
+};
 
 //----------------------------------------------------------------------
 // PollFile
@@ -240,13 +271,27 @@ bool Unlink(const char *name) { return unlink(name); }
 //      Open an interprocess communication (IPC) connection.  For now,
 //      just open a datagram port where other Nachos (simulating
 //      workstations on a network) can send messages to this Nachos.
+//
+//      Uses TCP/IP sockets if USE_TCPIP_NETWORK is enabled,
+//      otherwise uses Unix domain sockets.
 //----------------------------------------------------------------------
 
 int OpenSocket() {
     int sockID;
 
+#if USE_TCPIP_NETWORK
+    // Create TCP/IP UDP socket for cross-machine communication
+    sockID = socket(AF_INET, SOCK_DGRAM, 0);
+    ASSERT(sockID >= 0);
+
+    // Set socket options to allow address reuse
+    int optval = 1;
+    setsockopt(sockID, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+#else
+    // Create Unix domain socket for local-only communication
     sockID = socket(AF_UNIX, SOCK_DGRAM, 0);
     ASSERT(sockID >= 0);
+#endif
 
     return sockID;
 }
@@ -261,20 +306,45 @@ void CloseSocket(int sockID) { (void)close(sockID); }
 //----------------------------------------------------------------------
 // InitSocketName
 //      Initialize a UNIX socket address -- magical!
+//      Only needed for Unix domain sockets.
 //----------------------------------------------------------------------
 
+#if !USE_TCPIP_NETWORK
 static void InitSocketName(struct sockaddr_un *uname, const char *name) {
     uname->sun_family = AF_UNIX;
     strcpy(uname->sun_path, name);
 }
+#endif
 
 //----------------------------------------------------------------------
 // AssignNameToSocket
 //      Give a UNIX file name to the IPC port, so other instances of Nachos
 //      can locate the port.
+//
+//      For TCP/IP: binds to a specific port based on machine ID
+//      For Unix: binds to a Unix domain socket file
 //----------------------------------------------------------------------
 
 void AssignNameToSocket(const char *socketName, int sockID) {
+#if USE_TCPIP_NETWORK
+    // Extract machine ID from socket name (format: "SOCKET_N")
+    int machineID = atoi(socketName + 7);  // Skip "SOCKET_" prefix
+
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(BASE_PORT + machineID);
+    addr.sin_addr.s_addr = INADDR_ANY;  // Listen on all interfaces
+
+    int retVal = bind(sockID, (struct sockaddr *)&addr, sizeof(addr));
+    if (retVal < 0) {
+        perror("bind failed");
+        printf("Failed to bind to port %d (machine %d)\n", BASE_PORT + machineID, machineID);
+    }
+    ASSERT(retVal >= 0);
+    DEBUG('n', "Created TCP/IP socket on port %d\n", BASE_PORT + machineID);
+#else
+    // Unix domain socket (original behavior)
     struct sockaddr_un uName;
     int retVal;
 
@@ -284,13 +354,19 @@ void AssignNameToSocket(const char *socketName, int sockID) {
     retVal = bind(sockID, (struct sockaddr *)&uName, sizeof(uName));
     ASSERT(retVal >= 0);
     DEBUG('n', "Created socket %s\n", socketName);
+#endif
 }
 
 //----------------------------------------------------------------------
 // DeAssignNameToSocket
 //      Delete the UNIX file name we assigned to our IPC port, on cleanup.
+//      For TCP/IP sockets, this is a no-op.
 //----------------------------------------------------------------------
-void DeAssignNameToSocket(const char *socketName) { (void)unlink(socketName); }
+void DeAssignNameToSocket(const char *socketName) {
+#if !USE_TCPIP_NETWORK
+    (void)unlink(socketName);
+#endif
+}
 
 //----------------------------------------------------------------------
 // PollSocket
@@ -308,6 +384,15 @@ bool PollSocket(int sockID) {
 void ReadFromSocket(int sockID, char *buffer, int packetSize) {
     int retVal;
     /* extern int errno; modif norme ANSI */
+
+#if USE_TCPIP_NETWORK
+    // TCP/IP socket
+    struct sockaddr_in addr;
+    socklen_t size = sizeof(addr);
+
+    retVal = recvfrom(sockID, buffer, packetSize, 0, (struct sockaddr *)&addr, &size);
+#else
+    // Unix domain socket
     struct sockaddr_un uName;
 
     // LB: Signedness problem on Solaris 5.6/SPARC, as the last
@@ -322,8 +407,8 @@ void ReadFromSocket(int sockID, char *buffer, int packetSize) {
 #endif
     // End of correction.
 
-    retVal = recvfrom(sockID, buffer, packetSize, 0, (struct sockaddr *)&uName,
-                      &size);
+    retVal = recvfrom(sockID, buffer, packetSize, 0, (struct sockaddr *)&uName, &size);
+#endif
 
     if (retVal != packetSize) {
         perror("in recvfrom");
@@ -336,15 +421,53 @@ void ReadFromSocket(int sockID, char *buffer, int packetSize) {
 // SendToSocket
 //      Transmit a fixed size packet to another Nachos' IPC port.
 //      Abort on error.
+//
+//      For TCP/IP: sends to IP address and port based on machine ID
+//      For Unix: sends to Unix domain socket file
 //----------------------------------------------------------------------
 void SendToSocket(int sockID, const char *buffer, int packetSize,
                   const char *toName) {
-    struct sockaddr_un uName;
     int retVal;
+
+#if USE_TCPIP_NETWORK
+    // Extract destination machine ID from socket name (format: "SOCKET_N")
+    int destMachine = atoi(toName + 7);  // Skip "SOCKET_" prefix
+
+    if (destMachine < 0 || destMachine >= MAX_MACHINES) {
+        printf("ERROR: Invalid destination machine %d\n", destMachine);
+        ASSERT(false);
+    }
+
+    struct sockaddr_in destAddr;
+    memset(&destAddr, 0, sizeof(destAddr));
+    destAddr.sin_family = AF_INET;
+    destAddr.sin_port = htons(BASE_PORT + destMachine);
+
+    // Convert IP address string to binary form
+    if (inet_pton(AF_INET, machineHosts[destMachine], &destAddr.sin_addr) <= 0) {
+        printf("ERROR: Invalid IP address for machine %d: %s\n",
+               destMachine, machineHosts[destMachine]);
+        ASSERT(false);
+    }
+
+    retVal = sendto(sockID, buffer, packetSize, 0,
+                    (struct sockaddr *)&destAddr, sizeof(destAddr));
+
+    if (retVal != packetSize) {
+        perror("sendto failed");
+        printf("Failed to send to %s:%d (machine %d), sent %d/%d bytes\n",
+               machineHosts[destMachine], BASE_PORT + destMachine, destMachine,
+               retVal, packetSize);
+    }
+#else
+    // Unix domain socket (original behavior)
+    struct sockaddr_un uName;
 
     InitSocketName(&uName, toName);
     retVal = sendto(sockID, buffer, packetSize, 0, (sockaddr *)&uName,
                     sizeof(uName));
+#endif
+
     ASSERT(retVal == packetSize);
 }
 
