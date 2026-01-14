@@ -1,148 +1,264 @@
 // reliablepost.cc
-//      Routines to provide reliable message delivery on top of
-//      the unreliable network layer.
-//
-//      Uses ACK + timeout + retransmission mechanism (similar to TCP)
+//      Implementation of reliable message transmission
+//      using EVENT-DRIVEN architecture
 
 #include "reliablepost.h"
 #include "system.h"
-#include "interrupt.h"
 #include "thread.h"
-#include "process.h"
+#include <strings.h>
 
 //----------------------------------------------------------------------
 // ReliablePost::ReliablePost
-//      Initialize a reliable post office wrapper
-//
-//      "po" -- pointer to the underlying unreliable PostOffice
+//      Initialize reliable post office with event-driven architecture
 //----------------------------------------------------------------------
 
 ReliablePost::ReliablePost(PostOffice *po) {
     postOffice = po;
-    nextSeqNum = 0;
-    sendLock = new Lock("reliable send lock");
+    nextSeqNum = 1;  // Start from 1 (0 reserved)
+    lock = new Lock("reliable post lock");
 
-    // Initialize ACK reception infrastructure
-    ackLock = new Lock("ACK lock");
-    maxPendingAcks = MAX_PENDING_ACKS;
-    receivedAcks = new bool[maxPendingAcks];
-    for (unsigned int i = 0; i < maxPendingAcks; i++) {
-        receivedAcks[i] = false;
+    // Initialize pending messages array
+    for (int i = 0; i < MAX_PENDING_MSGS; i++) {
+        pendingMsgs[i].active = false;
+        pendingMsgs[i].ackReceived = false;
     }
-    stopAckReceiver = false;
-
-    // Start ACK receiver thread
-    Process *mainProcess = Process::FindProcessByPID(0);
-    ackReceiverThread = mainProcess->CreateThread("ACK receiver");
-    ackReceiverThread->Fork(AckReceiverHelper, (int)this);
-
-    // Give thread a moment to start
-    Delay(1);
-
-    DEBUG('n', "ReliablePost: Started with ACK receiver thread\n");
 }
+
+//----------------------------------------------------------------------
+// ReliablePost::~ReliablePost
+//      Clean up
+//----------------------------------------------------------------------
 
 ReliablePost::~ReliablePost() {
-    // Stop ACK receiver thread
-    stopAckReceiver = true;
-
-    // Wait a bit for thread to finish (simple approach)
-    Delay(1);
-
-    delete sendLock;
-    delete ackLock;
-    delete[] receivedAcks;
-    // Note: Don't delete postOffice - we don't own it
+    delete lock;
 }
 
+//----------------------------------------------------------------------
+// ReliablePost::SendReliable
+//      Send a message reliably (NON-BLOCKING)
+//      Queues message for transmission and returns immediately
+//      Returns sequence number assigned to message
+//----------------------------------------------------------------------
 
-bool ReliablePost::SendReliable(PacketHeader pktHdr, MailHeader mailHdr, const char *data) {
-    sendLock->Acquire();
+unsigned int
+ReliablePost::SendReliable(PacketHeader pktHdr, MailHeader mailHdr, const char *data) {
+    lock->Acquire();
 
-    unsigned int seqNum = nextSeqNum+= 1; // seq num of the message
-    
-    // Create extended head with seq num n type 
+    // Get free slot for this message
+    PendingMessage *slot = GetFreeSlot();
+    if (slot == NULL) {
+        lock->Release();
+        printf("SendReliable: ERROR - No free slots! Too many pending messages.\n");
+        return 0;
+    }
+
+    unsigned int seqNum = nextSeqNum++;
+
+    slot->active = true;
+    slot->seqNum = seqNum;
+    slot->pktHdr = pktHdr;
+    slot->mailHdr = mailHdr;
+    bcopy(data, slot->data, mailHdr.length);
+    slot->attempts = 0;
+    slot->sentTime = 0;
+    slot->ackReceived = false;
+
+    DEBUG('n', "SendReliable: Queued message seq %d for transmission\n", seqNum);
+
+    TransmitPending(slot);
+
+    lock->Release();
+    return seqNum;
+}
+
+//----------------------------------------------------------------------
+// ReliablePost::ReceiveReliable
+//      Receive a message and automatically send ACK
+//----------------------------------------------------------------------
+
+void
+ReliablePost::ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data) {
     char buffer[MaxMailSize];
+    PacketHeader inPktHdr;
+    MailHeader inMailHdr;
 
+    // Receive data message (should only be called when HasMessages returns true)
+    postOffice->Receive(box, &inPktHdr, &inMailHdr, buffer);
+
+    // Parse the reliable header
+    ReliableMailHeader relHdr;
+    bcopy(buffer, &relHdr, sizeof(ReliableMailHeader));
+
+    if (relHdr.type == MSG_DATA) {
+        int headerSize = sizeof(ReliableMailHeader);
+        int dataLength = inMailHdr.length - headerSize;
+
+        *pktHdr = inPktHdr;
+        *mailHdr = relHdr.mailHdr;  // Use original mail header from sender
+        mailHdr->length = dataLength;  // Fix length to exclude reliable header
+        bcopy(buffer + headerSize, data, dataLength);
+
+        DEBUG('n', "ReceiveReliable: Got data message with seq %d from machine %d\n",
+              relHdr.seqNum, inPktHdr.from);
+
+        SendAck(inPktHdr, relHdr.mailHdr, relHdr.seqNum);
+
+    } else {
+        DEBUG('n', "ReceiveReliable: WARNING - Got ACK in MAIL_BOX (seq %d)\n",
+              relHdr.seqNum);
+    }
+}
+
+//----------------------------------------------------------------------
+// ReliablePost::ProcessEvents
+//      EVENT LOOP: Check for ACKs and handle retransmissions
+//      Returns true if there are still pending messages
+//----------------------------------------------------------------------
+
+bool
+ReliablePost::ProcessEvents() {
+    lock->Acquire();
+
+    // Check for incoming ACKs (non-blocking)
+    CheckForAcks();
+
+    // Check for timeouts and retransmit if needed
+    CheckForTimeouts();
+
+    int pending = 0;
+    for (int i = 0; i < MAX_PENDING_MSGS; i++) {
+        if (pendingMsgs[i].active && !pendingMsgs[i].ackReceived) {
+            pending++;
+        }
+    }
+
+    lock->Release();
+    return (pending > 0);
+}
+
+//----------------------------------------------------------------------
+// ReliablePost::IsAcked
+//      Check if a specific message has been ACKed
+//----------------------------------------------------------------------
+
+bool
+ReliablePost::IsAcked(unsigned int seqNum) {
+    lock->Acquire();
+    PendingMessage *msg = FindPending(seqNum);
+    bool acked = (msg != NULL && msg->ackReceived);
+    lock->Release();
+    return acked;
+}
+
+//----------------------------------------------------------------------
+// ReliablePost::WaitForPending
+//      Wait for all pending messages to be ACKed or fail
+//----------------------------------------------------------------------
+
+void
+ReliablePost::WaitForPending() {
+    while (ProcessEvents()) {
+        currentThread->Yield();
+    }
+}
+
+//----------------------------------------------------------------------
+// ReliablePost::FindPending
+//      Find pending message by sequence number
+//----------------------------------------------------------------------
+
+PendingMessage*
+ReliablePost::FindPending(unsigned int seqNum) {
+    for (int i = 0; i < MAX_PENDING_MSGS; i++) {
+        if (pendingMsgs[i].active && pendingMsgs[i].seqNum == seqNum) {
+            return &pendingMsgs[i];
+        }
+    }
+    return NULL;
+}
+
+//----------------------------------------------------------------------
+// ReliablePost::GetFreeSlot
+//      Get free slot for new pending message
+//----------------------------------------------------------------------
+
+PendingMessage*
+ReliablePost::GetFreeSlot() {
+    for (int i = 0; i < MAX_PENDING_MSGS; i++) {
+        if (!pendingMsgs[i].active || pendingMsgs[i].ackReceived) {
+            return &pendingMsgs[i];
+        }
+    }
+    return NULL;
+}
+
+//----------------------------------------------------------------------
+// ReliablePost::TransmitPending
+//      Send or retransmit a pending message
+//----------------------------------------------------------------------
+
+void
+ReliablePost::TransmitPending(PendingMessage *msg) {
+    if (msg->attempts >= MAXREEMISSIONS + 1) {
+        printf("SendReliable: Failed to deliver message (seq %d) after %d attempts\n",
+               msg->seqNum, msg->attempts);
+        msg->active = false;  // Give up
+        return;
+    }
+
+    // Prepare reliable header
     ReliableMailHeader relHdr;
     relHdr.type = MSG_DATA;
-    relHdr.seqNum = seqNum;
-    relHdr.mailHdr = mailHdr;
+    relHdr.seqNum = msg->seqNum;
+    relHdr.mailHdr = msg->mailHdr;
 
-    // Pack: ReliableMailHeader + data
-    int headerSize = sizeof(ReliableMailHeader);
-    bcopy(&relHdr, buffer, headerSize);
-    bcopy(data, buffer + headerSize, mailHdr.length);
+    // Prepare full message (header + data)
+    char buffer[MaxMailSize];
+    bcopy(&relHdr, buffer, sizeof(ReliableMailHeader));
+    bcopy(msg->data, buffer + sizeof(ReliableMailHeader), msg->mailHdr.length);
 
-    // Update mail hdr length to include size of reliable header
-    MailHeader extMailHdr = mailHdr;
+    // Update mail header length to include reliable header
+    MailHeader outMailHdr = msg->mailHdr;
+    outMailHdr.length += sizeof(ReliableMailHeader);
 
-    extMailHdr.length = headerSize + mailHdr.length;
-
-    DEBUG('n', "SendReliable : Sending message with seq %d to machine %d\n", seqNum, pktHdr.to);
-
-    // Try sending with retransmission 
-    for (int attempt = 0 ; attempt < MAXREEMISSIONS ; attempt+= 1) {
-       if (attempt > 0) { 
-            printf ("Retransmitting message (seq %d), attempt %d/%d\n", seqNum, attempt+1, MAXREEMISSIONS+1);
-            fflush(stdout);
-       }
-       postOffice->Send(pktHdr, extMailHdr, buffer);
-
-       // Wait for ACK with timeout
-       bool ackReceived = WaitForAckWithTimeout(mailHdr.from, seqNum, TEMPO);
-
-       if (ackReceived) {
-           DEBUG('n', "SendReliable : ACK received for (seq %d)\n", seqNum);
-           sendLock->Release();
-           return true;
-        }
-
-       // If we're here, timeout, will retry till success
-       DEBUG('n', "SendReliable : TImeout waiting for (seq %d) attempt %d/%d\n", seqNum, attempt+1, MAXREEMISSIONS+1 );
-
+    if (msg->attempts > 0) {
+        printf("Retransmitting message (seq %d), attempt %d/%d\n",
+               msg->seqNum, msg->attempts + 1, MAXREEMISSIONS + 1);
+        fflush(stdout);
     }
 
-    // Failed after MAXREEMISSIONS retries
-    printf("SendReliable : Failed to deliver message (seq %d) after %d attempts\n", seqNum, MAXREEMISSIONS +1);
-    fflush(stdout);
-    sendLock->Release();
-    return false;
+    postOffice->Send(msg->pktHdr, outMailHdr, buffer);
 
+    msg->attempts++;
+    msg->sentTime = stats->totalTicks;
+
+    DEBUG('n', "TransmitPending: Sent message seq %d (attempt %d)\n",
+          msg->seqNum, msg->attempts);
 }
-bool ReliablePost::WaitForAckWithTimeout(int ackBox, unsigned int seqNum, long long timeout) {
-    long long deadline = stats->totalTicks + timeout;
 
-    DEBUG('n', "WaitForAckWithTimeout: Waiting for ACK seq %d until tick %lld\n",seqNum, deadline);
+//----------------------------------------------------------------------
+// ReliablePost::ProcessAck
+//      Process incoming ACK
+//----------------------------------------------------------------------
 
-    while (stats->totalTicks < deadline) {
-        // check if ACK is available 
-        if (CheckForAck(ackBox, seqNum)) {
-            return true;  // ACK received!
-        }
-
-        // sleep a bit before checking again
-        long long sleepDuration = POLL_INTERVAL;
-        long long remaining = deadline - stats->totalTicks;
-        if (remaining < sleepDuration) {
-            sleepDuration = remaining;
-        }
-
-        if (sleepDuration > 0) {
-            IntStatus oldLevel = interrupt->SetLevel(IntOff);
-            currentThread->SleepUntil(stats->totalTicks + sleepDuration);
-            interrupt->SetLevel(oldLevel);
-        }
+void
+ReliablePost::ProcessAck(unsigned int seqNum) {
+    PendingMessage *msg = FindPending(seqNum);
+    if (msg != NULL && !msg->ackReceived) {
+        DEBUG('n', "ProcessAck: Received ACK for seq %d\n", seqNum);
+        msg->ackReceived = true;
+        // Keep active = true so IsAcked can still find this message!
+        // Slot will be reused later by GetFreeSlot when needed
     }
-
-    DEBUG('n', "WaitForAckWithTimeout: Timeout waiting for ACK seq %d\n", seqNum);
-    return false;  // Timeout
 }
 
+//----------------------------------------------------------------------
+// ReliablePost::SendAck
+//      Send an ACK message back to sender
+//----------------------------------------------------------------------
 
-
-
-void ReliablePost::SendAck(PacketHeader inPktHdr, MailHeader inMailHdr, unsigned int seqNum) {
+void
+ReliablePost::SendAck(PacketHeader inPktHdr, MailHeader inMailHdr, unsigned int seqNum) {
     PacketHeader outPktHdr;
     MailHeader outMailHdr;
     ReliableMailHeader ackHdr;
@@ -155,8 +271,8 @@ void ReliablePost::SendAck(PacketHeader inPktHdr, MailHeader inMailHdr, unsigned
     // Set up packet header (send back to sender)
     outPktHdr.to = inPktHdr.from;
 
-    // Set up mail header (send to the "from" mailbox)
-    outMailHdr.to = inMailHdr.from;
+    // Set up mail header (send to ACK_BOX)
+    outMailHdr.to = ACK_BOX;  // ACKs always go to ACK_BOX
     outMailHdr.from = inMailHdr.to;
     outMailHdr.length = sizeof(ReliableMailHeader);
 
@@ -167,105 +283,48 @@ void ReliablePost::SendAck(PacketHeader inPktHdr, MailHeader inMailHdr, unsigned
     postOffice->Send(outPktHdr, outMailHdr, (char *)&ackHdr);
 }
 
+//----------------------------------------------------------------------
+// ReliablePost::CheckForAcks
+//      Check for incoming ACKs and process them (non-blocking)
+//----------------------------------------------------------------------
 
+void
+ReliablePost::CheckForAcks() {
+    // Check if there are ACKs waiting on ACK_BOX
+    while (postOffice->HasMessages(ACK_BOX)) {
+        char buffer[MaxMailSize];
+        PacketHeader pktHdr;
+        MailHeader mailHdr;
 
-void ReliablePost::ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data) {
-    char buffer[MaxMailSize];
-    PacketHeader inPktHdr;
-    MailHeader inMailHdr;
+        // Receive the ACK (won't block since we know there's a message)
+        postOffice->Receive(ACK_BOX, &pktHdr, &mailHdr, buffer);
 
-    while (true) {
-        // Receive any message (could be data or ACK)
-        postOffice->Receive(box, &inPktHdr, &inMailHdr, buffer);
+        // Parse the ACK
+        ReliableMailHeader ackHdr;
+        bcopy(buffer, &ackHdr, sizeof(ReliableMailHeader));
 
-        // Parse the reliable header
-        ReliableMailHeader relHdr;
-        bcopy(buffer, &relHdr, sizeof(ReliableMailHeader));
-
-        if (relHdr.type == MSG_DATA) {
-            // This is a data message - extract payload and send ACK
-            int headerSize = sizeof(ReliableMailHeader);
-            int dataLength = inMailHdr.length - headerSize;
-
-            *pktHdr = inPktHdr;
-            *mailHdr = relHdr.mailHdr;  // Use original mail header from sender
-            mailHdr->length = dataLength;  // Fix length to exclude reliable header
-            bcopy(buffer + headerSize, data, dataLength);
-
-            DEBUG('n', "ReceiveReliable: Got data message with seq %d from machine %d\n",
-                  relHdr.seqNum, inPktHdr.from);
-
-            // Send ACK back
-            SendAck(inPktHdr, relHdr.mailHdr, relHdr.seqNum);
-
-            return; 
-
-        } else if (relHdr.type == MSG_ACK) {
-            // This is an ACK - it will be picked up by WaitForAckWithTimeout
-            // Just ignore it here (it's already in the mailbox history)
-            DEBUG('n', "ReceiveReliable: Got ACK with seq %d (ignoring in data receive)\n",
-                  relHdr.seqNum);
-            continue;  // Keep waiting for a data message
+        if (ackHdr.type == MSG_ACK) {
+            ProcessAck(ackHdr.seqNum);
         }
     }
 }
 
+//----------------------------------------------------------------------
+// ReliablePost::CheckForTimeouts
+//      Check for timed-out messages and retransmit
+//----------------------------------------------------------------------
 
-bool ReliablePost::CheckForAck(int ackBox, unsigned int expectedSeqNum)
-{
-    ackLock->Acquire();
-    unsigned int index = expectedSeqNum % maxPendingAcks;
-    bool found = receivedAcks[index];
-    if (found) {
-        receivedAcks[index] = false;  // Clear after reading
-        DEBUG('n', "CheckForAck: Found ACK for seq %d\n", expectedSeqNum);
-    }
-    ackLock->Release();
-    return found;
-}
+void
+ReliablePost::CheckForTimeouts() {
+    long long now = stats->totalTicks;
 
-void ReliablePost::MarkAckReceived(unsigned int seqNum)
-{
-    ackLock->Acquire();
-    unsigned int index = seqNum % maxPendingAcks;
-    receivedAcks[index] = true;
-    DEBUG('n', "MarkAckReceived: Marked ACK for seq %d\n", seqNum);
-    ackLock->Release();
-}
+    for (int i = 0; i < MAX_PENDING_MSGS; i++) {
+        PendingMessage *msg = &pendingMsgs[i];
 
-void ReliablePost::AckReceiverHelper(int arg)
-{
-    ReliablePost *reliablePost = (ReliablePost *)arg;
-    reliablePost->AckReceiverLoop();
-}
-
-void ReliablePost::AckReceiverLoop()
-{
-    char buffer[MaxMailSize];
-    PacketHeader pktHdr;
-    MailHeader mailHdr;
-
-    DEBUG('n', "AckReceiverLoop: ACK receiver thread started\n");
-
-    while (!stopAckReceiver) {
-        // Receive from mailbox 1 (where ACKs are sent)
-        // This will block until a message arrives
-        postOffice->Receive(1, &pktHdr, &mailHdr, buffer);
-
-        // Parse the reliable header
-        ReliableMailHeader relHdr;
-        bcopy(buffer, &relHdr, sizeof(ReliableMailHeader));
-
-        if (relHdr.type == MSG_ACK) {
-            // This is an ACK - mark it as received
-            DEBUG('n', "AckReceiverLoop: Received ACK for seq %d from machine %d\n",
-                  relHdr.seqNum, pktHdr.from);
-            MarkAckReceived(relHdr.seqNum);
-        } else {
-            // This is not an ACK (shouldn't happen on mailbox 1)
-            DEBUG('n', "AckReceiverLoop: WARNING - received non-ACK message on ACK mailbox\n");
+        if (msg->active && !msg->ackReceived) {
+            if (now - msg->sentTime > TEMPO) {
+                TransmitPending(msg);
+            }
         }
     }
-
-    DEBUG('n', "AckReceiverLoop: ACK receiver thread stopping\n");
 }

@@ -128,8 +128,11 @@ class PostOffice {
 				// packet can now be sent
     void IncomingPacket();	// Interrupt handler, called when incoming
    				// packet has arrived and can be pulled
-				// off of network (i.e., time to call 
+				// off of network (i.e., time to call
 				// PostalDelivery)
+
+    NetworkAddress GetNetAddr();  // Get network address of this machine
+    bool HasMessages(int box);    // Check if mailbox has messages (non-blocking)
 
   private:
     Network *network;		// Physical network connection

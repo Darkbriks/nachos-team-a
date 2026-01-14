@@ -149,13 +149,7 @@ MailBox::Get(PacketHeader *pktHdr, MailHeader *mailHdr, char *data)
 bool
 MailBox::HasMessages()
 {
-    // SynchList doesn't expose size, so we need to check another way
-    // We'll use a simple approach: the list is not empty if we can
-    // peek at it. Since we don't have a proper peek, we return true
-    // A better implementation would modify SynchList.
-
-    // This means the reliable post will rely more on timeouts
-    return false;
+    return !messages->IsEmpty();
 }
 
 //----------------------------------------------------------------------
@@ -358,9 +352,34 @@ PostOffice::IncomingPacket()
 //	through.
 //----------------------------------------------------------------------
 
-void 
+void
 PostOffice::PacketSent()
-{ 
+{
     messageSent->V();
+}
+
+//----------------------------------------------------------------------
+// PostOffice::GetNetAddr
+// 	Return the network address of this post office.
+//----------------------------------------------------------------------
+
+NetworkAddress
+PostOffice::GetNetAddr()
+{
+    return netAddr;
+}
+
+//----------------------------------------------------------------------
+// PostOffice::HasMessages
+// 	Check if a specific mailbox has messages waiting (non-blocking).
+//
+//	"box" -- mailbox number to check
+//----------------------------------------------------------------------
+
+bool
+PostOffice::HasMessages(int box)
+{
+    ASSERT((box >= 0) && (box < numBoxes));
+    return boxes[box].HasMessages();
 }
 

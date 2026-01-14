@@ -23,6 +23,7 @@
 #include "post.h"
 #include "reliablepost.h"
 #include "interrupt.h"
+#include "thread.h"
 #include "machine.h"
 #include "reliablepost.h"
 
@@ -140,42 +141,41 @@ void ReliableMailTest(int farAddr) {
     // Create ReliablePost wrapper around the existing PostOffice
     ReliablePost *reliablePost = new ReliablePost(postOffice);
 
-    printf("ReliableMailTest: Starting test with machine %d (netAddr=%d)\n", farAddr, postOffice->GetNetAddr());
+    printf("ReliableMailTest: Starting event-driven test with machine %d\n", farAddr);
     fflush(stdout);
 
-    // Both machines use same communication pattern (like original MailTest)
-    // This allows proper interleaving and network message processing
-    for (int i = 0; i < 1; i++) {
-        // Prepare headers
+    // EVENT-DRIVEN TEST - No blocking waits!
+    for (int i = 0; i < 10; i++) {
         outPktHdr.to = farAddr;
-        outMailHdr.to = 0;
-        outMailHdr.from = 1;
+        outMailHdr.to = MAIL_BOX;
+        outMailHdr.from = ACK_BOX;
         outMailHdr.length = strlen(data) + 1;
 
-        printf("ReliableMailTest: Sending message %d...\n", i + 1);
-        fflush(stdout);
+        // Send message (NON-BLOCKING - returns immediately with seqNum)
+        unsigned int seqNum = reliablePost->SendReliable(outPktHdr, outMailHdr, data);
 
-        // Send message reliably
-        bool success = reliablePost->SendReliable(outPktHdr, outMailHdr, data);
+        // EVENT LOOP: Process network events while waiting for ACK
+        while (!reliablePost->IsAcked(seqNum)) {
+            // Let other threads (including postal worker) run
+            currentThread->Yield();
 
-        if (success) {
-            printf("ReliableMailTest: Message %d delivered successfully!\n", i + 1);
-        } else {
-            printf("ReliableMailTest: Message %d FAILED to deliver after retries!\n", i + 1);
+            // Process ACKs and retransmissions
+            reliablePost->ProcessEvents();
+
+            // Also check for incoming data messages (non-blocking)
+            if (postOffice->HasMessages(MAIL_BOX)) {
+                reliablePost->ReceiveReliable(MAIL_BOX, &inPktHdr, &inMailHdr, buffer);
+                printf("Got \"%s\" from %d, box %d\n", buffer, inPktHdr.from, inMailHdr.from);
+                fflush(stdout);
+            }
         }
-        fflush(stdout);
 
-        // Wait for message from other machine
-        printf("ReliableMailTest: Waiting for incoming message %d...\n", i + 1);
+        printf("Message %d ACKed!\n", i + 1);
         fflush(stdout);
-
-        reliablePost->ReceiveReliable(0, &inPktHdr, &inMailHdr, buffer);
-        printf("ReliableMailTest: Got message \"%s\" from machine %d\n",
-               buffer, inPktHdr.from);
-        fflush(stdout);
-
-        Delay(2);
     }
+
+    // Wait for any remaining pending messages
+    reliablePost->WaitForPending();
 
     printf("ReliableMailTest: Test completed!\n");
     fflush(stdout);
