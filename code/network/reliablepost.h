@@ -52,8 +52,9 @@ class ReliablePost {
     Lock *sendLock;             // Ensure only one send at a time
 
     // MAIL management
-    SynchList *pendingMails;   // Pennding mails to send
-    bool receivedMessages[MAX_THREAD];
+    Lock *mailLock;            // Protect MAIL array
+    SynchList *pendingMails;   // Pending mails to send
+    Mail *receivedMails[MAX_THREAD]; //Array of received mails
     Thread *mailManagerThread; // Background thread to receive and send mails
 
     // ACK reception infrastructure
@@ -68,17 +69,14 @@ class ReliablePost {
 
     void SendAck(PacketHeader inPktHdr, MailHeader inMailHdr, unsigned int seqNum);
 
-    void AddPendingMessage(Mail mail);
+    void AddPendingMessage(Mail *mail);
 
     void RemovePendingMessage();
 
-    void MailHandler(PacketHeader pktHdr, MailHeader mailHdr, const char *data);
+    void MailHandler(PacketHeader pktHdr, MailHeader mailHdr, char *data);
 
-    static void MailHandlerHelper(int arg);
+    void AckHandler(PacketHeader pktHdr, MailHeader mailHdr, char *data);
 
-    void AckHandler(PacketHeader pktHdr, MailHeader mailHdr, const char *data);
-
-    static void AckHandlerHelper(int arg);
 };
 
 #endif // RELIABLEPOST_H

@@ -108,3 +108,10 @@ int SynchList::GetSize(){
 
     return size;
 }
+
+void* SynchList::GetFirst(){
+    lock->Acquire();
+    void *result = list->GetFirst();
+    lock->Release();
+    return result;
+}

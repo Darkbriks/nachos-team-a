@@ -35,11 +35,13 @@ ReliablePost::ReliablePost(PostOffice *po) {
 
     // Initialize ACK reception infrastructure
     ackLock = new Lock("ACK lock");
-    maxPendingAcks = MAX_PENDING_ACKS;
-    receivedAcks = new bool[maxPendingAcks];
-    for (unsigned int i = 0; i < maxPendingAcks; i++) {
-        receivedAcks[i] = false;
-    }
+    memset(receivedAcks, false, MAX_THREAD);
+
+    // Initialize ACK reception infrastructure
+    mailLock = new Lock("MAIL lock");
+    memset(receivedMails, NULL, MAX_THREAD);
+
+    pendingMails = new SynchList();
 
     // Threads creation
     Process * mainProcess = currentThread-> getProcess();
@@ -60,6 +62,9 @@ ReliablePost::~ReliablePost() {
     delete sendLock;
     delete ackLock;
     delete[] receivedAcks;
+    delete mailLock;
+    delete[] receivedMails;
+    delete pendingMails;
     delete ackManagerThread;
     delete mailManagerThread;
     // Note: Don't delete postOffice - we don't own it
@@ -75,14 +80,20 @@ void ReliablePost::Run(){
         }
         //Thread MAIL
         if (postOffice->MailMailBoxHasMessage()){
-            Mailandler();
+            MailHandler();
 
         }
         //Thread Main
         if (pendingMails->GetSize() > 0){
             
+            Mail *firstMail = (Mail *)pendingMails->GetFirst();
+
+            PacketHeader pktHdr = firstMail->pktHdr;
+            MailHeader mailHdr = firstMail->mailHdr;
+            char * data = firstMail->data;
+
             //Send the user's message
-            bool messageSent = SendReliable();
+            bool messageSent = SendReliable(pktHdr,mailHdr,data);
             if (!messageSent){
                 currentThread->SleepUntil(TEMPO);
             }
@@ -91,11 +102,11 @@ void ReliablePost::Run(){
     }
 }
 
-void AddPendingMessage(Mail *mail){
+void ReliablePost::AddPendingMessage(Mail *mail){
     pendingMails->Append((void *)mail);
 }
 
-void RemovePendingMessage(){
+void ReliablePost::RemovePendingMessage(){
     pendingMails->Remove();
 }
 
@@ -125,16 +136,12 @@ bool ReliablePost::SendReliable(PacketHeader pktHdr, MailHeader mailHdr, const c
 
     DEBUG('n', "SendReliable : Sending message with seq %d to machine %d\n", seqNum, pktHdr.to);
 
-    // // Try sending with retransmission 
-    // for (int attempt = 0 ; attempt < MAXREEMISSIONS ; attempt+= 1) {
-    //    if (attempt > 0) { 
-    //         printf ("Retransmitting message (seq %d), attempt %d/%d\n", seqNum, attempt+1, MAXREEMISSIONS+1);
-    //         fflush(stdout);
-    //    }
-    postOffice->Send(pktHdr, extMailHdr, buffer);
 
+    postOffice->Send(pktHdr, extMailHdr, buffer);
+    currentThread->SleepUntil(POLL_INTERVAL);
     sendLock->Release();
-    return false;
+
+    return receivedMails[relHdr.seqNum] != NULL;
 
 }
 
@@ -161,6 +168,7 @@ void ReliablePost::SendAck(PacketHeader inPktHdr, MailHeader inMailHdr, unsigned
 
     // Send the ACK
     postOffice->Send(outPktHdr, outMailHdr, (char *)&ackHdr);
+
 }
 
 
@@ -170,20 +178,30 @@ void ReliablePost::ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *ma
     PacketHeader inPktHdr;
     MailHeader inMailHdr;
 
-
     // Receive any message (could be data or ACK)
     postOffice->Receive(box, &inPktHdr, &inMailHdr, buffer);
+
     // Parse the reliable header
     ReliableMailHeader relHdr;
     bcopy(buffer, &relHdr, sizeof(ReliableMailHeader));
+
     if (relHdr.type == MSG_DATA) {
+
         // This is a data message - extract payload and send ACK
         int headerSize = sizeof(ReliableMailHeader);
         int dataLength = inMailHdr.length - headerSize;
+
         *pktHdr = inPktHdr;
         *mailHdr = relHdr.mailHdr;  // Use original mail header from sender
         mailHdr->length = dataLength;  // Fix length to exclude reliable header
         bcopy(buffer + headerSize, data, dataLength);
+
+        mailLock->Acquire();
+        receivedMails[relHdr.seqNum] = new Mail(inPktHdr, relHdr.mailHdr, data);
+        mailLock->Release();
+
+        SendAck(inPktHdr, relHdr.mailHdr,relHdr.seqNum);
+
         DEBUG('n', "ReceiveReliable: Got data message with seq %d from machine %d\n",
               relHdr.seqNum, inPktHdr.from);
 
@@ -196,37 +214,24 @@ void ReliablePost::ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *ma
         // Just ignore it here (it's already in the mailbox history)
         DEBUG('n', "ReceiveReliable: Got ACK with seq %d (ignoring in data receive)\n",
               relHdr.seqNum);
-        continue;  // Keep waiting for a data message
     }
 }
 
 
-void ReliablePost::MailHandler(PacketHeader pktHdr, MailHeader mailHdr, const char *data){
+void ReliablePost::MailHandler(PacketHeader pktHdr, MailHeader mailHdr, char *data){
     //Receive pending MAIL
-    postOffice->ReceiveReliable(pktHdr, mailHdr, data);
+    ReceiveReliable(MAIL_BOX,&pktHdr, &mailHdr, data);
 
-    //Send ACK
-    postOffice->SendAck();
-    
 }
 
-void ReliablePost::MailHandlerHelper(int arg){
-    DEBUG('n', "MailHandler: J'envoie le message\n");
-    sendMailParameters->postOfficeMail->Send(sendMailParameters->pktHdrMail,sendMailParameters->mailHdrMail,sendMailParameters->dataMail);
-}
 
-void ReliablePost::AckHandler(PacketHeader pktHdr, MailHeader mailHdr, const char *data){
+void ReliablePost::AckHandler(PacketHeader pktHdr, MailHeader mailHdr, char *data){
     //Receive pending ACK
-    postOffice->ReceiveReliable();
+    ReceiveReliable(ACK_BOX,&pktHdr, &mailHdr, data);
 
     //Remove message from list
     RemovePendingMessage();
     
-}
-
-void ReliablePost::AckHandlerHelper(int arg){
-    DEBUG('n', "AckHandler: J'envoie le ack\n");
-    sendAckParameters->postOfficeMail->Send(sendAckParameters->pktHdrMail,sendAckParameters->mailHdrMail,sendAckParameters->dataMail);
 }
 
 

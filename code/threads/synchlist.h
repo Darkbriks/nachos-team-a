@@ -33,6 +33,8 @@ class SynchList {
     // apply function to every item in the list
     void Mapcar(VoidFunctionPtr func);
 
+    void* GetFirst();
+
     int GetSize();
 
   private:

@@ -31,6 +31,10 @@
 #include "network.h"
 #include "synchlist.h"
 
+#define MAIL_BOX 0
+#define ACK_BOX 1
+
+
 // Mailbox address -- uniquely identifies a mailbox on a given machine.
 // A mailbox is just a place for temporary storage for messages.
 typedef int MailBoxAddress;
