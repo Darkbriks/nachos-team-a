@@ -53,6 +53,7 @@
 #include "system.h"
 #include "utility.h"
 #include "thread.h"
+#include "fileconst.h"
 
 // External functions used by this file
 
@@ -135,6 +136,12 @@ int main(int argc, char **argv) {
             argCount = 2;
         } else if (!strcmp(*argv, "-l")) { // list Nachos directory
             fileSystem->List();
+        } else if (!strcmp(*argv, "-mkdir")) { // list Nachos directory
+            ASSERT(argc > 1);
+            fileSystem->Create(*(argv + 1), DirectoryFileSize, DIRECTORY_T);
+        } else if (!strcmp(*argv, "-cd")) { // list Nachos directory
+            ASSERT(argc > 1);
+            fileSystem->Change_Directory(*(argv + 1));
         } else if (!strcmp(*argv, "-D")) { // print entire filesystem
             fileSystem->Print();
         } else if (!strcmp(*argv, "-t")) { // performance test
@@ -153,6 +160,7 @@ int main(int argc, char **argv) {
 #endif // NETWORK
     }
 
+    interrupt->Halt();
     currentThread->Finish(); // NOTE: if the procedure "main"
     // returns, then the program "nachos"
     // will exit (as any other normal program

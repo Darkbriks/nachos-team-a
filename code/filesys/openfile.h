@@ -17,11 +17,14 @@
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
+#include "copyright.h"
+
 #ifndef OPENFILE_H
 #define OPENFILE_H
 
-#include "copyright.h"
 #include "utility.h"
+#include "filetype.h"
+#include "fileconst.h"
 
 #ifdef FILESYS_STUB			// Temporarily implement calls to 
 					// Nachos file system as calls to UNIX!

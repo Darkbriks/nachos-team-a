@@ -37,6 +37,8 @@
 
 #include "copyright.h"
 #include "openfile.h"
+#include "filetype.h"
+#include "fileconst.h"
 
 #ifdef FILESYS_STUB 		// Temporarily implement file system calls as 
 				// calls to UNIX, until the real file system
@@ -74,7 +76,7 @@ class FileSystem {
 					// the disk, so initialize the directory
     					// and the bitmap of free blocks.
 
-    bool Create(const char *name, int initialSize);  	
+    bool Create(const char *name, int initialSize, File_Type type);  	
 					// Create a file (UNIX creat)
 
     OpenFile* Open(const char *name); 	// Open a file (UNIX open)
@@ -84,6 +86,8 @@ class FileSystem {
     void List();			// List all the files in the file system
 
     void Print();			// List all the files and their contents
+
+    void Change_Directory(char * name);
 
   private:
    OpenFile* freeMapFile;		// Bit map of free disk blocks,

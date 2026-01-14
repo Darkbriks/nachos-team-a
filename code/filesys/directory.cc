@@ -91,6 +91,15 @@ int Directory::FindIndex(const char *name){
     return -1;		// name not in directory
 }
 
+File_Type Directory::GetType(const char* name){
+    int i = FindIndex(name);
+
+    if (i != -1){
+        return table[i].type;
+    }
+    return NULL_T;
+}
+
 //----------------------------------------------------------------------
 // Directory::Find
 // 	Look up file name in directory, and return the disk sector number
@@ -120,7 +129,7 @@ int Directory::Find(const char *name){
 //	"newSector" -- the disk sector containing the added file's header
 //----------------------------------------------------------------------
 
-bool Directory::Add(const char *name, int newSector){
+bool Directory::Add(const char *name, int newSector, File_Type type){
     if (FindIndex(name) != -1){
         return FALSE;
     }
@@ -128,8 +137,9 @@ bool Directory::Add(const char *name, int newSector){
     for (int i = 0; i < tableSize; i++){
         if (!table[i].inUse) {
             table[i].inUse = TRUE;
-            strncpy(table[i].name, name, FileNameMaxLen); 
+            table[i].type = type;
             table[i].sector = newSector;
+            strncpy(table[i].name, name, FileNameMaxLen); 
             return TRUE;
         }
     }
@@ -162,7 +172,7 @@ bool Directory::Remove(const char *name){
 void Directory::List(){
     for (int i = 0; i < tableSize; i++){
         if (table[i].inUse){
-            printf("%s\n", table[i].name);
+            printf("%c %s\n", file_type_to_char(table[i].type), table[i].name);
         }
     }
 }
@@ -179,7 +189,7 @@ void Directory::Print(){
     printf("Directory contents:\n");
     for (int i = 0; i < tableSize; i++){
         if (table[i].inUse) {
-            printf("Name: %s, Sector: %d\n", table[i].name, table[i].sector);
+            printf("Name: %s, Sector: %d de type %s\n", table[i].name, table[i].sector, file_type_to_str(table[i].type));
             hdr->FetchFrom(table[i].sector);
             hdr->Print();
         }

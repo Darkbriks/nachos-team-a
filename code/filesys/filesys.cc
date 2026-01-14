@@ -51,19 +51,6 @@
 #include "filehdr.h"
 #include "filesys.h"
 
-// Sectors containing the file headers for the bitmap of free sectors,
-// and the directory of files.  These file headers are placed in well-known 
-// sectors, so that they can be located on boot-up.
-#define FreeMapSector 		0
-#define DirectorySector 	1
-
-// Initial file sizes for the bitmap and directory; until the file system
-// supports extensible files, the directory size sets the maximum number 
-// of files that can be loaded onto the disk.
-#define FreeMapFileSize 	(NumSectors / BitsInByte)
-#define NumDirEntries 		10
-#define DirectoryFileSize 	(sizeof(DirectoryEntry) * NumDirEntries)
-
 //----------------------------------------------------------------------
 // FileSystem::FileSystem
 // 	Initialize the file system.  If format = TRUE, the disk has
@@ -170,14 +157,14 @@ FileSystem::FileSystem(bool format){
 //	"initialSize" -- size of file to be created
 //----------------------------------------------------------------------
 
-bool FileSystem::Create(const char *name, int initialSize){
+bool FileSystem::Create(const char *name, int initialSize, File_Type type = FILE_T){
     Directory *directory;
     BitMap *freeMap;
     FileHeader *hdr;
     int sector;
     bool success;
 
-    DEBUG('f', "Creating file %s, size %d\n", name, initialSize);
+    DEBUG('f', "Creating %s %s, size %d\n", file_type_to_str(type), name, initialSize);
 
     directory = new Directory(NumDirEntries);
     directory->FetchFrom(directoryFile);
@@ -190,7 +177,7 @@ bool FileSystem::Create(const char *name, int initialSize){
         sector = freeMap->Find();	// find a sector to hold the file header
         if (sector == -1) { 		
             success = FALSE;		// no free block for file header 
-        } else if (!directory->Add(name, sector)) {
+        } else if (!directory->Add(name, sector, type)) {
             success = FALSE;	// no space in directory
         } else {
             hdr = new FileHeader;
@@ -255,11 +242,13 @@ bool FileSystem::Remove(const char *name){
     FileHeader *fileHdr;
     int sector;
 
+    DEBUG('f', "Try to delete file %s\n", name);
     directory = new Directory(NumDirEntries);
     directory->FetchFrom(directoryFile);
     sector = directory->Find(name);
     if (sector == -1) {
         delete directory;
+        DEBUG('f', "File %s is not found\n", name);
         return FALSE;			 // file not found 
     }
     fileHdr = new FileHeader;
@@ -274,6 +263,7 @@ bool FileSystem::Remove(const char *name){
 
     freeMap->WriteBack(freeMapFile);		// flush to disk
     directory->WriteBack(directoryFile);        // flush to disk
+    DEBUG('f', "File %s is deleted\n", name);
     delete fileHdr;
     delete directory;
     delete freeMap;
@@ -291,6 +281,23 @@ void FileSystem::List(){
     directory->FetchFrom(directoryFile);
     directory->List();
     delete directory;
+}
+
+void FileSystem::Change_Directory(char * name){
+    OpenFile * file;
+    Directory *directory = new Directory(NumDirEntries);
+
+    directory->FetchFrom(directoryFile);
+    if (directory->GetType(name) != DIRECTORY_T){
+        DEBUG('f', "Directory %s can't be the active directory because it doesn't exist\n", name);
+    }
+    if ( ( file = Open(name) ) == nullptr){
+        ASSERT(FALSE);
+        return;
+    }
+    DEBUG('f', "Change directory now in %s \n", name);
+    directory->FetchFrom(file);
+    directory->List();
 }
 
 //----------------------------------------------------------------------

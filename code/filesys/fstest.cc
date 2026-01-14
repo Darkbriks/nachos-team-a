@@ -20,6 +20,7 @@
 #include "thread.h"
 #include "disk.h"
 #include "stats.h"
+#include "filetype.h"
 
 #define TransferSize 	10 	// make it small, just to be difficult
 
@@ -47,7 +48,7 @@ void Copy(const char *from, const char *to){
 
     // Create a Nachos file of the same length
     DEBUG('f', "Copying file %s, size %d, to file %s\n", from, fileLength, to);
-    if (!fileSystem->Create(to, fileLength)) {	 // Create Nachos file
+    if (!fileSystem->Create(to, fileLength, FILE_T)) {	 // Create Nachos file
         printf("Copy: couldn't create output file %s\n", to);
         fclose(fp);
         return;
@@ -118,7 +119,7 @@ static void FileWrite(){
 
     printf("Sequential write of %d byte file, in %zd byte chunks\n", 
             FileSize, ContentSize);
-    if (!fileSystem->Create(FileName, 0)) {
+    if (!fileSystem->Create(FileName, 0, FILE_T)) {
         printf("Perf test: can't create %s\n", FileName);
         return;
     }
