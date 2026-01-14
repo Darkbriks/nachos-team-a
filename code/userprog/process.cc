@@ -1,5 +1,6 @@
 #include "process.h"
 
+#include "syscall.h"
 #include "addrspace.h"
 #include "bitmap_thread_safe.h"
 #include "bitmap.h"

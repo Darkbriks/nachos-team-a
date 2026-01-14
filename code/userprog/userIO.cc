@@ -2,6 +2,7 @@
 #include "nos_errno.h"
 #include "system.h"
 #include "nos_limits.h"
+#include "syscall.h"
 
 #include "userIO.h"
 

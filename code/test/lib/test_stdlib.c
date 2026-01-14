@@ -3,6 +3,7 @@
 #include "nos_stdlib.h"
 #include "nos_string.h"
 #include "test_utilities.h"
+#include "nos_stdio.h"
 
 /* ============================================================
  * Test: malloc/free basic

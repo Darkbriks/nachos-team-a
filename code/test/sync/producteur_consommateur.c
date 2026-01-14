@@ -2,6 +2,7 @@
 #include "nos_stdlib.h"
 #include "syscall.h"
 #include "pthread.h"
+#include "nos_stdio.h"
 
 #define SIZE_LIST 100
 
@@ -33,13 +34,13 @@ void *consommateur(void *args) {
         valeur = d->donnee[d->nb_data_dispo];
         d->nb_data_dispo--;
         if (d->nb_data_dispo < -1 || d->nb_data_dispo > SIZE_LIST){
-            printf_simple("ERREUR");
+            printf("ERREUR");
             Halt();
         }
         if (valeur != d->donnee[d->nb_data_dispo + 1]){
-            printf_simple("LECTURE INCOHERENTE !!!\n");
+            printf("LECTURE INCOHERENTE !!!\n");
             PutInt(valeur);
-            printf_simple("\n");
+            printf("\n");
             PutInt(d->donnee[d->nb_data_dispo + 1]);
             Halt();
         }
@@ -56,7 +57,7 @@ void * producteurs(void *args) {
 
         SemWait(d->producteurs_consommateur.resource);
         while (d->nb_data_dispo >= SIZE_LIST - 1){
-            printf_simple("attend\n");
+            printf("attend\n");
             SemPost(d->producteurs_consommateur.resource);
             Sleep(300);
             SemWait(d->producteurs_consommateur.resource);
@@ -65,12 +66,12 @@ void * producteurs(void *args) {
 
         d->nb_data_dispo++;
         if (d->nb_data_dispo < 0 || d->nb_data_dispo >= SIZE_LIST){
-            printf_simple("ERREUR\n");
+            printf("ERREUR\n");
             Halt();
         }
         d->donnee[d->nb_data_dispo] = valeur;
         if (valeur != d->donnee[d->nb_data_dispo]){
-            printf_simple("REDACTION INCOHERENTE !!!\n");
+            printf("REDACTION INCOHERENTE !!!\n");
             Halt();
         }
         SemPost(d->producteurs_consommateur.resource);
@@ -113,12 +114,12 @@ int main(int argc, char *argv[]) {
         pthread_join(threads[i], &resultat);
 
     if (donnees_thread.nb_data_dispo != -1){
-        printf_simple("ERREUR Ca casse !\n");
+        printf("ERREUR Ca casse !\n");
         PutInt(donnees_thread.nb_data_dispo);
     }
     SemDestroy(donnees_thread.producteurs_consommateur.resource);
     SemDestroy(donnees_thread.producteurs_consommateur.empty_list);
-    printf_simple("Si pas de print avant alors tout a marché !! \n");
+    printf("Si pas de print avant alors tout a marché !! \n");
     return 0;
 }
 

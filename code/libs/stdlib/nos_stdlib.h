@@ -49,7 +49,7 @@ void* realloc(void* ptr, size_t size);
  * Numeric String Conversion Functions
  * =============================================================
  */
-//double atof(const char* nptr);
+// double atof(const char* nptr);
 int atoi(const char* str, int base);
 long atol(const char* str, int base);
 long long atoll(const char* str, int base);
@@ -80,13 +80,6 @@ long long int llabs(long long int j);
  * I/O Functions
  * =============================================================
  */
-
-/**
- * @brief Simple printf function
- * For now, only supports strings (no format specifiers)
- * @param buf The format string
- */
-void printf_simple(char *buf);
 
 /**
  * @brief Print the error contained in errno.

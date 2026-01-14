@@ -15,6 +15,9 @@
 
 #include "copyright.h"
 
+#define MAX_STRING_SIZE 256
+#define MAX_PATH_SIZE 1024
+
 /* system call codes -- used by the stubs to tell the kernel which system call
  * is being asked for
  */

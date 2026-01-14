@@ -1,4 +1,5 @@
 #include "nos_stdlib.h"
+#include "nos_stdio.h"
 #include "syscall.h"
 
 int main() {
@@ -8,27 +9,27 @@ int main() {
     int pid;
     int exitCode = -1;
     while (1) {
-        printf_simple(prompt);
+        printf(prompt);
         i = scanf_simple("%s", buffer);
         if (i < 0) {
-            printf_simple("\nsession terminée\n");
+            printf("\nsession terminée\n");
             break;
         } else{
             pid = ForkExec(buffer);
             if (pid < 0){
 
                 print_error("Pas de process crée");
-                printf_simple(" pour mot entré = "); 
-                printf_simple(buffer); 
+                printf(" pour mot entré = "); 
+                printf(buffer); 
                 PutInt(buffer[0]); 
-                printf_simple("\n");
+                printf("\n");
                 continue;;
             }
             ForkJoin(pid, &exitCode);
             if (exitCode < 0){
-                printf_simple("shell voit une mauvaise terminaison avec code :");
+                printf("shell voit une mauvaise terminaison avec code :");
                 PutInt(exitCode);
-                printf_simple(" \n");
+                printf(" \n");
             }
         }     
     }

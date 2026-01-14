@@ -5,6 +5,7 @@
 #include "nos_string.h"
 #include "nos_stddef.h"
 #include "syscall.h"
+#include "nos_stdio.h"
 
 static int allocator_initialized = 0;
 
@@ -22,7 +23,7 @@ static mem_block_t* get_block_from_footer(mem_footer_t* footer);
 #define PRINT_STRING(str)        \
     do {                         \
         if (VERBOSE_ALLOCATOR) { \
-            printf_simple(str);  \
+            printf(str);  \
         }                        \
     } while (0)
 
@@ -37,9 +38,9 @@ static mem_block_t* get_block_from_footer(mem_footer_t* footer);
 #define PRINT_SIS(s1, i1, s2) \
     do {                             \
         if (VERBOSE_ALLOCATOR) {     \
-            printf_simple(s1);       \
+            printf(s1);       \
             PutInt(i1);              \
-            printf_simple(s2);       \
+            printf(s2);       \
         }                            \
     } while (0)
 
@@ -47,7 +48,7 @@ static mem_block_t* get_block_from_footer(mem_footer_t* footer);
     do {                              \
         if (!(cond)) {                \
             if (DEBUG_ALLOCATOR) {    \
-                printf_simple(msg);   \
+                printf(msg);   \
             }                         \
             return retval;            \
         }                             \

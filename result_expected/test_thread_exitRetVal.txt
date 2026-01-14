@@ -14,7 +14,7 @@ Test 6: PASS - Join with NULL retval works
 SUCCESS: All exit/return value tests passed
 Machine halting!
 
-Ticks: total 95846, idle 41100, system 24930, user 29816
+Ticks: total 97726, idle 41100, system 26810, user 29816
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 411
 Paging: faults 0

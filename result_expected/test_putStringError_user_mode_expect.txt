@@ -3,7 +3,7 @@ PutString executed successfully.
 
 Machine halting!
 
-Ticks: total 47908, idle 29400, system 18440, user 68
+Ticks: total 49788, idle 29400, system 20320, user 68
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 294
 Paging: faults 0

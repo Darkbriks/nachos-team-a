@@ -68,6 +68,16 @@ static void test_fputc(void) {
 }
 
 /* ============================================================
+ * Test: pritnf 
+ * ============================================================
+ */
+static void test_printf(void) {
+    TEST_START("printf");
+    printf("salut %s d'age %d, et avec initiale %c\n", "Bob", -26, 'B');
+    TEST_PASS();
+}
+
+/* ============================================================
  * Test: fflush
  * ============================================================
  */
@@ -155,6 +165,9 @@ int main(void) {
     PutString("\n--- Stream State Tests ---\n", 28);
     test_error_funcs();
     test_ungetc();
+
+
+    test_printf();
 
     /* Summary */
     PutString("\n========================================\n", 41);

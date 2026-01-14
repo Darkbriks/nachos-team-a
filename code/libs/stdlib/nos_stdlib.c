@@ -3,6 +3,7 @@
 #include "nos_errno.h"
 #include "nos_mem.h"
 #include "syscall.h"
+#include "nos_stdio.h"
 
 #ifndef NOT_YET_IMPLEMENTED
 #define NOT_YET_IMPLEMENTED(func) PutString("Function " #func " is not yet implemented.\n", 39);
@@ -110,7 +111,7 @@ static int char_to_digit(const char c) {
 }
 
 /*double atof(const char* nptr) {
-    return strtol(nptr, NULL, 10);
+     return strtol(nptr, NULL, 10);
 }*/
 
 int atoi(const char* str, const int base) {
@@ -236,17 +237,10 @@ ABS_MACRO(int, abs)
 ABS_MACRO(long int, labs)
 ABS_MACRO(long long int, llabs)
 
-
-void printf_simple(char* buf) {
-    // TODO: Add support for format specifiers
-    // TODO: Add buffering to optimize syscall number
-    if (buf) { PutString(buf, strlen(buf)); }
-}
-
 void print_error(char* msg) {
     int err = __get_errno();
     // TODO: Optimize syscall number by using buffered and formattted output
-    if (msg) { printf_simple(msg); }
+    if (msg) { printf(msg); }
     PutString(" (errno=", 8);
     PutInt(err);
     PutString(")\n", 2);

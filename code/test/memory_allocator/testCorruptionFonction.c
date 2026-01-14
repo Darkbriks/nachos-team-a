@@ -1,9 +1,10 @@
 #include "syscall.h"
 #include "nos_mem.h"
 #include "nos_stdlib.h"
+#include "nos_stdio.h"
 
 void * hack(void * not_use){
-    printf_simple("coucou\n");
+    printf("coucou\n");
     Halt();
     return NULL;
 }

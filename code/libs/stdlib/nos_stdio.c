@@ -66,16 +66,43 @@ static int _io_write(int fd, const char *buf, int count) {
  * Static storage for standard streams
  * ============================================================
  */
-static FILE _stdin_file;
-static FILE _stdout_file;
-static FILE _stderr_file;
-
 static char _stdin_buffer[BUFSIZ];
 static char _stdout_buffer[BUFSIZ];
 
-FILE *stdin  = NULL;
-FILE *stdout = NULL;
-FILE *stderr = NULL;
+static FILE _stdin_file = {
+    STDIN_FILENO, 
+    _stdin_buffer,
+    BUFSIZ,
+    0,
+    0,
+    _F_READ | _F_LINEBUF,
+    -1
+};
+
+static FILE _stdout_file = {
+    STDOUT_FILENO, 
+    _stdout_buffer,
+    BUFSIZ,
+    0,
+    0,
+    _F_WRITE | _F_LINEBUF,
+    -1
+};
+
+static FILE _stderr_file = {
+    STDERR_FILENO, 
+    NULL,
+    0,
+    0,
+    0,
+    _F_WRITE | _F_NOBUF,
+    -1
+};
+
+
+FILE *stdin  = &_stdin_file;
+FILE *stdout = &_stdout_file;
+FILE *stderr = &_stderr_file;
 
 static int _stdio_initialized = 0;
 
@@ -86,36 +113,7 @@ static int _stdio_initialized = 0;
 
 int _stdio_init(void) {
     if (_stdio_initialized) { return 0; }
-
-    _stdin_file.fd = STDIN_FILENO;
-    _stdin_file.buffer = _stdin_buffer;
-    _stdin_file.buf_size = BUFSIZ;
-    _stdin_file.buf_pos = 0;
-    _stdin_file.buf_end = 0;
-    _stdin_file.flags = _F_READ | _F_LINEBUF;
-    _stdin_file.ungetc_buf = -1;
-    stdin = &_stdin_file;
-
-    _stdout_file.fd = STDOUT_FILENO;
-    _stdout_file.buffer = _stdout_buffer;
-    _stdout_file.buf_size = BUFSIZ;
-    _stdout_file.buf_pos = 0;
-    _stdout_file.buf_end = 0;
-    _stdout_file.flags = _F_WRITE | _F_LINEBUF;
-    _stdout_file.ungetc_buf = -1;
-    stdout = &_stdout_file;
-
-    _stderr_file.fd = STDERR_FILENO;
-    _stderr_file.buffer = NULL;
-    _stderr_file.buf_size = 0;
-    _stderr_file.buf_pos = 0;
-    _stderr_file.buf_end = 0;
-    _stderr_file.flags = _F_WRITE | _F_NOBUF;
-    _stderr_file.ungetc_buf = -1;
-    stderr = &_stderr_file;
-
     atexit(_stdio_cleanup);
-
     _stdio_initialized = 1;
     return 0;
 }
@@ -157,6 +155,7 @@ static inline int _ensure_init(void) {
  */
 
 int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
+    if (_ensure_init() != 0) { return EOF; }
     if (stream == NULL) { return -1; }
     if (mode != _IOFBF && mode != _IOLBF && mode != _IONBF) { return -1; }
 
@@ -195,6 +194,7 @@ int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
 void setbuf(FILE *stream, char *buf) { setvbuf(stream, buf, buf ? _IOFBF : _IONBF, BUFSIZ); }
 
 int fflush(FILE *stream) {
+    if (_ensure_init() != 0) { return EOF; }
     if (stream == NULL) {
         int ret = 0;
         if (stdout) ret |= fflush(stdout);
@@ -220,14 +220,17 @@ int fflush(FILE *stream) {
  */
 
 void clearerr(FILE *stream) {
+    if (_ensure_init() != 0) { return; }
     if (stream) { stream->flags &= ~(_F_EOF | _F_ERR); }
 }
 
 int feof(FILE *stream) {
+    if (_ensure_init() != 0) { return EOF; }
     return stream ? (stream->flags & _F_EOF) : 0;
 }
 
 int ferror(FILE *stream) {
+    if (_ensure_init() != 0) { return EOF; }
     return stream ? (stream->flags & _F_ERR) : 0;
 }
 
@@ -355,5 +358,39 @@ int puts(const char *s) {
 
     if (fputs(s, stdout) == EOF) { return EOF; }
     if (fputc('\n', stdout) == EOF) { return EOF; }
+    return 0;
+} 
+
+int printf(const char * format, ...){
+    if (_ensure_init() != 0) { return EOF; }
+
+    int i ;
+    va_list ap;
+    i = strlen(format);
+    va_start(ap, format);
+
+    for (int carac = 0; carac < i; carac++) {
+        if (format[carac] == '%' && carac > 0 && format[carac - 1 ] != '\\') {
+            if ( carac == i - 1){
+                PutChar(format[carac]);
+                continue;
+            }
+            switch (format[carac + 1]){
+                case 'd':
+                    PutInt(va_arg(ap, int));
+                    break;
+                case 'c':
+                    PutChar(va_arg(ap, char));
+                    break;
+                case 's':
+                    PutString(va_arg(ap, char * ), MAX_STRING_SIZE);
+                    break;
+            }
+            carac++;
+        } else {
+            PutChar(format[carac]);
+        }
+    }
+    va_end(ap);
     return 0;
 }
