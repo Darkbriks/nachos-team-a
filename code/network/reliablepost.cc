@@ -5,6 +5,7 @@
 #include "reliablepost.h"
 #include "system.h"
 #include "thread.h"
+#include "exception.h"
 #include <strings.h>
 
 // Special mailbox for connection control messages
@@ -388,16 +389,17 @@ unsigned int
 ReliablePost::SendReliableAnySize(PacketHeader pktHdr, MailHeader mailHdr, const char *data) {
     lock->Acquire();
 
-    int dataLength = strlen(data);
-    char *dataToSend = malloc(sizeof(data));
+    unsigned int dataLength = strlen(data);
+    char *dataToSend = (char *) malloc(dataLength);
+    char *small_data = (char *) malloc(MAX_PUT_STRING);
     
     if (dataLength > MAX_PUT_STRING){
-        strncpy(dataToSend, data, MAX_PUT_STRING);
-        dataToSend[MAX_PUT_STRING-1] = 0;
+        strncpy(small_data, data, MAX_PUT_STRING);
+        small_data[MAX_PUT_STRING-1] = 0;
         dataLength = MAX_PUT_STRING;
     }
     else{
-        strncpy(dataToSend,data,dataLength);
+        strncpy(small_data,data,dataLength);
     }
 
     totalChunkSize = dataLength;
@@ -410,12 +412,12 @@ ReliablePost::SendReliableAnySize(PacketHeader pktHdr, MailHeader mailHdr, const
     }
 
     
-    if (sizeof(pktHdr)+sizeof(mailHdr)+sizeof(dataToSend) >= MaxMailSize) {
+    if (sizeof(pktHdr)+sizeof(mailHdr)+dataLength >= MaxMailSize) {
         unsigned int seqNum = nextSeqNum++;
         
-        ChunkHeader chkHdr;
+        ChunkHeader_t chkHdr;
 
-        int i = 0;
+        unsigned int i = 0;
         while (i < sizeof(dataToSend)) {
             
             chkHdr.isFirstChunk = false;
@@ -429,8 +431,8 @@ ReliablePost::SendReliableAnySize(PacketHeader pktHdr, MailHeader mailHdr, const
                 chkHdr.isLastChunked = true;
             }
 
-            if (dataLength > (i+1)*MAX_PUT_STRING){
-                memcpy(chkHdr.data,(char *)dataToSend[i*MAX_PUT_STRING],MAX_PUT_STRING);
+            if (dataLength > (i+1)*MaxMailSize){
+                memcpy(small_data, (dataToSend + i*MaxMailSize), MaxMailSize);
             }
 
 
@@ -446,7 +448,7 @@ ReliablePost::SendReliableAnySize(PacketHeader pktHdr, MailHeader mailHdr, const
             slot->seqNum = seqNum;
             slot->pktHdr = pktHdr;
             slot->mailHdr = mailHdr;
-            bcopy(chkHdr.data, slot->data, mailHdr.length);
+            bcopy(small_data, slot->data, mailHdr.length);
             slot->attempts = 0;
             slot->sentTime = 0;
             slot->ackReceived = false;
@@ -474,7 +476,7 @@ ReliablePost::ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr
     char buffer[MaxMailSize];
     PacketHeader inPktHdr;
     MailHeader inMailHdr;
-    ChunkHeader chkHdr;
+    ChunkHeader_t chkHdr;
 
     // Receive data message (should only be called when HasMessages returns true)
     postOffice->Receive(box, &inPktHdr, &inMailHdr, buffer);
@@ -495,14 +497,14 @@ ReliablePost::ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr
         if (relHdr.isChunked){
             chkHdr = relHdr.chunkedData;
             if (chkHdr.isFirstChunk){
-                memcpy(rebuildBuffer, chkHdr.data, dataLength);
+                memcpy(rebuildBuffer, data, dataLength);
             }
             else{
-                strcat((char *)rebuildBuffer,chkHdr.data);
+                strcat((char *)rebuildBuffer, data);
             }
 
             if (chkHdr.isLastChunked){
-                bcopy(buffer + headerSize, rebuildBuffer, totalChunkSize);
+                bcopy(buffer + headerSize, rebuildBuffer, totalChunkSize - headerSize);
             }
         }
         else{
@@ -644,7 +646,7 @@ ReliablePost::TransmitPending(PendingMessage *msg) {
     bcopy(msg->data, buffer + sizeof(ReliableMailHeader), msg->mailHdr.length);
 
     // Update mail header length to include reliable header
-    MailHeader outMailHdr = msg->mailHdr;
+    MailHeader outMailHdr = relHdr.mailHdr;
     outMailHdr.length += sizeof(ReliableMailHeader);
 
     if (msg->attempts > 0) {

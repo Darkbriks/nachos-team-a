@@ -63,6 +63,7 @@ extern void StartProcess(char *file), ConsoleTest(char *in, char *out), SynchCon
 extern void MailTest(int networkID);
 extern void RingTest(int myAddr, int numMachines);
 extern void ReliableMailTest(int farAddr);
+extern void ReliableMailChunkerTest(int farAddr);
 //---------------------------------------------------------------------
 // main
 //      Bootstrap the operating system kernel.
@@ -158,6 +159,11 @@ int main(int argc, char **argv) {
             ASSERT(argc > 1);
             Delay(2); // delay for 2 seconds to give time to start other machine
             ReliableMailTest(atoi(*(argv + 1)));
+            argCount = 2;
+        } else if (!strcmp(*argv, "-W")) {
+            ASSERT(argc > 1);
+            Delay(2); // delay for 2 seconds to give time to start other machine
+            ReliableMailChunkerTest(atoi(*(argv + 1)));
             argCount = 2;
         }
 

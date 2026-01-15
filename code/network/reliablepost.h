@@ -46,6 +46,12 @@ enum ConnectionState {
     CONN_TERMINATED             // Connection fully closed
 };
 
+// Structure to store chunk data
+typedef struct ChunkHeader {
+    bool isFirstChunk;          // Tell if this is the first chunk
+    bool isLastChunked;         // Tell if the message is the last chunk
+} ChunkHeader_t;
+
 // ReliableMailHeader extends MailHeader with sequence number and message type
 class ReliableMailHeader {
   public:
@@ -54,7 +60,7 @@ class ReliableMailHeader {
     MailHeader mailHdr;         // Original mail header
     bool isChunked;             // Tell if the message need to be rebuilt on receive
     bool isLastChunked;         // Tell if the message is the last chunk
-    ChunkHeader chunkedData;    // Data of the chunk 
+    ChunkHeader_t chunkedData;    // Data of the chunk 
 
     ReliableMailHeader() : type(MSG_DATA), seqNum(0) {}
 };
@@ -70,14 +76,7 @@ struct PendingMessage {
     long long sentTime;         // When was it last sent (for timeout)
     bool ackReceived;           // Has ACK been received?
     bool isChunked;             // Tell if the message need to be rebuilt on receive
-    ChunkHeader chunkedData;   // Data of the chunk 
-};
-
-// Structure to store chunk data
-struct ChunkHeader{
-    bool isFirstChunk;          // Tell if this is the first chunk
-    bool isLastChunked;         // Tell if the message is the last chunk
-    char data[MAX_PUT_STRING];  // Data of the chunk
+    ChunkHeader_t chunkedData;   // Data of the chunk 
 };
 
 // ReliablePost provides reliable message transmission with TCP-like connection management
