@@ -53,7 +53,8 @@ class ReliableMailHeader {
     unsigned int seqNum;        // Sequence number for ordering/deduplication
     MailHeader mailHdr;         // Original mail header
     bool isChunked;             // Tell if the message need to be rebuilt on receive
-    bool isLastChunked;         // Tell if the message is the last chunk 
+    bool isLastChunked;         // Tell if the message is the last chunk
+    ChunkHeader chunkedData;    // Data of the chunk 
 
     ReliableMailHeader() : type(MSG_DATA), seqNum(0) {}
 };
@@ -68,7 +69,8 @@ struct PendingMessage {
     int attempts;               // Number of transmission attempts
     long long sentTime;         // When was it last sent (for timeout)
     bool ackReceived;           // Has ACK been received?
-    bool isChunked;             // Tell if the message need to be rebuilt on receive 
+    bool isChunked;             // Tell if the message need to be rebuilt on receive
+    ChunkHeader chunkedData;   // Data of the chunk 
 };
 
 // Structure to store chunk data
@@ -76,7 +78,7 @@ struct ChunkHeader{
     bool isFirstChunk;          // Tell if this is the first chunk
     bool isLastChunked;         // Tell if the message is the last chunk
     char data[MAX_PUT_STRING];  // Data of the chunk
-}
+};
 
 // ReliablePost provides reliable message transmission with TCP-like connection management
 // EVENT-DRIVEN: Uses non-blocking event loop instead of blocking waits
@@ -126,6 +128,7 @@ class ReliablePost {
     long long lastConnectTime;                // Time of last SYN sent
     bool peerCloseReceived;                   // True if peer sent CLOSE
     char *rebuildBuffer[MAX_PUT_STRING];      // Buffer to rebuild chunked messages
+    int totalChunkSize;                       // Keep in memory the full size of the chunk
 
     // Pending messages awaiting ACK
     PendingMessage pendingMsgs[MAX_PENDING_MSGS];

@@ -367,7 +367,6 @@ ReliablePost::SendReliable(PacketHeader pktHdr, MailHeader mailHdr, const char *
     slot->sentTime = 0;
     slot->ackReceived = false;
     slot->isChunked = false;
-    slot->isLastChunked = false;
 
     DEBUG('n', "SendReliable: Queued message seq %d for transmission\n", seqNum);
 
@@ -401,6 +400,8 @@ ReliablePost::SendReliableAnySize(PacketHeader pktHdr, MailHeader mailHdr, const
         strncpy(dataToSend,data,dataLength);
     }
 
+    totalChunkSize = dataLength;
+
     // Check if connected
     if (connState != CONN_ESTABLISHED && connState != CONN_CLOSE_WAIT) {
         lock->Release();
@@ -412,17 +413,26 @@ ReliablePost::SendReliableAnySize(PacketHeader pktHdr, MailHeader mailHdr, const
     if (sizeof(pktHdr)+sizeof(mailHdr)+sizeof(dataToSend) >= MaxMailSize) {
         unsigned int seqNum = nextSeqNum++;
         
-        ChunkHeader *chkHdr;
+        ChunkHeader chkHdr;
 
         int i = 0;
         while (i < sizeof(dataToSend)) {
+            
+            chkHdr.isFirstChunk = false;
+            chkHdr.isLastChunked = false;
+
             if (i == 0){
-                chkHdr->isFirstChunk = true;
+                chkHdr.isFirstChunk = true;
+            }
+            
+            if(i+1 >= sizeof(dataToSend)){
+                chkHdr.isLastChunked = true;
             }
 
             if (dataLength > (i+1)*MAX_PUT_STRING){
-                memcpy(chkHdr->data,dataToSend[]) //TODO
+                memcpy(chkHdr.data,(char *)dataToSend[i*MAX_PUT_STRING],MAX_PUT_STRING);
             }
+
 
             // Get free slot for this message
             PendingMessage *slot = GetFreeSlot();
@@ -436,15 +446,16 @@ ReliablePost::SendReliableAnySize(PacketHeader pktHdr, MailHeader mailHdr, const
             slot->seqNum = seqNum;
             slot->pktHdr = pktHdr;
             slot->mailHdr = mailHdr;
-            bcopy(chunkedData, slot->data, mailHdr.length);
+            bcopy(chkHdr.data, slot->data, mailHdr.length);
             slot->attempts = 0;
             slot->sentTime = 0;
             slot->ackReceived = false;
             slot->isChunked = true;
-
+            slot->chunkedData = chkHdr;
             DEBUG('n', "SendReliableAnySize: Queued message seq %d for transmission\n", seqNum);
 
             TransmitPending(slot);
+            i++;
         }
         lock->Release();
         return seqNum;
@@ -463,6 +474,7 @@ ReliablePost::ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr
     char buffer[MaxMailSize];
     PacketHeader inPktHdr;
     MailHeader inMailHdr;
+    ChunkHeader chkHdr;
 
     // Receive data message (should only be called when HasMessages returns true)
     postOffice->Receive(box, &inPktHdr, &inMailHdr, buffer);
@@ -472,18 +484,30 @@ ReliablePost::ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr
     bcopy(buffer, &relHdr, sizeof(ReliableMailHeader));
 
     if (relHdr.type == MSG_DATA) {
-        if (relHdr.isChunked){
-
-        }
-
+        
         int headerSize = sizeof(ReliableMailHeader);
         int dataLength = inMailHdr.length - headerSize;
-
+        
         *pktHdr = inPktHdr;
         *mailHdr = relHdr.mailHdr;  // Use original mail header from sender
         mailHdr->length = dataLength;  // Fix length to exclude reliable header
+        
+        if (relHdr.isChunked){
+            chkHdr = relHdr.chunkedData;
+            if (chkHdr.isFirstChunk){
+                memcpy(rebuildBuffer, chkHdr.data, dataLength);
+            }
+            else{
+                strcat((char *)rebuildBuffer,chkHdr.data);
+            }
 
-        bcopy(buffer + headerSize, data, dataLength);
+            if (chkHdr.isLastChunked){
+                bcopy(buffer + headerSize, rebuildBuffer, totalChunkSize);
+            }
+        }
+        else{
+            bcopy(buffer + headerSize, data, dataLength);
+        }
 
         DEBUG('n', "ReceiveReliable: Got data message with seq %d from machine %d\n",
               relHdr.seqNum, inPktHdr.from);
@@ -610,7 +634,9 @@ ReliablePost::TransmitPending(PendingMessage *msg) {
     relHdr.seqNum = msg->seqNum;
     relHdr.mailHdr = msg->mailHdr;
     relHdr.isChunked = msg->isChunked;
-    relHdr.isLastChunked = msg->isLastChunked;
+    if (msg->isChunked){
+        relHdr.chunkedData = msg->chunkedData;
+    }
 
     // Prepare full message (header + data)
     char buffer[MaxMailSize];
