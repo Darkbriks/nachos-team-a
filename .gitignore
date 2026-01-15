@@ -13,3 +13,6 @@ code/.clang-tidy
 code/.gdb_history
 */.idea
 code/.clangd
+DISK
+code/DISK
+code/build/DISK
