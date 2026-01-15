@@ -376,6 +376,62 @@ ReliablePost::SendReliable(PacketHeader pktHdr, MailHeader mailHdr, const char *
 }
 
 //----------------------------------------------------------------------
+// ReliablePost::SendReliableAnySize
+//      Send a message of any size (the message will be divided in multiple chunks when it reachs the maximum size) reliably (NON-BLOCKING)
+//      Queues message for transmission and returns immediately
+//      Returns sequence number assigned to message, or 0 if not connected
+//----------------------------------------------------------------------
+
+unsigned int
+ReliablePost::SendReliableAnySize(PacketHeader pktHdr, MailHeader mailHdr, const char *data) {
+    lock->Acquire();
+
+    // Check if connected
+    if (connState != CONN_ESTABLISHED && connState != CONN_CLOSE_WAIT) {
+        lock->Release();
+        printf("SendReliable: ERROR - Not connected!\n");
+        return 0;
+    }
+
+    unsigned int seqNum = nextSeqNum++;
+
+    if (sizeof(pktHdr)+sizeof(mailHdr)+sizeof(data) >= MaxMailSize) {
+        char * chunkedData = malloc(MaxMailSize * sizeof(char));
+        int i = 0;
+        while (i < sizeof(data)) {
+            for (int j = sizeof(pktHdr)+sizeof(mailHdr)-1; chunkedData[j] < MaxMailSize; j++) {
+                chunkedData[j] = data[i];
+                i++;
+            }
+            // Get free slot for this message
+            PendingMessage *slot = GetFreeSlot();
+            if (slot == NULL) {
+                lock->Release();
+                printf("SendReliableAnySize: ERROR - No free slots! Too many pending messages.\n");
+                return 0;
+            }
+
+            slot->active = true;
+            slot->seqNum = seqNum;
+            slot->pktHdr = pktHdr;
+            slot->mailHdr = mailHdr;
+            bcopy(chunkedData, slot->data, mailHdr.length);
+            slot->attempts = 0;
+            slot->sentTime = 0;
+            slot->ackReceived = false;
+
+            DEBUG('n', "SendReliableAnySize: Queued message seq %d for transmission\n", seqNum);
+
+            TransmitPending(slot);
+        }
+        lock->Release();
+        return seqNum;
+    }
+
+    return SendReliable(pktHdr, mailHdr, data);
+}
+
+//----------------------------------------------------------------------
 // ReliablePost::ReceiveReliable
 //      Receive a message and automatically send ACK
 //----------------------------------------------------------------------

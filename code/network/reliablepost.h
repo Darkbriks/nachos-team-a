@@ -31,6 +31,9 @@
 #define MSG_CLOSE 5             // Connection close request
 #define MSG_CLOSE_ACK 6         // Connection close acknowledgment
 
+// Size const
+#define MaxMailSize (MaxPacketSize - sizeof(MailHeader))
+
 // Connection states
 enum ConnectionState {
     CONN_CLOSED,                // No connection
@@ -87,6 +90,10 @@ class ReliablePost {
 
     // Receive a message and automatically send ACK
     void ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data);
+
+    // Send a message of any size (the message will be divided in multiple chunks when it reachs the maximum size) reliably (NON-BLOCKING - queues for transmission)
+    // Returns sequence number assigned to message, or 0 if not connected
+    unsigned int SendReliableAnySize(PacketHeader pktHdr, MailHeader mailHdr, const char *data);
 
     // EVENT LOOP: Process network events (ACKs, retransmissions, connection msgs)
     // Returns true if there are still pending messages or connection in progress
