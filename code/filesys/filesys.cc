@@ -51,6 +51,7 @@
 #include "filehdr.h"
 #include "system.h"
 #include "filesys.h"
+#include "inodetable.h"
 
 extern void Print(const char *file);
 
@@ -172,9 +173,8 @@ extern void Print(const char *file);
 //	"format" -- should we initialize the disk?
 //----------------------------------------------------------------------
 
-FileSystem::FileSystem(bool format){
+FileSystem::FileSystem(bool format) : inodes(){
     DEBUG('f', "Initializing the file system.\n");
-    freeInodes = new BitMap(MAX_INODES);
     if ( ! format) {
         // if we are not formatting the disk, just open the files representing
         // the bitmap and directory; these are left open while Nachos is running
@@ -236,6 +236,10 @@ FileSystem::FileSystem(bool format){
         delete mapHdr; 
         delete dirHdr;
     }
+}
+
+void FileSystem::DisplayInodes(){
+    inodes.Print();
 }
 
 //----------------------------------------------------------------------
@@ -370,6 +374,11 @@ OpenFile* FileSystem::_Open(const char *name){
     DEBUG('f', "Opening file %s\n", name);
     if (sector >= 0) {
         openFile = new OpenFile(sector);	// name was found in directory 
+        if ( inodes.Open(openFile, sector) < 0 ){
+            delete openFile;
+            openFile = nullptr;
+            DEBUG('f', "No more space in inodes table\n");
+        }
     } else {
         DEBUG('f', "Don't find file %s\n", name);
     }

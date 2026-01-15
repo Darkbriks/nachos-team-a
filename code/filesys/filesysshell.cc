@@ -55,6 +55,10 @@ void FileSysShell::registerCommands(){
         this->fileSystem->Print_FS();
     });
 
+    COMMAND_0("inodes", "Print the entire inodes table structure", [this](const std::vector<std::string>&){
+        this->fileSystem->DisplayInodes();
+    });
+
     COMMAND_0("format", "Format the filesystem and exit this shell", [this](const std::vector<std::string>&){
         system("rm -f ../build/DISK");
         std::cout << "Exiting filesystem shell." << std::endl << "Bye!" << std::endl;

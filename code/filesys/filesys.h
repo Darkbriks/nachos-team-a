@@ -39,6 +39,7 @@
 #include "openfile.h"
 #include "filetype.h"
 #include "fileconst.h"
+#include "inodetable.h"
 
 #ifdef FILESYS_STUB 		// Temporarily implement file system calls as 
                             // calls to UNIX, until the real file system
@@ -69,21 +70,7 @@ class FileSystem {
 #else // FILESYS
 
 class Directory;
-class BitMap;
-
-class Inode{
-
-    public:
-        Inode():file(nullptr), sector(-1) {}
-        Inode(OpenFile * f, int s): file(f), sector(s){}
-        ~Inode(){delete file;}
-
-        const OpenFile& getFile(){return *file;}
-
-    private:
-        OpenFile* file;
-        int sector;
-};
+class InodeTable;
 
 class FileSystem {
     public:
@@ -93,6 +80,7 @@ class FileSystem {
                                         // If "format", there is nothing on
                                         // the disk, so initialize the directory
                                         // and the bitmap of free blocks.
+        ~FileSystem() = default;
 
         bool Create(const char *name, int initialSize, File_Type type = FILE_T);  	
         // Create a file (UNIX creat)
@@ -109,6 +97,8 @@ class FileSystem {
 
         void PrintWorkingDirectory();
 
+        void DisplayInodes();
+
         void Tree();
         void ReadAllFile(const char* name);
         char* getWorkingDirectory();
@@ -120,8 +110,7 @@ class FileSystem {
         int parseName(const char *name, char **result);
         bool _Remove(const char *name);
 
-        Inode inodes[MAX_INODES];
-        BitMap* freeInodes;
+        InodeTable inodes;
 
         OpenFile* freeMapFile;		// Bit map of free disk blocks,
                                         // represented as a file
