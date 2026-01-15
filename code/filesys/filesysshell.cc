@@ -52,7 +52,7 @@ void FileSysShell::registerCommands(){
     });
 
     COMMAND_0("debug", "Print the entire filesystem structure", [this](const std::vector<std::string>&){
-        this->fileSystem->Print();
+        this->fileSystem->Print_FS();
     });
 
     COMMAND_0("format", "Format the filesystem and exit this shell", [this](const std::vector<std::string>&){
@@ -85,8 +85,8 @@ void FileSysShell::registerCommands(){
 
     COMMAND_1("cat", "Display the contents of a file",
               "filename", "Name of the file to display",
-              [](const std::vector<std::string>& args){
-        Print(args[0].c_str());
+              [this](const std::vector<std::string>& args){
+        this->fileSystem->ReadAllFile(args[0].c_str());
     });
 
     COMMAND_2("cp", "Copy a file from UNIX to Nachos",

@@ -157,7 +157,7 @@ bool Directory::Add(const char *name, int newSector, File_Type type){
 }
 
 /**
- * @brief TODO choose if we count "." and ".." 
+ * @brief return all entry in this directory including "." and ".."
  *
  * @return  The number of file and directory in this directory
  */
@@ -189,7 +189,7 @@ bool Directory::Remove(const char *name){
     if (table[i].type == DIRECTORY_T){
         DEBUG('f', "Try to remove directory %s\n", name);
         Directory* child = getDirectory(table[i].sector);
-        if ( int nb = child->NbEntry(); nb != 0 ){ // TODO maybe 2 if we count hidden
+        if ( int nb = child->NbEntry(); nb != 2 ){ // Two is for "." and ".."
             DEBUG('f', "Directory %s is not empty and contains %d iterms\n", name, nb);
             return FALSE;
         }

@@ -12,7 +12,6 @@
 //
 
 extern void Copy(const char *unixFile, const char *nachosFile);
-extern void Print(const char *file);
 extern void PerformanceTest(void);
 
 class FileSystem;

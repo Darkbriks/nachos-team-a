@@ -94,7 +94,7 @@ class FileSystem {
                                         // the disk, so initialize the directory
                                         // and the bitmap of free blocks.
 
-        bool Create(const char *name, int initialSize, File_Type type);  	
+        bool Create(const char *name, int initialSize, File_Type type = FILE_T);  	
         // Create a file (UNIX creat)
 
         OpenFile* Open(const char *name); 	// Open a file (UNIX open)
@@ -103,15 +103,21 @@ class FileSystem {
 
         void List();			// List all the files in the file system
 
-        void Print();			// List all the files and their contents
+        void Print_FS();			// List all the files and their contents
 
-        void Change_Directory(const char * name);
+        bool Change_Directory(const char * name);
 
         void PrintWorkingDirectory();
 
         void Tree();
+        void ReadAllFile(const char* name);
 
     private:
+        bool _Create(const char *name, int initialSize, File_Type type);
+        bool _Change_Directory(const char * name);
+        OpenFile* _Open(const char *name); 	// Open a file (UNIX open)
+        int parseName(const char *name, char **result);
+        bool _Remove(const char *name);
 
         Inode inodes[MAX_INODES];
         BitMap* freeInodes;

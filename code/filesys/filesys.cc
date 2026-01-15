@@ -49,7 +49,115 @@
 #include "bitmap.h"
 #include "directory.h"
 #include "filehdr.h"
+#include "system.h"
 #include "filesys.h"
+
+extern void Print(const char *file);
+
+#define RESTORE_void(cond)                               \
+    if (! cond){                                    \
+        directoryFile = __BACKUP_RESTORE__;         \
+        for (int xyz = 0; xyz < MAX_PATH_SIZE; xyz++){    \
+            free(real_path[xyz]);                     \
+        }                                           \
+        free(real_path);                            \
+        return ;                               \
+    } 
+
+#define RESTORE(cond, result)                               \
+    if (! cond){                                    \
+        directoryFile = __BACKUP_RESTORE__;         \
+        for (int xyz = 0; xyz < MAX_PATH_SIZE; xyz++){    \
+            free(real_path[xyz]);                     \
+        }                                           \
+        free(real_path);                            \
+        return result;                               \
+    } 
+
+#define SAVE()                                      \
+    OpenFile * __BACKUP_RESTORE__ = directoryFile;  
+/*
+ * You must declare :
+ * char * lastDir
+ * and you command will be executed on this char * which is the last name after the last /
+ * Don't put , in the command, only one instruction is accepted  !!!!
+ *
+ * You must return a bool
+ */
+#define COMPUTE_PATH_AND_EXECUTE_void(name, goBack, line)                            \
+    SAVE();                                                                          \
+    char ** real_path = (char **) calloc(sizeof(char *) * MAX_PATH_SIZE, 1);         \
+    for (int i = 0; i < MAX_PATH_SIZE; i++){                                         \
+        real_path[i] = (char *) calloc(sizeof(char) * MAX_PATH_SIZE, 1);             \
+    }                                                                                \
+    int size = parseName(name, real_path);                                           \
+    for (int i = 0; i < size - 1; i++){                                              \
+        DEBUG('f', "On cd sur %s depuis la commande %s\n", real_path[i], name);      \
+        RESTORE_void(_Change_Directory(real_path[i]));                             \
+    }                                                                                \
+    lastDir = real_path[size - 1];                                                   \
+    do{ line } while(0);                                                    \
+    if (goBack){ RESTORE_void(false); }                                           \
+    for (int i = 0; i < MAX_PATH_SIZE; i++){  free(real_path[i]); }                  \
+    free(real_path);                                                                 \
+    return;     
+
+
+
+/*
+ * You must declare :
+ * char * lastDir
+ * and you command will be executed on this char * which is the last name after the last /
+ * Don't put , in the command, only one instruction is accepted  !!!!
+ *
+ * You must return a bool
+ */
+#define COMPUTE_PATH_AND_EXECUTE_bool(name, goBack, line)                                 \
+    SAVE();                                                                          \
+    char ** real_path = (char **) calloc(sizeof(char *) * MAX_PATH_SIZE, 1);         \
+    for (int i = 0; i < MAX_PATH_SIZE; i++){                                         \
+        real_path[i] = (char *) calloc(sizeof(char) * MAX_PATH_SIZE, 1);             \
+    }                                                                                \
+    int size = parseName(name, real_path);                                           \
+    for (int i = 0; i < size - 1; i++){                                              \
+        DEBUG('f', "On cd sur %s depuis la commande %s\n", real_path[i], name);      \
+        RESTORE(_Change_Directory(real_path[i]), false);                             \
+    }                                                                                \
+    lastDir = real_path[size - 1];                                                   \
+    bool result;                                                               \
+    do{ result = line } while(0);                                                    \
+    if (goBack){ RESTORE(false, result); }                                           \
+    for (int i = 0; i < MAX_PATH_SIZE; i++){  free(real_path[i]); }                  \
+    free(real_path);                                                                 \
+    return result;     
+
+/*
+ * You must declare :
+ * char * lastDir
+ * and you command will be executed on this char * which is the last name after the last /
+ * Don't put , in the command, only one instruction is accepted  !!!!
+ *
+ * You must return a bool
+ */
+#define COMPUTE_PATH_AND_EXECUTE_Openfile_ptr(name, goBack, line)                                 \
+    SAVE();                                                                          \
+    char ** real_path = (char **) calloc(sizeof(char *) * MAX_PATH_SIZE, 1);         \
+    for (int i = 0; i < MAX_PATH_SIZE; i++){                                         \
+        real_path[i] = (char *) calloc(sizeof(char) * MAX_PATH_SIZE, 1);             \
+    }                                                                                \
+    int size = parseName(name, real_path);                                           \
+    for (int i = 0; i < size - 1; i++){                                              \
+        DEBUG('f', "On cd sur %s depuis la commande %s\n", real_path[i], name);      \
+        RESTORE(_Change_Directory(real_path[i]), nullptr);                             \
+    }                                                                                \
+    lastDir = real_path[size - 1];                                                   \
+    OpenFile *result;                                                               \
+    do{ result = line } while(0);                                                    \
+    if (goBack){ RESTORE(false, result); }                                           \
+    for (int i = 0; i < MAX_PATH_SIZE; i++){  free(real_path[i]); }                  \
+    free(real_path);                                                                 \
+    return result;     
+
 
 //----------------------------------------------------------------------
 // FileSystem::FileSystem
@@ -158,7 +266,7 @@ FileSystem::FileSystem(bool format){
 //	"initialSize" -- size of file to be created
 //----------------------------------------------------------------------
 
-bool FileSystem::Create(const char *name, int initialSize, File_Type type = FILE_T){
+bool FileSystem::_Create(const char *name, int initialSize, File_Type type){
     Directory *directory;
     BitMap *freeMap;
     FileHeader *hdr;
@@ -240,7 +348,7 @@ bool FileSystem::createSubDirectory(const char* name, int sector_parent, int sec
 //	"name" -- the text name of the file to be opened
 //----------------------------------------------------------------------
 
-OpenFile* FileSystem::Open(const char *name){
+OpenFile* FileSystem::_Open(const char *name){
     Directory *directory = new Directory(NumDirEntries);
     OpenFile *openFile = NULL;
     int sector;
@@ -271,7 +379,7 @@ OpenFile* FileSystem::Open(const char *name){
 //	"name" -- the text name of the file to be removed
 //----------------------------------------------------------------------
 
-bool FileSystem::Remove(const char *name){
+bool FileSystem::_Remove(const char *name){
     Directory *directory;
     BitMap *freeMap;
     FileHeader *fileHdr;
@@ -329,27 +437,75 @@ void FileSystem::Tree(){
     directory->Tree();
 }
 
-
 void FileSystem::PrintWorkingDirectory(){
     printf("Working directory = %d\n",directoryFile->GetSector());
 }
 
-void FileSystem::Change_Directory(const char * name){
+int FileSystem::parseName(const char *name, char** result){
+    bool isEchapped = false;
+    int posInWord = 0;
+    int wordInResult = 0;
+    for (int i = 0; name[i] != 0; i++){
+        if (name[i] == '\\' ){
+            isEchapped = ! isEchapped;
+        } else if (name[i] == '/'){
+            if (!isEchapped){
+                wordInResult++;
+                posInWord = 0;
+                continue;
+            }
+        }
+        if ( ! isEchapped){
+            result[wordInResult][posInWord] = name[i];
+            posInWord++;
+            isEchapped = false;
+        }
+    }
+    result[wordInResult + 1] = nullptr;
+    return wordInResult + 1;
+}
+
+bool FileSystem::_Change_Directory(const char * name){
     OpenFile * file;
     Directory *directory = new Directory(NumDirEntries);
 
     directory->FetchFrom(directoryFile);
     if (directory->GetType(name) != DIRECTORY_T){
         DEBUG('f', "Directory %s can't be the active directory because it doesn't exist\n", name);
-        return;
+        return false;
     }
     if ( ( file = Open(name) ) == nullptr){
         ASSERT(FALSE);
-        return;
+        return false;
     }
     directoryFile = file;
-    directory->FetchFrom(file);
     DEBUG('f', "Change directory now in %s at sector %d \n", name, directoryFile->GetSector());
+    return true;
+}
+
+bool FileSystem::Change_Directory(const char * name){
+    char *lastDir;
+    COMPUTE_PATH_AND_EXECUTE_bool(name, false, _Change_Directory(lastDir););
+}
+
+OpenFile* FileSystem::Open(const char *name){
+    char *lastDir;
+    COMPUTE_PATH_AND_EXECUTE_Openfile_ptr(name, true, _Open(lastDir););
+}
+
+void FileSystem::ReadAllFile(const char* name){
+    char *lastDir;
+    COMPUTE_PATH_AND_EXECUTE_void(name, true, Print(lastDir););
+}
+
+bool FileSystem::Remove(const char *name){
+    char *lastDir;
+    COMPUTE_PATH_AND_EXECUTE_bool(name, true, _Remove(lastDir););
+}
+
+bool FileSystem::Create(const char *name, int initialSize, File_Type type){
+    char *lastDir;
+    COMPUTE_PATH_AND_EXECUTE_bool(name, true, _Create(lastDir, initialSize, type););
 }
 
 //----------------------------------------------------------------------
@@ -362,7 +518,7 @@ void FileSystem::Change_Directory(const char * name){
 //	      the data in the file
 //----------------------------------------------------------------------
 
-void FileSystem::Print(){
+void FileSystem::Print_FS(){
     FileHeader *bitHdr = new FileHeader;
     FileHeader *dirHdr = new FileHeader;
     BitMap *freeMap = new BitMap(NumSectors);
