@@ -67,6 +67,10 @@ class FileSystem {
 };
 
 #else // FILESYS
+
+class Directory;
+class BitMap;
+
 class FileSystem {
   public:
     FileSystem(bool format);		// Initialize the file system.
@@ -98,6 +102,7 @@ class FileSystem {
 					// represented as a file
    OpenFile* directoryFile;		// "Root" directory -- list of 
 					// file names, represented as a file
+    bool createSubDirectory(const char* name, Directory* currentDirectory, FileHeader* hdr, BitMap *freeMap);
 };
 
 #endif // FILESYS

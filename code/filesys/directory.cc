@@ -134,6 +134,7 @@ int Directory::Find(const char *name){
 //
 //	"name" -- the name of the file being added
 //	"newSector" -- the disk sector containing the added file's header
+//	"type" -- the type of the document ( file, directory ... )
 //----------------------------------------------------------------------
 
 bool Directory::Add(const char *name, int newSector, File_Type type){

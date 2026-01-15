@@ -162,7 +162,7 @@ bool FileSystem::Create(const char *name, int initialSize, File_Type type = FILE
     BitMap *freeMap;
     FileHeader *hdr;
     int sector;
-    bool success;
+    bool success = TRUE;
 
     DEBUG('f', "Creating %s %s, size %d\n", file_type_to_str(type), name, initialSize);
 
@@ -184,11 +184,17 @@ bool FileSystem::Create(const char *name, int initialSize, File_Type type = FILE
             if (!hdr->Allocate(freeMap, initialSize)){
                 success = FALSE;	// no space on disk for data
             } else {	
-                success = TRUE;
                 // everthing worked, flush all changes back to disk
-                hdr->WriteBack(sector); 		
-                directory->WriteBack(directoryFile);
-                freeMap->WriteBack(freeMapFile);
+                if (type == DIRECTORY_T){
+                    if ( ! FileSystem::createSubDirectory(name, directory, hdr, freeMap) ){
+                        success = FALSE;
+                    }
+                }
+                if (success){
+                    hdr->WriteBack(sector); 		
+                    directory->WriteBack(directoryFile);
+                    freeMap->WriteBack(freeMapFile);
+                }
             }
             delete hdr;
         }
@@ -196,6 +202,29 @@ bool FileSystem::Create(const char *name, int initialSize, File_Type type = FILE
     }
     delete directory;
     return success;
+}
+
+bool FileSystem::createSubDirectory(const char* name, Directory* currentDirectory, FileHeader* hdr, BitMap *freeMap){
+    Directory *directoryChild = new Directory(NumDirEntries);
+    int sector = directoryChild->Find(name);
+    sector = directoryChild->Find(name);
+    if ( ! directoryChild->Add(".", sector, DIRECTORY_T)){
+        return FALSE;
+    }
+    if ( ! hdr->Allocate(freeMap, NumDirEntries)){
+        return FALSE;
+    }
+    if ( ! directoryChild->Add("..", currentDirectory->Find("."), DIRECTORY_T)) {
+        return FALSE;
+    }
+    if ( ! hdr->Allocate(freeMap, NumDirEntries)){
+        return FALSE;
+    }
+    hdr->WriteBack(sector); 		
+    directoryChild->WriteBack(directoryFile);
+    freeMap->WriteBack(freeMapFile);
+    delete directoryChild;
+    return TRUE;
 }
 
 //----------------------------------------------------------------------
