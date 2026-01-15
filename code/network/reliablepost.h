@@ -15,6 +15,7 @@
 
 #include "post.h"
 #include "network.h"
+#include "exception.h"
 
 // Timeout and retransmission parameters
 #define TEMPO 10000              // Timeout in ticks for retransmission
@@ -67,9 +68,15 @@ struct PendingMessage {
     int attempts;               // Number of transmission attempts
     long long sentTime;         // When was it last sent (for timeout)
     bool ackReceived;           // Has ACK been received?
-    bool isChunked;             // Tell if the message need to be rebuilt on receive
-    bool isLastChunked;         // Tell if the message is the last chunk 
+    bool isChunked;             // Tell if the message need to be rebuilt on receive 
 };
+
+// Structure to store chunk data
+struct ChunkHeader{
+    bool isFirstChunk;          // Tell if this is the first chunk
+    bool isLastChunked;         // Tell if the message is the last chunk
+    char data[MAX_PUT_STRING];  // Data of the chunk
+}
 
 // ReliablePost provides reliable message transmission with TCP-like connection management
 // EVENT-DRIVEN: Uses non-blocking event loop instead of blocking waits
@@ -110,14 +117,15 @@ class ReliablePost {
     void WaitForPending();
 
   private:
-    PostOffice *postOffice;     // Underlying unreliable post office
-    unsigned int nextSeqNum;    // Next sequence number to use
-    Lock *lock;                 // Protect pending messages array
-    int remoteAddr;             // Address of remote machine
-    ConnectionState connState;  // Current connection state
-    int connectAttempts;        // Number of SYN attempts made
-    long long lastConnectTime;  // Time of last SYN sent
-    bool peerCloseReceived;     // True if peer sent CLOSE
+    PostOffice *postOffice;                   // Underlying unreliable post office
+    unsigned int nextSeqNum;                  // Next sequence number to use
+    Lock *lock;                               // Protect pending messages array
+    int remoteAddr;                           // Address of remote machine
+    ConnectionState connState;                // Current connection state
+    int connectAttempts;                      // Number of SYN attempts made
+    long long lastConnectTime;                // Time of last SYN sent
+    bool peerCloseReceived;                   // True if peer sent CLOSE
+    char *rebuildBuffer[MAX_PUT_STRING];      // Buffer to rebuild chunked messages
 
     // Pending messages awaiting ACK
     PendingMessage pendingMsgs[MAX_PENDING_MSGS];

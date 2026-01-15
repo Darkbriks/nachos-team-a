@@ -380,6 +380,7 @@ ReliablePost::SendReliable(PacketHeader pktHdr, MailHeader mailHdr, const char *
 //----------------------------------------------------------------------
 // ReliablePost::SendReliableAnySize
 //      Send a message of any size (the message will be divided in multiple chunks when it reachs the maximum size) reliably (NON-BLOCKING)
+//      If the message length is superrior to MAX_PUT_STRING, message will be reduced to MAX_PUT_STRING size
 //      Queues message for transmission and returns immediately
 //      Returns sequence number assigned to message, or 0 if not connected
 //----------------------------------------------------------------------
@@ -387,6 +388,18 @@ ReliablePost::SendReliable(PacketHeader pktHdr, MailHeader mailHdr, const char *
 unsigned int
 ReliablePost::SendReliableAnySize(PacketHeader pktHdr, MailHeader mailHdr, const char *data) {
     lock->Acquire();
+
+    int dataLength = strlen(data);
+    char *dataToSend = malloc(sizeof(data));
+    
+    if (dataLength > MAX_PUT_STRING){
+        strncpy(dataToSend, data, MAX_PUT_STRING);
+        dataToSend[MAX_PUT_STRING-1] = 0;
+        dataLength = MAX_PUT_STRING;
+    }
+    else{
+        strncpy(dataToSend,data,dataLength);
+    }
 
     // Check if connected
     if (connState != CONN_ESTABLISHED && connState != CONN_CLOSE_WAIT) {
@@ -396,15 +409,21 @@ ReliablePost::SendReliableAnySize(PacketHeader pktHdr, MailHeader mailHdr, const
     }
 
     
-    if (sizeof(pktHdr)+sizeof(mailHdr)+sizeof(data) >= MaxMailSize) {
+    if (sizeof(pktHdr)+sizeof(mailHdr)+sizeof(dataToSend) >= MaxMailSize) {
         unsigned int seqNum = nextSeqNum++;
-        char * chunkedData = malloc(MaxMailSize * sizeof(char));
+        
+        ChunkHeader *chkHdr;
+
         int i = 0;
-        while (i < sizeof(data)) {
-            for (int j = sizeof(pktHdr)+sizeof(mailHdr)-1; chunkedData[j] < MaxMailSize; j++) {
-                chunkedData[j] = data[i];
-                i++;
+        while (i < sizeof(dataToSend)) {
+            if (i == 0){
+                chkHdr->isFirstChunk = true;
             }
+
+            if (dataLength > (i+1)*MAX_PUT_STRING){
+                memcpy(chkHdr->data,dataToSend[]) //TODO
+            }
+
             // Get free slot for this message
             PendingMessage *slot = GetFreeSlot();
             if (slot == NULL) {
@@ -422,11 +441,6 @@ ReliablePost::SendReliableAnySize(PacketHeader pktHdr, MailHeader mailHdr, const
             slot->sentTime = 0;
             slot->ackReceived = false;
             slot->isChunked = true;
-            slot->isLastChunked = false;
-
-            if (i+1 >= sizeof(data)){
-                slot->isLastChunked = true;
-            }
 
             DEBUG('n', "SendReliableAnySize: Queued message seq %d for transmission\n", seqNum);
 
@@ -458,6 +472,10 @@ ReliablePost::ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr
     bcopy(buffer, &relHdr, sizeof(ReliableMailHeader));
 
     if (relHdr.type == MSG_DATA) {
+        if (relHdr.isChunked){
+
+        }
+
         int headerSize = sizeof(ReliableMailHeader);
         int dataLength = inMailHdr.length - headerSize;
 
