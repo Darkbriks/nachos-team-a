@@ -20,7 +20,7 @@
 #include "switch.h"
 #include "sysdep.h"
 #include "system.h"
-#include "tls.h"
+#include "nos_tls.h"
 
 #define STACK_FENCEPOST                                                        \
     0xdeadbeef // this is put at the top of the

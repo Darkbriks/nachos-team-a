@@ -6,7 +6,7 @@
 #include "bitmap.h"
 #include "stackmanager.h"
 #include "thread.h"
-#include "tls.h"
+#include "nos_tls.h"
 #include "../threads/system.h"
 
 BitMapThreadSafe* Process::all_process = new BitMapThreadSafe(MAX_PROCESS);
