@@ -145,7 +145,7 @@ void ReliableMailTest(int farAddr) {
     fflush(stdout);
 
     // EVENT-DRIVEN TEST - No blocking waits!
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 20; i++) {
         outPktHdr.to = farAddr;
         outMailHdr.to = MAIL_BOX;
         outMailHdr.from = ACK_BOX;
@@ -170,7 +170,7 @@ void ReliableMailTest(int farAddr) {
             }
         }
 
-        printf("Message %d ACKed!\n", i + 1);
+        printf("[Machine %d] Message %d ACKed!\n", postOffice->GetNetAddr(), i + 1);
         fflush(stdout);
     }
 
