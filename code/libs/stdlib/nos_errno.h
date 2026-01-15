@@ -1,7 +1,7 @@
 #ifndef NOS_ERRNO_H
 #define NOS_ERRNO_H
 
-#include "tls.h"
+#include "nos_tls.h"
 
 /* ============================================================
  * ERROR CODES

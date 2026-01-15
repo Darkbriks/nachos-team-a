@@ -1,5 +1,5 @@
 #include "pthread.h"
-#include "tls.h"
+#include "nos_tls.h"
 #include "syscall.h"
 #include "nos_threads.h"
 #include "nos_string.h"
