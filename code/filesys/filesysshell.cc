@@ -116,6 +116,7 @@ void FileSysShell::run() {
     char input[MAX_COMMAND_SIZE];
 
     while (true) {
+        fileSystem->PrintWorkingDirectory();
         std::cout << "filesys> ";
         std::cin.getline(input, MAX_COMMAND_SIZE);
 

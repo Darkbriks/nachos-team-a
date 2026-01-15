@@ -41,28 +41,28 @@
 #include "fileconst.h"
 
 #ifdef FILESYS_STUB 		// Temporarily implement file system calls as 
-				// calls to UNIX, until the real file system
-				// implementation is available
+                            // calls to UNIX, until the real file system
+                            // implementation is available
 class FileSystem {
-  public:
-    FileSystem(bool format) {}
+    public:
+        FileSystem(bool format) {}
 
-    bool Create(const char *name, int initialSize) { 
-	int fileDescriptor = OpenForWrite(name);
+        bool Create(const char *name, int initialSize) { 
+            int fileDescriptor = OpenForWrite(name);
 
-	if (fileDescriptor == -1) return FALSE;
-	Close(fileDescriptor); 
-	return TRUE; 
-	}
+            if (fileDescriptor == -1) return FALSE;
+            Close(fileDescriptor); 
+            return TRUE; 
+        }
 
-    OpenFile* Open(char *name) {
-	  int fileDescriptor = OpenForReadWrite(name, FALSE);
+        OpenFile* Open(char *name) {
+            int fileDescriptor = OpenForReadWrite(name, FALSE);
 
-	  if (fileDescriptor == -1) return NULL;
-	  return new OpenFile(fileDescriptor);
-      }
+            if (fileDescriptor == -1) return NULL;
+            return new OpenFile(fileDescriptor);
+        }
 
-    bool Remove(char *name) { return Unlink(name) == 0; }
+        bool Remove(char *name) { return Unlink(name) == 0; }
 
 };
 
@@ -71,38 +71,56 @@ class FileSystem {
 class Directory;
 class BitMap;
 
+class Inode{
+
+    public:
+        Inode():file(nullptr), sector(-1) {}
+        Inode(OpenFile * f, int s): file(f), sector(s){}
+        ~Inode(){delete file;}
+
+        const OpenFile& getFile(){return *file;}
+
+    private:
+        OpenFile* file;
+        int sector;
+};
+
 class FileSystem {
-  public:
-    FileSystem(bool format);		// Initialize the file system.
-					// Must be called *after* "synchDisk" 
-					// has been initialized.
-    					// If "format", there is nothing on
-					// the disk, so initialize the directory
-    					// and the bitmap of free blocks.
+    public:
+        FileSystem(bool format);		// Initialize the file system.
+                                        // Must be called *after* "synchDisk" 
+                                        // has been initialized.
+                                        // If "format", there is nothing on
+                                        // the disk, so initialize the directory
+                                        // and the bitmap of free blocks.
 
-    bool Create(const char *name, int initialSize, File_Type type);  	
-					// Create a file (UNIX creat)
+        bool Create(const char *name, int initialSize, File_Type type);  	
+        // Create a file (UNIX creat)
 
-    OpenFile* Open(const char *name); 	// Open a file (UNIX open)
+        OpenFile* Open(const char *name); 	// Open a file (UNIX open)
 
-    bool Remove(const char *name); 	// Delete a file (UNIX unlink)
+        bool Remove(const char *name); 	// Delete a file (UNIX unlink)
 
-    void List();			// List all the files in the file system
+        void List();			// List all the files in the file system
 
-    void Print();			// List all the files and their contents
+        void Print();			// List all the files and their contents
 
-    void Change_Directory(const char * name);
+        void Change_Directory(const char * name);
 
-    void PrintWorkingDirectory();
+        void PrintWorkingDirectory();
 
-    void Tree();
+        void Tree();
 
-  private:
-   OpenFile* freeMapFile;		// Bit map of free disk blocks,
-					// represented as a file
-   OpenFile* directoryFile;		// "Root" directory -- list of 
-					// file names, represented as a file
-    bool createSubDirectory(const char* name, Directory* currentDirectory, FileHeader* hdr, BitMap *freeMap);
+    private:
+
+        Inode inodes[MAX_INODES];
+        BitMap* freeInodes;
+
+        OpenFile* freeMapFile;		// Bit map of free disk blocks,
+                                        // represented as a file
+        OpenFile* directoryFile;		// "Root" directory -- list of 
+                                        // file names, represented as a file
+        bool createSubDirectory(const char* name, int sector_parent, int sector_directory_child, FileHeader* hdr, BitMap *freeMap);
 };
 
 #endif // FILESYS

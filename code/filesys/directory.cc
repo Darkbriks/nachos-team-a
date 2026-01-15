@@ -26,7 +26,7 @@
 #include "directory.h"
 
 
-Directory* getDirectory(int sector){
+Directory* Directory::getDirectory(int sector){
     Directory* result = new Directory(NumDirEntries);
     result->FetchFrom(new OpenFile(sector));
     return result;
@@ -138,7 +138,9 @@ int Directory::Find(const char *name){
 //----------------------------------------------------------------------
 
 bool Directory::Add(const char *name, int newSector, File_Type type){
+    DEBUG('f', "Try to add file %s in the directory \n", name);
     if (FindIndex(name) != -1){
+        DEBUG('f', "File %s already exist in this directory\n", name);
         return FALSE;
     }
 
@@ -221,7 +223,7 @@ void Directory::Tree(unsigned int tabulation){
         if (table[i].inUse){
             TAB(tabulation);
             printf("%c %s\n", file_type_to_char(table[i].type), table[i].name);
-            if (table[i].type == DIRECTORY_T){
+            if (table[i].type == DIRECTORY_T && strcmp(table[i].name, ".") != 0 && strcmp(table[i].name, "..") != 0){
                 getDirectory(table[i].sector)->Tree(tabulation + 3);
             }
         }
@@ -240,6 +242,7 @@ void Directory::Print(){
     printf("Directory contents:\n");
     for (int i = 0; i < tableSize; i++){
         if (table[i].inUse) {
+            printf("------------------------------------------------------------------\n");
             printf("Name: %s, Sector: %d de type %s\n", table[i].name, table[i].sector, file_type_to_str(table[i].type));
             hdr->FetchFrom(table[i].sector);
             hdr->Print();

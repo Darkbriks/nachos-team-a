@@ -19,5 +19,6 @@
 #define NumDirEntries 		10
 #define DirectoryFileSize 	(sizeof(DirectoryEntry) * NumDirEntries)
 
+#define MAX_INODES 10
 
 #endif // FILECONST_H

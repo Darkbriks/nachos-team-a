@@ -66,6 +66,7 @@
 
 FileSystem::FileSystem(bool format){
     DEBUG('f', "Initializing the file system.\n");
+    freeInodes = new BitMap(MAX_INODES);
     if ( ! format) {
         // if we are not formatting the disk, just open the files representing
         // the bitmap and directory; these are left open while Nachos is running
@@ -171,58 +172,60 @@ bool FileSystem::Create(const char *name, int initialSize, File_Type type = FILE
 
     if (directory->Find(name) != -1) {
         success = FALSE;			// file is already in directory
-    } else {	
-        freeMap = new BitMap(NumSectors);
-        freeMap->FetchFrom(freeMapFile);
-        sector = freeMap->Find();	// find a sector to hold the file header
-        if (sector == -1) { 		
-            success = FALSE;		// no free block for file header 
-        } else if (!directory->Add(name, sector, type)) {
-            success = FALSE;	// no space in directory
-        } else {
-            hdr = new FileHeader;
-            if (!hdr->Allocate(freeMap, initialSize)){
-                success = FALSE;	// no space on disk for data
-            } else {	
-                // everthing worked, flush all changes back to disk
-                if (type == DIRECTORY_T){
-                    if ( ! FileSystem::createSubDirectory(name, directory, hdr, freeMap) ){
-                        success = FALSE;
-                    }
-                }
-                if (success){
-                    hdr->WriteBack(sector); 		
-                    directory->WriteBack(directoryFile);
-                    freeMap->WriteBack(freeMapFile);
+        DEBUG('f', "Creating %s %s impossible, it lready exists\n", file_type_to_str(type), name);
+        delete directory;
+        return success;
+    } 
+    freeMap = new BitMap(NumSectors);
+    freeMap->FetchFrom(freeMapFile);
+    sector = freeMap->Find();	// find a sector to hold the file header
+    if (sector == -1) { 		
+        success = FALSE;		// no free block for file header 
+    } else if (!directory->Add(name, sector, type)) {
+        success = FALSE;	// no space in directory
+    } else {
+        hdr = new FileHeader;
+        if (!hdr->Allocate(freeMap, initialSize)){
+            success = FALSE;	// no space on disk for data
+        } else {	
+            // everthing worked, flush all changes back to disk
+            if (type == DIRECTORY_T){
+                if ( ! FileSystem::createSubDirectory(name, directoryFile->GetSector(), sector, hdr, freeMap) ){
+                    success = FALSE;
                 }
             }
-            delete hdr;
+            if (success){
+                hdr->WriteBack(sector); 		
+                directory->WriteBack(directoryFile);
+                freeMap->WriteBack(freeMapFile);
+                DEBUG('f', "Sucessfully created %s on disk sector = %d\n", name, sector);
+            }
         }
-        delete freeMap;
+        delete hdr;
     }
+    delete freeMap;
     delete directory;
     return success;
 }
 
-bool FileSystem::createSubDirectory(const char* name, Directory* currentDirectory, FileHeader* hdr, BitMap *freeMap){
-    Directory *directoryChild = new Directory(NumDirEntries);
-    int sector = directoryChild->Find(name);
-    sector = directoryChild->Find(name);
-    if ( ! directoryChild->Add(".", sector, DIRECTORY_T)){
+bool FileSystem::createSubDirectory(const char* name, int sector_parent, int sector_directory_child, FileHeader* hdr, BitMap *freeMap){
+    Directory *directoryChild = Directory::getDirectory(sector_directory_child);
+    DEBUG('f', "Try to create '.'\n");
+    if ( ! directoryChild->Add(".", sector_directory_child, DIRECTORY_T)){
+        DEBUG('f', "Echec car sector renvoyé = %d en ajoutant au directory sur le secteur %d\n", sector_directory_child, sector_directory_child);
+
         return FALSE;
     }
-    if ( ! hdr->Allocate(freeMap, NumDirEntries)){
+    DEBUG('f', "Sucessfully created '.'\n");
+    DEBUG('f', "Try to create '..'\n");
+    if ( ! directoryChild->Add("..", sector_parent, DIRECTORY_T)) {
         return FALSE;
     }
-    if ( ! directoryChild->Add("..", currentDirectory->Find("."), DIRECTORY_T)) {
-        return FALSE;
-    }
-    if ( ! hdr->Allocate(freeMap, NumDirEntries)){
-        return FALSE;
-    }
-    hdr->WriteBack(sector); 		
-    directoryChild->WriteBack(directoryFile);
+    DEBUG('f', "Sucessfully created '..'\n");
+    hdr->WriteBack(sector_directory_child); 		
+    directoryChild->WriteBack(new OpenFile(sector_directory_child));
     freeMap->WriteBack(freeMapFile);
+    DEBUG('f', "Sucessfully created '..' and '.' on disk on sector %d and %d\n", sector_parent, sector_directory_child);
     delete directoryChild;
     return TRUE;
 }
@@ -242,11 +245,14 @@ OpenFile* FileSystem::Open(const char *name){
     OpenFile *openFile = NULL;
     int sector;
 
-    DEBUG('f', "Opening file %s\n", name);
     directory->FetchFrom(directoryFile);
     sector = directory->Find(name); 
-    if (sector >= 0) 		
+    DEBUG('f', "Opening file %s\n", name);
+    if (sector >= 0) {
         openFile = new OpenFile(sector);	// name was found in directory 
+    } else {
+        DEBUG('f', "Don't find file %s\n", name);
+    }
     delete directory;
     return openFile;				// return NULL if not found
 }
@@ -325,7 +331,7 @@ void FileSystem::Tree(){
 
 
 void FileSystem::PrintWorkingDirectory(){
-    printf("Working directory = %s\n","a");
+    printf("Working directory = %d\n",directoryFile->GetSector());
 }
 
 void FileSystem::Change_Directory(const char * name){
@@ -341,9 +347,9 @@ void FileSystem::Change_Directory(const char * name){
         ASSERT(FALSE);
         return;
     }
-    DEBUG('f', "Change directory now in %s \n", name);
     directoryFile = file;
     directory->FetchFrom(file);
+    DEBUG('f', "Change directory now in %s at sector %d \n", name, directoryFile->GetSector());
 }
 
 //----------------------------------------------------------------------
