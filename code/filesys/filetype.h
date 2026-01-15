@@ -4,13 +4,13 @@
 class DirectoryEntry;
 
 
-enum File_Type{
+enum File_Type {
     NULL_T,
     FILE_T,
     DIRECTORY_T
 };
 
-inline char* file_type_to_str(File_Type t){
+inline char* file_type_to_str(const File_Type t) {
     switch(t){
         case(FILE_T):
             return (char *) "FILE";
@@ -23,7 +23,7 @@ inline char* file_type_to_str(File_Type t){
     }
 }
 
-inline char file_type_to_char(File_Type t){
+inline char file_type_to_char(const File_Type t) {
     switch(t){
         case(FILE_T):
             return '-';

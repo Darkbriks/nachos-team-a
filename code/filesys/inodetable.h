@@ -6,34 +6,33 @@
 class BitMap;
 class OpenFile;
 
-class Inode{
+class Inode {
+public:
+    Inode():file(nullptr), sector(-1) {}
+    Inode(OpenFile * f, const int s): file(f), sector(s){}
+    ~Inode();
 
-    public:
-        Inode():file(nullptr), sector(-1) {}
-        Inode(OpenFile * f, int s): file(f), sector(s){}
-        ~Inode();
+    [[nodiscard]] const OpenFile& getFile() const { return *file; }
+    [[nodiscard]] int getSector() const { return sector; }
 
-        const OpenFile& getFile() const {return *file;}
-        int getSector() const {return sector;}
-
-    private:
-        OpenFile* file;
-        int sector;
+private:
+    OpenFile* file;
+    int sector;
 };
 
-class InodeTable{
-    public:
-        InodeTable();
-        ~InodeTable();
+class InodeTable {
+public:
+    InodeTable();
+    ~InodeTable();
 
-        int Open(OpenFile * file, int sector);
-        bool Close(int inode);
-        Inode* getInode(int inode);
-        void Print();
+    int Open(OpenFile * file, int sector);
+    bool Close(int inode);
+    [[nodiscard]] Inode* getInode(int inode) const;
+    void Print()const;
 
-    private:
-        Inode* inodes[MAX_INODES];
-        BitMap* freeInodes;
+private:
+    Inode* inodes[MAX_INODES] {};
+    BitMap* freeInodes;
 };
 
 

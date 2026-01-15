@@ -1,23 +1,23 @@
 #include "inodetable.h"
 #include "bitmap.h"
 
-Inode::~Inode(){
+Inode::~Inode() {
     delete file;
 }
 
-InodeTable::InodeTable(){
+InodeTable::InodeTable() {
     freeInodes = new BitMap(MAX_INODES);
     DEBUG('I', "Inode table initialized with size %d\n", MAX_INODES);
 }
 
-InodeTable::~InodeTable(){
+InodeTable::~InodeTable() {
     DEBUG('I', "Delete Inode table \n");
     delete freeInodes;
 }
 
-int InodeTable::Open(OpenFile * file, int sector){
+int InodeTable::Open(OpenFile * file, const int sector) {
     DEBUG('I', "Inode table : Try to add file %p with sector %d\n", file, sector);
-    int result = freeInodes->Find();
+    const int result = freeInodes->Find();
     if (result < 0){ 
         DEBUG('I', "Inode table : But it fails\n");
         return result;
@@ -27,7 +27,7 @@ int InodeTable::Open(OpenFile * file, int sector){
     return result;
 }
 
-bool InodeTable::Close(int inode){
+bool InodeTable::Close(const int inode) {
     DEBUG('I', "Inode table : Try to remove indoe %d\n", inode);
     if ( ! freeInodes->Test(inode)){
         DEBUG('I', "Inode table : But it fails\n");
@@ -40,7 +40,7 @@ bool InodeTable::Close(int inode){
     return true;
 }
 
-Inode* InodeTable::getInode(int inode){
+Inode* InodeTable::getInode(const int inode) const {
     DEBUG('I', "Inode table : Try to fetch inode %d\n", inode);
     if ( ! freeInodes->Test(inode)){
         DEBUG('I', "Inode table : But it fails\n");
@@ -50,7 +50,7 @@ Inode* InodeTable::getInode(int inode){
     return inodes[inode];
 }
 
-void InodeTable::Print(){
+void InodeTable::Print() const {
     for (int i = 0; i < MAX_INODES; i++){
         if (inodes[i]){
             printf("At inode %d we store sector %d\n", i, inodes[i]->getSector());
@@ -60,5 +60,3 @@ void InodeTable::Print(){
 
     }
 }
-
-

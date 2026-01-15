@@ -52,128 +52,24 @@
 #include "system.h"
 #include "filesys.h"
 #include "inodetable.h"
+#include "pathnavigator.h"
 
 extern void Print(const char *file);
 
-#define RESTORE_void(cond)                               \
-    if (! cond){                                    \
-        directoryFile = __BACKUP_RESTORE__;         \
-        for (int xyz = 0; xyz < MAX_PATH_SIZE; xyz++){    \
-            free(real_path[xyz]);                     \
-        }                                           \
-        free(real_path);                            \
-        return ;                               \
-    } 
-
-#define RESTORE(cond, result)                               \
-    if (! cond){                                    \
-        directoryFile = __BACKUP_RESTORE__;         \
-        for (int xyz = 0; xyz < MAX_PATH_SIZE; xyz++){    \
-            free(real_path[xyz]);                     \
-        }                                           \
-        free(real_path);                            \
-        return result;                               \
-    } 
-
-#define SAVE()                                      \
-    OpenFile * __BACKUP_RESTORE__ = directoryFile;  
-/*
- * You must declare :
- * char * lastDir
- * and you command will be executed on this char * which is the last name after the last /
- * Don't put , in the command, only one instruction is accepted  !!!!
- *
- * You must return a bool
- */
-#define COMPUTE_PATH_AND_EXECUTE_void(name, goBack, line)                            \
-    SAVE();                                                                          \
-    char ** real_path = (char **) calloc(sizeof(char *) * MAX_PATH_SIZE, 1);         \
-    for (int i = 0; i < MAX_PATH_SIZE; i++){                                         \
-        real_path[i] = (char *) calloc(sizeof(char) * MAX_PATH_SIZE, 1);             \
-    }                                                                                \
-    int size = parseName(name, real_path);                                           \
-    for (int i = 0; i < size - 1; i++){                                              \
-        DEBUG('f', "On cd sur %s depuis la commande %s\n", real_path[i], name);      \
-        RESTORE_void(_Change_Directory(real_path[i]));                             \
-    }                                                                                \
-    lastDir = real_path[size - 1];                                                   \
-    do{ line } while(0);                                                    \
-    if (goBack){ RESTORE_void(false); }                                           \
-    for (int i = 0; i < MAX_PATH_SIZE; i++){  free(real_path[i]); }                  \
-    free(real_path);                                                                 \
-    return;     
-
-
-
-/*
- * You must declare :
- * char * lastDir
- * and you command will be executed on this char * which is the last name after the last /
- * Don't put , in the command, only one instruction is accepted  !!!!
- *
- * You must return a bool
- */
-#define COMPUTE_PATH_AND_EXECUTE_bool(name, goBack, line)                                 \
-    SAVE();                                                                          \
-    char ** real_path = (char **) calloc(sizeof(char *) * MAX_PATH_SIZE, 1);         \
-    for (int i = 0; i < MAX_PATH_SIZE; i++){                                         \
-        real_path[i] = (char *) calloc(sizeof(char) * MAX_PATH_SIZE, 1);             \
-    }                                                                                \
-    int size = parseName(name, real_path);                                           \
-    for (int i = 0; i < size - 1; i++){                                              \
-        DEBUG('f', "On cd sur %s depuis la commande %s\n", real_path[i], name);      \
-        RESTORE(_Change_Directory(real_path[i]), false);                             \
-    }                                                                                \
-    lastDir = real_path[size - 1];                                                   \
-    bool result;                                                               \
-    do{ result = line } while(0);                                                    \
-    if (goBack){ RESTORE(false, result); }                                           \
-    for (int i = 0; i < MAX_PATH_SIZE; i++){  free(real_path[i]); }                  \
-    free(real_path);                                                                 \
-    return result;     
-
-/*
- * You must declare :
- * char * lastDir
- * and you command will be executed on this char * which is the last name after the last /
- * Don't put , in the command, only one instruction is accepted  !!!!
- *
- * You must return a bool
- */
-#define COMPUTE_PATH_AND_EXECUTE_Openfile_ptr(name, goBack, line)                                 \
-    SAVE();                                                                          \
-    char ** real_path = (char **) calloc(sizeof(char *) * MAX_PATH_SIZE, 1);         \
-    for (int i = 0; i < MAX_PATH_SIZE; i++){                                         \
-        real_path[i] = (char *) calloc(sizeof(char) * MAX_PATH_SIZE, 1);             \
-    }                                                                                \
-    int size = parseName(name, real_path);                                           \
-    for (int i = 0; i < size - 1; i++){                                              \
-        DEBUG('f', "On cd sur %s depuis la commande %s\n", real_path[i], name);      \
-        RESTORE(_Change_Directory(real_path[i]), nullptr);                             \
-    }                                                                                \
-    lastDir = real_path[size - 1];                                                   \
-    OpenFile *result;                                                               \
-    do{ result = line } while(0);                                                    \
-    if (goBack){ RESTORE(false, result); }                                           \
-    for (int i = 0; i < MAX_PATH_SIZE; i++){  free(real_path[i]); }                  \
-    free(real_path);                                                                 \
-    return result;     
-
-
 //----------------------------------------------------------------------
 // FileSystem::FileSystem
-// 	Initialize the file system.  If format = TRUE, the disk has
+// 	Initialize the file system.  If format = true, the disk has
 //	nothing on it, and we need to initialize the disk to contain
 //	an empty directory, and a bitmap of free sectors (with almost but
 //	not all of the sectors marked as free).  
 //
-//	If format = FALSE, we just have to open the files
+//	If format = false, we just have to open the files
 //	representing the bitmap and the directory.
 //
 //	"format" -- should we initialize the disk?
 //----------------------------------------------------------------------
 
-FileSystem::FileSystem(bool format) : inodes(){
+FileSystem::FileSystem(const bool format) {
     DEBUG('f', "Initializing the file system.\n");
     if ( ! format) {
         // if we are not formatting the disk, just open the files representing
@@ -182,10 +78,11 @@ FileSystem::FileSystem(bool format) : inodes(){
         directoryFile = new OpenFile(DirectorySector);
         return;
     }
-    BitMap *freeMap = new BitMap(NumSectors);
-    Directory *directory = new Directory(NumDirEntries);
-    FileHeader *mapHdr = new FileHeader;
-    FileHeader *dirHdr = new FileHeader;
+
+    auto *freeMap = new BitMap(NumSectors);
+    const auto *directory = new Directory(NumDirEntries);
+    auto *mapHdr = new FileHeader;
+    auto *dirHdr = new FileHeader;
 
     DEBUG('f', "Formatting the file system.\n");
 
@@ -238,296 +135,46 @@ FileSystem::FileSystem(bool format) : inodes(){
     }
 }
 
-void FileSystem::DisplayInodes(){
-    inodes.Print();
+bool FileSystem::Create(const char* name, const int initialSize, const File_Type type) {
+    const PathNavigator nav(this, name);
+    if (!nav.isValid()) { return false; }
+    return _Create(nav.getLastComponent(), initialSize, type);
 }
 
-//----------------------------------------------------------------------
-// FileSystem::Create
-// 	Create a file in the Nachos file system (similar to UNIX create).
-//	Since we can't increase the size of files dynamically, we have
-//	to give Create the initial size of the file.
-//
-//	The steps to create a file are:
-//	  Make sure the file doesn't already exist
-//    Allocate a sector for the file header
-// 	  Allocate space on disk for the data blocks for the file
-//	  Add the name to the directory
-//	  Store the new file header on disk 
-//	  Flush the changes to the bitmap and the directory back to disk
-//
-//	Return TRUE if everything goes ok, otherwise, return FALSE.
-//
-// 	Create fails if:
-//   	file is already in directory
-//	 	no free space for file header
-//	 	no free entry for file in directory
-//	 	no free space for data blocks for the file 
-//
-// 	Note that this implementation assumes there is no concurrent access
-//	to the file system!
-//
-//	"name" -- name of file to be created
-//	"initialSize" -- size of file to be created
-//----------------------------------------------------------------------
-
-bool FileSystem::_Create(const char *name, int initialSize, File_Type type){
-    Directory *directory;
-    BitMap *freeMap;
-    FileHeader *hdr;
-    int sector;
-    bool success = TRUE;
-
-    DEBUG('f', "Creating %s %s, size %d\n", file_type_to_str(type), name, initialSize);
-
-    directory = new Directory(NumDirEntries);
-    directory->FetchFrom(directoryFile);
-
-    if (directory->Find(name) != -1) {
-        success = FALSE;			// file is already in directory
-        DEBUG('f', "Creating %s %s impossible, it lready exists\n", file_type_to_str(type), name);
-        delete directory;
-        return success;
-    } 
-    freeMap = new BitMap(NumSectors);
-    freeMap->FetchFrom(freeMapFile);
-    sector = freeMap->Find();	// find a sector to hold the file header
-    if (sector == -1) { 		
-        success = FALSE;		// no free block for file header 
-    } else if (!directory->Add(name, sector, type)) {
-        success = FALSE;	// no space in directory
-    } else {
-        hdr = new FileHeader;
-        if (!hdr->Allocate(freeMap, initialSize)){
-            success = FALSE;	// no space on disk for data
-        } else {	
-            // everthing worked, flush all changes back to disk
-            if (type == DIRECTORY_T){
-                if ( ! FileSystem::createSubDirectory(directoryFile->GetSector(), sector, hdr, freeMap) ){
-                    success = FALSE;
-                }
-            }
-            if (success){
-                hdr->WriteBack(sector); 		
-                directory->WriteBack(directoryFile);
-                freeMap->WriteBack(freeMapFile);
-                DEBUG('f', "Sucessfully created %s on disk sector = %d\n", name, sector);
-            }
-        }
-        delete hdr;
-    }
-    delete freeMap;
-    delete directory;
-    return success;
+bool FileSystem::Remove(const char *name) {
+    const PathNavigator nav(this, name);
+    if (!nav.isValid()) { return false; }
+    return _Remove(nav.getLastComponent());
 }
 
-bool FileSystem::createSubDirectory(int sector_parent, int sector_directory_child, FileHeader* hdr, BitMap *freeMap){
-    Directory *directoryChild = Directory::getDirectory(sector_directory_child);
-    DEBUG('f', "Try to create '.'\n");
-    if ( ! directoryChild->Add(".", sector_directory_child, DIRECTORY_T)){
-        DEBUG('f', "Echec car sector renvoyé = %d en ajoutant au directory sur le secteur %d\n", sector_directory_child, sector_directory_child);
-
-        return FALSE;
-    }
-    DEBUG('f', "Sucessfully created '.'\n");
-    DEBUG('f', "Try to create '..'\n");
-    if ( ! directoryChild->Add("..", sector_parent, DIRECTORY_T)) {
-        return FALSE;
-    }
-    DEBUG('f', "Sucessfully created '..'\n");
-    hdr->WriteBack(sector_directory_child); 		
-    directoryChild->WriteBack(new OpenFile(sector_directory_child));
-    freeMap->WriteBack(freeMapFile);
-    DEBUG('f', "Sucessfully created '..' and '.' on disk on sector %d and %d\n", sector_parent, sector_directory_child);
-    delete directoryChild;
-    return TRUE;
+OpenFile* FileSystem::Open(const char *name) {
+    const PathNavigator nav(this, name);
+    if (!nav.isValid()) { return nullptr; }
+    return _Open(nav.getLastComponent());
 }
 
-
-// char* FileSystem::getWorkingDirectory(){
-//     Directory *directory = new Directory(NumDirEntries);
-//     OpenFile *openFile = NULL;
-//     int sector;
-//
-//     directory->FetchFrom(directoryFile);
-//     sector = directory->Find("."); 
-//
-// }
-
-//----------------------------------------------------------------------
-// FileSystem::Open
-// 	Open a file for reading and writing.  
-//	To open a file:
-//	  Find the location of the file's header, using the directory 
-//	  Bring the header into memory
-//
-//	"name" -- the text name of the file to be opened
-//----------------------------------------------------------------------
-
-OpenFile* FileSystem::_Open(const char *name){
-    Directory *directory = new Directory(NumDirEntries);
-    OpenFile *openFile = NULL;
-    int sector;
-
-    directory->FetchFrom(directoryFile);
-    sector = directory->Find(name); 
-    DEBUG('f', "Opening file %s\n", name);
-    if (sector >= 0) {
-        openFile = new OpenFile(sector);	// name was found in directory 
-        if ( inodes.Open(openFile, sector) < 0 ){
-            delete openFile;
-            openFile = nullptr;
-            DEBUG('f', "No more space in inodes table\n");
-        }
-    } else {
-        DEBUG('f', "Don't find file %s\n", name);
-    }
-    DEBUG('f', "File %s is open\n", name);
-    delete directory;
-    return openFile;				// return NULL if not found
+bool FileSystem::Change_Directory(const char * name) {
+    const PathNavigator nav(this, name, false);
+    if (!nav.isValid()) { return false; }
+    return _Change_Directory(nav.getLastComponent());
 }
 
-//----------------------------------------------------------------------
-// FileSystem::Remove
-// 	Delete a file from the file system.  This requires:
-//	    Remove it from the directory
-//	    Delete the space for its header
-//	    Delete the space for its data blocks
-//	    Write changes to directory, bitmap back to disk
-//
-//	Return TRUE if the file was deleted, FALSE if the file wasn't
-//	in the file system.
-//
-//	"name" -- the text name of the file to be removed
-//----------------------------------------------------------------------
-
-bool FileSystem::_Remove(const char *name){
-    Directory *directory;
-    BitMap *freeMap;
-    FileHeader *fileHdr;
-    int sector;
-
-    DEBUG('f', "Try to delete file %s\n", name);
-    directory = new Directory(NumDirEntries);
-    directory->FetchFrom(directoryFile);
-    sector = directory->Find(name);
-    if (sector == -1) {
-        delete directory;
-        DEBUG('f', "File %s is not found\n", name);
-        return FALSE;			 // file not found 
-    }
-    if ( ! directory->Remove(name)){
-        DEBUG('f', "Can't delete file %s\n", name);
-        return FALSE;
-    }
-    fileHdr = new FileHeader;
-    fileHdr->FetchFrom(sector);
-
-    freeMap = new BitMap(NumSectors);
-    freeMap->FetchFrom(freeMapFile);
-
-    fileHdr->Deallocate(freeMap);  		// remove data blocks
-    freeMap->Clear(sector);			// remove header block
-
-    freeMap->WriteBack(freeMapFile);		// flush to disk
-    directory->WriteBack(directoryFile);        // flush to disk
-    DEBUG('f', "File %s is deleted\n", name);
-    delete fileHdr;
-    delete directory;
-    delete freeMap;
-    return TRUE;
-} 
+void FileSystem::ReadAllFile(const char* name) {
+    const PathNavigator nav(this, name);
+    if (!nav.isValid()) { return; }
+    Print(nav.getLastComponent());
+}
 
 //----------------------------------------------------------------------
 // FileSystem::List
 // 	List all the files in the file system directory.
 //----------------------------------------------------------------------
 
-void FileSystem::List(){
-    Directory *directory = new Directory(NumDirEntries);
-
+void FileSystem::List() const {
+    const auto *directory = new Directory(NumDirEntries);
     directory->FetchFrom(directoryFile);
     directory->List();
     delete directory;
-}
-
-void FileSystem::Tree(){
-    printf("d /\n");
-    Directory *directory = new Directory(NumDirEntries);
-
-    directory->FetchFrom(directoryFile);
-    directory->Tree();
-}
-
-void FileSystem::PrintWorkingDirectory(){
-    printf("Working directory = %d\n",directoryFile->GetSector());
-}
-
-int FileSystem::parseName(const char *name, char** result){
-    bool isEchapped = false;
-    int posInWord = 0;
-    int wordInResult = 0;
-    for (int i = 0; name[i] != 0; i++){
-        if (name[i] == '\\' ){
-            isEchapped = ! isEchapped;
-        } else if (name[i] == '/'){
-            if (!isEchapped){
-                wordInResult++;
-                posInWord = 0;
-                continue;
-            }
-        }
-        if ( ! isEchapped){
-            result[wordInResult][posInWord] = name[i];
-            posInWord++;
-            isEchapped = false;
-        }
-    }
-    result[wordInResult + 1] = nullptr;
-    return wordInResult + 1;
-}
-
-bool FileSystem::_Change_Directory(const char * name){
-    OpenFile * file;
-    Directory *directory = new Directory(NumDirEntries);
-
-    directory->FetchFrom(directoryFile);
-    if (directory->GetType(name) != DIRECTORY_T){
-        DEBUG('f', "Directory %s can't be the active directory because it doesn't exist\n", name);
-        return false;
-    }
-    if ( ( file = Open(name) ) == nullptr){
-        ASSERT(FALSE);
-        return false;
-    }
-    directoryFile = file;
-    DEBUG('f', "Change directory now in %s at sector %d \n", name, directoryFile->GetSector());
-    return true;
-}
-
-bool FileSystem::Change_Directory(const char * name){
-    char *lastDir;
-    COMPUTE_PATH_AND_EXECUTE_bool(name, false, _Change_Directory(lastDir););
-}
-
-OpenFile* FileSystem::Open(const char *name){
-    char *lastDir;
-    COMPUTE_PATH_AND_EXECUTE_Openfile_ptr(name, true, _Open(lastDir););
-}
-
-void FileSystem::ReadAllFile(const char* name){
-    char *lastDir;
-    COMPUTE_PATH_AND_EXECUTE_void(name, true, Print(lastDir););
-}
-
-bool FileSystem::Remove(const char *name){
-    char *lastDir;
-    COMPUTE_PATH_AND_EXECUTE_bool(name, true, _Remove(lastDir););
-}
-
-bool FileSystem::Create(const char *name, int initialSize, File_Type type){
-    char *lastDir;
-    COMPUTE_PATH_AND_EXECUTE_bool(name, true, _Create(lastDir, initialSize, type););
 }
 
 //----------------------------------------------------------------------
@@ -540,11 +187,11 @@ bool FileSystem::Create(const char *name, int initialSize, File_Type type){
 //	      the data in the file
 //----------------------------------------------------------------------
 
-void FileSystem::Print_FS(){
-    FileHeader *bitHdr = new FileHeader;
-    FileHeader *dirHdr = new FileHeader;
-    BitMap *freeMap = new BitMap(NumSectors);
-    Directory *directory = new Directory(NumDirEntries);
+void FileSystem::Print_FS() const {
+    auto *bitHdr = new FileHeader;
+    auto *dirHdr = new FileHeader;
+    auto *freeMap = new BitMap(NumSectors);
+    const auto *directory = new Directory(NumDirEntries);
 
     printf("Bit map file header:\n");
     bitHdr->FetchFrom(FreeMapSector);
@@ -564,4 +211,266 @@ void FileSystem::Print_FS(){
     delete dirHdr;
     delete freeMap;
     delete directory;
-} 
+}
+
+int FileSystem::GetWorkingSector() const {
+    return directoryFile->GetSector();
+}
+
+char* FileSystem::GetWorkingPath() const {
+    const auto path = new char[1024];
+    path[0] = '\0';
+    int currentSector = directoryFile->GetSector();
+
+    while (currentSector != DirectorySector) {
+        const auto *directory = new Directory(NumDirEntries);
+        directory->FetchFrom(new OpenFile(currentSector));
+        const int parentSector = directory->Find("..");
+
+        const auto *parentDirectory = new Directory(NumDirEntries);
+        parentDirectory->FetchFrom(new OpenFile(parentSector));
+
+        for (unsigned int i = 0; i < parentDirectory->NbEntry(); i++) {
+            if (parentDirectory->GetType(i) == DIRECTORY_T && parentDirectory->GetSector(static_cast<int>(i)) == currentSector) {
+                char temp[1024];
+                snprintf(temp, sizeof(temp), "/%s%s", parentDirectory->GetName(static_cast<int>(i)), path);
+                strncpy(path, temp, 1024);
+                break;
+            }
+        }
+        currentSector = parentSector;
+        delete directory;
+        delete parentDirectory;
+    }
+
+    if (path[0] == '\0') { strncpy(path, "/", 1024); }
+    return path;
+}
+
+void FileSystem::Tree() const {
+    printf("d /\n");
+    const auto *directory = new Directory(NumDirEntries);
+    directory->FetchFrom(directoryFile);
+    directory->Tree();
+}
+
+void FileSystem::DisplayInodes() {
+    inodes.Print();
+}
+
+/**
+ * Create the entries '.' and '..' in the new created subdirectory
+ * @param prev_sector The sector of the parent directory
+ * @param curr_sector The sector of the new created subdirectory
+ * @param hdr The file header of the new created subdirectory
+ * @param freeMap The bitmap of free sectors
+ * @return true if the operation is successful, false otherwise
+ */
+bool FileSystem::createSubDirectory(const int prev_sector, const int curr_sector, FileHeader* hdr, BitMap *freeMap) const {
+    const Directory *directoryChild = Directory::getDirectory(curr_sector);
+    DEBUG('f', "Try to create '.'\n");
+
+    if (!directoryChild->Add(".", curr_sector, DIRECTORY_T)) {
+        DEBUG('f', "Failed to create '.', sector %d\n", curr_sector);
+        return false;
+    }
+    DEBUG('f', "Sucessfully created '.'\n");
+
+    DEBUG('f', "Try to create '..'\n");
+    if (!directoryChild->Add("..", prev_sector, DIRECTORY_T)) {
+        DEBUG('f', "Failed to create '..', sector %d\n", prev_sector);
+        return false;
+    }
+    DEBUG('f', "Sucessfully created '..'\n");
+
+    DEBUG('f', "Write back subdirectory header and content to disk\n");
+    hdr->WriteBack(curr_sector);
+    directoryChild->WriteBack(new OpenFile(curr_sector));
+    freeMap->WriteBack(freeMapFile);
+    delete directoryChild;
+    return true;
+}
+
+//----------------------------------------------------------------------
+// FileSystem::Create
+// 	Create a file in the Nachos file system (similar to UNIX create).
+//	Since we can't increase the size of files dynamically, we have
+//	to give Create the initial size of the file.
+//
+//	The steps to create a file are:
+//	  Make sure the file doesn't already exist
+//    Allocate a sector for the file header
+// 	  Allocate space on disk for the data blocks for the file
+//	  Add the name to the directory
+//	  Store the new file header on disk 
+//	  Flush the changes to the bitmap and the directory back to disk
+//
+//	Return true if everything goes ok, otherwise, return false.
+//
+// 	Create fails if:
+//   	file is already in directory
+//	 	no free space for file header
+//	 	no free entry for file in directory
+//	 	no free space for data blocks for the file 
+//
+// 	Note that this implementation assumes there is no concurrent access
+//	to the file system!
+//
+//	"name" -- name of file to be created
+//	"initialSize" -- size of file to be created
+//----------------------------------------------------------------------
+
+#define CreateCleanup(success) \
+    delete hdr; \
+    delete freeMap; \
+    delete directory; \
+    return success;
+
+bool FileSystem::_Create(const char *name, const int initialSize, const File_Type type) const {
+    DEBUG('f', "Creating %s %s, size %d\n", file_type_to_str(type), name, initialSize);
+
+    const Directory *directory = new Directory(NumDirEntries);
+    directory->FetchFrom(directoryFile);
+
+    if (directory->Find(name) != -1) {
+        DEBUG('f', "Creating %s %s impossible, it lready exists\n", file_type_to_str(type), name);
+        delete directory;
+        return false;
+    }
+
+    auto *hdr = new FileHeader;
+    auto *freeMap = new BitMap(NumSectors);
+    freeMap->FetchFrom(freeMapFile);
+    const int sector = freeMap->Find();
+
+    if (sector == -1) {
+        DEBUG('f', "Creating %s %s impossible, no free block for file header\n", file_type_to_str(type), name);
+        CreateCleanup(false);
+    }
+
+    if (!directory->Add(name, sector, type)) {
+        DEBUG('f', "Creating %s %s impossible, no space in directory\n", file_type_to_str(type), name);
+        CreateCleanup(false);
+    }
+
+    if (!hdr->Allocate(freeMap, initialSize)) {
+        DEBUG('f', "Creating %s %s impossible, no space on disk for data\n", file_type_to_str(type), name);
+        CreateCleanup(false);
+    }
+
+    if (type == DIRECTORY_T && !createSubDirectory(directoryFile->GetSector(), sector, hdr, freeMap)) {
+        DEBUG('f', "Creating %s %s impossible, can't create subdirectory\n", file_type_to_str(type), name);
+        CreateCleanup(false);
+    }
+
+    // everthing worked, flush all changes back to disk
+    hdr->WriteBack(sector);
+    directory->WriteBack(directoryFile);
+    freeMap->WriteBack(freeMapFile);
+    DEBUG('f', "Sucessfully created %s %s on disk sector = %d\n", file_type_to_str(type), name, sector);
+    CreateCleanup(true);
+}
+
+//----------------------------------------------------------------------
+// FileSystem::Open
+// 	Open a file for reading and writing.  
+//	To open a file:
+//	  Find the location of the file's header, using the directory 
+//	  Bring the header into memory
+//
+//	"name" -- the text name of the file to be opened
+//----------------------------------------------------------------------
+
+OpenFile* FileSystem::_Open(const char *name) {
+    const auto *directory = new Directory(NumDirEntries);
+    OpenFile *openFile = nullptr;
+
+    directory->FetchFrom(directoryFile);
+    const int sector = directory->Find(name);
+    DEBUG('f', "Opening file %s\n", name);
+    if (sector >= 0) {
+        openFile = new OpenFile(sector); // name was found in directory
+        if ( inodes.Open(openFile, sector) < 0 ) {
+            delete openFile;
+            openFile = nullptr;
+            DEBUG('f', "No more space in inodes table\n");
+        }
+    } else {
+        DEBUG('f', "Don't find file %s\n", name);
+    }
+    DEBUG('f', "File %s is open\n", name);
+    delete directory;
+    return openFile; // return NULL if not found
+}
+
+//----------------------------------------------------------------------
+// FileSystem::Remove
+// 	Delete a file from the file system.  This requires:
+//	    Remove it from the directory
+//	    Delete the space for its header
+//	    Delete the space for its data blocks
+//	    Write changes to directory, bitmap back to disk
+//
+//	Return true if the file was deleted, false if the file wasn't
+//	in the file system.
+//
+//	"name" -- the text name of the file to be removed
+//----------------------------------------------------------------------
+
+bool FileSystem::_Remove(const char *name) const {
+    DEBUG('f', "Try to delete file %s\n", name);
+
+    const auto *directory = new Directory(NumDirEntries);
+    directory->FetchFrom(directoryFile);
+    const int sector = directory->Find(name);
+
+    if (sector == -1) {
+        delete directory;
+        DEBUG('f', "File %s is not found\n", name);
+        return false; // file not found
+    }
+
+    if (!directory->Remove(name)) {
+        delete directory;
+        DEBUG('f', "Can't delete file %s\n", name);
+        return false;
+    }
+
+    auto *fileHdr = new FileHeader;
+    fileHdr->FetchFrom(sector);
+
+    auto *freeMap = new BitMap(NumSectors);
+    freeMap->FetchFrom(freeMapFile);
+
+    fileHdr->Deallocate(freeMap); // remove data blocks
+    freeMap->Clear(sector);       // remove header block
+
+    freeMap->WriteBack(freeMapFile);     // flush to disk
+    directory->WriteBack(directoryFile); // flush to disk
+    DEBUG('f', "File %s is deleted\n", name);
+    delete fileHdr;
+    delete directory;
+    delete freeMap;
+    return true;
+}
+
+bool FileSystem::_Change_Directory(const char * name) {
+    OpenFile * file;
+    const auto *directory = new Directory(NumDirEntries);
+
+    directory->FetchFrom(directoryFile);
+    if (directory->GetType(name) != DIRECTORY_T) {
+        DEBUG('f', "Directory %s can't be the active directory because it doesn't exist\n", name);
+        delete directory;
+        return false;
+    }
+    delete directory;
+
+    if ( ( file = Open(name) ) == nullptr) {
+        ASSERT(false);
+        return false;
+    }
+    directoryFile = file;
+    DEBUG('f', "Change directory now in %s at sector %d \n", name, directoryFile->GetSector());
+    return true;
+}

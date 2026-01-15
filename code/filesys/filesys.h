@@ -73,50 +73,46 @@ class Directory;
 class InodeTable;
 
 class FileSystem {
-    public:
-        FileSystem(bool format);		// Initialize the file system.
-                                        // Must be called *after* "synchDisk" 
-                                        // has been initialized.
-                                        // If "format", there is nothing on
-                                        // the disk, so initialize the directory
-                                        // and the bitmap of free blocks.
-        ~FileSystem() = default;
+public:
+    explicit FileSystem(bool format); // Initialize the file system.
+                                      // Must be called *after* "synchDisk"
+                                      // has been initialized.
+                                      // If "format", there is nothing on
+                                      // the disk, so initialize the directory
+                                      // and the bitmap of free blocks.
+    ~FileSystem() = default;
 
-        bool Create(const char *name, int initialSize, File_Type type = FILE_T);  	
-        // Create a file (UNIX creat)
+    bool Create(const char *name, int initialSize, File_Type type = FILE_T); // Create a file (UNIX creat)
+    OpenFile* Open(const char *name); // Open a file (UNIX open)
+    bool Remove(const char *name); // Delete a file (UNIX unlink)
 
-        OpenFile* Open(const char *name); 	// Open a file (UNIX open)
+    bool Change_Directory(const char * name);
+    void ReadAllFile(const char* name);
 
-        bool Remove(const char *name); 	// Delete a file (UNIX unlink)
+    void List()const;     // List all the files in the file system
+    void Print_FS()const; // List all the files and their contents
+    [[nodiscard]] int GetWorkingSector() const;
+    [[nodiscard]] char* GetWorkingPath() const;
 
-        void List();			// List all the files in the file system
+    void Tree()const;
 
-        void Print_FS();			// List all the files and their contents
+    void DisplayInodes();
 
-        bool Change_Directory(const char * name);
+    [[nodiscard]] OpenFile* GetCurrentDirectory() const { return directoryFile; }
+    void SetCurrentDirectory(OpenFile* dir) { directoryFile = dir; }
 
-        void PrintWorkingDirectory();
+private:
+    InodeTable inodes;
+    OpenFile* freeMapFile;		// Bit map of free disk blocks,
+                                    // represented as a file
+    OpenFile* directoryFile;		// "Root" directory -- list of
+                                    // file names, represented as a file
+    bool createSubDirectory(int prev_sector, int curr_sector, FileHeader* hdr, BitMap *freeMap)const;
 
-        void DisplayInodes();
-
-        void Tree();
-        void ReadAllFile(const char* name);
-        char* getWorkingDirectory();
-
-    private:
-        bool _Create(const char *name, int initialSize, File_Type type);
-        bool _Change_Directory(const char * name);
-        OpenFile* _Open(const char *name); 	// Open a file (UNIX open)
-        int parseName(const char *name, char **result);
-        bool _Remove(const char *name);
-
-        InodeTable inodes;
-
-        OpenFile* freeMapFile;		// Bit map of free disk blocks,
-                                        // represented as a file
-        OpenFile* directoryFile;		// "Root" directory -- list of 
-                                        // file names, represented as a file
-        bool createSubDirectory(int sector_parent, int sector_directory_child, FileHeader* hdr, BitMap *freeMap);
+    bool _Create(const char *name, int initialSize, File_Type type) const;
+    OpenFile* _Open(const char *name); 	// Open a file (UNIX open)
+    bool _Remove(const char *name)const;
+    bool _Change_Directory(const char * name);
 };
 
 #endif // FILESYS

@@ -59,12 +59,6 @@ void FileSysShell::registerCommands(){
         this->fileSystem->DisplayInodes();
     });
 
-    COMMAND_0("format", "Format the filesystem and exit this shell", [this](const std::vector<std::string>&){
-        system("rm -f ../build/DISK");
-        std::cout << "Exiting filesystem shell." << std::endl << "Bye!" << std::endl;
-        exit(0);
-    });
-
     COMMAND_0("test", "Run filesystem performance test", [](const std::vector<std::string>&){
         PerformanceTest();
     });
@@ -120,8 +114,10 @@ void FileSysShell::run() {
     char input[MAX_COMMAND_SIZE];
 
     while (true) {
-        fileSystem->PrintWorkingDirectory();
-        std::cout << "filesys> ";
+        const char *cwd = fileSystem->GetWorkingPath();
+        std::cout << "[kernel@nachos " << cwd << " (sector: " << fileSystem->GetWorkingSector() << ")]$ ";
+        delete[] cwd;
+
         std::cin.getline(input, MAX_COMMAND_SIZE);
 
         if (std::cin.eof()) {
@@ -162,8 +158,8 @@ void Command::execute(const std::vector<std::string>& argValues)const {
         }
         std::cout << "\n";
 
-        for (size_t i = 0; i < args.size(); ++i) {
-            std::cout << "  " << args[i]->getName() << ": " << args[i]->getDescription() << "\n";
+        for (const auto & arg : args) {
+            std::cout << "  " << arg->getName() << ": " << arg->getDescription() << "\n";
         }
 
         return;

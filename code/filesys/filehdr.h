@@ -39,21 +39,21 @@ class FileHeader {
     bool Allocate(BitMap *bitMap, int fileSize);// Initialize a file header, 
 						//  including allocating space 
 						//  on disk for the file data
-    void Deallocate(BitMap *bitMap);  		// De-allocate this file's 
+    void Deallocate(BitMap *bitMap)const;  		// De-allocate this file's 
 						//  data blocks
 
     void FetchFrom(int sectorNumber); 	// Initialize file header from disk
     void WriteBack(int sectorNumber); 	// Write modifications to file header
 					//  back to disk
 
-    int ByteToSector(int offset);	// Convert a byte offset into the file
+    int ByteToSector(int offset)const;	// Convert a byte offset into the file
 					// to the disk sector containing
 					// the byte
 
-    int FileLength();			// Return the length of the file 
+    int FileLength()const;			// Return the length of the file 
 					// in bytes
 
-    void Print();			// Print the contents of the file.
+    void Print()const;			// Print the contents of the file.
 
   private:
     int numBytes;			// Number of bytes in the file
