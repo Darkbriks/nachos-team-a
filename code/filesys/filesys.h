@@ -87,7 +87,7 @@ class FileSystem {
 
     void Print();			// List all the files and their contents
 
-    void Change_Directory(char * name);
+    void Change_Directory(const char * name);
 
     void PrintWorkingDirectory();
 

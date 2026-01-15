@@ -299,7 +299,7 @@ void FileSystem::PrintWorkingDirectory(){
     printf("Working directory = %s\n","a");
 }
 
-void FileSystem::Change_Directory(char * name){
+void FileSystem::Change_Directory(const char * name){
     OpenFile * file;
     Directory *directory = new Directory(NumDirEntries);
 

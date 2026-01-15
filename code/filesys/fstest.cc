@@ -74,7 +74,7 @@ void Copy(const char *from, const char *to){
 // 	Print the contents of the Nachos file "name".
 //----------------------------------------------------------------------
 
-void Print(char *name){
+void Print(const char *name){
     OpenFile *openFile;    
     int i, amountRead;
     char *buffer;

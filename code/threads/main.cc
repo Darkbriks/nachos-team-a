@@ -54,12 +54,13 @@
 #include "utility.h"
 #include "thread.h"
 #include "fileconst.h"
+#include "filesysshell.h"
 
 // External functions used by this file
 
 extern void ThreadTest(void),
     Copy(const char *unixFile, const char *nachosFile);
-extern void Print(char *file), PerformanceTest(void);
+extern void Print(const char *file), PerformanceTest(void);
 extern void StartProcess(char *file), ConsoleTest(char *in, char *out), SynchConsoleTest(char *in, char *out);
 extern void MailTest(int networkID);
 
@@ -122,60 +123,12 @@ int main(int argc, char **argv) {
         }
 #endif // USER_PROGRAM
 #ifdef FILESYS
-        if (!strcmp(*argv, "-cp")) { // copy from UNIX to Nachos
-            ASSERT(argc > 2);
-            Copy(*(argv + 1), *(argv + 2));
-            argCount = 3;
-        } else if (!strcmp(*argv, "-p")) { // print a Nachos file
-            ASSERT(argc > 1);
-            Print(*(argv + 1));
-            argCount = 2;
-        } else if (!strcmp(*argv, "-r")) { // remove Nachos file
-            ASSERT(argc > 1);
-            fileSystem->Remove(*(argv + 1));
-            argCount = 2;
-        } else if (!strcmp(*argv, "-l")) { // list Nachos directory
-            fileSystem->List();
-        } else if (!strcmp(*argv, "-mkdir")) { // list Nachos directory
-            ASSERT(argc > 1);
-            fileSystem->Create(*(argv + 1), DirectoryFileSize, DIRECTORY_T);
-        } else if (!strcmp(*argv, "-cd")) { // list Nachos directory
-            ASSERT(argc > 1);
-            fileSystem->Change_Directory(*(argv + 1));
-        } else if (!strcmp(*argv, "-shell")) { // print entire filesystem
-            char line[100];
-            while(strcmp("q", line) != 0 ){
-                printf("shell > ");
-                scanf("%s", line);
-                if ( strcmp(line, "cd") == 0){
-                    scanf("%s", line);
-                    fileSystem->Change_Directory(line);
-                } else if ( strcmp(line, "cp") == 0){
-                    printf("Enter file <source linux> <dest nachos>\n");
-                    char line2[100];
-                    scanf("%s %s", line, line2);
-                    Copy(line, line2);
-                } else if ( strcmp(line, "D") == 0){
-                    fileSystem->Print();
-                } else if ( strcmp(line, "ls") == 0){
-                    fileSystem->List();
-                } else if ( strcmp(line, "mkdir") == 0){
-                    scanf("%s", line);
-                    fileSystem->Create(line, DirectoryFileSize, DIRECTORY_T);
-                } else if ( strcmp(line, "rm") == 0){
-                    scanf("%s", line);
-                    fileSystem->Remove(line);
-                } else if ( strcmp(line, "tree") == 0){
-                    fileSystem->Tree();
-                }
-
-
-
-            }
-        } else if (!strcmp(*argv, "-D")) { // print entire filesystem
-            fileSystem->Print();
-        } else if (!strcmp(*argv, "-t")) { // performance test
-            PerformanceTest();
+        if (!strcmp(*argv, "-f")) {
+            system("rm -f ../build/DISK");
+        } else if (!strcmp(*argv, "-shell")) {
+            FileSysShell shell(fileSystem);
+            shell.registerCommands();
+            shell.run();
         }
 #endif // FILESYS
 #ifdef NETWORK
