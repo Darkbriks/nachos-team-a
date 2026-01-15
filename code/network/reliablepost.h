@@ -48,9 +48,11 @@ enum ConnectionState {
 // ReliableMailHeader extends MailHeader with sequence number and message type
 class ReliableMailHeader {
   public:
-    unsigned char type;
+    unsigned char type;         // Type of the message
     unsigned int seqNum;        // Sequence number for ordering/deduplication
     MailHeader mailHdr;         // Original mail header
+    bool isChunked;             // Tell if the message need to be rebuilt on receive
+    bool isLastChunked;         // Tell if the message is the last chunk 
 
     ReliableMailHeader() : type(MSG_DATA), seqNum(0) {}
 };
@@ -65,6 +67,8 @@ struct PendingMessage {
     int attempts;               // Number of transmission attempts
     long long sentTime;         // When was it last sent (for timeout)
     bool ackReceived;           // Has ACK been received?
+    bool isChunked;             // Tell if the message need to be rebuilt on receive
+    bool isLastChunked;         // Tell if the message is the last chunk 
 };
 
 // ReliablePost provides reliable message transmission with TCP-like connection management

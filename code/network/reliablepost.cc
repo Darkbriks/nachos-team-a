@@ -366,6 +366,8 @@ ReliablePost::SendReliable(PacketHeader pktHdr, MailHeader mailHdr, const char *
     slot->attempts = 0;
     slot->sentTime = 0;
     slot->ackReceived = false;
+    slot->isChunked = false;
+    slot->isLastChunked = false;
 
     DEBUG('n', "SendReliable: Queued message seq %d for transmission\n", seqNum);
 
@@ -393,9 +395,9 @@ ReliablePost::SendReliableAnySize(PacketHeader pktHdr, MailHeader mailHdr, const
         return 0;
     }
 
-    unsigned int seqNum = nextSeqNum++;
-
+    
     if (sizeof(pktHdr)+sizeof(mailHdr)+sizeof(data) >= MaxMailSize) {
+        unsigned int seqNum = nextSeqNum++;
         char * chunkedData = malloc(MaxMailSize * sizeof(char));
         int i = 0;
         while (i < sizeof(data)) {
@@ -419,6 +421,12 @@ ReliablePost::SendReliableAnySize(PacketHeader pktHdr, MailHeader mailHdr, const
             slot->attempts = 0;
             slot->sentTime = 0;
             slot->ackReceived = false;
+            slot->isChunked = true;
+            slot->isLastChunked = false;
+
+            if (i+1 >= sizeof(data)){
+                slot->isLastChunked = true;
+            }
 
             DEBUG('n', "SendReliableAnySize: Queued message seq %d for transmission\n", seqNum);
 
@@ -427,7 +435,7 @@ ReliablePost::SendReliableAnySize(PacketHeader pktHdr, MailHeader mailHdr, const
         lock->Release();
         return seqNum;
     }
-
+    lock->Release();
     return SendReliable(pktHdr, mailHdr, data);
 }
 
@@ -583,6 +591,8 @@ ReliablePost::TransmitPending(PendingMessage *msg) {
     relHdr.type = MSG_DATA;
     relHdr.seqNum = msg->seqNum;
     relHdr.mailHdr = msg->mailHdr;
+    relHdr.isChunked = msg->isChunked;
+    relHdr.isLastChunked = msg->isLastChunked;
 
     // Prepare full message (header + data)
     char buffer[MaxMailSize];
