@@ -1,6 +1,6 @@
 #include "syscall.h"
 #include "types.h"
-#include "pthread.h"
+#include "nos_pthread.h"
 
 int main() {
     PutString("=== Test pthread Attr Syscalls ===\n", 36);

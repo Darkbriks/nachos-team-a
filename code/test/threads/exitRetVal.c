@@ -1,5 +1,5 @@
 #include "syscall.h"
-#include "pthread.h"
+#include "nos_pthread.h"
 
 void *return_zero(void *arg) {
     return 0;

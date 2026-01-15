@@ -1,7 +1,7 @@
 #include "types.h"
 #include "nos_stdlib.h"
 #include "syscall.h"
-#include "pthread.h"
+#include "nos_pthread.h"
 #include "nos_stdio.h"
 
 #define SIZE_LIST 100

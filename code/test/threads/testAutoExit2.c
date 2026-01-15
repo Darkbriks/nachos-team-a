@@ -1,6 +1,6 @@
 #include "syscall.h"
 #include "nos_stddef.h"
-#include "pthread.h"
+#include "nos_pthread.h"
 
 /* Simple test of automatic thread termination */
 void thread_func(void *arg) {
