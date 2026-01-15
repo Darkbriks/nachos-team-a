@@ -138,14 +138,23 @@ void ReliableMailTest(int farAddr) {
     const char *data = "Hello reliable!";
     char buffer[MaxMailSize];
 
-    // Create ReliablePost wrapper around the existing PostOffice
-    ReliablePost *reliablePost = new ReliablePost(postOffice);
+    // Create ReliablePost with TCP-like connection management
+    ReliablePost *reliablePost = new ReliablePost(postOffice, farAddr);
 
-    printf("ReliableMailTest: Starting event-driven test with machine %d\n", farAddr);
+    printf("ReliableMailTest: Starting TCP-like test with machine %d\n", farAddr);
     fflush(stdout);
 
-    // EVENT-DRIVEN TEST - No blocking waits!
-    for (int i = 0; i < 20; i++) {
+    // STEP 1: Establish connection (TCP-like 3-way handshake)
+    // This will wait patiently for the other machine to be ready
+    if (!reliablePost->Connect()) {
+        printf("ReliableMailTest: Failed to connect to machine %d\n", farAddr);
+        delete reliablePost;
+        interrupt->Halt();
+        return;
+    }
+
+    // STEP 2: Send and receive messages (connection established)
+    for (int i = 0; i < 10; i++) {
         outPktHdr.to = farAddr;
         outMailHdr.to = MAIL_BOX;
         outMailHdr.from = ACK_BOX;
@@ -155,7 +164,7 @@ void ReliableMailTest(int farAddr) {
         unsigned int seqNum = reliablePost->SendReliable(outPktHdr, outMailHdr, data);
 
         // EVENT LOOP: Process network events while waiting for ACK
-        while (!reliablePost->IsAcked(seqNum)) {
+        while (!reliablePost->IsAcked(seqNum) && reliablePost->IsConnected()) {
             // Let other threads (including postal worker) run
             currentThread->Yield();
 
@@ -170,12 +179,26 @@ void ReliableMailTest(int farAddr) {
             }
         }
 
+        // Check if peer closed connection
+        if (!reliablePost->IsConnected()) {
+            printf("[Machine %d] Peer closed connection, aborting\n", postOffice->GetNetAddr());
+            fflush(stdout);
+            break;
+        }
+
         printf("[Machine %d] Message %d ACKed!\n", postOffice->GetNetAddr(), i + 1);
         fflush(stdout);
     }
 
-    // Wait for any remaining pending messages
-    reliablePost->WaitForPending();
+    // Drain any remaining incoming messages
+    while (postOffice->HasMessages(MAIL_BOX)) {
+        reliablePost->ReceiveReliable(MAIL_BOX, &inPktHdr, &inMailHdr, buffer);
+        printf("Got \"%s\" from %d, box %d\n", buffer, inPktHdr.from, inMailHdr.from);
+        fflush(stdout);
+    }
+
+    // STEP 3: Close connection gracefully
+    reliablePost->Close();
 
     printf("ReliableMailTest: Test completed!\n");
     fflush(stdout);

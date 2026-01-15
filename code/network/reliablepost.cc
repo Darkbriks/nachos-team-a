@@ -1,5 +1,5 @@
 // reliablepost.cc
-//      Implementation of reliable message transmission
+//      Implementation of reliable message transmission with TCP-like connection management
 //      using EVENT-DRIVEN architecture
 
 #include "reliablepost.h"
@@ -7,15 +7,23 @@
 #include "thread.h"
 #include <strings.h>
 
+// Special mailbox for connection control messages
+#define CONTROL_BOX 2
+
 //----------------------------------------------------------------------
 // ReliablePost::ReliablePost
 //      Initialize reliable post office with event-driven architecture
 //----------------------------------------------------------------------
 
-ReliablePost::ReliablePost(PostOffice *po) {
+ReliablePost::ReliablePost(PostOffice *po, int remote) {
     postOffice = po;
+    remoteAddr = remote;
     nextSeqNum = 1;  // Start from 1 (0 reserved)
     lock = new Lock("reliable post lock");
+    connState = CONN_CLOSED;
+    connectAttempts = 0;
+    lastConnectTime = 0;
+    peerCloseReceived = false;
 
     // Initialize pending messages array
     for (int i = 0; i < MAX_PENDING_MSGS; i++) {
@@ -34,15 +42,311 @@ ReliablePost::~ReliablePost() {
 }
 
 //----------------------------------------------------------------------
+// ReliablePost::Connect
+//      Establish connection with remote machine (TCP-like 3-way handshake)
+//      Blocks until connection is established or timeout
+//----------------------------------------------------------------------
+
+bool
+ReliablePost::Connect() {
+    printf("[Machine %d] Initiating connection to machine %d...\n",
+           postOffice->GetNetAddr(), remoteAddr);
+    fflush(stdout);
+
+    lock->Acquire();
+    connState = CONN_SYN_SENT;
+    connectAttempts = 0;
+    lastConnectTime = 0;
+    lock->Release();
+
+    // Send initial SYN
+    SendControlMsg(MSG_SYN);
+
+    // Event loop: wait for connection to be established
+    while (true) {
+        currentThread->Yield();
+
+        lock->Acquire();
+
+        // Check for incoming connection messages
+        CheckForConnectionMsgs();
+
+        // Check if connected
+        if (connState == CONN_ESTABLISHED) {
+            lock->Release();
+            printf("[Machine %d] Connection established with machine %d!\n",
+                   postOffice->GetNetAddr(), remoteAddr);
+            fflush(stdout);
+            return true;
+        }
+
+        // Check for timeout on SYN
+        if (connState == CONN_SYN_SENT) {
+            long long now = stats->totalTicks;
+            if (now - lastConnectTime > CONNECT_TEMPO) {
+                connectAttempts++;
+                if (connectAttempts >= CONNECT_RETRIES) {
+                    printf("[Machine %d] Connection FAILED: timeout after %d attempts\n",
+                           postOffice->GetNetAddr(), connectAttempts);
+                    fflush(stdout);
+                    connState = CONN_CLOSED;
+                    lock->Release();
+                    return false;
+                }
+                // Retransmit SYN
+                if (connectAttempts % 10 == 0) {
+                    printf("[Machine %d] Waiting for peer... (attempt %d/%d)\n",
+                           postOffice->GetNetAddr(), connectAttempts, CONNECT_RETRIES);
+                    fflush(stdout);
+                }
+                lock->Release();
+                SendControlMsg(MSG_SYN);
+                lock->Acquire();
+            }
+        }
+
+        lock->Release();
+    }
+}
+
+//----------------------------------------------------------------------
+// ReliablePost::IsConnected
+//      Check if connection is established and usable for sending
+//      Returns false if peer has sent CLOSE (we're in CLOSE_WAIT)
+//----------------------------------------------------------------------
+
+bool
+ReliablePost::IsConnected() {
+    lock->Acquire();
+    bool connected = (connState == CONN_ESTABLISHED);
+    lock->Release();
+    return connected;
+}
+
+//----------------------------------------------------------------------
+// ReliablePost::Close
+//      Close connection gracefully
+//----------------------------------------------------------------------
+
+void
+ReliablePost::Close() {
+    lock->Acquire();
+
+    if (connState != CONN_ESTABLISHED && connState != CONN_CLOSE_WAIT) {
+        lock->Release();
+        return;
+    }
+
+    // Wait for all pending messages first
+    lock->Release();
+    WaitForPending();
+    lock->Acquire();
+
+    if (peerCloseReceived) {
+        // Peer already sent CLOSE, just send CLOSE-ACK
+        printf("[Machine %d] Sending CLOSE-ACK to machine %d\n",
+               postOffice->GetNetAddr(), remoteAddr);
+        fflush(stdout);
+        lock->Release();
+        SendControlMsg(MSG_CLOSE_ACK);
+        lock->Acquire();
+        connState = CONN_TERMINATED;
+    } else {
+        // We're initiating close
+        printf("[Machine %d] Initiating connection close with machine %d\n",
+               postOffice->GetNetAddr(), remoteAddr);
+        fflush(stdout);
+        connState = CONN_CLOSING;
+        lock->Release();
+        SendControlMsg(MSG_CLOSE);
+        lock->Acquire();
+
+        // Wait for CLOSE-ACK
+        int closeAttempts = 0;
+        long long lastCloseTime = stats->totalTicks;
+
+        while (connState == CONN_CLOSING) {
+            lock->Release();
+            currentThread->Yield();
+            lock->Acquire();
+
+            CheckForConnectionMsgs();
+
+            // Timeout and retransmit CLOSE
+            long long now = stats->totalTicks;
+            if (now - lastCloseTime > TEMPO) {
+                closeAttempts++;
+                if (closeAttempts >= MAXREEMISSIONS) {
+                    printf("[Machine %d] Close timeout, forcing termination\n",
+                           postOffice->GetNetAddr());
+                    fflush(stdout);
+                    connState = CONN_TERMINATED;
+                    break;
+                }
+                lock->Release();
+                SendControlMsg(MSG_CLOSE);
+                lock->Acquire();
+                lastCloseTime = stats->totalTicks;
+            }
+        }
+    }
+
+    printf("[Machine %d] Connection terminated\n", postOffice->GetNetAddr());
+    fflush(stdout);
+    lock->Release();
+}
+
+//----------------------------------------------------------------------
+// ReliablePost::SendControlMsg
+//      Send a control message (SYN, SYN-ACK, CLOSE, CLOSE-ACK)
+//----------------------------------------------------------------------
+
+void
+ReliablePost::SendControlMsg(int type) {
+    PacketHeader pktHdr;
+    MailHeader mailHdr;
+    ReliableMailHeader ctrlHdr;
+
+    ctrlHdr.type = type;
+    ctrlHdr.seqNum = 0;  // Control messages don't use sequence numbers
+
+    pktHdr.to = remoteAddr;
+    mailHdr.to = CONTROL_BOX;
+    mailHdr.from = CONTROL_BOX;
+    mailHdr.length = sizeof(ReliableMailHeader);
+
+    const char* typeStr = (type == MSG_SYN) ? "SYN" :
+                          (type == MSG_SYN_ACK) ? "SYN-ACK" :
+                          (type == MSG_CLOSE) ? "CLOSE" :
+                          (type == MSG_CLOSE_ACK) ? "CLOSE-ACK" : "UNKNOWN";
+    DEBUG('n', "SendControlMsg: Sending %s to machine %d\n", typeStr, remoteAddr);
+
+    postOffice->Send(pktHdr, mailHdr, (char *)&ctrlHdr);
+
+    lock->Acquire();
+    if (type == MSG_SYN) {
+        lastConnectTime = stats->totalTicks;
+    }
+    lock->Release();
+}
+
+//----------------------------------------------------------------------
+// ReliablePost::CheckForConnectionMsgs
+//      Check for incoming connection control messages
+//----------------------------------------------------------------------
+
+void
+ReliablePost::CheckForConnectionMsgs() {
+    // Must be called with lock held
+
+    while (postOffice->HasMessages(CONTROL_BOX)) {
+        char buffer[MaxMailSize];
+        PacketHeader pktHdr;
+        MailHeader mailHdr;
+
+        // Temporarily release lock during receive
+        lock->Release();
+        postOffice->Receive(CONTROL_BOX, &pktHdr, &mailHdr, buffer);
+        lock->Acquire();
+
+        ReliableMailHeader ctrlHdr;
+        bcopy(buffer, &ctrlHdr, sizeof(ReliableMailHeader));
+
+        ProcessControlMsg(ctrlHdr.type, pktHdr.from);
+    }
+}
+
+//----------------------------------------------------------------------
+// ReliablePost::ProcessControlMsg
+//      Process incoming control messages and update connection state
+//----------------------------------------------------------------------
+
+void
+ReliablePost::ProcessControlMsg(int type, int fromAddr) {
+    // Must be called with lock held
+
+    switch (type) {
+        case MSG_SYN:
+            DEBUG('n', "ProcessControlMsg: Received SYN from machine %d\n", fromAddr);
+            if (connState == CONN_CLOSED || connState == CONN_SYN_SENT) {
+                // Send SYN-ACK
+                lock->Release();
+                SendControlMsg(MSG_SYN_ACK);
+                lock->Acquire();
+
+                if (connState == CONN_SYN_SENT) {
+                    // Simultaneous open - both sent SYN, connection established
+                    connState = CONN_ESTABLISHED;
+                } else {
+                    connState = CONN_SYN_RECEIVED;
+                }
+            } else if (connState == CONN_SYN_RECEIVED || connState == CONN_ESTABLISHED) {
+                // Duplicate SYN, resend SYN-ACK
+                lock->Release();
+                SendControlMsg(MSG_SYN_ACK);
+                lock->Acquire();
+            }
+            break;
+
+        case MSG_SYN_ACK:
+            DEBUG('n', "ProcessControlMsg: Received SYN-ACK from machine %d\n", fromAddr);
+            if (connState == CONN_SYN_SENT || connState == CONN_SYN_RECEIVED) {
+                connState = CONN_ESTABLISHED;
+                lock->Release();
+                SendControlMsg(MSG_SYN_ACK);
+                lock->Acquire();
+            }
+            break;
+
+        case MSG_CLOSE:
+            DEBUG('n', "ProcessControlMsg: Received CLOSE from machine %d\n", fromAddr);
+            printf("[Machine %d] Received CLOSE from peer\n", postOffice->GetNetAddr());
+            fflush(stdout);
+            peerCloseReceived = true;
+            if (connState == CONN_ESTABLISHED) {
+                connState = CONN_CLOSE_WAIT;
+                // Mark all pending messages as "acked" - peer is closing, ACKs won't arrive
+                // This allows IsAcked() to return true so the sender loop can exit
+                for (int i = 0; i < MAX_PENDING_MSGS; i++) {
+                    if (pendingMsgs[i].active && !pendingMsgs[i].ackReceived) {
+                        pendingMsgs[i].ackReceived = true;  // Pretend ACKed to unblock sender
+                    }
+                }
+            } else if (connState == CONN_CLOSING) {
+                // Simultaneous close
+                lock->Release();
+                SendControlMsg(MSG_CLOSE_ACK);
+                lock->Acquire();
+                connState = CONN_TERMINATED;
+            }
+            break;
+
+        case MSG_CLOSE_ACK:
+            DEBUG('n', "ProcessControlMsg: Received CLOSE-ACK from machine %d\n", fromAddr);
+            if (connState == CONN_CLOSING) {
+                connState = CONN_TERMINATED;
+            }
+            break;
+    }
+}
+
+//----------------------------------------------------------------------
 // ReliablePost::SendReliable
 //      Send a message reliably (NON-BLOCKING)
 //      Queues message for transmission and returns immediately
-//      Returns sequence number assigned to message
+//      Returns sequence number assigned to message, or 0 if not connected
 //----------------------------------------------------------------------
 
 unsigned int
 ReliablePost::SendReliable(PacketHeader pktHdr, MailHeader mailHdr, const char *data) {
     lock->Acquire();
+
+    // Check if connected
+    if (connState != CONN_ESTABLISHED && connState != CONN_CLOSE_WAIT) {
+        lock->Release();
+        printf("SendReliable: ERROR - Not connected!\n");
+        return 0;
+    }
 
     // Get free slot for this message
     PendingMessage *slot = GetFreeSlot();
@@ -96,6 +400,7 @@ ReliablePost::ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr
         *pktHdr = inPktHdr;
         *mailHdr = relHdr.mailHdr;  // Use original mail header from sender
         mailHdr->length = dataLength;  // Fix length to exclude reliable header
+
         bcopy(buffer + headerSize, data, dataLength);
 
         DEBUG('n', "ReceiveReliable: Got data message with seq %d from machine %d\n",
@@ -104,20 +409,23 @@ ReliablePost::ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr
         SendAck(inPktHdr, relHdr.mailHdr, relHdr.seqNum);
 
     } else {
-        DEBUG('n', "ReceiveReliable: WARNING - Got ACK in MAIL_BOX (seq %d)\n",
-              relHdr.seqNum);
+        DEBUG('n', "ReceiveReliable: WARNING - Got non-data message type %d in MAIL_BOX\n",
+              relHdr.type);
     }
 }
 
 //----------------------------------------------------------------------
 // ReliablePost::ProcessEvents
-//      EVENT LOOP: Check for ACKs and handle retransmissions
+//      EVENT LOOP: Check for ACKs, connection msgs, and handle retransmissions
 //      Returns true if there are still pending messages
 //----------------------------------------------------------------------
 
 bool
 ReliablePost::ProcessEvents() {
     lock->Acquire();
+
+    // Check for incoming connection messages
+    CheckForConnectionMsgs();
 
     // Check for incoming ACKs (non-blocking)
     CheckForAcks();
@@ -153,11 +461,19 @@ ReliablePost::IsAcked(unsigned int seqNum) {
 //----------------------------------------------------------------------
 // ReliablePost::WaitForPending
 //      Wait for all pending messages to be ACKed or fail
+//      Also exits early if peer has sent CLOSE
 //----------------------------------------------------------------------
 
 void
 ReliablePost::WaitForPending() {
     while (ProcessEvents()) {
+        // Check if peer sent CLOSE - no point waiting for ACKs
+        lock->Acquire();
+        if (peerCloseReceived || connState == CONN_CLOSE_WAIT || connState == CONN_TERMINATED) {
+            lock->Release();
+            break;
+        }
+        lock->Release();
         currentThread->Yield();
     }
 }
@@ -296,8 +612,10 @@ ReliablePost::CheckForAcks() {
         PacketHeader pktHdr;
         MailHeader mailHdr;
 
-        // Receive the ACK (won't block since we know there's a message)
+        // Temporarily release lock during receive
+        lock->Release();
         postOffice->Receive(ACK_BOX, &pktHdr, &mailHdr, buffer);
+        lock->Acquire();
 
         // Parse the ACK
         ReliableMailHeader ackHdr;
