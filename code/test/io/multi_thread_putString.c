@@ -1,7 +1,7 @@
 #include "syscall.h"
 #include "nos_stdio.h"
 #include "nos_threads.h"
-#include "pthread.h"
+#include "nos_pthread.h"
 
 // Don't work
 void very_long_function(void *arg) {

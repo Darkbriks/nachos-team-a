@@ -1,5 +1,5 @@
 #include "syscall.h"
-#include "pthread.h"
+#include "nos_pthread.h"
 
 void *simple_thread(void *arg) {
     PutString("Thread executing\n", 17);

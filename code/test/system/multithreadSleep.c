@@ -1,7 +1,7 @@
 #include "syscall.h"
 #include "nos_stdlib.h"
 #include "nos_stddef.h"
-#include "pthread.h"
+#include "nos_pthread.h"
 #include "nos_stdio.h"
 
 void func2(void *arg) {

@@ -1,5 +1,5 @@
 #include "syscall.h"
-#include "pthread.h"
+#include "nos_pthread.h"
 
 int join_sem;
 int thread_executed = 0;

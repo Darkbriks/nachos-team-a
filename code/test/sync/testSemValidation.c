@@ -1,6 +1,6 @@
 #include "syscall.h"
 #include "types.h"
-#include "pthread.h"
+#include "nos_pthread.h"
 
 // Test 1: Normal semaphore usage
 void test_normal_usage() {
