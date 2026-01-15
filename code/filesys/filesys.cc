@@ -225,6 +225,7 @@ FileSystem::FileSystem(bool format){
     DEBUG('f', "Writing bitmap and directory back to disk.\n");
     freeMap->WriteBack(freeMapFile);	 // flush changes to disk
     directory->WriteBack(directoryFile);
+    createSubDirectory(1, 1, dirHdr, freeMap);
 
     if (DebugIsEnabled('f')) {
         freeMap->Print();
@@ -298,7 +299,7 @@ bool FileSystem::_Create(const char *name, int initialSize, File_Type type){
         } else {	
             // everthing worked, flush all changes back to disk
             if (type == DIRECTORY_T){
-                if ( ! FileSystem::createSubDirectory(name, directoryFile->GetSector(), sector, hdr, freeMap) ){
+                if ( ! FileSystem::createSubDirectory(directoryFile->GetSector(), sector, hdr, freeMap) ){
                     success = FALSE;
                 }
             }
@@ -316,7 +317,7 @@ bool FileSystem::_Create(const char *name, int initialSize, File_Type type){
     return success;
 }
 
-bool FileSystem::createSubDirectory(const char* name, int sector_parent, int sector_directory_child, FileHeader* hdr, BitMap *freeMap){
+bool FileSystem::createSubDirectory(int sector_parent, int sector_directory_child, FileHeader* hdr, BitMap *freeMap){
     Directory *directoryChild = Directory::getDirectory(sector_directory_child);
     DEBUG('f', "Try to create '.'\n");
     if ( ! directoryChild->Add(".", sector_directory_child, DIRECTORY_T)){
@@ -337,6 +338,17 @@ bool FileSystem::createSubDirectory(const char* name, int sector_parent, int sec
     delete directoryChild;
     return TRUE;
 }
+
+
+// char* FileSystem::getWorkingDirectory(){
+//     Directory *directory = new Directory(NumDirEntries);
+//     OpenFile *openFile = NULL;
+//     int sector;
+//
+//     directory->FetchFrom(directoryFile);
+//     sector = directory->Find("."); 
+//
+// }
 
 //----------------------------------------------------------------------
 // FileSystem::Open
@@ -361,6 +373,7 @@ OpenFile* FileSystem::_Open(const char *name){
     } else {
         DEBUG('f', "Don't find file %s\n", name);
     }
+    DEBUG('f', "File %s is open\n", name);
     delete directory;
     return openFile;				// return NULL if not found
 }

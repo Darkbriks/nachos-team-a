@@ -111,6 +111,7 @@ class FileSystem {
 
         void Tree();
         void ReadAllFile(const char* name);
+        char* getWorkingDirectory();
 
     private:
         bool _Create(const char *name, int initialSize, File_Type type);
@@ -126,7 +127,7 @@ class FileSystem {
                                         // represented as a file
         OpenFile* directoryFile;		// "Root" directory -- list of 
                                         // file names, represented as a file
-        bool createSubDirectory(const char* name, int sector_parent, int sector_directory_child, FileHeader* hdr, BitMap *freeMap);
+        bool createSubDirectory(int sector_parent, int sector_directory_child, FileHeader* hdr, BitMap *freeMap);
 };
 
 #endif // FILESYS
