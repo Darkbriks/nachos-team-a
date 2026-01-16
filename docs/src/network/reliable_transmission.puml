@@ -1,0 +1,63 @@
+@startuml reliable_transmission
+skinparam backgroundColor white
+skinparam sequence {
+    ArrowColor #2C5282
+    ParticipantBorderColor #2C5282
+    ParticipantBackgroundColor #E8F4FD
+}
+
+title Transmission fiable avec ACK et retransmission
+
+participant "Machine A\n(Emetteur)" as A
+participant "Reseau\n(non fiable)" as NET
+participant "Machine B\n(Recepteur)" as B
+
+== Etablissement de connexion ==
+
+A -> NET : SYN
+NET -> B : SYN
+B -> NET : SYN-ACK
+NET -> A : SYN-ACK
+note over A,B : Connection ETABLIE
+
+== Transmission reussie ==
+
+A -> NET : DATA (seq=1)
+NET -> B : DATA (seq=1)
+B -> NET : ACK (seq=1)
+NET -> A : ACK (seq=1)
+note right of A : Message delivre
+
+== Perte de paquet (DATA) ==
+
+A -> NET : DATA (seq=2)
+NET ->x B : DATA perdu
+note over A : Timeout (TEMPO ticks)
+A -> NET : DATA (seq=2) [retransmission]
+NET -> B : DATA (seq=2)
+B -> NET : ACK (seq=2)
+NET -> A : ACK (seq=2)
+
+== Perte d ACK ==
+
+A -> NET : DATA (seq=3)
+NET -> B : DATA (seq=3)
+B -> NET : ACK (seq=3)
+NET ->x A : ACK perdu
+note over A : Timeout
+A -> NET : DATA (seq=3) [retransmission]
+// This gives enough time to manually launch the second machine in another terminal
+NET -> B : DATA (seq=3) [duplicate]
+note right of B #FFB6C1 : Duplicate non detecte\nDonnees traitees 2 fois\nACK renvoye
+B -> NET : ACK (seq=3)
+NET -> A : ACK (seq=3)
+
+== Fermeture de connexion ==
+
+A -> NET : CLOSE
+NET -> B : CLOSE
+B -> NET : CLOSE-ACK
+NET -> A : CLOSE-ACK
+note over A,B : Connection TERMINEE
+
+@enduml

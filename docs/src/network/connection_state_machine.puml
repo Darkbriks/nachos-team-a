@@ -1,0 +1,63 @@
+@startuml
+skinparam backgroundColor white
+skinparam state {
+    BackgroundColor #E8F4FD
+    BorderColor #2C5282
+}
+
+title Machine d'etats de connexion - ReliablePost
+
+state "CONN_CLOSED" as CLOSED #FFE4E1
+state "CONN_SYN_SENT" as SYN_SENT #FFFACD
+state "CONN_SYN_RECEIVED" as SYN_RECEIVED #FFFACD
+state "CONN_ESTABLISHED" as ESTABLISHED #90EE90
+state "CONN_CLOSE_WAIT" as CLOSE_WAIT #FFB6C1
+state "CONN_CLOSING" as CLOSING #FFB6C1
+state "CONN_TERMINATED" as TERMINATED #D3D3D3
+
+[*] --> CLOSED
+
+CLOSED --> SYN_SENT : Connect()\n[envoie SYN]
+
+SYN_SENT --> ESTABLISHED : Recu SYN\n[envoie SYN-ACK]\n(ouverture simultanee)
+SYN_SENT --> SYN_SENT : Timeout\n[retransmit SYN]
+SYN_SENT --> CLOSED : Max retries atteint
+
+SYN_RECEIVED --> ESTABLISHED : Recu SYN-ACK
+
+CLOSED --> SYN_RECEIVED : Recu SYN\n[envoie SYN-ACK]
+SYN_SENT --> ESTABLISHED : Recu SYN-ACK\n[envoie SYN-ACK]
+
+ESTABLISHED --> CLOSE_WAIT : Recu CLOSE\n(peer initie fermeture)
+ESTABLISHED --> CLOSING : Close()\n[envoie CLOSE]\n(on initie fermeture)
+
+CLOSE_WAIT --> TERMINATED : Close()\n[envoie CLOSE-ACK]
+
+CLOSING --> TERMINATED : Recu CLOSE-ACK
+CLOSING --> TERMINATED : Recu CLOSE\n[envoie CLOSE-ACK]\n(fermeture simultanee)
+CLOSING --> CLOSING : Timeout\n[retransmit CLOSE]
+CLOSING --> TERMINATED : Max retries atteint
+
+TERMINATED --> [*]
+
+note right of ESTABLISHED
+  Etat nominal :
+  - Envoi/reception de donnees
+  - ACK automatique
+end note
+
+note right of SYN_SENT
+  Handshake TCP-like :
+  - Machine A envoie SYN
+  - Machine B repond SYN-ACK
+  - Connection etablie
+end note
+
+note bottom of CLOSE_WAIT
+  Fermeture gracieuse :
+  - Le peer a demande la fermeture
+  - On finit d envoyer nos donnees
+  - Puis on envoie CLOSE-ACK
+end note
+
+@enduml
