@@ -1,6 +1,8 @@
 #include "copyright.h"
-#include "syscall.h"
+#include "nos_errno.h"
 #include "system.h"
+#include "nos_limits.h"
+#include "syscall.h"
 
 #include "userIO.h"
 
@@ -19,15 +21,17 @@ void handle_SC_PutString(){
     if (addr < 0) { RETURN(-E_FAULT); } // TODO Add more checks (addr is in valid user space, for example)
     if (n < 0) { RETURN(-E_INVAL); }
     if (n == 0) { RETURN(0); }
-    if (n > INT32_MAX - addr) { RETURN(-E_OVERFLOW); } // Prevent overflow
+    if (n > INT_MAX - addr) { RETURN(-E_OVERFLOW); } // Prevent overflow
 
     int offset = 0;
     char buffer[MAX_STRING_SIZE];
 
     while (offset < n) {
-        copyStringFromMachine(addr + offset, buffer, MAX_STRING_SIZE);
+        if (!CopyStringFromUser(addr + offset, buffer, MAX_STRING_SIZE)) {
+            RETURN(-E_FAULT);
+        }
         DEBUG('a', "PutString got string: %s\n", buffer);
-        if (int res = synchConsole->SynchPutString(buffer, MAX_STRING_SIZE); res <= 0) { break; }
+        if (const int res = synchConsole->SynchPutString(buffer, MAX_STRING_SIZE); res <= 0) { break; }
         else { offset += res; }
     }
     RETURN(n);
@@ -49,7 +53,9 @@ void handle_SC_GetString(){
     {
         char buffer[n];
         int res = synchConsole->SynchGetString(buffer, n);
-        copyStringToMachine(buffer, addr, n);
+        if (!CopyStringToUser(buffer, addr, n)) {
+            RETURN(-E_FAULT);
+        }
         RETURN(res);
     }
 }

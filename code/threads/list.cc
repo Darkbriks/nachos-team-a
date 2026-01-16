@@ -138,7 +138,7 @@ void List::Mapcar(VoidFunctionPtr func) {
 //      Returns TRUE if the list is empty (has no items).
 //----------------------------------------------------------------------
 
-bool List::IsEmpty() {
+bool List::IsEmpty() const {
     if (first == NULL)
         return TRUE;
     else

@@ -1,15 +1,17 @@
 #include "syscall.h"
+#include "pthread.h"
 
-void *thread_func(void *arg) {
-    return (void *)42;
+void * thread_func(void *arg) {
+    return (void *) 42;
 }
 
 int main() {
-    posix_thread_t tid;
+    pthread_t tid;
     void *retval;
     
-    PthreadCreate(&tid, 0, thread_func, 0);
-    PthreadJoin(tid, &retval);
+    pthread_create(&tid, 0, thread_func, 0);
+    PutString("hey\n", 5);
+    pthread_join(tid, &retval);
 
     if (retval != (void *)42) {
         PutString("Test failed: incorrect return value from joined thread: ", 100);

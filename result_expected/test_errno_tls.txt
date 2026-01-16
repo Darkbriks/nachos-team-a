@@ -1,0 +1,28 @@
+TLS block address: 94084
+
+Test 0: errno address != __global_errno address
+errno address: 94096
+__global_errno address: 24592
+ OK
+
+Test 1: Initial errno
+errno = 0 OK
+
+Test 2: Manualy set errno to E_INVAL
+errno after setting to E_INVAL = 1 OK
+
+Test 2b: Check __global_errno remains 0
+__global_errno = 0 OK
+
+Test 3: Trigger error (SemWait on invalid id)
+SemWait(-1) returned: -1
+errno = 11 OK
+Machine halting!
+
+Ticks: total 61284, idle 39000, system 21540, user 744
+Disk I/O: reads 0, writes 0
+Console I/O: reads 0, writes 390
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

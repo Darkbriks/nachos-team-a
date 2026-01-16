@@ -1,5 +1,6 @@
 #include "syscall.h"
-#include "types.h"
+#include "nos_stddef.h"
+#include "pthread.h"
 
 #define NB_ITER 10
 
@@ -12,10 +13,10 @@ void thread_func(void *arg) {
 
 int main() {
 
-    posix_thread_t tids[NB_ITER];
+    pthread_t tids[NB_ITER];
     for (int i = 0; i < NB_ITER; i++){
-        PthreadCreate(&tids[i], NULL, (void *(*)(void *))thread_func, (void *)i);
-        PthreadJoin(tids[i], NULL);
+        pthread_create(&tids[i], NULL, (void *(*)(void *))thread_func, (void *)i);
+        pthread_join(tids[i], NULL);
     }
 
     PutChar('C');

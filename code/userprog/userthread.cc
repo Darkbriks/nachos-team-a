@@ -1,223 +1,85 @@
 #include "userthread.h"
-#include "syscall.h"
+#include "nos_errno.h"
 #include "process.h"
+#include "stackmanager.h"
 #include "thread.h"
+#include "nos_threads.h"
 
-/**
- * @brief Start function for Nachos user thread.
- * This function initializes the user thread's registers and stack,
- * then starts executing the user program.
- *
- * @param f A pointer to a Param object containing thread parameters
- */
-static void StartUserThread(const int f) {
-    const Param *param = reinterpret_cast<Param *>(f);
-
-    // Initialize the stack pointer with 2 pages below the main thread stack
-    // TODO: Fix this when step 4 is done
-    const unsigned int numPages = currentThread->getAddrSpace()->GetNumPages();
-    const unsigned int stackSize = 6 * PageSize; // User Thread or AddrSpace defined stack size ?
-    const int stackAddr = static_cast<int>(numPages * PageSize - (currentThread->getTID() + 1) * stackSize);
-
-    if (stackAddr < 0) {
-        DEBUG('t', "StartUserThread: Invalid stack address 0x%x for thread TID=%d\n", stackAddr, currentThread->getTID());
-        delete param;
-        currentThread->Finish();
-        return;
+bool ValidateThreadArgs(const user_thread_args& args, const AddrSpace* space, const StackManager* stackMgr) {
+    // entry : must be a valid user address, aligned to 4 bytes, and in code segment
+    if (!space->IsUserAddress(args.entry) || (args.entry % 4 != 0) || !space->IsInCodeSegment(args.entry)) {
+        DEBUG('t', "ValidateThreadArgs: Invalid entry point 0x%x\n", args.entry);
+        return false;
     }
 
-    const int prevPC = machine->ReadRegister(PCReg);
+    // user_sp : must be 0 or a valid user stack pointer
+    if (args.user_sp != 0 && !stackMgr->IsValidUserStackPointer(args.user_sp)) {
+        DEBUG('t', "ValidateThreadArgs: Invalid user_sp 0x%x\n", args.user_sp);
+        return false;
+    }
 
-    currentThread->getAddrSpace()->InitRegisters();
-    currentThread->getAddrSpace()->RestoreState();
+    // tls_base : must be 0 or a valid TLS address
+    if (args.tls_base != 0 && !space->IsValidTLS(args.tls_base)) {
+        DEBUG('t', "ValidateThreadArgs: Invalid tls_base 0x%x\n", args.tls_base);
+        return false;
+    }
 
-    machine->WriteRegister(PCReg, param->get_function());
-    machine->WriteRegister(NextPCReg, param->get_function() + 4);
-    machine->WriteRegister(PrevPCReg, prevPC);
-    machine->WriteRegister(StackReg, stackAddr);
-    machine->WriteRegister(RetAddrReg, param->get_exit_addr());
-    machine->WriteRegister(4, param->get_arg());
+    return true;
+}
 
-    delete param;
+void StartThread(int param){
     machine->Run();
 }
 
-int do_PthreadCreate(const int thread_ptr, const int attr_ptr, int start_routine, int arg, int wrapper_addr) {
-    if (start_routine <= 0) { return -E_INVAL; }
-    // TODO : Add more checks (addr is in valid user space, for example)
+void handle_SC_thread_create() {
+    const unsigned args_ptr = machine->ReadRegister(4);
 
-    posix_thread_attr_t attr;
-    if (attr_ptr != 0) {
-        for (unsigned int i = 0; i < sizeof(posix_thread_attr_t); i++) {
-            if (machine->ReadMem(attr_ptr + i, 1, reinterpret_cast<int *>(&reinterpret_cast<char *>(&attr)[i])) == FALSE) {
-                return -E_INVAL;
-            }
-        }
-    } else {
-        posix_thread_attr_init(&attr);
+    Process *process = currentThread->getProcess();
+    VALIDATE_ARG(process != nullptr, E_FAULT);
+
+    const AddrSpace *space = process->getSpace();
+    VALIDATE_ARG(space != nullptr, E_FAULT);
+
+    StackManager *stackMgr = space->GetStackManager();
+    VALIDATE_ARG(stackMgr != nullptr, E_FAULT);
+
+    // Copy user_thread_args from user space to kernel space to avoid TOCTOU issues
+    user_thread_args kargs;
+    if (!CopyFromUserType<user_thread_args>(&kargs, args_ptr)) {
+        DEBUG('t', "handle_SC_thread_create: Failed to copy user_thread_args from user space\n");
+        RETURN(-E_FAULT);
     }
 
-    Thread *thread = currentThread->getProcess()->CreateThread((char *)"user_thread");
-    if (!thread) { return -E_NOMEM; }
+    VALIDATE_ARG(ValidateThreadArgs(kargs, space, stackMgr), E_INVAL);
 
-    thread->setDetached(attr.detachstate == DETACHED);
+    Thread* thread = process->CreateThread("user_thread", kargs.tls_base);
+    VALIDATE_ARG(thread != nullptr, E_THREAD_LIMIT);
 
-    if (thread_ptr > 0) {
-        posix_thread_t tid = thread->getTID();
-        if (machine->WriteMem(thread_ptr, sizeof(posix_thread_t), static_cast<int>(tid)) == FALSE) {
-            currentThread->getProcess()->RemoveThread(thread);
-            return -E_INVAL;
-        }
-    }
-
-    Param *param = new Param(start_routine, arg, wrapper_addr);
-    DEBUG('t', "Creating user thread TID=%d, start_routine=0x%x, arg=0x%x, wrapper_addr=0x%x\n",
-          thread->getTID(), param->get_function(), param->get_arg(), param->get_exit_addr());
-    thread->Fork(StartUserThread, reinterpret_cast<int>(param));
-
-    return 0;
+    thread->InitUserContext(kargs.entry, kargs.arg, kargs.user_sp);
+    thread->Fork(StartThread, 0);
+    RETURN(thread->getTID());
 }
 
-void do_PthreadExit(void *retval) {
-    Thread* thread = currentThread;
+// TODO: A thread can be destroyed only if state isn't RUNNING, BLOCKED or SLEEP
+void handle_SC_thread_exit() {
+    currentThread->setStatus(TERMINATED);
 
-    thread->setReturnValue(retval);
-    thread->setStatus(TERMINATED);
+    Process* process = currentThread->getProcess();
+    VALIDATE_ARG(process != nullptr, E_FAULT);
 
-    thread->getProcess()->ThreadTerminated(thread);
+    process->ThreadTerminated(currentThread);
+    process->RemoveThread(currentThread);
 
-    if (thread->isDetached()) {
-        thread->getProcess()->RemoveThread(thread);
-    }
-
-    IntStatus oldLevel = interrupt->SetLevel(IntOff);
-    thread->Joiner();
-    thread->Sleep();
-
+    const IntStatus oldLevel = interrupt->SetLevel(IntOff);
+    currentThread->Sleep();
     (void)interrupt->SetLevel(oldLevel);
     ASSERT(FALSE);
 }
 
-int do_PthreadJoin(posix_thread_t tid, int retval_ptr) {
-    Thread* other_thread = currentThread->getProcess()->FindThread(tid);
-
-    if (!other_thread) { return -E_NOSPC; }
-    if (other_thread == currentThread) { return -E_INVAL; }
-    if (other_thread->isDetached()) { return -E_INVAL; }
-    if (other_thread->hasJoiner()) { return -E_INVAL; }
-
-
-    IntStatus oldLevel = interrupt->SetLevel(IntOff);
-    currentThread->setJoin(other_thread);
-    other_thread->setJoiner(currentThread);
-    (void)interrupt->SetLevel(oldLevel);
-
-    other_thread->Join();
-
-    if (retval_ptr >= 0) {
-        void* retval = other_thread->getReturnValue();
-        if (machine->WriteMem(retval_ptr, sizeof(void*), reinterpret_cast<int>(retval)) == FALSE) {
-            return -E_INVAL;
-        }
-    }
-
-    currentThread->getProcess()->RemoveThread(other_thread);
-
-    return 0;
+void handle_SC_thread_self() {
+    RETURN(static_cast<int>(currentThread->getTID()));
 }
 
-int do_PthreadDetach(posix_thread_t tid) {
-    Thread* thread = currentThread->getProcess()->FindThread(tid);
-
-    if (!thread) { return -E_NOSPC; }
-    if (thread->isDetached()) { return -E_INVAL; }
-    if (thread->hasJoiner()) { return -E_INVAL; }
-
-    thread->setDetached(true);
-
-    if (thread->isTerminated()) {
-        thread->getProcess()->RemoveThread(thread);
-    }
-
-    return 0;
-}
-
-void do_PthreadSelf(){
-    Thread* thread = currentThread;
-    if (!thread) { RETURN(-E_NOSPC);}
-    RETURN(currentThread->getTID());
-}
-
-void handle_SC_PthreadCreate(){
-    const int thread_ptr = machine->ReadRegister(4);
-    const int attr_ptr = machine->ReadRegister(5);
-    const int start_routine = machine->ReadRegister(6);
-    const int arg = machine->ReadRegister(7);
-    const int wrapper_addr = machine->ReadRegister(8);
-    DEBUG('t', "SC_PthreadCreate called with thread_ptr=%d, attr_ptr=%d, start_routine=0x%x, arg=0x%x, wrapper_addr=0x%x\n",
-          thread_ptr, attr_ptr, start_routine, arg, wrapper_addr);
-    RETURN(do_PthreadCreate(thread_ptr, attr_ptr, start_routine, arg, wrapper_addr) );
-}
-
-void handle_SC_PthreadExit(){
-    const int retval = machine->ReadRegister(4);
-    do_PthreadExit( reinterpret_cast<void *>(retval) );
-}
-
-void handle_SC_PthreadJoin(){
-    const int tid = machine->ReadRegister(4);
-    const int retval_ptr = machine->ReadRegister(5);
-    RETURN(do_PthreadJoin(tid, retval_ptr) );
-}
-
-void handle_SC_PthreadDetach(){
-    const int tid = machine->ReadRegister(4);
-    RETURN(do_PthreadDetach(tid) );
-}
-
-void handle_SC_PthreadSelf(){
-    do_PthreadSelf();
-}
-
-void handle_SC_Pthread_attr_init() {
-    const int attr_ptr = machine->ReadRegister(4);
-    if (attr_ptr <= 0) { RETURN(-E_INVAL); }
-
-    posix_thread_attr_t attr;
-    posix_thread_attr_init(&attr);
-
-    for (unsigned int i = 0; i < sizeof(posix_thread_attr_t); i++) {
-        if (!machine->WriteMem(attr_ptr + i, 1, reinterpret_cast<char*>(&attr)[i])) {
-            RETURN(-E_FAULT);
-        }
-    }
-    RETURN(0);
-}
-
-void handle_SC_Pthread_attr_destroy() {
-    RETURN(0);
-}
-
-void handle_SC_Pthread_attr_setdetachstate() {
-    const int attr_ptr = machine->ReadRegister(4);
-    const int detachstate = machine->ReadRegister(5);
-
-    if (attr_ptr <= 0) { RETURN(-E_INVAL); }
-    if (detachstate != JOINABLE && detachstate != DETACHED) { RETURN(-E_INVAL); }
-    if (!machine->WriteMem(attr_ptr, sizeof(int), detachstate)) { RETURN(-E_FAULT); }
-
-    RETURN(0);
-}
-
-void handle_SC_Pthread_attr_getdetachstate() {
-    const int attr_ptr = machine->ReadRegister(4);
-    const int result_ptr = machine->ReadRegister(5);
-
-    if (attr_ptr <= 0 || result_ptr <= 0) { RETURN(-E_INVAL); }
-
-    int detachstate;
-    if (!machine->ReadMem(attr_ptr, sizeof(int), &detachstate)) { RETURN(-E_FAULT); }
-    if (!machine->WriteMem(result_ptr, sizeof(int), detachstate)) { RETURN(-E_FAULT); }
-
-    RETURN(0);
+void handle_SC_thread_yield() {
+    currentThread->Yield();
 }

@@ -1,5 +1,6 @@
 #include "syscall.h"
 #include "types.h"
+#include "pthread.h"
 
 // Test 1: Normal semaphore usage
 void test_normal_usage() {
@@ -78,7 +79,7 @@ void test_threading() {
 
     sem = SemInit(0);
     PutString("  Main: Creating thread...\n", 29);
-    PthreadCreate(0, 0, thread_func, (void *)sem);
+    pthread_create(0, 0, thread_func, (void *)sem);
 
     PutString("  Main: Sleeping briefly...\n", 30);
     Sleep(100);

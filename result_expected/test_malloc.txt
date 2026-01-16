@@ -1,0 +1,83 @@
+=== Test allocateur memoire NachOS ===
+--- Test 0: Initialisation de l'allocateur ---
+Allocateur initialise a l'adresse: 42112
+
+--- Test 0: Etat initial memoire ---
+  Block at 42132, size=616 [FREE]
+
+--- Test 1: Allocation simple ---
+Alloue 32 bytes a: 42124
+Alloue 64 bytes a: 42164
+Alloue 16 bytes a: 42236
+
+--- Test 1: Etat memoire apres allocations ---
+  Block at 42124, size=32 [USED]
+  Block at 42164, size=64 [USED]
+  Block at 42236, size=16 [USED]
+  Block at 42268, size=480 [FREE]
+
+--- Test 2: Ecriture/Lecture ---
+Ecrit 'Hello' dans ptr1: Hello
+
+--- Test 2: Etat memoire apres ecriture ---
+  Block at 42124, size=32 [USED]
+  Block at 42164, size=64 [USED]
+  Block at 42236, size=16 [USED]
+  Block at 42268, size=480 [FREE]
+
+--- Test 3: mem_get_size ---
+Taille de ptr1: 32 (attendu 32)
+Taille de ptr2: 64 (attendu 64)
+
+--- Test 3: Etat memoire apres get_size ---
+  Block at 42124, size=32 [USED]
+  Block at 42164, size=64 [USED]
+  Block at 42236, size=16 [USED]
+  Block at 42268, size=480 [FREE]
+
+--- Test 4: Liberation ---
+Liberation de ptr2...
+
+--- Test 4: Etat memoire apres liberation ---
+  Block at 42124, size=32 [USED]
+  Block at 42172, size=56 [FREE]
+  Block at 42236, size=16 [USED]
+  Block at 42268, size=480 [FREE]
+
+--- Test 5: Reallocation du trou ---
+Alloue 32 bytes a: 42164
+
+--- Test 5: Etat memoire apres realloc ---
+  Block at 42124, size=32 [USED]
+  Block at 42164, size=32 [USED]
+  Block at 42212, size=16 [FREE]
+  Block at 42236, size=16 [USED]
+  Block at 42268, size=480 [FREE]
+
+--- Test 6: mem_calloc ---
+Calloc 10 ints a: 42260
+Verification zeros: OK
+
+--- Test 6: Etat memoire apres calloc ---
+  Block at 42124, size=32 [USED]
+  Block at 42164, size=32 [USED]
+  Block at 42212, size=16 [FREE]
+  Block at 42236, size=16 [USED]
+  Block at 42260, size=40 [USED]
+  Block at 42316, size=432 [FREE]
+
+--- Nettoyage ---
+
+Etat apres liberation totale:
+  Block at 42132, size=616 [FREE]
+
+=== Tests termines avec succes ===
+Machine halting!
+
+Ticks: total 281265, idle 194500, system 70370, user 16395
+Disk I/O: reads 0, writes 0
+Console I/O: reads 0, writes 1945
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

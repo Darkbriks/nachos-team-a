@@ -1,4 +1,6 @@
 #include "nos_string.h"
+#include "nos_stddef.h"
+#include "types.h"
 #include "syscall.h"
 
 #ifndef NOT_YET_IMPLEMENTED
@@ -159,7 +161,8 @@ char* strdup(const char* s) {
     return NULL;
 }
 
-char* strerror(int errnum) {
+char* strerror(const int errnum) {
+    // TODO: MaJ
     switch (errnum) {
         case  0: return "No error";
         case  1: return "Invalid argument";

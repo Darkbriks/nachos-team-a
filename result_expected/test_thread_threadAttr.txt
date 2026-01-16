@@ -1,4 +1,4 @@
-=== Test Pthread Attr Syscalls ===
+=== Test pthread Attr Syscalls ===
 PASS: attr_init
 PASS: default is JOINABLE
 PASS: set to DETACHED works
@@ -7,7 +7,7 @@ PASS: attr_destroy
 SUCCESS: All attr tests passed
 Machine halting!
 
-Ticks: total 26616, idle 18300, system 8090, user 226
+Ticks: total 35911, idle 18300, system 17090, user 521
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 183
 Paging: faults 0

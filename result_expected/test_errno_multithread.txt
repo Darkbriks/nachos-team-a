@@ -1,0 +1,31 @@
+=== Errno Multithreaded Test ===
+TTTTTTTTTTTTTTTTTTTThread 0: OK, errno = 0
+hread 1: OK, errno = 1
+hread 6: OK, errno = 6
+hread 12: OK, errno = 12
+hread 19: OK, errno = 19
+hread 13: OK, errno = 13
+hread 8: OK, errno = 8
+hread 5: OK, errno = 5
+hread 3: OK, errno = 3
+hread 4: OK, errno = 4
+hread 10: OK, errno = 10
+hread 17: OK, errno = 17
+hread 18: OK, errno = 18
+hread 11: OK, errno = 11
+hread 14: OK, errno = 14
+hread 9: OK, errno = 9
+hread 15: OK, errno = 15
+hread 2: OK, errno = 2
+hread 7: OK, errno = 7
+hread 16: OK, errno = 16
+=== Errno Multithreaded Test Complete ===
+Machine halting!
+
+Ticks: total 1997812, idle 55040, system 33710, user 1909062
+Disk I/O: reads 0, writes 0
+Console I/O: reads 0, writes 575
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

@@ -5,10 +5,12 @@
 #include "linked_list.h"
 #include "system.h"
 #include "thread.h"
+#include "synch.h"
 
 #define MAX_THREAD 30 // TODO check for user's max process
 #define MAX_PROCESS 15 // TODO PUT it in User
 
+class Lock;
 
 class Process {
     friend class Thread;
@@ -62,7 +64,7 @@ class Process {
         /**
          * @brief Add a thread for this address space
          */
-        Thread* CreateThread(const char* name);
+        Thread* CreateThread(const char* name, ptr_32 tlsBase = 0);
 
         /**
          * @brief Mark a thread as terminated and decrease the thread count
@@ -109,7 +111,7 @@ class Process {
         /**
          * @brief Delete all threads linked to a process
          */
-        void KillAllThreads();
+        void KillAllThreads(bool include_current = true);
 
         /**
          * @brief This function is called only by Cleanup at the end of the program

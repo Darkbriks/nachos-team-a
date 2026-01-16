@@ -1,5 +1,5 @@
 #include "syscall.h"
-#include "types.h"
+#include "nos_stddef.h"
 
 int main(){
     for (int i = 0; i < 12; i++){

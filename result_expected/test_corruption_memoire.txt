@@ -1,0 +1,24 @@
+mem_init: Espace mémoire initialisé de 128 bytes
+mem_init: Espace utilisable de 120 bytes
+mem_init: Espace utilisable aligné de 120 bytes (aligné à 4)
+mem_init: Premier bloc libre à 23432, taille=104
+mem_init: Taille de l'header : 4
+mem_init: Taille du footer : 4
+mem_init: Taille totale d'un bloc libre vide : 16
+mem_init: Taille totale d'un bloc occupé vide : 8
+mem_alloc: Demande d'allocation de 16 bytes
+mem_alloc: Taille alignée à 16 bytes
+mem_alloc: Taille finale du bloc utilisateur : 16 bytes
+mem_alloc: Partitionnement du bloc libre de taille 120 bytes
+mem_alloc: Nouveau bloc occupé de taille 24 bytes
+mem_alloc: Bloc résiduel libre de taille 96 bytes
+mem_free: Invalid block pointer
+Machine halting!
+
+Ticks: total 113402, idle 70500, system 30170, user 12732
+Disk I/O: reads 0, writes 0
+Console I/O: reads 0, writes 705
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

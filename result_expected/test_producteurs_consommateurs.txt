@@ -1,8 +1,9 @@
+Si pas de print avant alors tout a marché !! 
 Machine halting!
 
-Ticks: total 38483, idle 0, system 12810, user 25673
+Ticks: total 162281, idle 4700, system 24010, user 133571
 Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 0
+Console I/O: reads 0, writes 47
 Paging: faults 0
 Network I/O: packets received 0, sent 0
 

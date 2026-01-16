@@ -1,21 +1,23 @@
 #include "syscall.h"
-#include "nos_stdlib.h"
+#include "nos_stdio.h"
+#include "nos_threads.h"
+#include "pthread.h"
 
 // Don't work
 void very_long_function(void *arg) {
-    printf_simple("b");
-    printf_simple("Thread woke up from very long sleep!\n");
-    PthreadExit(0);
+    printf("b");
+    printf("Thread woke up from very long sleep!\n");
+    pthread_exit(0);
 }
 
 int main() {
-    printf_simple("c");
+    printf("c");
 
-    posix_thread_t tid;
-    PthreadCreate(&tid, 0, (void *(*)(void *)) &very_long_function, 0);
-    PthreadJoin(tid, 0);
+    pthread_t tid;
+    pthread_create(&tid, 0, (void *(*)(void *)) &very_long_function, 0);
+    pthread_join(tid, 0);
 
-    printf_simple("Main thread finished.\n");
+    printf("Main thread finished.\n");
     return 0;
 }
 

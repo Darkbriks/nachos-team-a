@@ -1,4 +1,5 @@
 #include "syscall.h"
+#include "pthread.h"
 
 int counter = 0;
 
@@ -12,29 +13,29 @@ void *simple_thread(void *arg) {
 }
 
 int main() {
-    PutString("=== Test PthreadCreate Basic ===\n", 35);
+    PutString("=== Test pthread_create Basic ===\n", 35);
     
-    posix_thread_t tid1, tid2, tid3;
+    pthread_t tid1, tid2, tid3;
     void *retval1, *retval2, *retval3;
     
-    if (PthreadCreate(&tid1, 0, simple_thread, (void *)1) != 0) {
+    if (pthread_create(&tid1, 0, simple_thread, (void *)1) != 0) {
         PutString("ERROR: Failed to create thread 1\n", 33);
         return 1;
     }
     
-    if (PthreadCreate(&tid2, 0, simple_thread, (void *)2) != 0) {
+    if (pthread_create(&tid2, 0, simple_thread, (void *)2) != 0) {
         PutString("ERROR: Failed to create thread 2\n", 33);
         return 1;
     }
     
-    if (PthreadCreate(&tid3, 0, simple_thread, (void *)3) != 0) {
+    if (pthread_create(&tid3, 0, simple_thread, (void *)3) != 0) {
         PutString("ERROR: Failed to create thread 3\n", 33);
         return 1;
     }
     
-    PthreadJoin(tid1, &retval1);
-    PthreadJoin(tid2, &retval2);
-    PthreadJoin(tid3, &retval3);
+    pthread_join(tid1, &retval1);
+    pthread_join(tid2, &retval2);
+    pthread_join(tid3, &retval3);
     
     if ((int)retval1 != 2 || (int)retval2 != 4 || (int)retval3 != 6) {
         PutString("ERROR: Invalid return values\n", 29);

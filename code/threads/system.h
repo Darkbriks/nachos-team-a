@@ -15,7 +15,7 @@
 #include "timer.h"
 #include "utility.h"
 
-
+class FutexQueue;
 class FrameProvider;
 class Process;
 class Thread;
@@ -28,6 +28,7 @@ extern void Initialize(int argc, char **argv); // Initialization,
 extern void Cleanup();                         // Cleanup, called when
                                                // Nachos is done.
 
+extern FutexQueue* futexQueue;        // Global futex queue
 extern FrameProvider* frameProvider;  // Physical memory frame provider
 extern Thread *currentThread;         // the thread holding the CPU
 extern Thread *threadToBeDestroyed;   // the thread that just finished
@@ -43,13 +44,24 @@ extern Timer *timer;                  // the hardware alarm clock
 #include "machine.h"
 #include "synchconsole.h"
 
-#define MAX_STRING_SIZE 256
-
 extern Machine *machine; // user program memory and registers
 extern SynchConsole *synchConsole; // The only Console
 
-void copyStringFromMachine(int from, char *to, unsigned size);
-void copyStringToMachine(char *from, int to, unsigned size);
+bool CopyFromUserRaw(void* dst, unsigned src, size_t size);
+bool CopyToUserRaw(unsigned dst, const void* src, size_t size);
+
+bool CopyStringFromUser(unsigned src, char* dst, size_t max);
+bool CopyStringToUser(const char* src, unsigned dst, size_t max);
+
+template<typename T>
+bool CopyFromUserType(T* dst, const unsigned src) {
+    return CopyFromUserRaw(dst, src, sizeof(T));
+}
+
+template<typename T>
+bool CopyToUserType(const unsigned dst, const T* src) {
+    return CopyToUserRaw(dst, src, sizeof(T));
+}
 #endif
 
 #ifdef FILESYS_NEEDED // FILESYS or FILESYS_STUB

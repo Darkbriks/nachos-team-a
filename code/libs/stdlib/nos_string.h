@@ -8,7 +8,7 @@
  * Excludes functions are strcoll and strxfrm
  */
 
-#include "types.h"
+#include "nos_stddef.h"
 
 /* ============================================================
  * Memory manipulation functions

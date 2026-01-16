@@ -1,6 +1,5 @@
 #ifndef USER_SEM_H
 #define USER_SEM_H
-#include "exception.h"
 
 void handle_SC_SemInit();
 void handle_SC_SemWait();

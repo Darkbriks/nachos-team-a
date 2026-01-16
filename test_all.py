@@ -58,7 +58,7 @@ def exec_nachos(prog : str, tmp_file : str) -> bool:
     # Si le test prend plus de 5 secondes, on le tue
     with open(tmp_file, "w+") as f:
         try:
-            s = subprocess.check_output(f"cd {BUILD_DIR} ; timeout {TIMEOUT}s {prog}", shell=True, stderr=subprocess.STDOUT).decode("utf-8")
+            s = subprocess.check_output(f"cd {BUILD_DIR} ; timeout {TIMEOUT}s {prog}", shell=True, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL).decode("utf-8")
             f.write(s)
             if "Machine halting!" in s: # En cas d'arrêt brutal de la machine, par exemple un SEGV, la chaine "Machine halting!" n'est pas présente
                 return False
@@ -237,8 +237,8 @@ if __name__ == "__main__":
     all_test.append(Test(
                          file_expect = "test_getString_erno_negative_size.txt",
                          line_to_execute =f"./nachos-step{CURRENT_STEP} -x ./system/getErrno",
-                         name = "Test GetString taille négative",
-                         description = "Test du syscall GetString depuis un programme utilisateur avec en paramètre une taille de chaîne négative. Doit échouer, et errno doit être mis à E_INVAL (1)."
+                         name = "Test Errno en contexte global",
+                         description = "Test des fonctions de récupération d'errno dans un contexte a thread unique, sans tls."
                          )
                    )
 
@@ -331,14 +331,6 @@ if __name__ == "__main__":
                 )
 
     all_test.append(Test(
-                        file_expect = "test_useLib.txt",
-                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./useLib",
-                        name = "Test utilisation de la librairie utilisateur",
-                        description = "Test pour vérifier l'utilisation correcte de la librairie utilisateur fournie avec Nachos."
-                    )
-                )
-
-    all_test.append(Test(
                         file_expect = "test_thread_basicThreadCreate.txt",
                         line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./threads/basicThreadsCreate",
                         name = "Test basicThreadCreate",
@@ -411,6 +403,48 @@ if __name__ == "__main__":
                         line_to_execute = f'echo "exitCode1" | ./nachos-step{CURRENT_STEP} {RS} -x ./our_shell',
                         name = "Test main thread create a process and check his exitCode",
                         description = "Lance le shell pour lui faire exexuter un processus puis verifie son exitCode" 
+                    )
+                )
+
+    all_test.append(Test(
+                        file_expect ="test_ExceptionCatch.txt",
+                        line_to_execute = f'echo -e "./system/testCorruptionCode\n./system/testStackOverflow\n./system/testCorruptionMemoire" | ./nachos-step{CURRENT_STEP} {RS} -x ./our_shell',
+                        name = "Test main thread create a process and the new one try to write on code section, then create a stack overflow and last try to go after the stack in memory",
+                        description = "Lance le shell pour lui faire exexuter un processus. Celui ci va faire une erreur que le kernel attrape pour renvoyer une exception et prévenir le shell que son processus fils à mal fini, test 3 exception sur la mémoire" 
+                    )
+                )
+
+
+
+    all_test.append(Test(
+                        file_expect ="test_malloc.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./memory_allocator/testMalloc",
+                        name = "Test malloc and free",
+                        description = "Test pour vérifier l'allocation et la libération de mémoire dynamique via malloc et free."
+                    )
+                )
+
+    all_test.append(Test(
+                        file_expect ="test_realloc.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./memory_allocator/testRealloc",
+                        name = "Test realloc",
+                        description = "Test pour vérifier le comportement de la fonction realloc pour la réallocation de mémoire dynamique."
+                    )
+                )
+
+    all_test.append(Test(
+                        file_expect ="test_corruption_fonction.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./memory_allocator/testCorruptionFonction",
+                        name = "Test détection de corruption mémoire",
+                        description = "Test pour vérifier la détection de corruption de la fonction de recherche de bloc mémoire."
+                    )
+                )
+
+    all_test.append(Test(
+                        file_expect ="test_errno_multithread.txt",
+                        line_to_execute = f"./nachos-step{CURRENT_STEP} {RS} -x ./system/errno_multithread",
+                        name = "Test errno en contexte multithread avec TLS",
+                        description = "Test pour vérifier le comportement de errno dans un contexte multithread avec Thread Local Storage (TLS)."
                     )
                 )
 

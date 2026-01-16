@@ -27,12 +27,19 @@ USERPROG_NOPROGRAM=
 #  and ..._EXTRA_SOURCES are ignored for them)
 USERPROG_LIBS=start.S                     \
               libgcc.c                    \
+              ../libs/stdlib/nos_stdio.c  \
               ../libs/stdlib/nos_stdlib.c \
               ../libs/stdlib/nos_string.c \
+              ../libs/allocator/nos_mem.c \
+              ../libs/allocator/nos_mem_space.c \
+              ../libs/pthread/pthread.c \
+              ../libs/pthread/pthread_attr.c \
 
 AUTOLOAD_CPPFLAGS=-DCHANGED               \
     -I$(topsrc_dir)/libs                  \
     -I$(topsrc_dir)/libs/stdlib           \
+    -I$(topsrc_dir)/libs/allocator        \
+    -I$(topsrc_dir)/libs/pthread		  \
 
 # each program 'p' can specify extra sources in 'p'_EXTRA_SOURCES
 # => declare here program sources to add in addition to
@@ -92,19 +99,21 @@ USER_FLAVORS=step6
 # USER_FLAVORS=step2 step5 mynetwork final
 
 # $(eval $(call define-flavor,step2,userprog filesys-stub,synchconsole.cc))
-$(eval $(call define-flavor,step3,userprog filesys-stub,synchconsole.cc userthread.cc process.cc bitmap_thread_safe.cc \
-	userIO.cc userSem.cc userSleep.cc ))
+# $(eval $(call define-flavor,step3,userprog filesys-stub,synchconsole.cc userthread.cc process.cc bitmap_thread_safe.cc \
+# 	userIO.cc userSem.cc userSleep.cc ))
+#
+# $(eval $(call define-flavor,step4,userprog filesys-stub, \
+#     bitmap_thread_safe.cc frameprovider.cc process.cc stackmanager.cc synchconsole.cc \
+#     futex.cc userIO.cc userprocess.cc userSbrk.cc userSem.cc userSleep.cc userthread.cc))
 
-$(eval $(call define-flavor,step4,userprog filesys-stub, \
-    bitmap_thread_safe.cc frameprovider.cc process.cc synchconsole.cc \
-    userIO.cc userprocess.cc userSem.cc userSleep.cc userthread.cc))
-
-# $(eval $(call define-flavor,step5,userprog filesys,\
-#     synchconsole.cc userthread.cc))
+$(eval $(call define-flavor,step5,userprog filesys-stub,\
+    bitmap_thread_safe.cc frameprovider.cc process.cc stackmanager.cc synchconsole.cc \
+    futex.cc userIO.cc userprocess.cc userSbrk.cc userSem.cc userSleep.cc userthread.cc))
 
 $(eval $(call define-flavor,step6,userprog filesys-stub network, \
-    bitmap_thread_safe.cc frameprovider.cc process.cc synchconsole.cc \
-    userIO.cc userprocess.cc userSem.cc userSleep.cc userthread.cc reliablepost.cc ))
+    bitmap_thread_safe.cc frameprovider.cc process.cc stackmanager.cc synchconsole.cc \
+    futex.cc userIO.cc userprocess.cc userSbrk.cc userSem.cc userSleep.cc userthread.cc \
+    reliablepost.cc))
 
 # $(eval $(call define-flavor,final,userprog filesys network,\
 #     synchconsole.cc userthread.cc))

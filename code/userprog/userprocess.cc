@@ -3,7 +3,7 @@
 #include "process.h"
 #include "filesys.h"
 #include "exception.h"
-#include "syscall.h"
+#include "nos_errno.h"
 
 static void StartProcess(const int arg) {
     const auto* process = reinterpret_cast<Process*>(arg);
@@ -27,7 +27,10 @@ void handle_SC_ForkExec() {
     if (filenameAddr <= 0) { RETURN(-E_FAULT); } // TODO Add more checks (addr is in valid user space, for example)
 
     char filename[MAX_PATH_SIZE];
-    copyStringFromMachine(filenameAddr, filename, MAX_PATH_SIZE);
+    if (!CopyStringFromUser(filenameAddr, filename, MAX_PATH_SIZE)) {
+        DEBUG('p', "ForkExec: Failed to copy filename from user memory at address 0x%x\n", filenameAddr);
+        RETURN(-E_FAULT);
+    }
     DEBUG('p', "ForkExec: Request to execute '%s'\n", filename);
 
     OpenFile* executable = fileSystem->Open(filename);
@@ -80,7 +83,7 @@ void handle_SC_ForkJoin() {
 
     delete child;
 
-    if (addr_return >= 0) {
+    if (addr_return > 0) {
         if (machine->WriteMem(addr_return, sizeof(void*), reinterpret_cast<int>(result)) == FALSE) {
             RETURN(-E_INVAL);
         }
@@ -88,4 +91,8 @@ void handle_SC_ForkJoin() {
     DEBUG('p', "ForkJoin: process %d finish wait for process %d and get exitCode %d\n",currentThread->getProcess()->getPId(), PID_to_wait, result); 
     
     RETURN(0);
+}
+
+void handle_SC_ForkSelf() {
+    RETURN(currentThread->getProcess()->getPId());
 }

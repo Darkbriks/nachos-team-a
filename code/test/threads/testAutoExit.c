@@ -1,5 +1,6 @@
 #include "syscall.h"
-#include "types.h"
+#include "nos_stddef.h"
+#include "pthread.h"
 
 /* Test automatic thread termination - thread function returns without calling ExitThread */
 void thread_func(void *arg) {
@@ -30,9 +31,9 @@ int main() {
     PutString("=== Test Automatic Thread Termination ===\n", 43);
 
     // Create threads that will return without calling ExitThread
-    posix_thread_t tid1, tid2;
-    PthreadCreate(&tid1, NULL, (void *(*)(void *))thread_func, (void *)1);
-    PthreadCreate(&tid2, NULL, (void *(*)(void *))thread_func, (void *)2);
+    pthread_t tid1, tid2;
+    pthread_create(&tid1, NULL, (void *(*)(void *))thread_func, (void *)1);
+    pthread_create(&tid2, NULL, (void *(*)(void *))thread_func, (void *)2);
 
     PutString("Main: Created threads ", 22);
     PutInt(tid1);
@@ -44,12 +45,12 @@ int main() {
     PutString("Main: Waiting for thread ", 25);
     PutInt(tid1);
     PutString("...\n", 4);
-    PthreadJoin(tid1, 0);
+    pthread_join(tid1, 0);
 
     PutString("Main: Waiting for thread ", 25);
     PutInt(tid2);
     PutString("...\n", 4);
-    PthreadJoin(tid2, 0);
+    pthread_join(tid2, 0);
 
     PutString("Main: All threads finished successfully!\n", 41);
 }

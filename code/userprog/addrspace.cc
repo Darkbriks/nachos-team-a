@@ -21,8 +21,11 @@
 #include "copyright.h"
 #include "frameprovider.h"
 #include "noff.h"
+#include "process.h"
+#include "stackmanager.h"
 #include "synch.h"
 #include "system.h"
+#include "tls.h"
 
 //----------------------------------------------------------------------
 // SwapHeader
@@ -48,84 +51,109 @@ static void ReadAtVirtual(OpenFile* executable, const int virtualaddr, const int
     // Don't remove these lines
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
-    char tmp[numBytes + 1];
+    const auto tmp = new char[numBytes + 1];
     const int maxSize = executable->ReadAt(tmp, numBytes,  position);
     for (int i = 0; i < maxSize; i++){ 
         machine->WriteMem(virtualaddr + i , 1, tmp[i]);
     }
+    delete[] tmp;
 }
-
-//----------------------------------------------------------------------
-// AddrSpace::AddrSpace
-//      Create an address space to run a user program.
-//      Load the program from a file "executable", and set everything
-//      up so that we can start executing user instructions.
-//
-//      Assumes that the object code file is in NOFF format.
-//
-//      First, set up the translation from program memory to physical
-//      memory.  For now, this is really simple (1:1), since we are
-//      only uniprogramming, and we have a single unsegmented page table
-//
-//      "executable" is the file containing the object code to load into memory
-//----------------------------------------------------------------------
 
 AddrSpace::AddrSpace(OpenFile *executable) {
     NoffHeader noffH;
 
+    // Read in the file header
     executable->ReadAt(reinterpret_cast<char *>(&noffH), sizeof(noffH), 0);
     if ((noffH.noffMagic != NOFFMAGIC) && (WordToHost(noffH.noffMagic) == NOFFMAGIC)) {
         SwapHeader(&noffH);
     }
     ASSERT(noffH.noffMagic == NOFFMAGIC);
 
-    // how big is address space?
-    unsigned int size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize; // we need to increase the size
-    // to leave room for the stack
-    numPages = divRoundUp(size, PageSize);
-    size = numPages * PageSize;
+    // Calculate end of static data (code + data + bss)
+    unsigned int endOfStaticData = 0;
+    if (noffH.uninitData.size > 0) { endOfStaticData = noffH.uninitData.virtualAddr + noffH.uninitData.size; }
+    else if (noffH.initData.size > 0) { endOfStaticData = noffH.initData.virtualAddr + noffH.initData.size; }
+    else { endOfStaticData = noffH.code.virtualAddr + noffH.code.size; }
 
-    ASSERT(numPages <= NumPhysPages); // check we're not trying
-    // to run anything too big --
-    // at least until we have
-    // virtual memory
+    heapStart = divRoundUp(endOfStaticData, PageSize) * PageSize;
+    DEBUG('a', "AddrSpace::AddrSpace: End of static data at 0x%x, heap starts at 0x%x\n", endOfStaticData, heapStart);
 
-    DEBUG('a', "Initializing address space, num pages %d, size %d\n", numPages, size);
-    // first, set up the translation
+    const unsigned int staticPages = divRoundUp(endOfStaticData, PageSize);
+    constexpr unsigned int heapPages = INITIAL_HEAP_PAGES;
+    constexpr unsigned int stackPages = divRoundUp(UserStackSize, PageSize);
+
+    numPages = staticPages + MAX_HEAP_PAGES + stackPages;
+    stackLimit = (staticPages + MAX_HEAP_PAGES) * PageSize;
+    codeStart = noffH.code.virtualAddr;
+    codeSize = noffH.code.size;
+
+    DEBUG('a', "AddrSpace::AddrSpace: staticPages=%u, heapPages=%u, stackPages=%u, total=%u\n", staticPages, heapPages, stackPages, numPages);
+    DEBUG('a', "AddrSpace::AddrSpace: stackLimit=0x%x\n", stackLimit);
+
+    const unsigned int size = numPages * PageSize;
+
+    ASSERT(staticPages + heapPages + stackPages <= NumPhysPages); // Check we can fit all into physical memory
+
+    // Set up the page table
+    DEBUG('a', "AddrSpace::AddrSpace: Initializing address space, num pages %d, size %d\n", numPages, size);
     pageTable = new TranslationEntry[numPages];
+
+    // Initialize all entries as invalid first
     for (unsigned int i = 0; i < numPages; i++) {
-        const int physPage = frameProvider->GetEmptyFrame();
-        if (physPage == -1) {
-            DEBUG('a', "AddrSpace::AddrSpace: Unable to allocate frame for page %d\n", i);
-            ASSERT(FALSE); // TODO: Handle this properly
-        }
         pageTable[i].virtualPage = i;
-        pageTable[i].physicalPage = physPage;
-        pageTable[i].valid = TRUE;
+        pageTable[i].physicalPage = 0;
+        pageTable[i].valid = FALSE;
         pageTable[i].use = FALSE;
         pageTable[i].dirty = FALSE;
-        pageTable[i].readOnly = FALSE; // if the code segment was entirely on
-                                       // a separate page, we could set its
-                                       // pages to be read-only
+        pageTable[i].readOnly = FALSE;
+    }
+
+    // Allocate frames for static (code + data + bss) and for heap pages (these two are contiguous)
+    for (unsigned int i = 0; i < staticPages + heapPages; i++) {
+        const int physPage = frameProvider->GetEmptyFrame();
+        if (physPage == -1) {
+            DEBUG('a', "AddrSpace::AddrSpace: Unable to allocate frame for static page %d\n", i);
+            for (unsigned int j = 0; j < i; j++) { if (pageTable[j].valid) { frameProvider->ReleaseFrame(static_cast<int>(pageTable[j].physicalPage)); } }
+            ASSERT(FALSE); // TODO: Handle this properly
+        }
+        pageTable[i].physicalPage = physPage;
+        pageTable[i].valid = TRUE;
+    }
+
+    // Allocate frames for stack pages
+    // TODO: Consider allocating stack pages on demand instead of all at once
+    for (unsigned int i = stackLimit / PageSize; i < numPages; i++) {
+        const int physPage = frameProvider->GetEmptyFrame();
+        if (physPage == -1) {
+            DEBUG('a', "AddrSpace::AddrSpace: Unable to allocate frame for stack page %d\n", i);
+            for (unsigned int j = 0; j < i; j++) { if (pageTable[j].valid) { frameProvider->ReleaseFrame(static_cast<int>(pageTable[j].physicalPage)); } }
+            ASSERT(FALSE); // TODO: Handle this properly
+        }
+        pageTable[i].physicalPage = physPage;
+        pageTable[i].valid = TRUE;
     }
 
     // then, copy in the code and data segments into memory
+    // TODO: Set pageTable[i].readOnly = TRUE for code segment
     if (noffH.code.size > 0) {
-        DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", noffH.code.virtualAddr, noffH.code.size);
+        DEBUG('a', "AddrSpace::AddrSpace: Initializing code segment, at 0x%x, size %d\n", noffH.code.virtualAddr, noffH.code.size);
         ReadAtVirtual(executable, noffH.code.virtualAddr, noffH.code.size, noffH.code.inFileAddr, pageTable, numPages);
+        for (unsigned int j = 0; j < divRoundUp(codeSize, PageSize) - 1; j++){
+            pageTable[j].readOnly = true; // TODO we don't protect the last page of code because data can be a little inside think about it
+        }
     }
     if (noffH.initData.size > 0) {
-        DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", noffH.initData.virtualAddr, noffH.initData.size);
+        DEBUG('a', "AddrSpace::AddrSpace: Initializing data segment, at 0x%x, size %d\n", noffH.initData.virtualAddr, noffH.initData.size);
         ReadAtVirtual(executable, noffH.initData.virtualAddr, noffH.initData.size, noffH.initData.inFileAddr, pageTable, numPages);
     }
 
+    brk = heapStart + (heapPages * PageSize);
+    DEBUG('a', "AddrSpace::AddrSpace: Initial brk set to 0x%x (%u heap pages)\n", brk, heapPages);
+
+    stackManager = new StackManager(this, numPages * PageSize, stackLimit, MAX_THREAD);
+
     AllocateSemaphoreTable(INITIAL_SEMAPHORE_TABLE_SIZE);
 }
-
-//----------------------------------------------------------------------
-// AddrSpace::~AddrSpace
-//      Dealloate an address space.  Nothing for now!
-//----------------------------------------------------------------------
 
 AddrSpace::~AddrSpace() {
     for (unsigned int i = 0; i < numPages; i++) {
@@ -146,6 +174,7 @@ AddrSpace::~AddrSpace() {
         }
     }
     delete[] semaphoreTable;
+    delete stackManager;
 }
 
 //----------------------------------------------------------------------
@@ -173,7 +202,7 @@ void AddrSpace::InitRegisters() const {
     // allocated the stack; but subtract off a bit, to make sure we don't
     // accidentally reference off the end!
     machine->WriteRegister(StackReg, static_cast<int>(numPages) * PageSize - 16);
-    DEBUG('a', "Initializing stack register to %d\n", numPages * PageSize - 16);
+    DEBUG('a', "AddrSpace::InitRegisters: Initializing stack register to %d\n", numPages * PageSize - 16);
 }
 
 //----------------------------------------------------------------------
@@ -199,44 +228,101 @@ void AddrSpace::RestoreState() const {
     machine->pageTableSize = numPages;
 }
 
+int AddrSpace::Sbrk(const int n) {
+    if (n == 0) { return static_cast<int>(brk); }
+
+    if (n < 0) {
+        DEBUG('a', "AddrSpace::Sbrk: Shrinking heap not supported (n=%d)\n", n);
+        return -1;
+    }
+
+    const auto pagesNeeded = static_cast<unsigned int>(n);
+    const unsigned int newBrk = brk + (pagesNeeded * PageSize);
+
+    if (newBrk > stackLimit) {
+        DEBUG('a', "AddrSpace::Sbrk: Heap would collide with stack (newBrk=0x%x > stackLimit=0x%x)\n", newBrk, stackLimit);
+        return -1;
+    }
+
+    if (frameProvider->NumAvailFrame() < static_cast<int>(pagesNeeded)) {
+        DEBUG('a', "AddrSpace::Sbrk: Not enough frames (need %u, have %d)\n", pagesNeeded, frameProvider->NumAvailFrame());
+        return -1;
+    }
+
+    const unsigned int startPage = brk / PageSize;
+    const unsigned int endPage = startPage + pagesNeeded;
+
+    DEBUG('a', "AddrSpace::Sbrk: Allocating pages %u to %u (brk: 0x%x -> 0x%x)\n", startPage, endPage - 1, brk, newBrk);
+
+    for (unsigned int i = startPage; i < endPage; i++) {
+        if (pageTable[i].valid) { continue; }
+
+        const int physPage = frameProvider->GetEmptyFrame();
+        if (physPage == -1) {
+            DEBUG('a', "AddrSpace::Sbrk: Failed to allocate frame for page %u\n", i);
+            return -1;
+        }
+
+        pageTable[i].virtualPage = i;
+        pageTable[i].physicalPage = physPage;
+        pageTable[i].valid = TRUE;
+        pageTable[i].use = FALSE;
+        pageTable[i].dirty = FALSE;
+        pageTable[i].readOnly = FALSE;
+    }
+
+    const unsigned int oldBrk = brk;
+    brk = newBrk;
+    DEBUG('a', "AddrSpace::Sbrk: Success, returning 0x%x (new brk=0x%x, numPages=%u)\n", oldBrk, brk, numPages);
+
+    return static_cast<int>(oldBrk);
+}
+
+unsigned int AddrSpace::GetStackBottom() const {
+    if (stackManager != nullptr) {
+        return stackManager->GetStackAreaBottom();
+    }
+    return brk;
+}
+
 int AddrSpace::SemaphoreCreate(const int initialValue) {
     int semId = semaphoreBitmap->Find();
     if (semId == -1) {
-        DEBUG('s', "AddrSpace::SemaphoreCreate: Failed to create semaphore, table full\n");
+        DEBUG('c', "AddrSpace::SemaphoreCreate: Failed to create semaphore, table full\n");
         AllocateSemaphoreTable(maxSemaphores * 2); // Double the size of the semaphore table
         semId = semaphoreBitmap->Find();
         if (semId == -1) {
-            DEBUG('s', "AddrSpace::SemaphoreCreate: Failed to create semaphore even after resizing table\n");
+            DEBUG('c', "AddrSpace::SemaphoreCreate: Failed to create semaphore even after resizing table\n");
             return -1;
         }
     }
     semaphoreTable[semId].semaphore = new Semaphore("UserSemaphore", initialValue);
     semaphoreTable[semId].valid = true;
-    DEBUG('s', "AddrSpace::SemaphoreCreate: Created semaphore with id %d and initial value %d\n", semId, initialValue);
+    DEBUG('c', "AddrSpace::SemaphoreCreate: Created semaphore with id %d and initial value %d\n", semId, initialValue);
     return semId;
 }
 
-int AddrSpace::SemaphoreWait(const int semId) {
+int AddrSpace::SemaphoreWait(const int semId) const {
     Semaphore* sem = GetSemaphore(semId);
     if (sem == nullptr) {
         return -1;
     }
     sem->P();
-    DEBUG('s', "AddrSpace::SemaphoreWait: Semaphore with id %d waited (P operation)\n", semId);
+    DEBUG('c', "AddrSpace::SemaphoreWait: Semaphore with id %d waited (P operation)\n", semId);
     return 0;
 }
 
-int AddrSpace::SemaphorePost(const int semId) {
+int AddrSpace::SemaphorePost(const int semId) const {
     Semaphore* sem = GetSemaphore(semId);
     if (sem == nullptr) {
         return -1;
     }
     sem->V();
-    DEBUG('s', "AddrSpace::SemaphorePost: Semaphore with id %d posted (V operation)\n", semId);
+    DEBUG('c', "AddrSpace::SemaphorePost: Semaphore with id %d posted (V operation)\n", semId);
     return 0;
 }
 
-int AddrSpace::SemaphoreDestroy(const int semId) {
+int AddrSpace::SemaphoreDestroy(const int semId) const {
     const Semaphore* sem = GetSemaphore(semId);
     if (sem == nullptr) {
         return -1;
@@ -245,7 +331,7 @@ int AddrSpace::SemaphoreDestroy(const int semId) {
     semaphoreTable[semId].semaphore = nullptr;
     semaphoreTable[semId].valid = false;
     semaphoreBitmap->ClearThreadSafe(semId);
-    DEBUG('s', "AddrSpace::SemaphoreDestroy: Semaphore with id %d destroyed\n", semId);
+    DEBUG('c', "AddrSpace::SemaphoreDestroy: Semaphore with id %d destroyed\n", semId);
     return 0;
 }
 
@@ -264,7 +350,7 @@ Semaphore* AddrSpace::GetSemaphore(const int semId) const {
  *      so it is not recommended to reduce the size of the semaphore table.
  *----------------------------------------------------------------------*/
 int AddrSpace::AllocateSemaphoreTable(const unsigned int maxSem) {
-    DEBUG('s', "AddrSpace::AllocateSemaphoreTable: Allocating semaphore table with size %u\n", maxSem);
+    DEBUG('c', "AddrSpace::AllocateSemaphoreTable: Allocating semaphore table with size %u\n", maxSem);
     if (maxSem > MAX_SEMAPHORES_PER_PROCESS) { return -1; }
     if (maxSem == this->maxSemaphores) { return 0; } // No change needed
 
@@ -293,8 +379,38 @@ int AddrSpace::AllocateSemaphoreTable(const unsigned int maxSem) {
         }
     }
 
-    DEBUG('s', "AddrSpace::AllocateSemaphoreTable: Successfully allocated semaphore table with size %u\n", maxSem);
+    DEBUG('c', "AddrSpace::AllocateSemaphoreTable: Successfully allocated semaphore table with size %u\n", maxSem);
 
     this->maxSemaphores = maxSem;
     return 0;
+}
+
+bool AddrSpace::IsUserAddress(const unsigned int addr) const {
+    return addr < numPages * PageSize;
+}
+
+bool AddrSpace::IsValidUserRange(const unsigned int addr, const unsigned int size) const {
+    if (size == 0) { return true; }
+    if (addr + size < addr) { return false; } // overflow protection
+    if (const unsigned int end = addr + size - 1; !IsUserAddress(addr) || !IsUserAddress(end)) { return false; }
+    return true;
+}
+
+bool AddrSpace::IsInCodeSegment(const unsigned int addr) const {
+    return addr >= codeStart && addr <  codeStart + codeSize;
+}
+
+bool AddrSpace::IsInHeap(const unsigned int addr) const {
+    return addr >= heapStart && addr < brk;
+}
+
+bool AddrSpace::IsInStackArea(const unsigned int addr) const {
+    return addr >= stackLimit && addr < GetStackTop();
+}
+
+bool AddrSpace::IsValidTLS(const unsigned int tlsAddr) const {
+    if (tlsAddr == 0) { return true; } // TLS is optional
+    if (!IsValidUserRange(tlsAddr, TLS_TOTAL_SIZE)) { return false; }
+    if (!IsAligned(tlsAddr, 4)) { return false; }
+    return true;
 }

@@ -27,22 +27,39 @@
 #include "userthread.h"
 #include "process.h"
 #include "exception.h"
+#include "futex.h"
 #include "userIO.h"
+#include "userSbrk.h"
 #include "userprocess.h"
 #include "userSleep.h"
 #include "userSem.h"
 
 #define CASE_HANDLER(syscall_name)                      \
     case SC_##syscall_name:                             \
-        DEBUG('a', "%s exception.cc\n", #syscall_name); \
+        DEBUG('e', "%s exception.cc\n", #syscall_name); \
         handle_SC_##syscall_name();                     \
         break;
 
 #define CASE_HANDLER_RETURN(syscall_name)               \
     case SC_##syscall_name:                             \
-        DEBUG('a', "%s exception.cc\n", #syscall_name); \
+        DEBUG('e', "%s exception.cc\n", #syscall_name); \
         handle_SC_##syscall_name();                     \
         return;
+
+#define EXCEPTION_ERROR(error_name, error_code) \
+    if (process == nullptr) { currentThread->Finish(); return; }   \
+    process->KillAllThreads(false);   \
+    printf(error_name);   \
+    if (Process::isLastActiveProcess()) {   \
+        ASSERT(false) /* To hit gdb */ \
+        interrupt->Halt();   \
+    }   \
+    process->setExitCode(-error_code);   \
+    process->AncestorSigChild();   \
+    currentThread->Finish();  \
+    ASSERT(false) /* To hit gdb */ \
+    break;
+
 
 
 //----------------------------------------------------------------------
@@ -82,7 +99,7 @@ static void UpdatePC() {
 //----------------------------------------------------------------------
 
 void handle_SC_Halt() {
-    DEBUG('a', "Shutdown, initiated by user program.\n");
+    DEBUG('e', "Shutdown, initiated by user program.\n");
     interrupt->Halt();
 }
 
@@ -112,12 +129,30 @@ void handle_SC_Exit() {
     ASSERT(FALSE);
 }
 
+void handle_Error(ExceptionType which, int type){
+    Process* process = currentThread->getProcess();
+
+    DEBUG('e', "Exception: %d, type: %d in process %d (thread %d)\n", which, type,
+          process ? process->getPId() : -1, currentThread->getTID());
+
+    switch (which){
+        case AddressErrorException:
+            EXCEPTION_ERROR("Erreur de segmentation (core dumped)\n", 3);
+        case ReadOnlyException:
+            EXCEPTION_ERROR("Write on a read-only address\n", 4);
+        case PageFaultException:
+            EXCEPTION_ERROR("Access on an invalid address . Allocate more memory\n", 5);
+        default:
+            EXCEPTION_ERROR("Not yet manage exception, just kill the process\n", 1);
+        }
+}
+
 void ExceptionHandler(ExceptionType which) {
     int type = machine->ReadRegister(2);
 
     if (which != SyscallException){
-        printf("Unexpected user mode exception %d %d\n", which, type);
-        ASSERT(FALSE);
+        handle_Error(which, type);
+        return;
     }
 
     switch (type){
@@ -131,17 +166,6 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(PutInt)
         CASE_HANDLER(GetInt)
 
-        CASE_HANDLER(PthreadCreate)
-        CASE_HANDLER_RETURN(PthreadExit)
-        CASE_HANDLER(PthreadJoin)
-        CASE_HANDLER(PthreadDetach)
-        CASE_HANDLER(PthreadSelf)
-
-        CASE_HANDLER(Pthread_attr_init)
-        CASE_HANDLER(Pthread_attr_destroy)
-        CASE_HANDLER(Pthread_attr_setdetachstate)
-        CASE_HANDLER(Pthread_attr_getdetachstate)
-
         CASE_HANDLER(Sleep)
         CASE_HANDLER(SleepUntil)
         CASE_HANDLER(GetCurrentTick)
@@ -154,11 +178,26 @@ void ExceptionHandler(ExceptionType which) {
 
         CASE_HANDLER(ForkExec)
         CASE_HANDLER(ForkJoin)
+        CASE_HANDLER(ForkSelf)
+
+        CASE_HANDLER(Sbrk);
+        CASE_HANDLER(mmap);
+        CASE_HANDLER(munmap);
+
+        CASE_HANDLER(thread_create);
+        CASE_HANDLER_RETURN(thread_exit);
+        CASE_HANDLER(thread_self);
+        CASE_HANDLER(thread_yield);
+
+        CASE_HANDLER(futex_wait);
+        CASE_HANDLER(futex_wake);
+        CASE_HANDLER(atomic_cmpxchg);
+        CASE_HANDLER(atomic_store);
+        CASE_HANDLER(atomic_load);
 
         default:
-            printf("Unknow syscall :%d\n", type);
-            ASSERT(FALSE);
-            break;
+            Process * process = currentThread->getProcess();
+            EXCEPTION_ERROR("Unknow syscall", 2);
     }
 
     // LB: Do not forget to increment the pc before returning!

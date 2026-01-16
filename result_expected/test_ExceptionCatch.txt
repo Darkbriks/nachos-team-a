@@ -1,0 +1,17 @@
+our_shell >  shell voit une mauvaise terminaison avec code :-4 
+our_shell >  shell voit une mauvaise terminaison avec code :-5 
+our_shell >  shell voit une mauvaise terminaison avec code :-5 
+our_shell >  
+session terminée
+Write on a read-only address
+Access on an invalid address . Allocate more memory
+Access on an invalid address . Allocate more memory
+Machine halting!
+
+Ticks: total 108776, idle 28913, system 54310, user 25553
+Disk I/O: reads 0, writes 0
+Console I/O: reads 86, writes 224
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

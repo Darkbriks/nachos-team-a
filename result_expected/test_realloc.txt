@@ -1,0 +1,121 @@
+hey
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Unable to allocate new block
+ça marche :) !
+bar
+foo
+mem_realloc: Next block is corrupted
+ça marche :) !
+bar
+hey2
+ça marche :) !
+1
+ça marche :) !
+2
+ça marche :) !
+3
+Machine halting!
+
+Ticks: total 363909, idle 177400, system 64940, user 121569
+Disk I/O: reads 0, writes 0
+Console I/O: reads 0, writes 1774
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

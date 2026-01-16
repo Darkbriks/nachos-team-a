@@ -1,9 +1,12 @@
 #include "process.h"
 
+#include "syscall.h"
 #include "addrspace.h"
 #include "bitmap_thread_safe.h"
 #include "bitmap.h"
+#include "stackmanager.h"
 #include "thread.h"
+#include "tls.h"
 #include "../threads/system.h"
 
 BitMapThreadSafe* Process::all_process = new BitMapThreadSafe(MAX_PROCESS);
@@ -92,15 +95,24 @@ Process::Process(OpenFile * executable, char* return_code) {
 
     exitCode = 0;
     threadNumber = 0; // The main thread
-    Thread * firstThread = CreateThread(executable ? "main" : "kernel");
+    mainThread = CreateThread(executable ? "main" : "kernel");
     this->space = nullptr;
 
     if (executable != nullptr) {
         this->space = new AddrSpace(executable);
         delete executable; // close file
+
+        unsigned int mainStackTop, mainStackLimit;
+
+        StackManager* stackMgr = space->GetStackManager();
+        if (stackMgr->AllocateStack(USER_STACK_DEFAULT_SIZE, &mainStackTop, &mainStackLimit) < 0) {
+            *return_code = -1;
+            return;
+        }
+        mainThread->set_sp(reinterpret_cast<int *>(mainStackTop));
+        stackMgr->MarkInUse(mainStackTop, mainThread->getTID());
     }
 
-    mainThread = firstThread;
     ancestor = currentThread ? currentThread->getProcess() : nullptr;
     if (ancestor != nullptr ){
         DEBUG('p', "Process %d have process %d for ancestor\n", PID, ancestor->getPId());
@@ -154,9 +166,12 @@ Process::~Process() {
     }
 }
 
-void Process::KillAllThreads(){
+void Process::KillAllThreads(bool include_current){
     Thread * thread = nullptr;
     while ( ( thread = all_threads_addr->RemoveFront()) != nullptr){
+        if (thread == currentThread && !include_current){
+            continue;
+        }
         delete thread;
     }
 }
@@ -220,14 +235,21 @@ Thread * Process::FindThread(const unsigned int TID) const {
     return all_threads_addr->FindInList( std::function<bool (Thread *, unsigned int)> (search), TID );
 }
 
-Thread* Process::CreateThread(const char * name) {
-    const posix_thread_t tid = threads_bitmap->Find();
-    if (tid == static_cast<posix_thread_t>(-1)) { return nullptr; }
-    auto* newThread = new Thread(name, this, tid);
+Thread* Process::CreateThread(const char * name, const ptr_32 tlsBase) {
+    const tid_t tid = threads_bitmap->Find();
+    if (tid == static_cast<tid_t>(-1)) { return nullptr; }
+
+    const auto thread_name = new char[MAX_STRING_SIZE];
+    snprintf(thread_name, MAX_STRING_SIZE - 1, "%s_%d_%d", name, PID, tid);
+
+    auto* newThread = new Thread(tid, this, tlsBase);
+    newThread->SetDebugName(thread_name);
+
     threadNumberLock->Acquire();
     threadNumber++;
     all_threads_addr->AddInList(newThread);
     threadNumberLock->Release();
+
     DEBUG('t', "Process %p : Added thread, now %d threads we create %d with name %s\n", this, threadNumber, newThread->getTID(), newThread->getName());
     return newThread;
 }

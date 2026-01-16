@@ -38,11 +38,9 @@
 #define THREAD_H
 
 #include "copyright.h"
-#include "synch.h"
 #include "utility.h"
-
 #include "system.h"
-#include "bitmap.h"
+#include "nos_threads.h"
 
 #ifdef USER_PROGRAM
 #include "addrspace.h"
@@ -58,28 +56,10 @@
 // WATCH OUT IF THIS ISN'T BIG ENOUGH!!!!!
 #define StackSize (4 * 1024) // in words
 
-#define DETACHED_FLAG_POS 0
-
-#define THREAD_FLAG_SIZE 1
-
 class Process;
 
-typedef unsigned int posix_thread_t;
-
-typedef enum : unsigned char { JOINABLE = 0, DETACHED = 1 } posix_thread_detachstate_t;
-
-typedef struct {
-    posix_thread_detachstate_t detachstate;
-    // Add more attributes as needed
-} posix_thread_attr_t;
-
-int posix_thread_attr_init(posix_thread_attr_t *attr);
-int posix_thread_attr_destroy(posix_thread_attr_t *attr);
-int posix_thread_attr_setdetachstate(posix_thread_attr_t *attr, int detachstate);
-int posix_thread_attr_getdetachstate(const posix_thread_attr_t *attr, int *detachstate);
-
 // Thread state
-enum ThreadStatus { JUST_CREATED, RUNNING, READY, BLOCKED, TERMINATED };
+enum ThreadStatus { JUST_CREATED, RUNNING, READY, BLOCKED, SLEEP, ZOMBIE, TERMINATED };
 
 // external function, dummy routine whose sole job is to call Thread::Print
 extern void ThreadPrint(int arg);
@@ -97,91 +77,81 @@ extern void ThreadPrint(int arg);
 
 class Thread {
 
-    friend Process;
+friend Process;
 
-    private:
-        // NOTE: DO NOT CHANGE the order of these first two members.
-        // THEY MUST be in this position for SWITCH to work.
-        int *stackTop;                      // the current stack pointer
-        int machineState[MachineStateSize]; // all registers except for stackTop
+private:
+    // NOTE: DO NOT CHANGE the order of these first two members.
+    // THEY MUST be in this position for SWITCH to work.
+    int* stackTop = nullptr;                 // the current stack pointer
+    int machineState[MachineStateSize] = {}; // all registers except for stackTop
 
-        Process *process;
-        unsigned int TID; // The TID for this thread
-
-        Thread *joiner;
-        Thread *join;
-        Semaphore *sem;
-
-        long long waitTime; // Used to wake up sleeping threads
-
-        BitMap* flags;
-        void* retval;
-
-        Thread(const char *debugName, Process *p, posix_thread_t tid);
-
-    public:
-        Thread() = delete; // explicitly disable the default constructor
-        ~Thread();                     // deallocate a Thread
-        // NOTE -- thread being deleted
-        // must not be running when delete
-        // is called
-
-        char *getName() { return name; }
-        unsigned int getTID() { return TID; }
-        Process *getProcess() { return process; }
-        AddrSpace *getAddrSpace();
-
-        bool hasJoiner() { return joiner != nullptr; }
-
-        long long getWaitTime() { return waitTime; }
-
-        void setJoiner(Thread *thread) {joiner = thread;}
-        void setJoin(Thread *thread) {join = thread;}
-        void setStatus(ThreadStatus st) { status = st; }
-
-        bool isDetached() const { return flags->Test(DETACHED_FLAG_POS); }
-        bool isTerminated() const { return status == TERMINATED; }
-        void *getReturnValue() const { return retval; }
-
-        void setDetached(bool d);
-        void setReturnValue(void *val) { retval = val; }
-
-        // basic thread operations
-        void Joiner();
-        void Join();
-        void Fork(VoidFunctionPtr func, int arg); // Make thread run (*func)(arg)
-        void Yield();                             // Relinquish the CPU if any other thread is runnable
-        void Sleep();                             // Put the thread to sleep and relinquish the processor
-        void SleepUntil(long long tick);          // Sleep until specified tick
-        void Finish();                            // The thread is done executing
-        void CheckOverflow();                     // Check if thread has overflowed its stack
-
-        void Print() { printf("%s, ", name); }
-
-    private:
-        // some of the private data for this class is listed above
-
-        int *stack; // Bottom of the stack
-        // NULL if this is the main thread
-        // (If NULL, don't deallocate stack)
-        ThreadStatus status; // ready, running or blocked
-        char name[MAX_STRING_SIZE];
-
-        void StackAllocate(VoidFunctionPtr func, int arg);
-        // Allocate a stack for thread.
-        // Used internally by Fork()
+    int* stack = nullptr; // Bottom of the stack. NULL if this is the main thread (If NULL, don't deallocate stack)
 
 #ifdef USER_PROGRAM
-        // A thread running a user program actually has *two* sets of CPU registers
-        // -- one for its state while executing user code, one for its state while
-        // executing kernel code.
-
-        int userRegisters[NumTotalRegs]; // user-level CPU register state
-
-    public:
-        void SaveUserState();    // save user-level register state
-        void RestoreUserState(); // restore user-level register state
+    // A thread running a user program actually has *two* sets of CPU registers
+    // -- one for its state while executing user code, one for its state while
+    // executing kernel code.
+    int userRegisters[NumTotalRegs] = {}; // user-level CPU register state
 #endif
+
+    const char* name = {};
+    tid_t tid = 0; // The TID for this thread
+    Process* process = nullptr;
+
+    ThreadStatus status = JUST_CREATED; // ready, running or blocked
+    long long waitTime = 0; // Used to wake up sleeping threads
+
+    ptr_32 userTlsBase = 0;
+    bool exiting = false;
+
+    Thread(tid_t tid, Process* process, ptr_32 tlsBase = 0);
+
+    void StackAllocate(VoidFunctionPtr func, int arg); // Allocate a stack for thread. Used internally by Fork()
+
+    void SetDebugName(const char* debugName) { name = debugName; }
+    void set_sp(int* sp) { stackTop = sp; } // For first created thread
+
+public:
+    Thread() = delete; // explicitly disable the default constructor
+    ~Thread();                     // deallocate a Thread
+    // NOTE -- thread being deleted
+    // must not be running when delete
+    // is called
+
+    [[nodiscard]] const char* getName()const { return name; }
+    [[nodiscard]] tid_t getTID() const { return tid; }
+    [[nodiscard]] Process* getProcess()const { return process; }
+
+    [[nodiscard]] ThreadStatus getStatus() const { return status; }
+    [[nodiscard]] long long getWaitTime() const { return waitTime; }
+
+    [[nodiscard]] ptr_32 getUserTlsBase() const { return userTlsBase; }
+    [[nodiscard]] bool getExiting() const { return exiting; }
+
+    [[nodiscard]] bool isTerminated() const { return status == TERMINATED; }
+    [[nodiscard]] bool canExit() const { return status != RUNNING && status != BLOCKED && status != SLEEP; }
+
+    [[nodiscard]] AddrSpace* getAddrSpace() const;
+
+    void setStatus(const ThreadStatus st) { status = st; }
+
+    void InitUserContext(ptr_32 entryPoint, ptr_32 arg, ptr_32 user_sp);
+
+    // basic thread operations
+    void Fork(VoidFunctionPtr func, int arg); // Make thread run (*func)(arg)
+    void Yield();                             // Relinquish the CPU if any other thread is runnable
+    void Sleep();                             // Put the thread to sleep and relinquish the processor
+    void SleepUntil(long long tick);          // Sleep until specified tick
+    void WakeUp();                            // Wake up the thread
+    void Finish();                            // The thread is done executing
+    void CheckOverflow();                     // Check if thread has overflowed its stack
+
+#ifdef USER_PROGRAM
+    void SaveUserState();    // save user-level register state
+    void RestoreUserState() const; // restore user-level register state
+#endif
+
+    void Print() const { printf("%s, ", name); }
 };
 
 // Magical machine-dependent routines, defined in switch.s
@@ -194,7 +164,7 @@ extern "C" {
 void ThreadRoot();
 
 // Stop running oldThread and start running newThread
-void SWITCH(Thread *oldThread, Thread *newThread);
+void SWITCH(Thread* oldThread, Thread* newThread);
 }
 
 #endif // THREAD_H

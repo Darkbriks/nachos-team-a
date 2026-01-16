@@ -12,3 +12,4 @@ code/libs/*/*.o
 code/.clang-tidy
 code/.gdb_history
 */.idea
+code/.clangd
