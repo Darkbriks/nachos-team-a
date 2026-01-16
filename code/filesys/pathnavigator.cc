@@ -1,9 +1,6 @@
 #include "pathnavigator.h"
 #include "filesys.h"
-#include "openfile.h"
 #include "system.h"
-
-#include <cstring>
 
 PathNavigator::PathNavigator(FileSystem* fs, const char* path, const bool autoRestore)
     : _fs(fs), _backupDirectoryFile(nullptr), _depth(0), _valid(false), _autoRestore(autoRestore)

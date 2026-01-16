@@ -218,22 +218,25 @@ int FileSystem::GetWorkingSector() const {
 }
 
 char* FileSystem::GetWorkingPath() const {
-    const auto path = new char[1024];
+    auto* path = new char[1024];
     path[0] = '\0';
     int currentSector = directoryFile->GetSector();
 
     while (currentSector != DirectorySector) {
-        const auto *directory = new Directory(NumDirEntries);
-        directory->FetchFrom(new OpenFile(currentSector));
+        const auto* directory = new Directory(NumDirEntries);
+        OpenFile currentFile(currentSector);
+        directory->FetchFrom(&currentFile);
         const int parentSector = directory->Find("..");
 
-        const auto *parentDirectory = new Directory(NumDirEntries);
-        parentDirectory->FetchFrom(new OpenFile(parentSector));
+        const auto* parentDirectory = new Directory(NumDirEntries);
+        OpenFile parentFile(parentSector);
+        parentDirectory->FetchFrom(&parentFile);
 
-        for (unsigned int i = 0; i < parentDirectory->NbEntry(); i++) {
-            if (parentDirectory->GetType(i) == DIRECTORY_T && parentDirectory->GetSector(static_cast<int>(i)) == currentSector) {
+        for (int i = 0; i < NumDirEntries; i++) {
+            if (parentDirectory->GetType(i) == DIRECTORY_T &&
+                parentDirectory->GetSector(i) == currentSector) {
                 char temp[1024];
-                snprintf(temp, sizeof(temp), "/%s%s", parentDirectory->GetName(static_cast<int>(i)), path);
+                snprintf(temp, sizeof(temp), "/%s%s", parentDirectory->GetName(i), path);
                 strncpy(path, temp, 1024);
                 break;
             }
@@ -272,6 +275,7 @@ bool FileSystem::createSubDirectory(const int prev_sector, const int curr_sector
 
     if (!directoryChild->Add(".", curr_sector, DIRECTORY_T)) {
         DEBUG('f', "Failed to create '.', sector %d\n", curr_sector);
+        delete directoryChild;
         return false;
     }
     DEBUG('f', "Sucessfully created '.'\n");
@@ -279,14 +283,18 @@ bool FileSystem::createSubDirectory(const int prev_sector, const int curr_sector
     DEBUG('f', "Try to create '..'\n");
     if (!directoryChild->Add("..", prev_sector, DIRECTORY_T)) {
         DEBUG('f', "Failed to create '..', sector %d\n", prev_sector);
+        delete directoryChild;
         return false;
     }
     DEBUG('f', "Sucessfully created '..'\n");
 
     DEBUG('f', "Write back subdirectory header and content to disk\n");
     hdr->WriteBack(curr_sector);
-    directoryChild->WriteBack(new OpenFile(curr_sector));
+
+    OpenFile file(curr_sector);
+    directoryChild->WriteBack(&file);
     freeMap->WriteBack(freeMapFile);
+
     delete directoryChild;
     return true;
 }
@@ -358,6 +366,14 @@ bool FileSystem::_Create(const char *name, const int initialSize, const File_Typ
         CreateCleanup(false);
     }
 
+    // Set all bytes to zero
+    // This resolves strange behavior observed when DISK file isn't deleted, but "-f" flag is used
+    const auto zeroes = new char[initialSize];
+    bzero(zeroes, initialSize);
+    OpenFile tempFile(sector);
+    tempFile.Write(zeroes, initialSize);
+    delete[] zeroes;
+
     if (type == DIRECTORY_T && !createSubDirectory(directoryFile->GetSector(), sector, hdr, freeMap)) {
         DEBUG('f', "Creating %s %s impossible, can't create subdirectory\n", file_type_to_str(type), name);
         CreateCleanup(false);
@@ -383,24 +399,25 @@ bool FileSystem::_Create(const char *name, const int initialSize, const File_Typ
 
 OpenFile* FileSystem::_Open(const char *name) {
     const auto *directory = new Directory(NumDirEntries);
-    OpenFile *openFile = nullptr;
-
     directory->FetchFrom(directoryFile);
+
     const int sector = directory->Find(name);
-    DEBUG('f', "Opening file %s\n", name);
-    if (sector >= 0) {
-        openFile = new OpenFile(sector); // name was found in directory
-        if ( inodes.Open(openFile, sector) < 0 ) {
-            delete openFile;
-            openFile = nullptr;
-            DEBUG('f', "No more space in inodes table\n");
-        }
-    } else {
-        DEBUG('f', "Don't find file %s\n", name);
-    }
-    DEBUG('f', "File %s is open\n", name);
     delete directory;
-    return openFile; // return NULL if not found
+
+    if (sector < 0) {
+        DEBUG('f', "Don't find file %s\n", name);
+        return nullptr;
+    }
+
+    const int inode = inodes.Open(sector);
+    if (inode < 0) {
+        DEBUG('f', "No more space in inodes table\n");
+        return nullptr;
+    }
+
+    OpenFile* openFile = inodes.GetFile(inode);
+    DEBUG('f', "File %s is open\n", name);
+    return openFile;
 }
 
 //----------------------------------------------------------------------
@@ -417,7 +434,7 @@ OpenFile* FileSystem::_Open(const char *name) {
 //	"name" -- the text name of the file to be removed
 //----------------------------------------------------------------------
 
-bool FileSystem::_Remove(const char *name) const {
+bool FileSystem::_Remove(const char *name) {
     DEBUG('f', "Try to delete file %s\n", name);
 
     const auto *directory = new Directory(NumDirEntries);
@@ -429,6 +446,19 @@ bool FileSystem::_Remove(const char *name) const {
         DEBUG('f', "File %s is not found\n", name);
         return false; // file not found
     }
+
+    const int inodeRefCount = inodes.Close(sector);
+    if (inodeRefCount == -1) {
+        delete directory;
+        DEBUG('f', "Error closing inode for file %s\n", name);
+        return false;
+    }
+    if (inodeRefCount > 0) {
+        delete directory;
+        DEBUG('f', "Can't delete file %s, it is still opened\n", name);
+        return false; // file is still opened
+    }
+    DEBUG('f', "Inode for file %s closed, proceed to delete\n", name);
 
     if (!directory->Remove(name)) {
         delete directory;
@@ -466,11 +496,17 @@ bool FileSystem::_Change_Directory(const char * name) {
     }
     delete directory;
 
-    if ( ( file = Open(name) ) == nullptr) {
+    const int prev_inode = inodes.FindBySector(directoryFile->GetSector());
+
+    if ((file = Open(name)) == nullptr) {
         ASSERT(false);
         return false;
     }
-    directoryFile = file;
+
+    SetCurrentDirectory(file);
     DEBUG('f', "Change directory now in %s at sector %d \n", name, directoryFile->GetSector());
+
+    if (prev_inode != -1) { inodes.Close(prev_inode); }
+
     return true;
 }

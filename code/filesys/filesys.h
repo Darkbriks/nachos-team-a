@@ -111,7 +111,7 @@ private:
 
     bool _Create(const char *name, int initialSize, File_Type type) const;
     OpenFile* _Open(const char *name); 	// Open a file (UNIX open)
-    bool _Remove(const char *name)const;
+    bool _Remove(const char *name);
     bool _Change_Directory(const char * name);
 };
 

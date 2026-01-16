@@ -123,9 +123,7 @@ int main(int argc, char **argv) {
         }
 #endif // USER_PROGRAM
 #ifdef FILESYS
-        if (!strcmp(*argv, "-f")) {
-            system("rm -f ../build/DISK");
-        } else if (!strcmp(*argv, "-shell")) {
+        if (!strcmp(*argv, "-shell")) {
             FileSysShell shell(fileSystem);
             shell.registerCommands();
             shell.run();

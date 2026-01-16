@@ -5,8 +5,7 @@ Inode::~Inode() {
     delete file;
 }
 
-InodeTable::InodeTable() {
-    freeInodes = new BitMap(MAX_INODES);
+InodeTable::InodeTable() : freeInodes(new BitMap(MAX_INODES)) {
     DEBUG('I', "Inode table initialized with size %d\n", MAX_INODES);
 }
 
@@ -15,48 +14,93 @@ InodeTable::~InodeTable() {
     delete freeInodes;
 }
 
-int InodeTable::Open(OpenFile * file, const int sector) {
-    DEBUG('I', "Inode table : Try to add file %p with sector %d\n", file, sector);
-    const int result = freeInodes->Find();
-    if (result < 0){ 
-        DEBUG('I', "Inode table : But it fails\n");
-        return result;
+int InodeTable::Open(const int sector) {
+    // Check if file is already opened
+    int inodeIndex = FindBySector(sector);
+    if (inodeIndex != -1) {
+        DEBUG('I', "Inode for sector %d already opened at index %d\n", sector, inodeIndex);
+        inodes[inodeIndex]->incrementRefCount();
+        return inodeIndex;
     }
-    DEBUG('I', "Inode table : And it works\n");
-    inodes[result] = new Inode(file, sector);
-    return result;
+
+    // Find a free inode slot
+    inodeIndex = freeInodes->Find();
+    if (inodeIndex == -1) {
+        DEBUG('I', "No free inode slots available\n");
+        return -1;
+    }
+
+    // Create a new inode
+    auto* file = new OpenFile(sector);
+    inodes[inodeIndex] = new Inode(file, sector);
+    inodes[inodeIndex]->incrementRefCount();
+    DEBUG('I', "Opened new inode for sector %d at index %d\n", sector, inodeIndex);
+    return inodeIndex;
 }
 
-bool InodeTable::Close(const int inode) {
-    DEBUG('I', "Inode table : Try to remove indoe %d\n", inode);
-    if ( ! freeInodes->Test(inode)){
-        DEBUG('I', "Inode table : But it fails\n");
-        return false;
+int InodeTable::Close(const int inode) {
+    if (inode < 0 || inode >= MAX_INODES || inodes[inode] == nullptr) {
+        DEBUG('I', "Invalid inode index %d for close\n", inode);
+        return -1;
     }
-    DEBUG('I', "Inode table : And it works\n");
-    delete inodes[inode];
-    inodes[inode] = nullptr;
-    freeInodes->Clear(inode);
-    return true;
+
+    inodes[inode]->decrementRefCount();
+    DEBUG('I', "Decremented ref count for inode %d, new ref count: %d\n", inode, inodes[inode]->getRefCount());
+
+    if (inodes[inode]->getRefCount() == 0) {
+        delete inodes[inode];
+        inodes[inode] = nullptr;
+        freeInodes->Clear(inode);
+        DEBUG('I', "Closed inode %d and freed slot\n", inode);
+        return 0;
+    }
+
+    return inodes[inode]->getRefCount();
 }
 
-Inode* InodeTable::getInode(const int inode) const {
-    DEBUG('I', "Inode table : Try to fetch inode %d\n", inode);
-    if ( ! freeInodes->Test(inode)){
-        DEBUG('I', "Inode table : But it fails\n");
-        return nullptr;
+int InodeTable::CloseBySector(const int sector) {
+    const int inodeIndex = FindBySector(sector);
+    if (inodeIndex == -1) {
+        DEBUG('I', "No open inode found for sector %d to close\n", sector);
+        return -1;
     }
-    DEBUG('I', "Inode table : And it works\n");
-    return inodes[inode];
+    return Close(inodeIndex);
+}
+
+bool InodeTable::IsOpen(const int inode) const {
+    return inode >= 0 && inode < MAX_INODES && inodes[inode] != nullptr;
+}
+
+int InodeTable::FindBySector(const int sector) const {
+    for (int i = 0; i < MAX_INODES; ++i) {
+        if (inodes[i] != nullptr && inodes[i]->getSector() == sector) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+OpenFile* InodeTable::GetFile(const int inode) const {
+    if (IsOpen(inode)) {
+        return &inodes[inode]->getFile();
+    }
+    return nullptr;
+}
+
+int InodeTable::GetRefCount(const int inode) const {
+    if (IsOpen(inode)) {
+        return inodes[inode]->getRefCount();
+    }
+    return -1;
 }
 
 void InodeTable::Print() const {
-    for (int i = 0; i < MAX_INODES; i++){
-        if (inodes[i]){
-            printf("At inode %d we store sector %d\n", i, inodes[i]->getSector());
-        } else{
-            printf("At inode %d we store nothing ie NIL\n", i);
+    DEBUG('I', "Inode Table:\n");
+    for (int i = 0; i < MAX_INODES; ++i) {
+        if (inodes[i]) {
+            DEBUG('I', "Inode %d: Sector %d, RefCount %d\n", i, inodes[i]->getSector(), inodes[i]->getRefCount());
+        } else {
+            DEBUG('I', "Inode %d: Free\n", i);
         }
-
     }
 }
