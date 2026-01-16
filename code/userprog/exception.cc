@@ -29,6 +29,7 @@
 #include "exception.h"
 #include "futex.h"
 #include "userIO.h"
+#include "usernetwork.h"
 #include "userSbrk.h"
 #include "userprocess.h"
 #include "userSleep.h"
@@ -194,6 +195,11 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(atomic_cmpxchg);
         CASE_HANDLER(atomic_store);
         CASE_HANDLER(atomic_load);
+
+        CASE_HANDLER(connect);
+        CASE_HANDLER(accept);
+        CASE_HANDLER(sendto);
+        CASE_HANDLER(recvfrom);
 
         default:
             Process * process = currentThread->getProcess();

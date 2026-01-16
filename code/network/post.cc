@@ -282,6 +282,8 @@ PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data)
 	printf("Post send: ");
 	PrintHeader(pktHdr, mailHdr);
     }
+    DEBUG('n', "Transmitting data: %.*s\n", mailHdr.length, data);
+
     ASSERT(mailHdr.length <= MaxMailSize);
     ASSERT(0 <= mailHdr.to && mailHdr.to < numBoxes);
     
@@ -326,6 +328,7 @@ PostOffice::Receive(int box, PacketHeader *pktHdr,
     ASSERT((box >= 0) && (box < numBoxes));
 
     boxes[box].Get(pktHdr, mailHdr, data);
+    DEBUG('n', "Received data: %.*s\n", mailHdr->length, data);
     ASSERT(mailHdr->length <= MaxMailSize);
 }
 

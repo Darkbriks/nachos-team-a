@@ -75,6 +75,12 @@
 #define SC_atomic_store 63
 #define SC_atomic_load 64
 
+/* Network */
+#define SC_connect 70
+#define SC_accept 71
+#define SC_sendto 72
+#define SC_recvfrom 73
+
 #ifdef IN_USER_MODE
 
 // LB: This part is read only on compiling the test/*.c files.
@@ -421,6 +427,15 @@ void atomic_store(int* uaddr, int value);
  * @return The loaded value
  */
 int atomic_load(int* uaddr);
+
+/* -------------------------------------------------------------
+ * NETWORK
+ * -------------------------------------------------------------
+ */
+int connect(); // TODO
+int accept(); // TODO
+int sendto(int to, char* data, int size); // TODO
+int recvfrom(int from, char* data, int size); // TODO
 
 #endif // IN_USER_MODE
 

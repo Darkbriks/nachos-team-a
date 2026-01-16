@@ -110,6 +110,11 @@ DEFINE_SYSCALL_STUB atomic_cmpxchg, SC_atomic_cmpxchg
 DEFINE_SYSCALL_STUB atomic_store, SC_atomic_store
 DEFINE_SYSCALL_STUB atomic_load, SC_atomic_load
 
+DEFINE_SYSCALL_STUB connect, SC_connect
+DEFINE_SYSCALL_STUB accept, SC_accept
+DEFINE_SYSCALL_STUB sendto, SC_sendto
+DEFINE_SYSCALL_STUB recvfrom, SC_recvfrom
+
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main
