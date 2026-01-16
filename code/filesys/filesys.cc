@@ -71,6 +71,7 @@ extern void Print(const char *file);
 
 FileSystem::FileSystem(const bool format) {
     DEBUG('f', "Initializing the file system.\n");
+    inodes.Open(DirectorySector);
     if ( ! format) {
         // if we are not formatting the disk, just open the files representing
         // the bitmap and directory; these are left open while Nachos is running
@@ -150,7 +151,13 @@ bool FileSystem::Remove(const char *name) {
 OpenFile* FileSystem::Open(const char *name) {
     const PathNavigator nav(this, name);
     if (!nav.isValid()) { return nullptr; }
-    return _Open(nav.getLastComponent());
+    return inodes.GetFile(_Open(nav.getLastComponent()));
+}
+
+bool FileSystem::Close(const char *name) {
+    const PathNavigator nav(this, name);
+    if (!nav.isValid()) { return false; }
+    return _Close(nav.getLastComponent());
 }
 
 bool FileSystem::Change_Directory(const char * name) {
@@ -299,6 +306,18 @@ bool FileSystem::createSubDirectory(const int prev_sector, const int curr_sector
     return true;
 }
 
+    void FileSystem::SetCurrentDirectory(sector_t sector) {
+        ASSERT(sector != -1);
+        int prev_inode = inodes.FindBySector(directoryFile->GetSector());
+        if (directoryFile->GetSector() == sector){
+            return;
+        }
+        if (prev_inode != -1) { inodes.Close(prev_inode); }
+        int inode = inodes.Open(sector);
+        ASSERT(inodes.GetFile(inode) != nullptr);
+        directoryFile = inodes.GetFile(inode);
+    }
+
 //----------------------------------------------------------------------
 // FileSystem::Create
 // 	Create a file in the Nachos file system (similar to UNIX create).
@@ -387,6 +406,15 @@ bool FileSystem::_Create(const char *name, const int initialSize, const File_Typ
     CreateCleanup(true);
 }
 
+sector_t FileSystem::GetSectorByName(const char* name) {
+    const auto *directory = new Directory(NumDirEntries);
+    directory->FetchFrom(directoryFile);
+
+    const int result = directory->Find(name);
+    delete directory;
+    return result;
+}
+
 //----------------------------------------------------------------------
 // FileSystem::Open
 // 	Open a file for reading and writing.  
@@ -397,27 +425,21 @@ bool FileSystem::_Create(const char *name, const int initialSize, const File_Typ
 //	"name" -- the text name of the file to be opened
 //----------------------------------------------------------------------
 
-OpenFile* FileSystem::_Open(const char *name) {
-    const auto *directory = new Directory(NumDirEntries);
-    directory->FetchFrom(directoryFile);
-
-    const int sector = directory->Find(name);
-    delete directory;
-
+inode_t FileSystem::_Open(const char *name) {
+    const sector_t sector = GetSectorByName(name);
     if (sector < 0) {
         DEBUG('f', "Don't find file %s\n", name);
-        return nullptr;
+        return -1;
     }
 
-    const int inode = inodes.Open(sector);
+    const inode_t inode = inodes.Open(sector);
     if (inode < 0) {
         DEBUG('f', "No more space in inodes table\n");
-        return nullptr;
+        return -1;
     }
 
-    OpenFile* openFile = inodes.GetFile(inode);
     DEBUG('f', "File %s is open\n", name);
-    return openFile;
+    return inode;
 }
 
 //----------------------------------------------------------------------
@@ -437,29 +459,21 @@ OpenFile* FileSystem::_Open(const char *name) {
 bool FileSystem::_Remove(const char *name) {
     DEBUG('f', "Try to delete file %s\n", name);
 
-    const auto *directory = new Directory(NumDirEntries);
-    directory->FetchFrom(directoryFile);
-    const int sector = directory->Find(name);
+    const sector_t sector = GetSectorByName(name);
 
     if (sector == -1) {
-        delete directory;
         DEBUG('f', "File %s is not found\n", name);
         return false; // file not found
     }
 
-    const int inodeRefCount = inodes.Close(sector);
-    if (inodeRefCount == -1) {
-        delete directory;
-        DEBUG('f', "Error closing inode for file %s\n", name);
-        return false;
-    }
+    const int inodeRefCount = inodes.GetRefCount(inodes.FindBySector(sector));
     if (inodeRefCount > 0) {
-        delete directory;
         DEBUG('f', "Can't delete file %s, it is still opened\n", name);
         return false; // file is still opened
     }
-    DEBUG('f', "Inode for file %s closed, proceed to delete\n", name);
 
+    const auto *directory = new Directory(NumDirEntries);
+    directory->FetchFrom(directoryFile);
     if (!directory->Remove(name)) {
         delete directory;
         DEBUG('f', "Can't delete file %s\n", name);
@@ -484,8 +498,28 @@ bool FileSystem::_Remove(const char *name) {
     return true;
 }
 
+bool FileSystem::_Close(const char* name){
+    DEBUG('f', "Try to close file %s\n", name);
+
+    const sector_t sector = GetSectorByName(name);
+
+    if (sector == -1) {
+        DEBUG('f', "File %s is not found\n", name);
+        return false; // file not found
+    }
+
+    const int inodeRefCount = inodes.Close(inodes.FindBySector(sector));
+    if (inodeRefCount == -1) {
+        DEBUG('f', "Error closing inode for file %s\n", name);
+        return false;
+    }
+
+    DEBUG('f', "Successfuly closing inode for file %s\n", name);
+    return true;
+}
+
 bool FileSystem::_Change_Directory(const char * name) {
-    OpenFile * file;
+
     const auto *directory = new Directory(NumDirEntries);
 
     directory->FetchFrom(directoryFile);
@@ -496,17 +530,8 @@ bool FileSystem::_Change_Directory(const char * name) {
     }
     delete directory;
 
-    const int prev_inode = inodes.FindBySector(directoryFile->GetSector());
-
-    if ((file = Open(name)) == nullptr) {
-        ASSERT(false);
-        return false;
-    }
-
-    SetCurrentDirectory(file);
+    SetCurrentDirectory(GetSectorByName(name));
     DEBUG('f', "Change directory now in %s at sector %d \n", name, directoryFile->GetSector());
-
-    if (prev_inode != -1) { inodes.Close(prev_inode); }
 
     return true;
 }

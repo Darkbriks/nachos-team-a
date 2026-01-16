@@ -72,7 +72,9 @@ class FileSystem {
 class Directory;
 class InodeTable;
 
+
 class FileSystem {
+    friend class PathNavigator;
 public:
     explicit FileSystem(bool format); // Initialize the file system.
                                       // Must be called *after* "synchDisk"
@@ -84,6 +86,7 @@ public:
 
     bool Create(const char *name, int initialSize, File_Type type = FILE_T); // Create a file (UNIX creat)
     OpenFile* Open(const char *name); // Open a file (UNIX open)
+    bool Close(const char* name);
     bool Remove(const char *name); // Delete a file (UNIX unlink)
 
     bool Change_Directory(const char * name);
@@ -99,7 +102,7 @@ public:
     void DisplayInodes();
 
     [[nodiscard]] OpenFile* GetCurrentDirectory() const { return directoryFile; }
-    void SetCurrentDirectory(OpenFile* dir) { directoryFile = dir; }
+    void SetCurrentDirectory(sector_t sector);
 
 private:
     InodeTable inodes;
@@ -109,8 +112,10 @@ private:
                                     // file names, represented as a file
     bool createSubDirectory(int prev_sector, int curr_sector, FileHeader* hdr, BitMap *freeMap)const;
 
+    sector_t GetSectorByName(const char* name);
     bool _Create(const char *name, int initialSize, File_Type type) const;
-    OpenFile* _Open(const char *name); 	// Open a file (UNIX open)
+    inode_t _Open(const char *name); 	// Open a file (UNIX open)
+    bool _Close(const char* name);
     bool _Remove(const char *name);
     bool _Change_Directory(const char * name);
 };

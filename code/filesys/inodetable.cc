@@ -14,7 +14,7 @@ InodeTable::~InodeTable() {
     delete freeInodes;
 }
 
-int InodeTable::Open(const int sector) {
+inode_t InodeTable::Open(const sector_t sector) {
     // Check if file is already opened
     int inodeIndex = FindBySector(sector);
     if (inodeIndex != -1) {
@@ -38,7 +38,7 @@ int InodeTable::Open(const int sector) {
     return inodeIndex;
 }
 
-int InodeTable::Close(const int inode) {
+int InodeTable::Close(const inode_t inode) {
     if (inode < 0 || inode >= MAX_INODES || inodes[inode] == nullptr) {
         DEBUG('I', "Invalid inode index %d for close\n", inode);
         return -1;
@@ -58,7 +58,7 @@ int InodeTable::Close(const int inode) {
     return inodes[inode]->getRefCount();
 }
 
-int InodeTable::CloseBySector(const int sector) {
+int InodeTable::CloseBySector(const sector_t sector) {
     const int inodeIndex = FindBySector(sector);
     if (inodeIndex == -1) {
         DEBUG('I', "No open inode found for sector %d to close\n", sector);
@@ -67,11 +67,11 @@ int InodeTable::CloseBySector(const int sector) {
     return Close(inodeIndex);
 }
 
-bool InodeTable::IsOpen(const int inode) const {
+bool InodeTable::IsOpen(const inode_t inode) const {
     return inode >= 0 && inode < MAX_INODES && inodes[inode] != nullptr;
 }
 
-int InodeTable::FindBySector(const int sector) const {
+inode_t InodeTable::FindBySector(const sector_t sector) const {
     for (int i = 0; i < MAX_INODES; ++i) {
         if (inodes[i] != nullptr && inodes[i]->getSector() == sector) {
             return i;
@@ -80,27 +80,34 @@ int InodeTable::FindBySector(const int sector) const {
     return -1;
 }
 
-OpenFile* InodeTable::GetFile(const int inode) const {
+OpenFile* InodeTable::GetFile(const inode_t inode) const {
     if (IsOpen(inode)) {
         return &inodes[inode]->getFile();
     }
     return nullptr;
 }
 
-int InodeTable::GetRefCount(const int inode) const {
+int InodeTable::GetRefCount(const inode_t inode) const {
     if (IsOpen(inode)) {
         return inodes[inode]->getRefCount();
     }
     return -1;
 }
 
+int InodeTable::GetSector(const inode_t inode) const {
+    if (IsOpen(inode)) {
+        return inodes[inode]->getSector();
+    }
+    return -1;
+}
+
 void InodeTable::Print() const {
-    DEBUG('I', "Inode Table:\n");
+    printf("Inode Table:\n");
     for (int i = 0; i < MAX_INODES; ++i) {
         if (inodes[i]) {
-            DEBUG('I', "Inode %d: Sector %d, RefCount %d\n", i, inodes[i]->getSector(), inodes[i]->getRefCount());
+            printf("Inode %d: Sector %d, RefCount %d\n", i, inodes[i]->getSector(), inodes[i]->getRefCount());
         } else {
-            DEBUG('I', "Inode %d: Free\n", i);
+            printf("Inode %d: Free\n", i);
         }
     }
 }

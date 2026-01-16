@@ -16,6 +16,7 @@
 #define DIRECTORY_H
 
 #include "copyright.h"
+#include "fileconst.h"
 #include "filetype.h"
 
 class DirectoryEntry;
@@ -39,7 +40,7 @@ public:
     void FetchFrom(OpenFile *file) const; // Init directory contents from disk
     void WriteBack(OpenFile *file) const; // Write modifications to directory contents back to disk
 
-    int Find(const char *name) const; // Find the sector number of the FileHeader for file: "name"
+    sector_t Find(const char *name) const; // Find the sector number of the FileHeader for file: "name"
     bool Add(const char *name, int newSector, File_Type type) const;  // Add a file name into the directory
     bool Remove(const char *name) const;	// Remove a file from the directory
 

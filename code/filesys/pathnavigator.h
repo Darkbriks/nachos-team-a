@@ -29,7 +29,7 @@ public:
 
 private:
     FileSystem* _fs;
-    OpenFile* _backupDirectoryFile;
+    int _backupDirectorySector;
 
     char _components[MaxPathDepth][MaxPathComponent];
     int _depth;
