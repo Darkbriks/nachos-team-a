@@ -55,17 +55,22 @@ void Copy(const char *from, const char *to){
     }
 
     openFile = fileSystem->Open(to);
-    ASSERT(openFile != NULL);
+    if (! openFile) {
+        printf("Copy: File %s is created but we can't write into\n", to);
+        return; 
+    }
+
 
     // Copy the data in TransferSize chunks
     buffer = new char[TransferSize];
     while ((amountRead = fread(buffer, sizeof(char), TransferSize, fp)) > 0){
         openFile->Write(buffer, amountRead);	
     }
+    fileSystem->Close(to);
     delete [] buffer;
 
+
     // Close the UNIX and the Nachos files
-    delete openFile;
     fclose(fp);
 }
 
@@ -79,7 +84,7 @@ void Print(const char *name){
     int i, amountRead;
     char *buffer;
 
-    if ((openFile = fileSystem->Open(name)) == NULL) {
+    if ((openFile = fileSystem->Open(name)) == NULL){
         printf("Print: unable to open file %s\n", name);
         return;
     }
@@ -90,9 +95,9 @@ void Print(const char *name){
             printf("%c", buffer[i]);
         }
     }
+    fileSystem->Close(name);
     delete [] buffer;
 
-    delete openFile;		// close the Nachos file
     return;
 }
 
@@ -132,11 +137,11 @@ static void FileWrite(){
         numBytes = openFile->Write(Contents, ContentSize);
         if (numBytes < 10) {
             printf("Perf test: unable to write %s\n", FileName);
-            delete openFile;
+            fileSystem->Close(FileName);
             return;
         }
     }
-    delete openFile;	// close file
+    fileSystem->Close(FileName);
 }
 
 static void FileRead(){
@@ -156,13 +161,13 @@ static void FileRead(){
         numBytes = openFile->Read(buffer, ContentSize);
         if ((numBytes < 10) || strncmp(buffer, Contents, ContentSize)) {
             printf("Perf test: unable to read %s\n", FileName);
-            delete openFile;
+            fileSystem->Close(FileName);
             delete [] buffer;
             return;
         }
     }
     delete [] buffer;
-    delete openFile;	// close file
+    fileSystem->Close(FileName);
 }
 
 void PerformanceTest(){
