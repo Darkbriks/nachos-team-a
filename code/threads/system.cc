@@ -239,7 +239,7 @@ void Cleanup() {
     delete frameProvider;
     freeAllStatic();
     delete stats;
-    DEBUG('a',"\nShutdown\n");
+    DEBUG('C',"\nShutdown\n");
     Exit(0);
 }
 

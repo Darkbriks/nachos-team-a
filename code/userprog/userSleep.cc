@@ -54,8 +54,6 @@ void handle_SC_GetCurrentTick() {
     const auto high = static_cast<int>(current_tick >> 32);
     const auto low = static_cast<int>(current_tick & 0xFFFFFFFF);
 
-    DEBUG('a', "GetCurrentTick: current_tick=%lld, high=0x%x, low=0x%x\n", current_tick, high, low);
-
     if (!machine->WriteMem(addr, 4, low) || !machine->WriteMem(addr + 4, 4, high)) {
         RETURN(-E_FAULT);
     }

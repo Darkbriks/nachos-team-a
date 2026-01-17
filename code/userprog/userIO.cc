@@ -30,7 +30,6 @@ void handle_SC_PutString(){
         if (!CopyStringFromUser(addr + offset, buffer, MAX_STRING_SIZE)) {
             RETURN(-E_FAULT);
         }
-        DEBUG('a', "PutString got string: %s\n", buffer);
         if (const int res = synchConsole->SynchPutString(buffer, MAX_STRING_SIZE); res <= 0) { break; }
         else { offset += res; }
     }
