@@ -15,7 +15,7 @@ int main() {
             printf("\nsession terminée\n");
             break;
         } else{
-            pid = ForkExec(buffer);
+            pid = ForkExec(buffer, 255);
             if (pid < 0){
 
                 print_error("Pas de process crée");

@@ -23,12 +23,21 @@ static void StartProcess(const int arg) {
 }
 
 void handle_SC_ForkExec() {
-    const int filenameAddr = machine->ReadRegister(4);
+    const unsigned int filenameAddr = machine->ReadRegister(4);
+    const unsigned int size = machine->ReadRegister(5);
 
-    if (filenameAddr <= 0) { RETURN(-E_FAULT); } // TODO Add more checks (addr is in valid user space, for example)
+    VALIDATE_ARG(size > 0 && size < MAX_PATH_SIZE, E_INVAL);
+
+    Process *process = currentThread->getProcess();
+    VALIDATE_ARG(process != nullptr, E_FAULT);
+
+    const AddrSpace *space = process->getSpace();
+    VALIDATE_ARG(space != nullptr, E_FAULT);
+
+    VALIDATE_ARG(space->IsValidUserRange(filenameAddr, size), E_FAULT);
 
     char filename[MAX_PATH_SIZE];
-    if (!CopyStringFromUser(filenameAddr, filename, MAX_PATH_SIZE)) {
+    if (!CopyStringFromUser(filenameAddr, filename, size)) {
         DEBUG('p', "ForkExec: Failed to copy filename from user memory at address 0x%x\n", filenameAddr);
         RETURN(-E_FAULT);
     }
@@ -77,6 +86,14 @@ void handle_SC_ForkJoin() {
         DEBUG('p', "ForkJoin: process %d try to wait a process who is not his child %d\n",currentThread->getProcess()->getPId(), PID_to_wait); 
         RETURN(-E_NOCPC);
     }
+
+    Process *process = currentThread->getProcess();
+    VALIDATE_ARG(process != nullptr, E_FAULT);
+
+    const AddrSpace *space = process->getSpace();
+    VALIDATE_ARG(space != nullptr, E_FAULT);
+
+    VALIDATE_ARG(space->IsValidUserRange(addr_return, sizeof(void*)), E_FAULT);
 
     DEBUG('p', "ForkJoin: process %d wait for process %d\n",currentThread->getProcess()->getPId(), PID_to_wait); 
     currentThread->getProcess()->WaitForChild(child);
