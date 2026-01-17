@@ -223,6 +223,7 @@ void Thread::Yield() {
 
     DEBUG('t', "Yielding thread \"%s\"\n", getName());
 
+    scheduler->WakeUpThreads();
     if (Thread* nextThread = scheduler->FindNextToRun();nextThread != nullptr) {
         scheduler->ReadyToRun(this);
         scheduler->Run(nextThread);
