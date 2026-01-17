@@ -119,8 +119,8 @@ sector_t FileHeader::ByteToSector(const int offset) const {
         FirstIndirection* indirect = new FirstIndirection();
         indirect->FetchFrom(this->redirect);
         int current = offset / SectorSize - NumDirect;
-        if (indirect->entries[current].InUse()){
-            sector_t result =indirect->entries[current].getSector();
+        if (indirect->InUse(current)){
+            sector_t result =indirect->getSector(current);
             DEBUG('R', "On renvoie %d dansByteToSector cr offset =%d\n", result, offset);
             ASSERT(result != 0 );
             return result;

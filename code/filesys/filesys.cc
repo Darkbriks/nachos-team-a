@@ -363,14 +363,12 @@ void FileSystem::createFile(int initialSize, BitMap* freeMap, FileHeader* hdr){
         int nb_necessary = divRoundUp(initialSize - NumDirect * SectorSize, SectorSize);
 
         DEBUG('R', "file have nb = %d sector car déjà fais = %d\n", nb_necessary, NumDirect * SectorSize);
-        first->indirect.nbEntry = nb_necessary + 1;
 
 
         for (int i = 0; i < nb_necessary && i < MAX_INDIRECT_LEVEL_ONE; i++){
             int sector_tmp = freeMap->Find();
             ASSERT(sector_tmp != FreeMapSector);
-            first->indirect.entries[i].setSector(sector_tmp);
-            first->indirect.entries[i].setUse(true);
+            first->indirect.setSector(i, sector_tmp);
         }
         nb_necessary -= MAX_INDIRECT_LEVEL_ONE;
         if (nb_necessary > 0){

@@ -18,14 +18,8 @@ void File::WriteBack(sector_t sector) const {
     synchDisk->WriteSector(sector, (char *)(this));
 }
 
-void File::Print() const {
+void File::Print(){
 
-    for (int i = 0; i < MAX_INDIRECT_LEVEL_ONE; i++){
-        if (! indirect.entries[i].InUse()){
-            printf("sector %d is not used\n", indirect.entries[i].getSector());
-        } else {
-            printf("sector %d is used\n", indirect.entries[i].getSector());
-        }
-    }
+    indirect.Print();
 }
 

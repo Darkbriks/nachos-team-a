@@ -19,10 +19,10 @@ public:
     void WriteBack(sector_t sector) const;
 
 
-    void Print() const; 
+    void Print(); 
 
     FirstIndirection indirect;
-    int x;
+ // int x;
 private:
 };
 

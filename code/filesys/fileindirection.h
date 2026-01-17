@@ -10,22 +10,7 @@
 // Internal data structures kept public so that File operations can
 // access them directly.
 
-#define MAX_INDIRECT_LEVEL_ONE 15
-
-class FirstIndirection;
-class FileEntry {
-    friend FirstIndirection;
-
-private:
-    bool inUse;				// Is this file entry in use?
-    sector_t sector;				// Location on disk to find the data for this file
-
-public:
-    bool InUse()const {return inUse;}
-    sector_t getSector()const{return sector;}
-    void setUse(bool b){inUse = b;}
-    void setSector(sector_t s){sector = s;}
-};
+#define MAX_INDIRECT_LEVEL_ONE 32
 
 class FirstIndirection {
 
@@ -35,11 +20,12 @@ class FirstIndirection {
         void FetchFrom(const int sectorNumber);
         void WriteAt(const int sectorNumber);
         void Print();
+        void setSector(int index, sector_t sector);
+        sector_t getSector(int index);
+        bool InUse(int index);
+        //BITLMPA
 
-
-        int nbEntry;
-        int x;
-        FileEntry entries[MAX_INDIRECT_LEVEL_ONE];
+        sector_t entries[MAX_INDIRECT_LEVEL_ONE];
 };
 
 static_assert(sizeof(FirstIndirection) == SectorSize);

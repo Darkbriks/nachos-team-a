@@ -24,4 +24,7 @@
 typedef int sector_t;
 typedef int inode_t;
 
+
+#define INVALID_SECTOR -1
+
 #endif // FILECONST_H
