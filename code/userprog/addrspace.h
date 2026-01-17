@@ -109,6 +109,8 @@ class AddrSpace {
         [[nodiscard]] bool IsInStackArea(unsigned int addr) const;
         [[nodiscard]] bool IsValidTLS(unsigned int tlsAddr) const;
 
+        [[nodiscard]] bool IsValid() const { return pageTable != nullptr; }
+
     private:
         TranslationEntry *pageTable; // Assume linear page table translation for now!
         unsigned int numPages; // Number of pages in the virtual address space

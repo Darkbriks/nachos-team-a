@@ -114,7 +114,11 @@ AddrSpace::AddrSpace(OpenFile *executable) {
         if (physPage == -1) {
             DEBUG('a', "AddrSpace::AddrSpace: Unable to allocate frame for static page %d\n", i);
             for (unsigned int j = 0; j < i; j++) { if (pageTable[j].valid) { frameProvider->ReleaseFrame(static_cast<int>(pageTable[j].physicalPage)); } }
-            ASSERT(FALSE); // TODO: Handle this properly
+            delete[] pageTable;
+            pageTable = nullptr;
+            numPages = 0;
+            DEBUG('a', "AddrSpace::AddrSpace: Failed to allocate memory, address space invalid\n");
+            return;
         }
         pageTable[i].physicalPage = physPage;
         pageTable[i].valid = TRUE;
@@ -127,7 +131,11 @@ AddrSpace::AddrSpace(OpenFile *executable) {
         if (physPage == -1) {
             DEBUG('a', "AddrSpace::AddrSpace: Unable to allocate frame for stack page %d\n", i);
             for (unsigned int j = 0; j < i; j++) { if (pageTable[j].valid) { frameProvider->ReleaseFrame(static_cast<int>(pageTable[j].physicalPage)); } }
-            ASSERT(FALSE); // TODO: Handle this properly
+            delete[] pageTable;
+            pageTable = nullptr;
+            numPages = 0;
+            DEBUG('a', "AddrSpace::AddrSpace: Failed to allocate stack memory, address space invalid\n");
+            return;
         }
         pageTable[i].physicalPage = physPage;
         pageTable[i].valid = TRUE;

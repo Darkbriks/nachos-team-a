@@ -103,6 +103,14 @@ Process::Process(OpenFile * executable, char* return_code) {
         this->space = new AddrSpace(executable);
         delete executable; // close file
 
+        if (!this->space->IsValid()) {
+            DEBUG('p', "Process: Failed to create address space\n");
+            delete this->space;
+            this->space = nullptr;
+            *return_code = -1;
+            return;
+        }
+
         unsigned int mainStackTop, mainStackLimit;
 
         StackManager* stackMgr = space->GetStackManager();
