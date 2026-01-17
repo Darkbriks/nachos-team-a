@@ -19,7 +19,6 @@ void File::WriteBack(sector_t sector) const {
 }
 
 void File::Print(){
-
     indirect.Print();
 }
 

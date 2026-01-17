@@ -36,9 +36,9 @@ void FirstIndirection::WriteAt(const int sectorNumber) {
 void FirstIndirection::Print(){
     for (int i = 0; i < MAX_INDIRECT_LEVEL_ONE; i++){
         if (InUse(i)){
-            printf("entry %d is not used\n", i);
-        } else {
             printf("sector %d is used and stored on entry %d\n", getSector(i), i);
+        } else {
+            printf("entry %d is not used\n", i);
         }
     }
 }

@@ -24,6 +24,7 @@
 
 #include "copyright.h"
 
+#include "file.h"
 #include "fileindirection.h"
 #include "system.h"
 #include "filehdr.h"
@@ -45,6 +46,7 @@
 bool FileHeader::Allocate(BitMap *bitMap, const int fileSize) {
     numBytes = fileSize;
     numSectors  = divRoundUp(fileSize, SectorSize);
+    int nb_necessary = numSectors;
     DEBUG('R', "Need %d sectors\n", numSectors);
     if (bitMap->NumClear() < numSectors) {
         DEBUG('R', "Need %d sectors but not enought space available\n", numSectors);
@@ -54,6 +56,21 @@ bool FileHeader::Allocate(BitMap *bitMap, const int fileSize) {
     int mini = MIN(numSectors, NumDirect);
     for (int i = 0; i < mini; i++) {
         dataSectors[i] = bitMap->Find();
+    }
+    nb_necessary -= mini;
+    int mini2 = MIN(nb_necessary, MAX_INDIRECT_LEVEL_ONE);
+
+    setRedirect(INVALID_SECTOR);
+    if (nb_necessary > 0){
+        setRedirect(bitMap->Find());
+        File  * first = new File();
+        for (int i = 0; i < mini2 ;i++){
+            int sector_tmp = bitMap->Find();
+            ASSERT(sector_tmp != FreeMapSector);
+            first->indirect.setSector(i, sector_tmp);
+        }
+        first->WriteBack(getRedirect());
+        DEBUG('R', "file have sector %d for indirection \n", getRedirect());
     }
     return true;
 }
@@ -106,8 +123,6 @@ void FileHeader::WriteBack(const int sectorNumber) {
 //	"offset" is the location within the file of the byte in question
 //----------------------------------------------------------------------
 
-sector_t FileHeader::getRedirect(){return redirect;}
-
 sector_t FileHeader::ByteToSector(const int offset) const {
     if (offset < 0){
         ASSERT(FALSE);
@@ -147,10 +162,6 @@ int FileHeader::FileLength() const {
 // 	Print the contents of the file header, and the contents of all
 //	the data blocks pointed to by the file header.
 //----------------------------------------------------------------------
-
-int FileHeader::WithoutIndirect() {
-    return NumDirect;
-}
 
 void FileHeader::Print() const {
     int i;

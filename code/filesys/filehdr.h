@@ -55,16 +55,18 @@ class FileHeader {
 
     void Print()const;			// Print the contents of the file.
 
-    int WithoutIndirect(); 
-    sector_t getRedirect();
     void setRedirect(sector_t s){redirect = s;}
+    sector_t getRedirect(){return redirect;}
 
   private:
     sector_t redirect;
+    sector_t redirect2;
     int numBytes;			// Number of bytes in the file
     int numSectors;			// Number of data sectors in the file
     sector_t dataSectors[NumDirect];		// Disk sector numbers for each data 
 					// block in the file
 };
+
+static_assert(sizeof(FileHeader) == SectorSize);
 
 #endif // FILEHDR_H
