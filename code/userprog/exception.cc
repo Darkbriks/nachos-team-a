@@ -158,7 +158,6 @@ void ExceptionHandler(ExceptionType which) {
 
     switch (type){
         CASE_HANDLER_RETURN(Halt)
-        CASE_HANDLER_RETURN(Exit)
 
         CASE_HANDLER(PutChar)
         CASE_HANDLER(PutString)
@@ -180,6 +179,7 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(ForkExec)
         CASE_HANDLER(ForkJoin)
         CASE_HANDLER(ForkSelf)
+        CASE_HANDLER_RETURN(Exit)
 
         CASE_HANDLER(Sbrk);
         CASE_HANDLER(mmap);
@@ -197,9 +197,11 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(atomic_load);
 
         CASE_HANDLER(connect);
+        CASE_HANDLER(listen);
         CASE_HANDLER(accept);
         CASE_HANDLER(sendto);
         CASE_HANDLER(recvfrom);
+        CASE_HANDLER(close);
 
         default:
             Process * process = currentThread->getProcess();

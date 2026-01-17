@@ -24,62 +24,67 @@
 
 /* --- System Control --- */
 #define SC_Halt 0
-#define SC_Exit 1
-
-/* --- File System --- */
-#define SC_Create 4
-#define SC_Open 5
-#define SC_Read 6
-#define SC_Write 7
-#define SC_Close 8
 
 /* --- Console I/O --- */
-#define SC_PutChar 11
-#define SC_PutString 12
-#define SC_GetChar 13
-#define SC_GetString 14
-#define SC_PutInt 15
-#define SC_GetInt 16
+#define SC_PutChar   1
+#define SC_PutString 2
+#define SC_GetChar   3
+#define SC_GetString 4
+#define SC_PutInt    5
+#define SC_GetInt    6
 
 /* --- Time --- */
-#define SC_Sleep 26
-#define SC_SleepUntil 27
-#define SC_GetCurrentTick 28
+#define SC_Sleep          7
+#define SC_SleepUntil     8
+#define SC_GetCurrentTick 9
 
 /* --- Semaphores --- */
-#define SC_SemInit 29
-#define SC_SemWait 30
-#define SC_SemPost 31
-#define SC_SemDestroy 32
-#define SC_SetMaxSemForProcess 33
+/* DEPRECATED, use userspace threads
+ * synchronization primitives instead */
+#define SC_SemInit             10
+#define SC_SemWait             11
+#define SC_SemPost             12
+#define SC_SemDestroy          13
+#define SC_SetMaxSemForProcess 14
 
-/* --- Process Management --- */
-#define SC_ForkExec 34
-#define SC_ForkJoin 35
-#define SC_ForkSelf 36
+/* --- Futexes --- */
+#define SC_futex_wait     15
+#define SC_futex_wake     16
+#define SC_atomic_cmpxchg 17
+#define SC_atomic_store   18
+#define SC_atomic_load    19
 
 /* --- Memory Management --- */
-#define SC_Sbrk 37
-#define SC_mmap 38
-#define SC_munmap 39
+#define SC_Sbrk   20
+#define SC_mmap   21
+#define SC_munmap 22
 
-/* Rework of threads */
-#define SC_thread_create 52
-#define SC_thread_exit 53
-#define SC_thread_self 54
-#define SC_thread_yield 55
+/* --- Threads --- */
+#define SC_thread_create 23
+#define SC_thread_exit   24
+#define SC_thread_self   25
+#define SC_thread_yield  26
 
-#define SC_futex_wait 60
-#define SC_futex_wake 61
-#define SC_atomic_cmpxchg 62
-#define SC_atomic_store 63
-#define SC_atomic_load 64
+/* --- Process Management --- */
+#define SC_ForkExec 27
+#define SC_ForkJoin 28
+#define SC_ForkSelf 29
+#define SC_Exit     30
 
 /* Network */
-#define SC_connect 70
-#define SC_accept 71
-#define SC_sendto 72
-#define SC_recvfrom 73
+#define SC_connect  31
+#define SC_listen   32
+#define SC_accept   33
+#define SC_sendto   34
+#define SC_recvfrom 35
+#define SC_close    36
+
+/* --- File System --- */
+#define SC_Create 37
+#define SC_Open   38
+#define SC_Read   39
+#define SC_Write  40
+#define SC_Close  41
 
 #ifdef IN_USER_MODE
 
@@ -105,62 +110,6 @@
  * @brief Stop Nachos, and print out performance stats
  */
 void Halt() __attribute__((noreturn));
-
-
-/* -------------------------------------------------------------
- * PROCESS MANAGEMENT
- * -------------------------------------------------------------
- */
-
-/* This user program is done (status = 0 means exited normally). */
-void Exit(int status) __attribute__((noreturn));
-
-
-/* -------------------------------------------------------------
- * FILE SYSTEM OPERATIONS
- *
- * These functions are patterned after UNIX -- files represent
- * both files *and* hardware I/O devices.
- *
- * If this assignment is done before doing the file system assignment,
- * note that the Nachos file system has a stub implementation, which
- * will work for the purposes of testing out these routines.
- * -------------------------------------------------------------
- */
-
-/* A unique identifier for an open Nachos file. */
-typedef int OpenFileId;
-
-/* when an address space starts up, it has two open files, representing
- * keyboard input and display output (in UNIX terms, stdin and stdout).
- * Read and Write can be used directly on these, without first opening
- * the console device.
- */
-
-#define ConsoleInput 0
-#define ConsoleOutput 1
-
-/* Create a Nachos file, with "name" */
-void Create(char *name);
-
-/* Open the Nachos file "name", and return an "OpenFileId" that can
- * be used to read and write to the file.
- */
-OpenFileId Open(char *name);
-
-/* Write "size" bytes from "buffer" to the open file. */
-void Write(char *buffer, int size, OpenFileId id);
-
-/* Read "size" bytes from the open file into "buffer".
- * Return the number of bytes actually read -- if the open file isn't
- * long enough, or if it is an I/O device, and there aren't enough
- * characters to read, return whatever is available (for I/O devices,
- * you should always wait until you can return at least one character).
- */
-int Read(char *buffer, int size, OpenFileId id);
-
-/* Close the file, we're done reading and writing to it. */
-void Close(OpenFileId id);
 
 /* -------------------------------------------------------------
  * CONSOLE I/O
@@ -267,7 +216,7 @@ int SemInit(int value);
 
 /**
  * @brief Wait (P) operation on semaphore
- * @param semId Semaphore ID
+ * @param sem_id Semaphore ID
  * @return 0 on success, negative error code on failure
  *
  * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/sync/SemWait.html">Full documentation</a>
@@ -276,7 +225,7 @@ int SemWait(int sem_id);
 
 /**
  * @brief Signal (V) operation on semaphore
- * @param semId Semaphore ID
+ * @param sem_id Semaphore ID
  * @return 0 on success, negative error code on failure
  *
  * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/sync/SemPost.html">Full documentation</a>
@@ -285,7 +234,7 @@ int SemPost(int sem_id);
 
 /**
  * @brief Destroy a semaphore
- * @param semId Semaphore ID
+ * @param sem_id Semaphore ID
  * @return 0 on success, negative error code on failure
  *
  * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/sync/SemDestroy.html">Full documentation</a>
@@ -294,7 +243,7 @@ int SemDestroy(int sem_id);
 
 /**
  * @brief Set maximum number of semaphores for the current process
- * @param max Maximum number of semaphores
+ * @param maxSemaphores Maximum number of semaphores
  * @return Previous maximum number of semaphores
  *
  * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/sync/SetMaxSemForProcess.html">Full documentation</a>
@@ -302,33 +251,48 @@ int SemDestroy(int sem_id);
 int SetMaxSemForProcess(unsigned int maxSemaphores);
 
 /* -------------------------------------------------------------
- * PROCESS MANAGEMENT
+ * FUTEX OPERATIONS
  * -------------------------------------------------------------
  */
 
-typedef int posix_process_t;
+/**
+ * @brief Wait on a futex
+ * @param uaddr Address of the futex
+ * @param expected Expected value at the futex address
+ * @return 0 on success, negative error code on failure
+ */
+int futex_wait(int* uaddr, int expected);
 
 /**
- * @brief Fork and execute a new process
- * @param name Name of the executable file
- * @return Process ID on success, negative error code on failure
+ * @brief Wake up threads waiting on a futex
+ * @param uaddr Address of the futex
+ * @param num_wake Number of threads to wake up
+ * @return Number of threads actually woken up, negative error code on failure
  */
-posix_process_t ForkExec(char *name);
+int futex_wake(int* uaddr, int num_wake);
 
 /**
- * @brief  Wait for the process finish
- *
- * @param PID the PID of the process to wait
- * @param addr_result A previously allocated adress where the exitcode will be put
- * @return 0 on sucess and -1 on error
+ * @brief Atomic compare and exchange operation
+ * @param uaddr Address of the integer to operate on
+ * @param expected Expected value
+ * @param desired Desired value to set if comparison succeeds
+ * @return The original value at the address
  */
-int ForkJoin(posix_process_t PID, int *adrr_result);
+int atomic_cmpxchg(int* uaddr, int expected, int desired);
 
 /**
- * @brief Get the PID of the current process 
- * @return The PID of the current process 
+ * @brief Atomic store operation
+ * @param uaddr Address of the integer to store to
+ * @param value Value to store
  */
-int ForkSelf();
+void atomic_store(int* uaddr, int value);
+
+/**
+ * @brief Atomic load operation
+ * @param uaddr Address of the integer to load from
+ * @return The loaded value
+ */
+int atomic_load(int* uaddr);
 
 /* -------------------------------------------------------------
  * MEMORY MANAGEMENT
@@ -389,53 +353,150 @@ int thread_self();
  */
 void thread_yield();
 
-/**
- * @brief Wait on a futex
- * @param uaddr Address of the futex
- * @param expected Expected value at the futex address
- * @return 0 on success, negative error code on failure
+/* -------------------------------------------------------------
+ * PROCESS MANAGEMENT
+ * -------------------------------------------------------------
  */
-int futex_wait(int* uaddr, int expected);
+
+typedef int posix_process_t;
 
 /**
- * @brief Wake up threads waiting on a futex
- * @param uaddr Address of the futex
- * @param num_wake Number of threads to wake up
- * @return Number of threads actually woken up, negative error code on failure
+ * @brief Fork and execute a new process
+ * @param name Name of the executable file
+ * @return Process ID on success, negative error code on failure
  */
-int futex_wake(int* uaddr, int num_wake);
+posix_process_t ForkExec(char *name);
 
 /**
- * @brief Atomic compare and exchange operation
- * @param uaddr Address of the integer to operate on
- * @param expected Expected value
- * @param desired Desired value to set if comparison succeeds
- * @return The original value at the address
+ * @brief  Wait for the process finish
+ *
+ * @param PID the PID of the process to wait
+ * @param adrr_result A previously allocated adress where the exitcode will be put
+ * @return 0 on sucess and -1 on error
  */
-int atomic_cmpxchg(int* uaddr, int expected, int desired);
+int ForkJoin(posix_process_t PID, int *adrr_result);
 
 /**
- * @brief Atomic store operation
- * @param uaddr Address of the integer to store to
- * @param value Value to store
+ * @brief Get the PID of the current process 
+ * @return The PID of the current process 
  */
-void atomic_store(int* uaddr, int value);
+int ForkSelf();
 
 /**
- * @brief Atomic load operation
- * @param uaddr Address of the integer to load from
- * @return The loaded value
+ * @brief Terminate the current process with a status code
+ * @param status Exit status code
  */
-int atomic_load(int* uaddr);
+void Exit(int status) __attribute__((noreturn));
 
 /* -------------------------------------------------------------
  * NETWORK
  * -------------------------------------------------------------
  */
-int connect(); // TODO
-int accept(); // TODO
-int sendto(int to, char* data, int size); // TODO
-int recvfrom(int from, char* data, int size); // TODO
+
+/**
+ * @brief Establish a connection to a remote server
+ *
+ * @param remoteAddr Network address of the remote machine
+ * @param remotePort Port number on the remote machine
+ * @param localPort  Local port to use (0 = auto-allocate)
+ * @return Connection ID (>= 0) on success, negative error code on failure
+ */
+int connect(int remoteAddr, int remotePort, int localPort);
+
+/**
+ * @brief Start listening for incoming connections on a port
+ *
+ * @param port Port number to listen on (1-65535)
+ * @return Listener ID (>= 0) on success, negative error code on failure
+ */
+int listen(int port);
+
+/**
+ * @brief Accept an incoming connection on a listening port
+ *
+ * @param listenerId ID returned by listen()
+ * @param timeoutMs  Timeout in milliseconds (-1 = infinite, 0 = non-blocking)
+ * @return Connection ID (>= 0) on success, negative error code on failure
+ */
+int accept(int listenerId, int timeoutMs);
+
+/**
+ * @brief Send data on an established connection
+ *
+ * @param connId Connection ID returned by connect() or accept()
+ * @param data   Pointer to data buffer
+ * @param size   Number of bytes to send
+ * @return Number of bytes sent on success, negative error code on failure
+ */
+int sendto(int connId, char* data, int size);
+
+/**
+ * @brief Receive data from an established connection
+ *
+ * @param connId Connection ID returned by connect() or accept()
+ * @param buffer Pointer to receive buffer
+ * @param size   Maximum bytes to receive
+ * @return Number of bytes received on success, 0 on EOF (peer closed),
+ *         negative error code on failure
+ */
+int recvfrom(int connId, char* buffer, int size);
+
+/**
+ * @brief Close a network connection or listener
+ *
+ * @param id Connection ID or Listener ID
+ * @return 0 on success, negative error code on failure
+ *
+ * For connections: initiates graceful close (FIN handshake)
+ * For listeners: stops accepting new connections
+ */
+int close(int id);
+
+/* -------------------------------------------------------------
+ * FILE SYSTEM OPERATIONS
+ *
+ * These functions are patterned after UNIX -- files represent
+ * both files *and* hardware I/O devices.
+ *
+ * If this assignment is done before doing the file system assignment,
+ * note that the Nachos file system has a stub implementation, which
+ * will work for the purposes of testing out these routines.
+ * -------------------------------------------------------------
+ */
+
+/* A unique identifier for an open Nachos file. */
+typedef int OpenFileId;
+
+/* when an address space starts up, it has two open files, representing
+ * keyboard input and display output (in UNIX terms, stdin and stdout).
+ * Read and Write can be used directly on these, without first opening
+ * the console device.
+ */
+
+#define ConsoleInput 0
+#define ConsoleOutput 1
+
+/* Create a Nachos file, with "name" */
+void Create(char *name);
+
+/* Open the Nachos file "name", and return an "OpenFileId" that can
+ * be used to read and write to the file.
+ */
+OpenFileId Open(char *name);
+
+/* Write "size" bytes from "buffer" to the open file. */
+void Write(char *buffer, int size, OpenFileId id);
+
+/* Read "size" bytes from the open file into "buffer".
+ * Return the number of bytes actually read -- if the open file isn't
+ * long enough, or if it is an I/O device, and there aren't enough
+ * characters to read, return whatever is available (for I/O devices,
+ * you should always wait until you can return at least one character).
+ */
+int Read(char *buffer, int size, OpenFileId id);
+
+/* Close the file, we're done reading and writing to it. */
+void Close(OpenFileId id);
 
 #endif // IN_USER_MODE
 

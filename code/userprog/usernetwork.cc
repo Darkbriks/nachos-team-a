@@ -1,82 +1,152 @@
 #include "usernetwork.h"
 
+#include "connectionmanager.h"
 #include "exception.h"
-#include "post.h"
 #include "nos_errno.h"
+#include "network.h"
 #include "system.h"
 #include "nos_limits.h"
 #include "syscall.h"
 
-#define MAX(a,b) ((a) > (b) ? (a) : (b))
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
+#include <cstdint>
 
 void handle_SC_connect() {
-    // TODO: implement
-    RETURN(E_SUCCESS);
+    int remoteAddr = machine->ReadRegister(4);
+    int remotePort = machine->ReadRegister(5);
+    int localPort = machine->ReadRegister(6);
+
+    DEBUG('n', "SC_connect: remoteAddr=%d remotePort=%d localPort=%d\n", remoteAddr, remotePort, localPort);
+
+    if (remoteAddr < 0 || remoteAddr > 9) { RETURN(-E_INVAL); }
+    if (remotePort <= 0 || remotePort > 65535) { RETURN(-E_INVAL); }
+    if (localPort < 0 || localPort > 65535) { RETURN(-E_INVAL); }
+
+    ConnectionManager* mgr = GetConnectionManager();
+    if (mgr == nullptr) { RETURN(-E_NOSYS); }
+
+    const int result = mgr->Connect(static_cast<NetworkAddress>(remoteAddr),
+                              static_cast<uint16_t>(remotePort),
+                              static_cast<uint16_t>(localPort));
+
+    if (result < 0) { RETURN(-result); }
+
+    DEBUG('n', "SC_connect: success, connId=%d\n", result);
+    RETURN(result);
+}
+
+void handle_SC_listen() {
+    const int port = machine->ReadRegister(4);
+
+    DEBUG('n', "SC_listen: port=%d\n", port);
+
+    if (port <= 0 || port > 65535) { RETURN(-E_INVAL); }
+
+    ConnectionManager* mgr = GetConnectionManager();
+    if (mgr == nullptr) { RETURN(-E_NOSYS); }
+
+    const int result = mgr->Listen(static_cast<uint16_t>(port));
+    if (result < 0) { RETURN(-result); }
+
+    DEBUG('n', "SC_listen: success, listenerId=%d\n", result);
+    RETURN(result);
 }
 
 void handle_SC_accept() {
-    // TODO: implement
-    RETURN(E_SUCCESS);
+    int listenerId = machine->ReadRegister(4);
+    int timeoutMs = machine->ReadRegister(5);
+
+    DEBUG('n', "SC_accept: listenerId=%d timeoutMs=%d\n", listenerId, timeoutMs);
+
+    if (listenerId < 0) { RETURN(-E_INVAL); }
+
+    ConnectionManager* mgr = GetConnectionManager();
+    if (mgr == nullptr) { RETURN(-E_NOSYS); }
+
+    const int result = mgr->Accept(listenerId, timeoutMs);
+    if (result < 0) { RETURN(-result); }
+
+    DEBUG('n', "SC_accept: success, connId=%d\n", result);
+    RETURN(result);
 }
 
 void handle_SC_sendto() {
-    int to = machine->ReadRegister(4);
-    int data_addr = machine->ReadRegister(5);
+    int connId = machine->ReadRegister(4);
+    const int dataAddr = machine->ReadRegister(5);
     int size = machine->ReadRegister(6);
 
-    PacketHeader pktHdr;
-    MailHeader mailHdr;
-    char* data = new char[size];
+    DEBUG('n', "SC_sendto: connId=%d dataAddr=0x%x size=%d\n", connId, dataAddr, size);
 
-    if (size > static_cast<int>(MaxMailSize) || size < 0) {
-        delete[] data;
-        RETURN(E_INVAL);
-    }
-
-    if (!CopyFromUserRaw(data, data_addr, size)) {
-        delete[] data;
-        RETURN(E_FAULT);
-    }
-
-    pktHdr.to = to;
-    pktHdr.from = postOffice->GetNetAddr();
-    pktHdr.length = size + sizeof(MailHeader);
-
-    mailHdr.to = MAIL_BOX;
-    mailHdr.from = MAIL_BOX;
-    mailHdr.length = size;
-
-    postOffice->Send(pktHdr, mailHdr, data);
-    delete[] data;
-    RETURN(E_SUCCESS);
-}
-
-void handle_SC_recvfrom() {
-    DEBUG('n', "handle_SC_recvfrom called\n");
-
-    int from = machine->ReadRegister(4);
-    int data_addr = machine->ReadRegister(5);
-    int size = machine->ReadRegister(6);
-
-    PacketHeader pktHdr;
-    MailHeader mailHdr;
-    char* data = new char[MaxMailSize];
-
-    postOffice->Receive(MAIL_BOX, &pktHdr, &mailHdr, data);
-
-    if (pktHdr.from != from) {
-        delete[] data;
+    if (connId < 0) { RETURN(-E_INVAL); }
+    if (size <= 0) { RETURN(-E_INVAL); }
+    if (size > static_cast<int>(MAX_RELIABLE_DATA)) {
+        // TODO: Support larger messages with fragmentation
         RETURN(-E_INVAL);
     }
 
-    DEBUG('n', "Received data: %.*s\n", mailHdr.length, data);
-    DEBUG('n', "param of recvfrom: from=%d, size=%d\n", from, size);
-    if (!CopyToUserRaw(data_addr, data, MIN(size, static_cast<int>(mailHdr.length)))) {
+    ConnectionManager* mgr = GetConnectionManager();
+    if (mgr == nullptr) { RETURN(-E_NOSYS); }
+
+    auto data = new char[size];
+    if (!CopyFromUserRaw(data, dataAddr, size)) {
         delete[] data;
         RETURN(-E_FAULT);
     }
 
+    const int result = mgr->Send(connId, data, size);
     delete[] data;
-    RETURN(static_cast<int>(mailHdr.length));
+
+    if (result < 0) { RETURN(-result); }
+
+    DEBUG('n', "SC_sendto: success, sent=%d bytes\n", result);
+    RETURN(result);
+}
+
+void handle_SC_recvfrom() {
+    int connId = machine->ReadRegister(4);
+    const int bufferAddr = machine->ReadRegister(5);
+    int size = machine->ReadRegister(6);
+
+    DEBUG('n', "SC_recvfrom: connId=%d bufferAddr=0x%x size=%d\n", connId, bufferAddr, size);
+
+    if (connId < 0) { RETURN(-E_INVAL); }
+    if (size <= 0) { RETURN(-E_INVAL); }
+
+    ConnectionManager* mgr = GetConnectionManager();
+    if (mgr == nullptr) { RETURN(-E_NOSYS); }
+
+    int bufSize = (size > static_cast<int>(MaxMailSize)) ? MaxMailSize : size;
+    char* buffer = new char[bufSize];
+
+    int result = mgr->Recv(connId, buffer, bufSize);
+
+    if (result < 0) { delete[] buffer; RETURN(-result); }
+
+    if (result > 0) {
+        if (!CopyToUserRaw(bufferAddr, buffer, result)) {
+            delete[] buffer;
+            RETURN(-E_FAULT);
+        }
+    }
+
+    delete[] buffer;
+    DEBUG('n', "SC_recvfrom: success, received=%d bytes\n", result);
+    RETURN(result);
+}
+
+void handle_SC_close() {
+    int id = machine->ReadRegister(4);
+
+    DEBUG('n', "SC_close: id=%d\n", id);
+
+    if (id < 0) { RETURN(-E_INVAL); }
+
+    ConnectionManager* mgr = GetConnectionManager();
+    if (mgr == nullptr) { RETURN(-E_NOSYS); }
+
+    int result = mgr->Close(id);
+    if (result == E_INVAL) { result = mgr->CloseListener(id); }
+    if (result < 0) { RETURN(-result); }
+
+    DEBUG('n', "SC_close: success\n");
+    RETURN(E_SUCCESS);
 }

@@ -2,6 +2,8 @@
 //      Implementation of reliable message transmission with TCP-like connection management
 //      using EVENT-DRIVEN architecture
 
+#if false
+
 #include "reliablepost.h"
 #include "system.h"
 #include "thread.h"
@@ -758,3 +760,5 @@ ReliablePost::CheckForTimeouts() {
         }
     }
 }
+
+#endif

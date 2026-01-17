@@ -11,6 +11,7 @@
 #include "frameprovider.h"
 #include "process.h"
 #include "thread.h"
+#include "connectionmanager.h"
 
 // This defines *all* of the global data structures used by Nachos.
 // These are all initialized and de-allocated by this file.
@@ -175,6 +176,7 @@ void Initialize(int argc, char **argv) {
 
 #ifdef NETWORK
     postOffice = new PostOffice(netname, rely, 10);
+    ConnectionManager::GetInstance()->Initialize(postOffice);
 #endif
 }
 
@@ -216,6 +218,7 @@ void Cleanup() {
     delete tmp;
 
 #ifdef NETWORK
+    ConnectionManager::GetInstance()->Shutdown();
     delete postOffice;
 #endif
 

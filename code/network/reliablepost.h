@@ -13,6 +13,8 @@
 #ifndef RELIABLEPOST_H
 #define RELIABLEPOST_H
 
+#if false
+
 #include "post.h"
 #include "network.h"
 #include "exception.h"
@@ -163,5 +165,7 @@ class ReliablePost {
     // Check for incoming connection messages
     void CheckForConnectionMsgs();
 };
+
+#endif
 
 #endif // RELIABLEPOST_H

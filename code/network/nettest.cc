@@ -131,7 +131,7 @@ void RingTest(int myAddr, int numMachines) {
     interrupt->Halt();
 }
 
-
+/*
 void ReliableMailTest(int farAddr) {
     PacketHeader outPktHdr, inPktHdr;
     MailHeader outMailHdr, inMailHdr;
@@ -281,4 +281,4 @@ void ReliableMailChunkerTest(int farAddr) {
 
     delete reliablePost;
     interrupt->Halt();
-}
+}*/

@@ -36,6 +36,16 @@
 #define E_ISDIR         24  /* Is a directory */
 #define E_BADF          25  /* Bad file descriptor */
 
+#define E_REFUSED      100   // Connection refused
+#define E_NOTCONN      101   // Not connected
+#define E_ADDRINUSE    102   // Address/port already in use
+#define E_PIPE         103   // Broken pipe (peer closed)
+#define E_CONNRESET    104   // Connection reset by peer
+#define E_TIMEOUT      105   // Connection timed out
+#define E_CLOSED       106   // Connection closed
+#define E_NOPORT       107   // No available port
+#define E_NOAVAILCONN  108   // No available connection
+#define E_WOULDBLOCK   109   // Operation would block (non-blocking mode)
 
 /* ============================================================
  * Thread-local errno implementation

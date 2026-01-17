@@ -111,9 +111,11 @@ DEFINE_SYSCALL_STUB atomic_store, SC_atomic_store
 DEFINE_SYSCALL_STUB atomic_load, SC_atomic_load
 
 DEFINE_SYSCALL_STUB connect, SC_connect
+DEFINE_SYSCALL_STUB listen, SC_listen
 DEFINE_SYSCALL_STUB accept, SC_accept
 DEFINE_SYSCALL_STUB sendto, SC_sendto
 DEFINE_SYSCALL_STUB recvfrom, SC_recvfrom
+DEFINE_SYSCALL_STUB close, SC_close
 
 /* dummy function to keep gcc happy */
         .globl  __main
