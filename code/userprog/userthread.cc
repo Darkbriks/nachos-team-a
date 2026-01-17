@@ -1,4 +1,6 @@
 #include "userthread.h"
+
+#include "kernelpanic.h"
 #include "nos_errno.h"
 #include "process.h"
 #include "stackmanager.h"
@@ -73,7 +75,7 @@ void handle_SC_thread_exit() {
     const IntStatus oldLevel = interrupt->SetLevel(IntOff);
     currentThread->Sleep();
     (void)interrupt->SetLevel(oldLevel);
-    ASSERT(FALSE);
+    KERNEL_PANIC("Returned from Thread::Sleep() in handle_SC_thread_exit (should never happen)");
 }
 
 void handle_SC_thread_self() {

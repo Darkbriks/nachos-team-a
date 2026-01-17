@@ -28,6 +28,7 @@
 #include "process.h"
 #include "exception.h"
 #include "futex.h"
+#include "kernelpanic.h"
 #include "userIO.h"
 #include "userSbrk.h"
 #include "userprocess.h"
@@ -126,7 +127,7 @@ void handle_SC_Exit() {
 
     currentThread->Finish();
 
-    ASSERT(FALSE);
+    KERNEL_PANIC("Returned from Thread::Finish() in handle_SC_Exit (should never happen)");
 }
 
 void handle_Error(ExceptionType which, int type){

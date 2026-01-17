@@ -3,6 +3,7 @@
 #include "process.h"
 #include "filesys.h"
 #include "exception.h"
+#include "kernelpanic.h"
 #include "nos_errno.h"
 
 static void StartProcess(const int arg) {
@@ -18,7 +19,7 @@ static void StartProcess(const int arg) {
 
     machine->Run();
 
-    ASSERT(FALSE);
+    KERNEL_PANIC("Returned from machine->Run() in StartProcess (should never happen)");
 }
 
 void handle_SC_ForkExec() {

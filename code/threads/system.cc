@@ -9,6 +9,7 @@
 #include "copyright.h"
 #include "futex.h"
 #include "frameprovider.h"
+#include "kernelpanic.h"
 #include "process.h"
 #include "thread.h"
 
@@ -148,8 +149,7 @@ void Initialize(int argc, char **argv) {
 
     Process * process = Process::createProcess(nullptr);
     if (process == nullptr){
-        // real kernel panick
-        ASSERT(FALSE);
+        KERNEL_PANIC("Failed to create kernel process during initialization");
     }
     currentThread = process->getMainThread();
     currentThread->setStatus(RUNNING);

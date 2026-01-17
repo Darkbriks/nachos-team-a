@@ -4,6 +4,7 @@
 #include "addrspace.h"
 #include "bitmap_thread_safe.h"
 #include "bitmap.h"
+#include "kernelpanic.h"
 #include "stackmanager.h"
 #include "thread.h"
 #include "tls.h"
@@ -190,7 +191,7 @@ void Process::ThreadTerminated(Thread* thread) {
 
         currentThread->Finish();
 
-        ASSERT(FALSE);
+        KERNEL_PANIC("Returned from Thread::Finish() in ThreadTerminated (should never happen)");
     }
     threadNumberLock->Release();
 
