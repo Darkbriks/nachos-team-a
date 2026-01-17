@@ -21,6 +21,7 @@
 #include "sysdep.h"
 #include "system.h"
 #include "tls.h"
+#include "kernelpanic.h"
 
 #define STACK_FENCEPOST                                                        \
     0xdeadbeef // this is put at the top of the
@@ -76,9 +77,9 @@ AddrSpace*  Thread::getAddrSpace() const {
 }
 
 void Thread::InitUserContext(const ptr_32 entryPoint, const ptr_32 arg, const ptr_32 user_sp) {
-    ASSERT(process != nullptr)
+    ASSERT_KP(process != nullptr)
     const AddrSpace* space = process->getSpace();
-    ASSERT(space != nullptr)
+    ASSERT_KP(space != nullptr)
 
     for (int & userRegister : userRegisters) {
         userRegister = 0;
@@ -160,9 +161,9 @@ void Thread::Fork(VoidFunctionPtr func, const int arg) {
 void Thread::CheckOverflow() {
     if (stack != nullptr)
 #ifdef HOST_SNAKE // Stacks grow upward on the Snakes
-        ASSERT(stack[StackSize - 1] == STACK_FENCEPOST);
+        ASSERT_KP(stack[StackSize - 1] == STACK_FENCEPOST);
 #else
-        ASSERT(*stack == static_cast<int>(STACK_FENCEPOST));
+        ASSERT_KP(*stack == static_cast<int>(STACK_FENCEPOST));
 #endif
 }
 
@@ -184,13 +185,13 @@ void Thread::CheckOverflow() {
 //
 void Thread::Finish() {
     (void)interrupt->SetLevel(IntOff);
-    ASSERT(this == currentThread);
+    ASSERT_KP(this == currentThread);
 
     DEBUG('t', "Finishing thread \"%s\"\n", getName());
 
     // LB: Be careful to guarantee that no thread to be destroyed
     // is ever lost
-    ASSERT(threadToBeDestroyed == nullptr);
+    ASSERT_KP(threadToBeDestroyed == nullptr);
     // End of addition
 
     threadToBeDestroyed = currentThread;
@@ -219,7 +220,7 @@ void Thread::Finish() {
 void Thread::Yield() {
     const IntStatus oldLevel = interrupt->SetLevel(IntOff);
 
-    ASSERT(this == currentThread);
+    ASSERT_KP(this == currentThread);
 
     DEBUG('t', "Yielding thread \"%s\"\n", getName());
 
@@ -253,8 +254,8 @@ void Thread::Yield() {
 void Thread::Sleep() {
     Thread* nextThread;
 
-    ASSERT(this == currentThread);
-    ASSERT(interrupt->getLevel() == IntOff);
+    ASSERT_KP(this == currentThread);
+    ASSERT_KP(interrupt->getLevel() == IntOff);
 
     DEBUG('t', "Sleeping thread \"%s\"\n", getName());
 
@@ -275,7 +276,7 @@ void Thread::Sleep() {
 //      but no SleepUntil.
 //----------------------------------------------------------------------
 void Thread::WakeUp() {
-    ASSERT(status == SLEEP);
+    ASSERT_KP(status == SLEEP);
 
     DEBUG('t', "Waking up thread \"%s\"\n", getName());
 
@@ -288,8 +289,8 @@ void Thread::WakeUp() {
 //----------------------------------------------------------------------
 
 void Thread::SleepUntil(const long long tick) {
-    ASSERT(this == currentThread);
-    ASSERT(interrupt->getLevel() == IntOff);
+    ASSERT_KP(this == currentThread);
+    ASSERT_KP(interrupt->getLevel() == IntOff);
 
     DEBUG('t', "Sleeping thread \"%s\" until tick %lld\n", getName(), tick);
 

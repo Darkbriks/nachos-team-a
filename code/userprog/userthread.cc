@@ -62,12 +62,16 @@ void handle_SC_thread_create() {
     RETURN(thread->getTID());
 }
 
-// TODO: A thread can be destroyed only if state isn't RUNNING, BLOCKED or SLEEP
 void handle_SC_thread_exit() {
     currentThread->setStatus(TERMINATED);
 
     Process* process = currentThread->getProcess();
     VALIDATE_ARG(process != nullptr, E_FAULT);
+
+    if (const ThreadStatus currentStatus = currentThread->getStatus(); currentStatus == BLOCKED || currentStatus == SLEEP) {
+        DEBUG('t', "handle_SC_thread_exit: Cannot exit thread in state %d\n", currentStatus);
+        RETURN(-E_INVAL);
+    }
 
     process->ThreadTerminated(currentThread);
     process->RemoveThread(currentThread);

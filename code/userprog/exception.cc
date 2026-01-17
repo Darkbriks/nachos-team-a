@@ -34,6 +34,7 @@
 #include "userprocess.h"
 #include "userSleep.h"
 #include "userSem.h"
+#include "kernelpanic.h"
 
 #define CASE_HANDLER(syscall_name)                      \
     case SC_##syscall_name:                             \
@@ -52,13 +53,13 @@
     process->KillAllThreads(false);   \
     printf(error_name);   \
     if (Process::isLastActiveProcess()) {   \
-        ASSERT(false) /* To hit gdb */ \
+        ASSERT_KP(false) /* To hit gdb */ \
         interrupt->Halt();   \
     }   \
     process->setExitCode(-error_code);   \
     process->AncestorSigChild();   \
     currentThread->Finish();  \
-    ASSERT(false) /* To hit gdb */ \
+    ASSERT_KP(false) /* To hit gdb */ \
     break;
 
 
@@ -121,7 +122,7 @@ void handle_SC_Exit() {
         interrupt->Halt();
     }
 
-    ASSERT(processToBeDestroyed == nullptr);
+    ASSERT_KP(processToBeDestroyed == nullptr);
     process->setExitCode(return_code);
     process->AncestorSigChild();
 

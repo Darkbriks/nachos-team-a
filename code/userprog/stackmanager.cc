@@ -6,6 +6,7 @@
 #include "../machine/machine.h"
 #include "../threads/synch.h"
 #include "../threads/utility.h"
+#include "kernelpanic.h"
 
 StackManager::StackManager(AddrSpace* space, unsigned int top, unsigned int bottom, unsigned int max)
     : addrSpace(space),
@@ -16,7 +17,7 @@ StackManager::StackManager(AddrSpace* space, unsigned int top, unsigned int bott
       allocatedCount(0),
       regions(new StackRegion[max]),
       lock(new Lock("StackManager Lock")) {
-    ASSERT(top > bottom);
+    ASSERT_KP(top > bottom);
     DEBUG('s', "StackManager::StackManager: created with top=0x%x, bottom=0x%x, max=%d\n", stackAreaTop, stackAreaBottom, maxStacks);
 }
 

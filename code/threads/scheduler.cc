@@ -23,6 +23,7 @@
 #include "process.h"
 #include "system.h"
 #include "thread.h"
+#include "kernelpanic.h"
 
 //----------------------------------------------------------------------
 // Scheduler::Scheduler
@@ -81,7 +82,7 @@ void Scheduler::Run(Thread *nextThread) {
     Thread *oldThread = currentThread;
 
     // LB: For safety...
-    ASSERT(interrupt->getLevel() == IntOff);
+    ASSERT_KP(interrupt->getLevel() == IntOff);
     // End of addition
 
 #ifdef USER_PROGRAM                     // ignore until running user programs

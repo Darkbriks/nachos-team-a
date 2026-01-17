@@ -7,7 +7,6 @@
 #include "stats.h"
 #include "scheduler.h"
 #include "frameprovider.h"
-#include "system.h"
 #include <stdio.h>
 
 inline void KernelDumpState(const char* file, const int line, const char* msg) {
@@ -89,8 +88,7 @@ inline void KernelDumpState(const char* file, const int line, const char* msg) {
             fprintf(stderr, "  Dirty pages: %u\n", dirtyPages);
 
             fprintf(stderr, "  First valid entries:\n");
-            unsigned int shown = 0;
-            for (unsigned int i = 0; i < machine->pageTableSize && shown < 10; i++) {
+            for (unsigned int i = 0; i < machine->pageTableSize; i++) {
                 if (machine->pageTable[i].valid) {
                     fprintf(stderr, "    [%3u] virt=0x%08x -> phys=%3d %s%s%s\n",
                             i,
@@ -99,7 +97,6 @@ inline void KernelDumpState(const char* file, const int line, const char* msg) {
                             machine->pageTable[i].readOnly ? "RO " : "RW ",
                             machine->pageTable[i].use ? "U " : "- ",
                             machine->pageTable[i].dirty ? "D" : "-");
-                    shown++;
                 }
             }
             fprintf(stderr, "\n");
@@ -133,6 +130,11 @@ inline void KernelDumpState(const char* file, const int line, const char* msg) {
 #define KERNEL_PANIC(msg) do { \
     KernelDumpState(__FILE__, __LINE__, msg); \
     interrupt->Halt(); \
+} while(0)
+
+#define KERNEL_PANIC_ON_ASSERT(cond) do { \
+    KernelDumpState(__FILE__, __LINE__, "Assertion failure: " #cond); \
+    Abort(); \
 } while(0)
 
 #endif

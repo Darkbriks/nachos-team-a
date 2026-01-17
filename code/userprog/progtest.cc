@@ -37,7 +37,7 @@ void StartProcess(char *filename) {
     }
 
     const AddrSpace* space = newProcess->getSpace();
-    ASSERT(space != nullptr);
+    ASSERT_KP(space != nullptr);
     space->InitRegisters();
     space->RestoreState();
 

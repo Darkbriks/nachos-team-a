@@ -5,17 +5,26 @@
 #include "nos_string.h"
 #include "nos_stddef.h"
 #include "nos_mem.h"
+#include "nos_mem_macros.h"
 #include "nos_limits.h"
 #include "types.h"
 
 int mem_alloc_init = 0;
-int mem_init_amount = 10000; // TODO adjust initial memory size
+
+static inline unsigned int calculate_initial_mem_size() {
+    const unsigned int threads_estimate = 4;
+    const unsigned int per_thread_size = DEFAULT_STACK_SIZE + sizeof(tls_t) + sizeof(pthread_lib) + 512;
+    const unsigned int base_overhead = INIT_BLOCK_SIZE + FREE_BLOCK_TOTAL(0) + 1024;
+    return threads_estimate * per_thread_size + base_overhead;
+}
+int mem_init_amount = 0;
 
 pthread_lib* array_tid[MAX_PROCESS][MAX_THREAD];
 
 #define INIT_MEMORY_ALLOCATOR()    \
     if (mem_alloc_init == 0) {     \
         mem_alloc_init = 1;        \
+        if (mem_init_amount == 0) { mem_init_amount = calculate_initial_mem_size(); } \
         mem_init(mem_init_amount); \
     }
 

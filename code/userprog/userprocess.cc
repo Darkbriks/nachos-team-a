@@ -12,7 +12,7 @@ static void StartProcess(const int arg) {
     DEBUG('p', "StartProcess: Starting process %d\n", process->getPId());
 
     const AddrSpace* space = process->getSpace();
-    ASSERT(space != nullptr);
+    ASSERT_KP(space != nullptr);
 
     space->InitRegisters();
     space->RestoreState();
@@ -50,7 +50,7 @@ void handle_SC_ForkExec() {
     currentThread->getProcess()->getSpace()->RestoreState();
 
     Thread* mainThread = newProcess->getMainThread();
-    ASSERT(mainThread != nullptr);
+    ASSERT_KP(mainThread != nullptr);
 
     mainThread->Fork(StartProcess, reinterpret_cast<int>(newProcess));
 

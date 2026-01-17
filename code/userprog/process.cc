@@ -194,7 +194,7 @@ void Process::ThreadTerminated(Thread* thread) {
             interrupt->Halt();
         }
 
-        ASSERT(processToBeDestroyed == nullptr);
+        ASSERT_KP(processToBeDestroyed == nullptr);
         processToBeDestroyed = currentThread->getProcess();
 
         currentThread->Finish();
