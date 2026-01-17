@@ -122,7 +122,6 @@ sector_t FileHeader::ByteToSector(const int offset) const {
         if (indirect->entries[current].InUse()){
             sector_t result =indirect->entries[current].getSector();
             DEBUG('R', "On renvoie %d dansByteToSector cr offset =%d\n", result, offset);
-            delete indirect;
             ASSERT(result != 0 );
             return result;
         }

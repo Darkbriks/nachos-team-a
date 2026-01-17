@@ -38,9 +38,10 @@ class FirstIndirection {
 
 
         int nbEntry;
+        int x;
         FileEntry entries[MAX_INDIRECT_LEVEL_ONE];
 };
 
-static_assert(sizeof(FirstIndirection) < SectorSize);
+static_assert(sizeof(FirstIndirection) == SectorSize);
 
 #endif // FILEENTRY_H

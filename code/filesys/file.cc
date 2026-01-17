@@ -15,8 +15,7 @@ void File::FetchFrom(sector_t sector) const {
 }
 
 void File::WriteBack(sector_t sector) const {
-            synchDisk->WriteSector(sector, (char *)(this));
-    
+    synchDisk->WriteSector(sector, (char *)(this));
 }
 
 void File::Print() const {

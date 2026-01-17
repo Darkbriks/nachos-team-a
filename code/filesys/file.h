@@ -22,6 +22,7 @@ public:
     void Print() const; 
 
     FirstIndirection indirect;
+    int x;
 private:
 };
 
