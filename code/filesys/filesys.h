@@ -101,6 +101,7 @@ public:
 
     void DisplayInodes();
 
+
     [[nodiscard]] OpenFile* GetCurrentDirectory() const { return directoryFile; }
     void SetCurrentDirectory(sector_t sector);
 
@@ -111,6 +112,7 @@ private:
     OpenFile* directoryFile;		// "Root" directory -- list of
                                     // file names, represented as a file
     bool createSubDirectory(int prev_sector, int curr_sector, FileHeader* hdr, BitMap *freeMap)const;
+    static void createFile(int initialSize, BitMap* freeMap, FileHeader* hdr);
 
     sector_t GetSectorByName(const char* name);
     bool _Create(const char *name, int initialSize, File_Type type) const;

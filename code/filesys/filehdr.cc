@@ -24,8 +24,12 @@
 
 #include "copyright.h"
 
+#include "fileindirection.h"
 #include "system.h"
 #include "filehdr.h"
+
+#define MIN(a, b) \
+    (int) a < (int) b ? a : b
 
 //----------------------------------------------------------------------
 // FileHeader::Allocate
@@ -41,11 +45,14 @@
 bool FileHeader::Allocate(BitMap *bitMap, const int fileSize) {
     numBytes = fileSize;
     numSectors  = divRoundUp(fileSize, SectorSize);
+    DEBUG('R', "Need %d sectors\n", numSectors);
     if (bitMap->NumClear() < numSectors) {
+        DEBUG('R', "Need %d sectors but not enought space available\n", numSectors);
         return false; // not enough space
     }
 
-    for (int i = 0; i < numSectors; i++) {
+    int mini = MIN(numSectors, NumDirect);
+    for (int i = 0; i < mini; i++) {
         dataSectors[i] = bitMap->Find();
     }
     return true;
@@ -59,7 +66,8 @@ bool FileHeader::Allocate(BitMap *bitMap, const int fileSize) {
 //----------------------------------------------------------------------
 
 void FileHeader::Deallocate(BitMap *bitMap) const {
-    for (int i = 0; i < numSectors; i++) {
+    int mini = MIN(numSectors, NumDirect);
+    for (int i = 0; i < mini; i++) {
         ASSERT(bitMap->Test(dataSectors[i])); // ought to be marked!
         bitMap->Clear(dataSectors[i]);
     }
@@ -74,6 +82,7 @@ void FileHeader::Deallocate(BitMap *bitMap) const {
 
 void FileHeader::FetchFrom(const int sectorNumber) {
     synchDisk->ReadSector(sectorNumber, reinterpret_cast<char *>(this));
+    DEBUG('R', "après lecteure redircet = %d\n", redirect);
 }
 
 //----------------------------------------------------------------------
@@ -97,8 +106,32 @@ void FileHeader::WriteBack(const int sectorNumber) {
 //	"offset" is the location within the file of the byte in question
 //----------------------------------------------------------------------
 
-int FileHeader::ByteToSector(const int offset) const {
-    return dataSectors[offset / SectorSize];
+sector_t FileHeader::getRedirect(){return redirect;}
+
+sector_t FileHeader::ByteToSector(const int offset) const {
+    if (offset < 0){
+        ASSERT(FALSE);
+    }
+    if ((unsigned int) offset / SectorSize < NumDirect ) {
+        DEBUG('R', "On renvoie %d dansByteToSector sans redirection car offset = %d\n", offset / SectorSize, offset);
+        return dataSectors[offset / SectorSize];
+    } else {
+        FirstIndirection* indirect = new FirstIndirection();
+        indirect->FetchFrom(this->redirect);
+        int current = offset / SectorSize - NumDirect;
+        if (indirect->entries[current].InUse()){
+            sector_t result =indirect->entries[current].getSector();
+            DEBUG('R', "On renvoie %d dansByteToSector cr offset =%d\n", result, offset);
+            delete indirect;
+            ASSERT(result != 0 );
+            return result;
+        }
+        ASSERT(FALSE);
+        // if (DebugIsEnabled('R')){
+        //     indirect->Print();
+        // }
+        return -1;
+    }
 }
 
 //----------------------------------------------------------------------
@@ -116,24 +149,30 @@ int FileHeader::FileLength() const {
 //	the data blocks pointed to by the file header.
 //----------------------------------------------------------------------
 
+int FileHeader::WithoutIndirect() {
+    return NumDirect;
+}
+
 void FileHeader::Print() const {
     int i;
     const auto data = new char[SectorSize];
 
     printf("FileHeader contents.  File size: %d.  File blocks:\n", numBytes);
-    for (i = 0; i < numSectors; i++) { printf("%d ", dataSectors[i]); }
+    int mini = MIN(numSectors, NumDirect);
+    for (i = 0; i < mini; i++) { printf("%d ", dataSectors[i]); }
     printf("\nFile contents:\n");
-    for (int k = i = 0; i < numSectors; i++) {
+    for (int k = i = 0; i < mini; i++) {
         synchDisk->ReadSector(dataSectors[i], data);
         for (int j = 0; (j < SectorSize) && (k < numBytes); j++, k++) {
             if ('\040' <= data[j] && data[j] <= '\176') {   // isprint(data[j])
-                printf("%c", data[j]);
+                // printf("%c", data[j]);
             } else {
-                printf("\\%x", static_cast<unsigned char>(data[j]));
+                // printf("\\%x", static_cast<unsigned char>(data[j]));
             }
         }
-        printf("\n"); 
+        // printf("\n"); 
     }
     printf("------------------------------------------------------------------\n");
     delete [] data;
 }
+

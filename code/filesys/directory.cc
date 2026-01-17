@@ -21,6 +21,7 @@
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
+#include "file.h"
 #include "utility.h"
 #include "filehdr.h"
 #include "directory.h"
@@ -167,6 +168,7 @@ bool Directory::Add(const char *name, const int newSector, const File_Type type)
             table[i].type = type;
             table[i].sector = newSector;
             strncpy(table[i].name, name, FileNameMaxLen); 
+            DEBUG('f', "Sucessfully add file %s in the directory \n", name);
             return true;
         }
     }
@@ -264,6 +266,11 @@ void Directory::Print() const {
             printf("------------------------------------------------------------------\n");
             printf("Name: %s, Sector: %d de type %s\n", table[i].name, table[i].sector, file_type_to_str(table[i].type));
             hdr->FetchFrom(table[i].sector);
+            if (hdr->getRedirect() != -1 && table[i].type == FILE_T) {
+                File *file = new File();
+                file->FetchFrom(hdr->getRedirect());
+                file->Print();
+            }
             hdr->Print();
         }
     }

@@ -48,6 +48,8 @@
 #include "disk.h"
 #include "bitmap.h"
 #include "directory.h"
+#include "file.h"
+#include "fileindirection.h"
 #include "filehdr.h"
 #include "system.h"
 #include "filesys.h"
@@ -129,11 +131,11 @@ FileSystem::FileSystem(const bool format) {
         freeMap->Print();
         directory->Print();
 
-        delete freeMap; 
-        delete directory; 
-        delete mapHdr; 
-        delete dirHdr;
     }
+    delete freeMap; 
+    delete directory; 
+    delete mapHdr; 
+    delete dirHdr;
 }
 
 bool FileSystem::Create(const char* name, const int initialSize, const File_Type type) {
@@ -208,8 +210,10 @@ void FileSystem::Print_FS() const {
     dirHdr->FetchFrom(DirectorySector);
     dirHdr->Print();
 
+    printf("BITMAP !!!!!!!!!!!!!!!!!\n");
     freeMap->FetchFrom(freeMapFile);
     freeMap->Print();
+
 
     directory->FetchFrom(directoryFile);
     directory->Print();
@@ -262,6 +266,7 @@ void FileSystem::Tree() const {
     const auto *directory = new Directory(NumDirEntries);
     directory->FetchFrom(directoryFile);
     directory->Tree();
+    delete directory;
 }
 
 void FileSystem::DisplayInodes() {
@@ -317,7 +322,6 @@ bool FileSystem::createSubDirectory(const int prev_sector, const int curr_sector
         ASSERT(inodes.GetFile(inode) != nullptr);
         directoryFile = inodes.GetFile(inode);
     }
-
 //----------------------------------------------------------------------
 // FileSystem::Create
 // 	Create a file in the Nachos file system (similar to UNIX create).
@@ -346,6 +350,37 @@ bool FileSystem::createSubDirectory(const int prev_sector, const int curr_sector
 //	"name" -- name of file to be created
 //	"initialSize" -- size of file to be created
 //----------------------------------------------------------------------
+
+void FileSystem::createFile(int initialSize, BitMap* freeMap, FileHeader* hdr){
+    if ((unsigned int) initialSize < NumDirect * SectorSize){
+        DEBUG('R', "Don't need indirection sector\n");
+        hdr->setRedirect(-1);
+    } else{
+        const sector_t redirect = freeMap->Find();
+        DEBUG('f', "!!!!!!!!!!!!!!!!!!  file have sector %d for indirection\n", redirect);
+        hdr->setRedirect(redirect);
+        File  * first = new File();
+        int nb_necessary = divRoundUp(initialSize - NumDirect * SectorSize, SectorSize);
+
+        DEBUG('R', "file have nb = %d sector car déjà fais = %d\n", nb_necessary, NumDirect * SectorSize);
+        first->indirect.nbEntry = nb_necessary + 1;
+
+
+        for (int i = 0; i < nb_necessary && i < MAX_INDIRECT_LEVEL_ONE; i++){
+            int sector_tmp = freeMap->Find();
+            ASSERT(sector_tmp != FreeMapSector);
+            first->indirect.entries[i].setSector(sector_tmp);
+            first->indirect.entries[i].setUse(true);
+        }
+        nb_necessary -= MAX_INDIRECT_LEVEL_ONE;
+        if (nb_necessary > 0){
+            // TODO faire autant d'indirection niveau 2 que nécessaire  !!!
+        }
+
+        first->WriteBack(redirect);
+        hdr->setRedirect(redirect);
+    }
+}
 
 #define CreateCleanup(success) \
     delete hdr; \
@@ -380,7 +415,7 @@ bool FileSystem::_Create(const char *name, const int initialSize, const File_Typ
         CreateCleanup(false);
     }
 
-    if (!hdr->Allocate(freeMap, initialSize)) {
+    if (!hdr->Allocate(freeMap, initialSize )){
         DEBUG('f', "Creating %s %s impossible, no space on disk for data\n", file_type_to_str(type), name);
         CreateCleanup(false);
     }
@@ -396,7 +431,11 @@ bool FileSystem::_Create(const char *name, const int initialSize, const File_Typ
     if (type == DIRECTORY_T && !createSubDirectory(directoryFile->GetSector(), sector, hdr, freeMap)) {
         DEBUG('f', "Creating %s %s impossible, can't create subdirectory\n", file_type_to_str(type), name);
         CreateCleanup(false);
+    } else if ( type == FILE_T ) {
+        createFile(initialSize, freeMap, hdr);
+        
     }
+    ASSERT(FreeMapSector == 0);
 
     // everthing worked, flush all changes back to disk
     hdr->WriteBack(sector);

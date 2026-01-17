@@ -55,10 +55,15 @@ class FileHeader {
 
     void Print()const;			// Print the contents of the file.
 
+    int WithoutIndirect(); 
+    sector_t getRedirect();
+    void setRedirect(sector_t s){redirect = s;}
+
   private:
+    sector_t redirect;
     int numBytes;			// Number of bytes in the file
     int numSectors;			// Number of data sectors in the file
-    int dataSectors[NumDirect];		// Disk sector numbers for each data 
+    sector_t dataSectors[NumDirect];		// Disk sector numbers for each data 
 					// block in the file
 };
 
