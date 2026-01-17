@@ -6,7 +6,10 @@
 #include "file.h"
 #include "fileindirection.h"
 
-File::File() {
+File::File(){
+    for (int i = 0; i < MAX_INDIRECT_LEVEL_TWO; i++){
+        second_indercetion[i] = INVALID_SECTOR;
+    }
 }
 
 void File::FetchFrom(sector_t sector) const {
@@ -22,5 +25,10 @@ void File::Print(){
     FirstIndirection * first = new FirstIndirection();
     first->FetchFrom(indirect);
     first->Print();
+    for (int i = 0; second_indercetion[i] != INVALID_SECTOR; i++){
+        SecondIndirection * second = new SecondIndirection();
+        second->FetchFrom(second_indercetion[i]);
+        second->Print(1);
+    }
 }
 
