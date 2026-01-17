@@ -34,6 +34,8 @@
 // by allocating blocks for the file (if it is a new file), or by
 // reading it from disk.
 
+class File;
+
 class FileHeader {
   public:
     bool Allocate(BitMap *bitMap, int fileSize);// Initialize a file header, 
@@ -57,10 +59,12 @@ class FileHeader {
 
     void setRedirect(sector_t s){redirect = s;}
     sector_t getRedirect(){return redirect;}
+    void initializeDirectData( BitMap *bitMap, int* nb_necessary);
+    File* initializeFirstIndirection(BitMap* bitMap, int* nb_necessary);
+    void initializeSecondIndirection(BitMap* bitMap, int* nb_necessary, File* file);
 
   private:
-    sector_t redirect;
-    sector_t redirect2;
+    sector_t redirect;      // POint on a fileSector ie a File object
     int numBytes;			// Number of bytes in the file
     int numSectors;			// Number of data sectors in the file
     sector_t dataSectors[NumDirect];		// Disk sector numbers for each data 

@@ -123,6 +123,10 @@ int main(int argc, char **argv) {
         }
 #endif // USER_PROGRAM
 #ifdef FILESYS
+        if (!strcmp(*argv, "-cp")) {
+            Copy(*(argv + 1), *(argv + 2));
+
+        }
         if (!strcmp(*argv, "-shell")) {
             FileSysShell shell(fileSystem);
             shell.registerCommands();

@@ -30,7 +30,71 @@
 #include "filehdr.h"
 
 #define MIN(a, b) \
-    (int) a < (int) b ? a : b
+    (unsigned int) a < (unsigned int) b ? a : b
+
+
+/**
+ * @brief Initialize first sectors accesible directly. Allocate no more than numDirect sector
+ *
+ * @param bitMap  the global bitmap
+ * @return  The number of sector allocated 
+ */
+void FileHeader::initializeDirectData(BitMap *bitMap, int* nb_necessary){
+    int total_alloc = MIN(*nb_necessary, NumDirect);
+    for (int i = 0; i < total_alloc; i++) {
+        dataSectors[i] = bitMap->Find();
+    }
+    *nb_necessary -= total_alloc;
+}
+
+File* FileHeader::initializeFirstIndirection(BitMap* bitMap, int* nb_necessary){
+    int total_alloc = MIN(*nb_necessary, MAX_INDIRECT_LEVEL_ONE);
+
+    setRedirect(bitMap->Find());
+    File  * file = new File();
+
+    file->setFirstIndirection(bitMap->Find());
+    FirstIndirection * first_indir = new FirstIndirection();
+
+    for (int i = 0; i < total_alloc ;i++){
+        first_indir->setSector(i, bitMap->Find());
+    }
+    first_indir->WriteAt(file->getFirstIndirection());
+    DEBUG('R', "file have sector %d for indirection \n", getRedirect());
+    *nb_necessary -= total_alloc;
+    return file;
+}
+
+void FileHeader::initializeSecondIndirection(BitMap* bitMap, int* nb_necessary, File* file) {
+    int total_alloc = MIN(divRoundUp(*nb_necessary, MAX_INDIRECT_LEVEL_ONE), MAX_INDIRECT_LEVEL_TWO);
+    int index_in_second = -1;
+    SecondIndirection *second;
+    ASSERT(total_alloc != 0);
+    for (int second_indirection_index = 0; second_indirection_index < total_alloc; second_indirection_index++){
+        if (second_indirection_index % MAX_INDIRECT_LEVEL_ONE == 0){
+            if (second_indirection_index != 0){
+                DEBUG('R', "file have sector %d saved for indirection 2 at index %d\n", file->getRedirect2(index_in_second), index_in_second);
+                second->WriteAt(file->getRedirect2(index_in_second));
+                delete second;
+            }
+            index_in_second++;
+            file->setRedirect2(bitMap->Find(), index_in_second);
+            DEBUG('R', "file have sector %d for indirection 2 at index %d\n", file->getRedirect2(index_in_second), index_in_second);
+            second = new SecondIndirection();
+        }
+
+        int sector_tmp = bitMap->Find();
+        second->setSector(second_indirection_index  % MAX_INDIRECT_LEVEL_ONE, sector_tmp);
+        FirstIndirection *first_again = new FirstIndirection();
+        for (int xyz = 0; xyz < MAX_INDIRECT_LEVEL_ONE && *nb_necessary > 0; xyz++){
+            first_again->setSector(xyz, bitMap->Find());
+            (*nb_necessary)--;
+        }
+        first_again->WriteAt(sector_tmp);
+    }
+    // DEBUG('R', "file have sector %d saved for indirection 2 end of loop at index %d\n", file->getRedirect2(index_in_second), index_in_second);
+    second->WriteAt(file->getRedirect2(index_in_second));
+}
 
 //----------------------------------------------------------------------
 // FileHeader::Allocate
@@ -42,36 +106,33 @@
 //	"freeMap" is the bit map of free disk sectors
 //	"fileSize" is the bit map of free disk sectors
 //----------------------------------------------------------------------
-
 bool FileHeader::Allocate(BitMap *bitMap, const int fileSize) {
     numBytes = fileSize;
     numSectors  = divRoundUp(fileSize, SectorSize);
+    setRedirect(INVALID_SECTOR);
+
     int nb_necessary = numSectors;
     DEBUG('R', "Need %d sectors\n", numSectors);
-    if (bitMap->NumClear() < numSectors) {
+    if (bitMap->NumClear() < numSectors) { // TODO count sector for redirection 
         DEBUG('R', "Need %d sectors but not enought space available\n", numSectors);
         return false; // not enough space
     }
 
-    int mini = MIN(numSectors, NumDirect);
-    for (int i = 0; i < mini; i++) {
-        dataSectors[i] = bitMap->Find();
+    initializeDirectData(bitMap, &nb_necessary);
+    if (nb_necessary <= 0){
+        return true;
     }
-    nb_necessary -= mini;
-    int mini2 = MIN(nb_necessary, MAX_INDIRECT_LEVEL_ONE);
 
-    setRedirect(INVALID_SECTOR);
-    if (nb_necessary > 0){
-        setRedirect(bitMap->Find());
-        File  * first = new File();
-        for (int i = 0; i < mini2 ;i++){
-            int sector_tmp = bitMap->Find();
-            ASSERT(sector_tmp != FreeMapSector);
-            first->indirect.setSector(i, sector_tmp);
-        }
-        first->WriteBack(getRedirect());
-        DEBUG('R', "file have sector %d for indirection \n", getRedirect());
+    File * file = initializeFirstIndirection(bitMap, &nb_necessary);
+    DEBUG('R', " remaining %d for second indirection \n", nb_necessary);
+    if (nb_necessary <= 0){
+        DEBUG('R', "C'est fini pour l'allocation\n");
+        file->WriteBack(getRedirect());
+        return true;
     }
+
+    initializeSecondIndirection(bitMap, &nb_necessary, file);
+    file->WriteBack(getRedirect());
     return true;
 }
 
@@ -128,18 +189,40 @@ sector_t FileHeader::ByteToSector(const int offset) const {
         ASSERT(FALSE);
     }
     if ((unsigned int) offset / SectorSize < NumDirect ) {
-        DEBUG('R', "On renvoie %d dansByteToSector sans redirection car offset = %d\n", offset / SectorSize, offset);
+        // DEBUG('R', "On renvoie %d dansByteToSector sans redirection car offset = %d\n", offset / SectorSize, offset);
         return dataSectors[offset / SectorSize];
     } else {
-        FirstIndirection* indirect = new FirstIndirection();
-        indirect->FetchFrom(this->redirect);
+        File* file = new File();
+        file->FetchFrom(this->redirect);
         int current = offset / SectorSize - NumDirect;
-        if (indirect->InUse(current)){
-            sector_t result =indirect->getSector(current);
-            DEBUG('R', "On renvoie %d dansByteToSector cr offset =%d\n", result, offset);
+        FirstIndirection *first_indir = new FirstIndirection();
+        first_indir->FetchFrom(file->getFirstIndirection());
+        if (first_indir->InUse(current)){
+            sector_t result = first_indir->getSector(current);
+            // DEBUG('R', "On renvoie %d dansByteToSector cr offset =%d\n", result, offset);
             ASSERT(result != 0 );
             return result;
         }
+
+        DEBUG('R', "Seconde inderction at sector %d\n", file->getRedirect2(0));
+        SecondIndirection* file2 = new SecondIndirection();
+        file2->FetchFrom(file->getRedirect2(0));
+        current = offset / SectorSize - NumDirect - MAX_INDIRECT_LEVEL_ONE;
+        int in_second = current / MAX_INDIRECT_LEVEL_ONE;
+        int in_third = current % MAX_INDIRECT_LEVEL_ONE;
+        if (file2->InUse(in_second)){
+             FirstIndirection *third = new FirstIndirection();
+             DEBUG('R', "on fetche le ecteur %d car il est à index %d\n", file2->getSector(in_second), in_second);
+             third->FetchFrom(file2->getSector(in_second));
+
+             DEBUG('R', "on fetche le ecteur %d car il est à index %d\n", third->getSector(in_third), in_third);
+            sector_t result =third->getSector(in_third);
+            DEBUG('R', "Seconde inderction : On renvoie %d dansByteToSector cr offset =%d\n", result, offset);
+            ASSERT(result != 0 );
+            return result;
+        }
+
+
         ASSERT(FALSE);
         // if (DebugIsEnabled('R')){
         //     indirect->Print();

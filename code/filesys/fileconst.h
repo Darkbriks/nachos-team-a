@@ -3,7 +3,7 @@
 
 #include "directoryentry.h"
 
-#define NumDirect   ((SectorSize - 4 * sizeof(int)) / sizeof(int))
+#define NumDirect   ((SectorSize - 3 * sizeof(int)) / sizeof(int))
 #define MaxFileSize (NumDirect * SectorSize)
 
 // Sectors containing the file headers for the bitmap of free sectors,

@@ -11,7 +11,7 @@ void FirstIndirection::setSector(int index, sector_t sector){
 }
 
 bool FirstIndirection::InUse(int index){
-    if (index < 0 || index > MAX_INDIRECT_LEVEL_ONE){
+    if (index < 0 || index >= MAX_INDIRECT_LEVEL_ONE){
         return false;
     }
     return entries[index] != INVALID_SECTOR;
@@ -19,7 +19,7 @@ bool FirstIndirection::InUse(int index){
 }
 
 sector_t FirstIndirection::getSector(int index){
-    if (index < 0 || index > MAX_INDIRECT_LEVEL_ONE){
+    if (index < 0 || index >= MAX_INDIRECT_LEVEL_ONE){
         return INVALID_SECTOR;
     }
     return entries[index];

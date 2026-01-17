@@ -20,11 +20,17 @@ public:
 
 
     void Print(); 
+    sector_t getFirstIndirection(){return indirect;}
+    void setFirstIndirection(sector_t i){indirect = i;}
+    void setRedirect2(sector_t s, int i){second_indercetion[i]= s;}
+    sector_t getRedirect2(int i){return second_indercetion[i];}
 
-    FirstIndirection indirect;
- // int x;
+    sector_t indirect;
+    //Second Indirection
+    sector_t second_indercetion[MAX_INDIRECT_LEVEL_TWO];
 private:
 };
 
+static_assert(sizeof(File) == SectorSize);
 
 #endif // FILE_H

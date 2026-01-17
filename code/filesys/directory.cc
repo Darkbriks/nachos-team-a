@@ -230,7 +230,9 @@ bool Directory::Remove(const char *name) const {
 void Directory::List() const {
     for (int i = 0; i < tableSize; i++) {
         if (table[i].inUse) {
-            printf("%c %s\n", file_type_to_char(table[i].type), table[i].name);
+            FileHeader *file = new FileHeader();
+            file->FetchFrom(table[i].sector);
+            printf("%c %s %d bits\n", file_type_to_char(table[i].type), table[i].name, file->FileLength());
         }
     }
 }
