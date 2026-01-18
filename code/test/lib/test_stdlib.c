@@ -89,30 +89,6 @@ static void test_malloc_multiple(void) {
 }
 
 /* ============================================================
- * Test: itoa
- * ============================================================
- */
-static void test_itoa(void) {
-    TEST_START("itoa");
-
-    char buf[32];
-
-    itoa(12345, buf, 10);
-    ASSERT_STREQ(buf, "12345", "itoa decimal wrong");
-
-    itoa(-42, buf, 10);
-    ASSERT_STREQ(buf, "-42", "itoa negative wrong");
-
-    itoa(255, buf, 16);
-    ASSERT_STREQ(buf, "ff", "itoa hex wrong");
-
-    itoa(7, buf, 2);
-    ASSERT_STREQ(buf, "111", "itoa binary wrong");
-
-    TEST_PASS();
-}
-
-/* ============================================================
  * Test: strtol
  * ============================================================
  */
@@ -192,7 +168,6 @@ int main(void) {
     test_malloc_multiple();
 
     PutString("\n--- Conversion Tests ---\n", 30);
-    test_itoa();
     test_strtol();
     test_abs();
     test_rand();

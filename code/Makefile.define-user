@@ -27,6 +27,7 @@ USERPROG_NOPROGRAM=
 #  and ..._EXTRA_SOURCES are ignored for them)
 USERPROG_LIBS=start.S                           \
               libgcc.c                          \
+              ../libs/stdlib/nos_ctype.c        \
               ../libs/stdlib/nos_stdio.c        \
               ../libs/stdlib/nos_stdlib.c       \
               ../libs/stdlib/nos_string.c       \

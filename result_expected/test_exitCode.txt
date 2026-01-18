@@ -1,10 +1,10 @@
-our_shell >  our_shell >  
+user@nos-shell > user@nos-shell > 
 session terminée
 Machine halting!
 
-Ticks: total 32124, idle 5184, system 24520, user 2420
+Ticks: total 49398, idle 5686, system 29840, user 13872
 Disk I/O: reads 0, writes 0
-Console I/O: reads 10, writes 45
+Console I/O: reads 10, writes 53
 Paging: faults 0
 Network I/O: packets received 0, sent 0
 
