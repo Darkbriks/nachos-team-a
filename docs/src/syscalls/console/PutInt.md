@@ -13,8 +13,6 @@ int PutInt(int n);
 
 `PutInt` convertit l'entier `n` en représentation décimale ASCII et l'affiche sur la console de sortie standard.
 
-Numéro d'appel système : `15`
-
 ### Comportement nominal
 
 - Convertit l'entier en chaîne décimale
@@ -53,12 +51,6 @@ L'entier à afficher.
 Auncun code d'erreur spécifique défini. Hérite des erreurs de `SynchPutString` qui est utilisé en interne.
 
 ## IMPLÉMENTATION
-
-### Localisation du code
-
-- **Stub utilisateur** : `code/test/start.S`
-- **Handler noyau** : `code/userprog/exception.cc:handler_SC_PutInt()`
-- **Implémentation** : Utilise `snprintf` + `SynchConsole::SynchPutString()`
 
 ### Synchronisation
 
@@ -201,10 +193,10 @@ Aucun bug connu.
 - [PutString](./PutString.md) - Affichage de chaîne
 - [PutChar](./PutChar.md) - Affichage d'un caractère
 
-## AUTEURS
+## Auteurs
 
-Antoine, 20 Dec 2025
+Antoine
 
-## DERNIÈRE RÉVISION
+## Dernière révision
 
-20 Dec 2025 par Antoine
+18 Jan 2026

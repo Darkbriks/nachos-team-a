@@ -77,8 +77,11 @@ void ConsoleTest(char *in, char *out) {
     for (;;) {
         readAvail->P(); // wait for character to arrive
         const char ch = console->GetChar();
-        if (ch == 'q' || ch == EOF)
+        if (ch == 'q' || ch == EOF) {
+            delete readAvail;
+            delete writeDone;
             return; // if q, quit
+        }
         // if (ch == 'c'){
         //     console->PutChar('<'); // echo it!
         //     writeDone->P();       // wait for write to finish

@@ -67,6 +67,8 @@ Thread::~Thread() {
     if (stack != nullptr) {
         DeallocBoundedArray(reinterpret_cast<char *>(stack), StackSize * sizeof(int));
     }
+
+    delete[] name;
 }
 
 AddrSpace*  Thread::getAddrSpace() const {

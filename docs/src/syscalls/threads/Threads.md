@@ -1,229 +1,199 @@
-# Threads utilisateur
+# Threads - Appels système
 
-Cette page documente le système de threads utilisateur de NachOS et l'API pthread simplifiée.
+Cette page documente les appels système pour la gestion des threads dans NachOS.
 
 ## Vue d'ensemble
 
-NachOS implémente un modèle de threads 1:1 où chaque thread utilisateur est directement supporté par un thread noyau (kernel thread). L'API est inspirée de POSIX pthreads.
+NachOS fournit un ensemble d'appels système permettant la création et la gestion de threads utilisateur. Ces syscalls constituent la couche basse sur laquelle des bibliothèques de plus haut niveau (comme pthread) peuvent être construites.
 
-<div class="callout callout-future">
-    <div class="callout-title">Évolution prévue</div>
-    <div class="callout-content">
-        <p>Dans une version future, il est envisagé de faire évoluer l'architecture vers un modèle plus proche de Linux :</p>
-        <ul>
-            <li>Bibliothèque pthread entièrement en espace utilisateur</li>
-            <li>Syscalls bas niveau</li>
-            <li>Allocation dynamique des stacks</li>
-        </ul>
-    </div>
-</div>
+### Modèle d'exécution
+
+NachOS utilise un modèle **1:1** où chaque thread utilisateur correspond à un thread noyau :
+
+```
+┌────────────────────────────────────────┐
+│           Espace utilisateur           │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐   │
+│  │Thread 0 │ │Thread 1 │ │Thread 2 │   │
+│  └────┬────┘ └────┬────┘ └────┬────┘   │
+├───────┼───────────┼───────────┼────────┤
+│       │           │           │        │
+│  ┌────▼────┐ ┌────▼────┐ ┌────▼────┐   │
+│  │KThread 0│ │KThread 1│ │KThread 2│   │
+│  └─────────┘ └─────────┘ └─────────┘   │
+│             Espace noyau               │
+└────────────────────────────────────────┘
+```
 
 ## API rapide
 
-| Fonction                            | Description                         |
-|-------------------------------------|-------------------------------------|
-| [PthreadCreate](./PthreadCreate.md) | Créer un nouveau thread             |
-| [PthreadExit](./PthreadExit.md)     | Terminer le thread courant          |
-| [PthreadJoin](./PthreadJoin.md)     | Attendre la terminaison d'un thread |
-| [PthreadDetach](./PthreadDetach.md) | Détacher un thread                  |
+| Syscall                             | Description                      |
+|-------------------------------------|----------------------------------|
+| [thread_create](./thread_create.md) | Créer un nouveau thread          |
+| [thread_exit](./thread_exit.md)     | Terminer le thread courant       |
+| [thread_self](./thread_self.md)     | Obtenir le TID du thread courant |
+| [thread_yield](./thread_yield.md)   | Céder le CPU volontairement      |
 
-### Attributs de création
+### Primitives de synchronisation
 
-| Fonction                                                              | Description                   |
-|-----------------------------------------------------------------------|-------------------------------|
-| [Pthread_attr_init](./attrs.md#pthread_attr_init)                     | Initialiser les attributs     |
-| [Pthread_attr_destroy](./attrs.md#pthread_attr_destroy)               | Détruire les attributs        |
-| [Pthread_attr_setdetachstate](./attrs.md#pthread_attr_setdetachstate) | Définir l'état de détachement |
-| [Pthread_attr_getdetachstate](./attrs.md#pthread_attr_getdetachstate) | Obtenir l'état de détachement |
+| Syscall                       | Description                      |
+|-------------------------------|----------------------------------|
+| [futex_wait](./futex_wait.md) | Attendre sur un futex            |
+| [futex_wake](./futex_wake.md) | Réveiller des threads en attente |
 
-## Exemple minimal
+### Opérations atomiques
+
+| Syscall                               | Description               |
+|---------------------------------------|---------------------------|
+| [atomic_cmpxchg](./atomic_cmpxchg.md) | Compare-and-swap atomique |
+| [atomic_store](./atomic_store.md)     | Écriture atomique         |
+| [atomic_load](./atomic_load.md)       | Lecture atomique          |
+
+## Architecture
+
+### Création de thread
+
+Le syscall `thread_create` reçoit une structure `user_thread_args` contenant :
 
 ```c
-#include "syscall.h"
-
-void *my_thread(void *arg) {
-    int id = (int)(long)arg;
-    PutString("Hello from thread ", 18);
-    PutInt(id);
-    PutChar('\n');
-    return (void *)(long)(id * 2);
-}
-
-int main() {
-    posix_thread_t tid;
-    void *retval;
-    
-    // Créer un thread
-    if (PthreadCreate(&tid, 0, my_thread, (void *)42) != 0) {
-        PutString("Error creating thread\n", 22);
-        return 1;
-    }
-    
-    // Attendre sa terminaison
-    PthreadJoin(tid, &retval);
-    
-    PutString("Thread returned: ", 17);
-    PutInt((int)(long)retval);  // Affiche 84
-    PutChar('\n');
-    
-    return 0;
-}
+typedef struct {
+    ptr_32 entry;      // Point d'entrée (fonction)
+    ptr_32 arg;        // Argument à passer
+    ptr_32 user_sp;    // Stack pointer (0 = allocation auto)
+    ptr_32 tls_base;   // Base du TLS (0 = pas de TLS)
+} user_thread_args;
 ```
 
-## Limitations connues
+### Thread-Local Storage (TLS)
 
-<div class="callout callout-limitation">
-    <div class="callout-title">Allocation de stack statique</div>
-    <div class="callout-content">
-        <p>Les stacks des threads sont allouées statiquement en fonction du TID :</p>
-        <pre><code>stack_top = numPages * PageSize - (TID + 1) * stackSize</code></pre>
-    </div>
-</div>
+Chaque thread peut avoir une zone TLS pointée par le registre `$gp`. La structure TLS contient :
 
-<div class="callout callout-limitation">
-    <div class="callout-title">Nombre maximum de threads</div>
-    <div class="callout-content">
-        <p>Maximum <code>MAX_THREAD</code> (10 par défaut) threads par processus.</p>
-        <p>Configurable dans <code>code/userprog/process.h</code>.</p>
-    </div>
-</div>
+```c
+typedef struct _tls {
+    struct _tls* self;         // Auto-référence
+    int errno_val;             // errno thread-local
+    int pthread_ptr;           // Pointeur lib pthread
+    void* tsd[TLS_MAX_KEYS];   // Données thread-specific
+} tls_t;
+```
 
-<div class="callout callout-limitation">
-    <div class="callout-title">Taille de stack fixe</div>
-    <div class="callout-content">
-        <p>Chaque thread dispose de 2 pages (256 octets) de stack.</p>
-        <p>Pas de détection de stack overflow ni de guard pages.</p>
-    </div>
-</div>
+### Identifiants de thread (TID)
 
-<div class="callout callout-fixme">
-    <div class="callout-title">errno non thread-safe</div>
-    <div class="callout-content">
-        <p>La variable <code>errno</code> est globale et partagée entre tous les threads.</p>
-        <p>Voir <a href="../errors.md#errno-global---non-thread-safe">Gestion des erreurs</a> pour plus de détails.</p>
-    </div>
-</div>
+Chaque thread possède un TID unique au sein de son processus :
 
-## Modèle mémoire
+- **TID 0** : Thread principal (créé automatiquement)
+- **TID 1..N** : Threads créés via `thread_create`
 
-Tous les threads d'un processus partagent le même espace d'adressage (`AddrSpace`), incluant :
+Les TID sont alloués via un bitmap et recyclés à la terminaison du thread.
 
-- **Code** : segment `.text` (lecture seule)
-- **Données** : segments `.data` et `.bss`
-- **Tas** : variables dynamiques
-- **Variables globales** : partagées entre tous les threads
+## Cycle de vie d'un thread
 
-Chaque thread possède :
+### États possibles
 
-- **Stack privée** : variables locales, frames d'appel
-- **Registres** : sauvegardés/restaurés lors des context switches
-- **TID** : identifiant unique au sein du processus
-
-<div class="callout callout-warning">
-    <div class="callout-title">Race conditions</div>
-    <div class="callout-content">
-        <p>Les variables globales sont partagées sans protection. Utilisez des <a href="../sync/Sync.md">sémaphores</a> pour synchroniser les accès.</p>
-    </div>
-</div>
+| État           | Description                            |
+|----------------|----------------------------------------|
+| `JUST_CREATED` | Thread créé mais pas encore démarré    |
+| `READY`        | Prêt à s'exécuter, attend le scheduler |
+| `RUNNING`      | En cours d'exécution                   |
+| `BLOCKED`      | Bloqué (futex, sémaphore, SleepUntil)  |
+| `SLEEP`        | En sommeil (Sleep)                     |
+| `TERMINATED`   | Terminé, en attente de nettoyage       |
 
 ## Layout mémoire
 
 ```
-Espace d'adressage (numPages * PageSize)
-┌────────────────────────────┐ ← numPages * PageSize
-│      Stack main (TID 0)    │
-├────────────────────────────┤ ← numPages * PageSize - stackSize
+Espace d'adressage du processus
+┌────────────────────────────┐ ← Haut de mémoire
+│      Stack thread 0        │
+├────────────────────────────┤
 │      Stack thread 1        │
-├────────────────────────────┤ ← numPages * PageSize - 2 * stackSize
+├────────────────────────────┤
 │      Stack thread 2        │
 ├────────────────────────────┤
 │           ...              │
 ├────────────────────────────┤
-│     (espace libre)         │
+│      Espace libre          │
 ├────────────────────────────┤
-│           Tas              │
+│          Heap              │
 ├────────────────────────────┤
-│      .bss (données)        │
+│          .bss              │
 ├────────────────────────────┤
-│      .data (données)       │
+│         .data              │
 ├────────────────────────────┤
-│      .text (code)          │
+│         .code              │
 └────────────────────────────┘ ← 0
 ```
 
-## Terminaison
-
-### Terminaison explicite
-
-Un thread peut terminer explicitement avec `PthreadExit()` :
+## Exemple complet
 
 ```c
-void *my_thread(void *arg) {
-    // ... travail ...
-    PthreadExit((void *)42);
-    // Code jamais atteint
-}
-```
+#include "syscall.h"
+#include "nos_errno.h"
 
-### Terminaison implicite
+// Structure pour passer les arguments au thread
+typedef struct {
+    unsigned int entry;
+    unsigned int arg;
+    unsigned int user_sp;
+    unsigned int tls_base;
+} thread_args;
 
-Si la fonction du thread retourne normalement, `PthreadExit()` est appelé automatiquement avec la valeur de retour :
-
-```c
-void *my_thread(void *arg) {
-    return (void *)42;  // Équivalent à PthreadExit((void *)42)
-}
-```
-
-<div class="callout callout-note">
-    <div class="callout-title">Mécanisme interne</div>
-    <div class="callout-content">
-        <p>Le stub <code>PthreadCreate</code> dans <code>start.S</code> configure le registre <code>$ra</code> 
-        pour pointer vers <code>PthreadExit_wrapper</code>, qui appelle <code>PthreadExit</code> avec la valeur 
-        de retour en <code>$v0</code>.</p>
-    </div>
-</div>
-
-### Terminaison du processus
-
-<div class="callout callout-warning">
-    <div class="callout-title">Attente des threads</div>
-    <div class="callout-content">
-        <p>Le thread principal attend automatiquement la terminaison de tous les threads enfants avant de terminer le processus.</p>
-    </div>
-</div>
-
-```c
-int main() {
-    posix_thread_t t1, t2;
+void thread_func(int arg) {
+    PutString("Thread ", 7);
+    PutInt(thread_self());
+    PutString(" avec arg=", 10);
+    PutInt(arg);
+    PutChar('\n');
     
-    PthreadCreate(&t1, 0, worker, 0);
-    PthreadCreate(&t2, 0, worker, 0);
+    thread_exit();
+}
 
-    // Le thread principal attend t1 et t2 avant de terminer
+int main() {
+    thread_args args;
+    args.entry = (unsigned int)thread_func;
+    args.arg = 42;
+    args.user_sp = 0;    // Stack auto
+    args.tls_base = 0;   // Pas de TLS custom
+    
+    int tid = thread_create(&args);
+    
+    if (tid == -1) {
+        PutString("Erreur creation thread\n", 23);
+        return 1;
+    }
+    
+    PutString("Thread cree, TID=", 17);
+    PutInt(tid);
+    PutChar('\n');
+    
+    // Attendre un peu
+    for (int i = 0; i < 100000; i++) {
+        // Simuler du travail
+    }
+    
     return 0;
 }
 ```
 
+<div class="callout callout-note">
+    <div class="callout-title">Bibliothèque pthread</div>
+    <div class="callout-content">
+        Pour une API de plus haut niveau avec join, detach, et gestion automatique des ressources,
+        utilisez la bibliothèque pthread qui encapsule ces syscalls.
+    </div>
+</div>
+
 ## Voir aussi
 
-<div class="callout callout-see-also">
-    <div class="callout-title">Voir aussi</div>
-    <div class="callout-content">
-
-- [PthreadCreate](./PthreadCreate.md) - Création de thread
-- [PthreadJoin](./PthreadJoin.md) - Attente de terminaison
-- [Attributs de thread](./attrs.md) - Configuration des threads
-- [Sémaphores](../sync/Sync.md) - Synchronisation entre threads
-- [Gestion des erreurs](../errors.md) - errno et codes d'erreur
-
-</div>
-</div>
+- [thread_create](./thread_create.md) - Créer un thread
+- [thread_exit](./thread_exit.md) - Terminer un thread
+- [errno](../libs/errno.md) - Gestion des erreurs
+- [Sémaphores](../sync/Sync.md) - Synchronisation haut niveau
 
 ## Auteurs
 
-Antoine, 31 Dec 2025
+Antoine
 
 ## Dernière révision
 
-31 Dec 2025
+18 Jan 2026

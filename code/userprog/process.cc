@@ -181,6 +181,9 @@ Process::~Process() {
             interrupt->Halt();
         }
     } else {
+        processCountLock->Acquire();
+        all_process_addr->RemoveInList(this);
+        processCountLock->Release();
         DEBUG('p', "Kernel process %d destroyed\n", PID);
     }
 }

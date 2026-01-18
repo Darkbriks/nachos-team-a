@@ -189,20 +189,18 @@ void freeAllStatic(){
 //      Nachos is halting.  De-allocate global data structures.
 //----------------------------------------------------------------------
 
-
 void Cleanup() {
     printf("\nCleaning up...\n");
-    Process* tmp;
     if (threadToBeDestroyed != nullptr){
         delete threadToBeDestroyed;
         threadToBeDestroyed = nullptr;
     }
     if (processToBeDestroyed != nullptr){
-        tmp = processToBeDestroyed;
         delete processToBeDestroyed;
+        processToBeDestroyed = nullptr;
     }
 
-    tmp = currentThread->getProcess();
+    Process * tmp = currentThread->getProcess();
     for (int i = 1; i < MAX_PROCESS; i++){
         tmp = Process::FindProcessByPID(i);
         if (tmp != nullptr){
@@ -210,10 +208,12 @@ void Cleanup() {
             delete tmp;
         }
     }
-    tmp = Process::FindProcessByPID(0);
-    ASSERT(tmp != nullptr);
-    tmp->KillAllThreads();
-    delete tmp;
+
+    Process* kernel = Process::FindProcessByPID(0);
+    if (kernel != nullptr){
+        kernel->KillAllThreads();
+        delete kernel;
+    }
 
 #ifdef NETWORK
     delete postOffice;
@@ -237,8 +237,10 @@ void Cleanup() {
     delete interrupt;
     delete futexQueue;
     delete frameProvider;
-    freeAllStatic();
     delete stats;
+
+    freeAllStatic();
+
     DEBUG('C',"\nShutdown\n");
     Exit(0);
 }
