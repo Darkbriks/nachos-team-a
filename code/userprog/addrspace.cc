@@ -17,7 +17,7 @@
 
 #include "addrspace.h"
 
-#include "bitmap_thread_safe.h"
+#include "bitmap.h"
 #include "copyright.h"
 #include "frameprovider.h"
 #include "noff.h"
@@ -26,6 +26,7 @@
 #include "synch.h"
 #include "system.h"
 #include "tls.h"
+#include "kernelpanic.h"
 
 //----------------------------------------------------------------------
 // SwapHeader
@@ -176,6 +177,7 @@ AddrSpace::~AddrSpace() {
     // End of modification
 
     delete semaphoreBitmap;
+    delete semaphoreBitMapLock;
     for (unsigned int i = 0; i < maxSemaphores; i++) {
         if (semaphoreTable[i].valid) {
             delete semaphoreTable[i].semaphore;
@@ -294,11 +296,15 @@ unsigned int AddrSpace::GetStackBottom() const {
 }
 
 int AddrSpace::SemaphoreCreate(const int initialValue) {
+    semaphoreBitMapLock->Acquire();
     int semId = semaphoreBitmap->Find();
+    semaphoreBitMapLock->Release();
     if (semId == -1) {
         DEBUG('c', "AddrSpace::SemaphoreCreate: Failed to create semaphore, table full\n");
         AllocateSemaphoreTable(maxSemaphores * 2); // Double the size of the semaphore table
+        semaphoreBitMapLock->Acquire();
         semId = semaphoreBitmap->Find();
+        semaphoreBitMapLock->Release();
         if (semId == -1) {
             DEBUG('c', "AddrSpace::SemaphoreCreate: Failed to create semaphore even after resizing table\n");
             return -1;
@@ -338,7 +344,9 @@ int AddrSpace::SemaphoreDestroy(const int semId) const {
     delete sem;
     semaphoreTable[semId].semaphore = nullptr;
     semaphoreTable[semId].valid = false;
-    semaphoreBitmap->ClearThreadSafe(semId);
+    semaphoreBitMapLock->Acquire();
+    semaphoreBitmap->Clear(semId);
+    semaphoreBitMapLock->Release();
     DEBUG('c', "AddrSpace::SemaphoreDestroy: Semaphore with id %d destroyed\n", semId);
     return 0;
 }
@@ -362,8 +370,15 @@ int AddrSpace::AllocateSemaphoreTable(const unsigned int maxSem) {
     if (maxSem > MAX_SEMAPHORES_PER_PROCESS) { return -1; }
     if (maxSem == this->maxSemaphores) { return 0; } // No change needed
 
-    if (this->semaphoreBitmap != nullptr) { this->semaphoreBitmap->UpdateSize(static_cast<int>(maxSem)); }
-    else { this->semaphoreBitmap = new BitMapThreadSafe(static_cast<int>(maxSem)); }
+    if (this->semaphoreBitmap != nullptr) {
+        semaphoreBitMapLock->Acquire();
+        this->semaphoreBitmap->UpdateSize(static_cast<int>(maxSem));
+        semaphoreBitMapLock->Release();
+    }
+    else {
+        this->semaphoreBitmap = new BitMap(static_cast<int>(maxSem));
+        this->semaphoreBitMapLock = new Lock("SemaphoreBitMapLock");
+    }
 
     const semaphore_descriptor* oldTable = this->semaphoreTable;
     this->semaphoreTable = new semaphore_descriptor[maxSem];

@@ -169,14 +169,17 @@ void StackManager::MarkInUse(const unsigned int base, const unsigned int tid) co
     lock->Release();
 }
 
-StackRegion* StackManager::GetStackInfo(const unsigned int base) const {
+bool StackManager::GetStackInfo(unsigned int base, StackRegion &outRegion) const{
     lock->Acquire();
 
-    const int slot = FindByBase(base);
-    StackRegion *result = (slot >= 0) ? &regions[slot] : nullptr;
+    if (const int slot = FindByBase(base); slot >= 0) {
+        outRegion = regions[slot];
+        lock->Release();
+        return true;
+    }
 
     lock->Release();
-    return result;
+    return false;
 }
 
 bool StackManager::IsInStack(const unsigned int addr) const {

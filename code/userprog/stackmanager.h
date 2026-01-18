@@ -81,12 +81,12 @@ public:
 
     /**
      * @brief Get stack info for a given base address
-     * TODO: returning an internal pointer is bad
      *
      * @param base Stack base address
-     * @return Pointer to StackRegion or nullptr if not found
+     * @param outRegion Output parameter for stack region
+     * @return true if found, false if not found
      */
-    [[nodiscard]] StackRegion* GetStackInfo(unsigned int base) const;
+    [[nodiscard]] bool GetStackInfo(unsigned int base, StackRegion& outRegion) const;
 
     /**
      * @brief Check if an address is within any allocated stack

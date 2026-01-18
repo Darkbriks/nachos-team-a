@@ -30,7 +30,8 @@
 #define INITIAL_HEAP_PAGES 2
 #define MAX_HEAP_PAGES  256
 
-class BitMapThreadSafe;
+class BitMap;
+class Lock;
 class StackManager;
 class Process;
 
@@ -124,7 +125,8 @@ class AddrSpace {
         StackManager* stackManager = nullptr;
 
         unsigned int maxSemaphores = 0;
-        BitMapThreadSafe* semaphoreBitmap = nullptr;
+        BitMap* semaphoreBitmap = nullptr;
+        Lock* semaphoreBitMapLock = nullptr;
         semaphore_descriptor* semaphoreTable = nullptr;
 
         [[nodiscard]] class Semaphore* GetSemaphore(int semId)const;
