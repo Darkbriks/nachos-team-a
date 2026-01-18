@@ -80,6 +80,15 @@ inode_t InodeTable::FindBySector(const sector_t sector) const {
     return -1;
 }
 
+inode_t InodeTable::FindByFile(OpenFile* file) {
+    for (int i = 0; i < MAX_INODES; ++i) {
+        if (inodes[i] != nullptr && inodes[i]->getFilePtr() == file) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 OpenFile* InodeTable::GetFile(const inode_t inode) const {
     if (IsOpen(inode)) {
         return &inodes[inode]->getFile();

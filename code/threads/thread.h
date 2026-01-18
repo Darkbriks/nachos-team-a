@@ -46,6 +46,7 @@
 #include "addrspace.h"
 #include "machine.h"
 #endif
+#include "syscall.h"
 
 // CPU register state to be saved on context switch.
 // The SPARC and MIPS only need 10 registers, but the Snake needs 18.
@@ -55,6 +56,9 @@
 // Size of the thread's private execution stack.
 // WATCH OUT IF THIS ISN'T BIG ENOUGH!!!!!
 #define StackSize (4 * 1024) // in words
+
+#define MAX_FILE_OPEN 10
+#define INVALID_ID -1
 
 class Process;
 
@@ -75,6 +79,8 @@ extern void ThreadPrint(int arg);
 //  Some threads also belong to a user address space; threads
 //  that only run in the kernel have a NULL address space.
 
+typedef int OpenFileId;
+
 class Thread {
 
 friend Process;
@@ -86,6 +92,7 @@ private:
     int machineState[MachineStateSize] = {}; // all registers except for stackTop
 
     int* stack = nullptr; // Bottom of the stack. NULL if this is the main thread (If NULL, don't deallocate stack)
+    OpenFile* openFiles[MAX_FILE_OPEN];
 
 #ifdef USER_PROGRAM
     // A thread running a user program actually has *two* sets of CPU registers
@@ -105,6 +112,7 @@ private:
     bool exiting = false;
 
     Thread(tid_t tid, Process* process, ptr_32 tlsBase = 0);
+
 
     void StackAllocate(VoidFunctionPtr func, int arg); // Allocate a stack for thread. Used internally by Fork()
 
@@ -152,6 +160,12 @@ public:
 #endif
 
     void Print() const { printf("%s, ", name); }
+
+    bool IsOpenFile(OpenFileId id);
+    OpenFileId AddOpenFile(OpenFile* id);
+    OpenFileId CanOpenFile();
+    OpenFile* GetOpenFile(OpenFileId id);
+    bool RemoveOpenFile(OpenFileId id);
 };
 
 // Magical machine-dependent routines, defined in switch.s

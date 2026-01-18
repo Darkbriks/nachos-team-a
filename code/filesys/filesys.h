@@ -87,7 +87,11 @@ public:
     bool Create(const char *name, int initialSize, File_Type type = FILE_T); // Create a file (UNIX creat)
     OpenFile* Open(const char *name); // Open a file (UNIX open)
     bool Close(const char* name);
+    bool Close(OpenFile* name);
     bool Remove(const char *name); // Delete a file (UNIX unlink)
+    bool Remove(OpenFile* name); // Delete a file (UNIX unlink)
+    bool Read(OpenFile* file, char* buffer, int n); 
+    bool Write(OpenFile* file, char* buffer, int n); 
 
     bool Change_Directory(const char * name);
     void ReadAllFile(const char* name);

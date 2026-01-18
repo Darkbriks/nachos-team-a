@@ -144,11 +144,22 @@ bool FileSystem::Create(const char* name, const int initialSize, const File_Type
     return _Create(nav.getLastComponent(), initialSize, type);
 }
 
+bool FileSystem::Read(OpenFile* file, char* buffer, int n){
+    file->Read(buffer, n);
+    return true;
+}
+
+bool FileSystem::Write(OpenFile* file, char* buffer, int n){ 
+    file->Write(buffer, n);
+    return true;
+}
+
 bool FileSystem::Remove(const char *name) {
     const PathNavigator nav(this, name);
     if (!nav.isValid()) { return false; }
     return _Remove(nav.getLastComponent());
 }
+
 
 OpenFile* FileSystem::Open(const char *name) {
     const PathNavigator nav(this, name);
@@ -160,6 +171,10 @@ bool FileSystem::Close(const char *name) {
     const PathNavigator nav(this, name);
     if (!nav.isValid()) { return false; }
     return _Close(nav.getLastComponent());
+}
+
+bool FileSystem::Close(OpenFile* file) {
+    return inodes.Close(inodes.FindByFile(file));
 }
 
 bool FileSystem::Change_Directory(const char * name) {

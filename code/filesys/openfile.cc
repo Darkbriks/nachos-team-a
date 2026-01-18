@@ -109,6 +109,7 @@ int OpenFile::ReadAt(char *into, int numBytes, int position) const {
     const int fileLength = hdr->FileLength();
     int i, firstSector, lastSector, numSectors;
     char *buf;
+    DEBUG('f', "Try Reading %d bytes\n", numBytes); 	
 
     if ((numBytes <= 0) || (position >= fileLength)) {
         return 0; 				// check request

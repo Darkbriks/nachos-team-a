@@ -14,6 +14,7 @@ public:
     ~Inode();
 
     [[nodiscard]] OpenFile& getFile() const { return *file; }
+    [[nodiscard]] OpenFile* getFilePtr() { return file; }
     [[nodiscard]] int getSector() const { return sector; }
     [[nodiscard]] int getRefCount() const { return refCount; }
     void incrementRefCount() { refCount++; }
@@ -36,6 +37,7 @@ public:
 
     [[nodiscard]] bool IsOpen(inode_t inode) const;
     [[nodiscard]] inode_t FindBySector(sector_t sector) const;
+    [[nodiscard]] inode_t FindByFile(OpenFile* file);
 
     [[nodiscard]] OpenFile* GetFile(inode_t inode) const;
     [[nodiscard]] int GetRefCount(inode_t inode) const;
