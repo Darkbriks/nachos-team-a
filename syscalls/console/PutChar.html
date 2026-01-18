@@ -37,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-7a880c7f.js";
+            window.path_to_searchindex_js = "../../searchindex-1d10b05f.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-ea31cd0b.js"></script>
+        <script src="../../toc-57382a8e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -188,7 +188,6 @@ void PutChar(char c);
 </code></pre>
 <h2 id="description"><a class="header" href="#description">DESCRIPTION</a></h2>
 <p><code>PutChar</code> écrit le caractère spécifié <code>c</code> dans la console de sortie standard. Cette opération est bloquante et attend que le caractère soit effectivement affiché avant de retourner le contrôle au programme appelant.</p>
-<p>Numéro d’appel système : <code>11</code></p>
 <h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
 <ul>
 <li>Le caractère <code>c</code> est immédiatement envoyé au périphérique de sortie.</li>
@@ -219,12 +218,6 @@ void PutChar(char c);
 <h2 id="codes-derreur"><a class="header" href="#codes-derreur">CODES D’ERREUR</a></h2>
 <p>Aucun code d’erreur n’est défini pour cet appel système. En cas de problème matériel, le comportement est indéfini.</p>
 <h2 id="implémentation"><a class="header" href="#implémentation">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
-<ul>
-<li><strong>Stub utilisateur</strong> : <code>code/test/start.S:186-193</code></li>
-<li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handleSC_PutChar()</code></li>
-<li><strong>Implémentation</strong> : <code>code/userprog/synchconsole.cc:SynchConsole::SynchPutChar()</code></li>
-</ul>
 <h3 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h3>
 <p>L’implémentation utilise des sémaphores pour garantir que les appels concurrents à <code>PutChar</code> ne produisent pas d’erreurs, et que chaque caractère demandé soit affiché.</p>
 <h2 id="décisions-de-conception"><a class="header" href="#décisions-de-conception">DÉCISIONS DE CONCEPTION</a></h2>
@@ -312,10 +305,10 @@ int main() {
 <li><a href="./PutInt.html">PutInt</a> - Écrit un entier</li>
 <li><a href="./GetChar.html">GetChar</a> - Lecture d’un caractère</li>
 </ul>
-<h2 id="auteurs"><a class="header" href="#auteurs">AUTEURS</a></h2>
-<p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision"><a class="header" href="#dernière-révision">DERNIÈRE RÉVISION</a></h2>
-<p>20 Dec 2025 par Antoine</p>
+<h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
+<p>Antoine</p>
+<h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
+<p>18 Jan 2026</p>
 
                     </main>
 

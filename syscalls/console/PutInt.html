@@ -37,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-7a880c7f.js";
+            window.path_to_searchindex_js = "../../searchindex-1d10b05f.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-ea31cd0b.js"></script>
+        <script src="../../toc-57382a8e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -188,7 +188,6 @@ int PutInt(int n);
 </code></pre>
 <h2 id="description"><a class="header" href="#description">DESCRIPTION</a></h2>
 <p><code>PutInt</code> convertit l’entier <code>n</code> en représentation décimale ASCII et l’affiche sur la console de sortie standard.</p>
-<p>Numéro d’appel système : <code>15</code></p>
 <h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
 <ul>
 <li>Convertit l’entier en chaîne décimale</li>
@@ -217,12 +216,6 @@ int PutInt(int n);
 <h2 id="codes-derreur"><a class="header" href="#codes-derreur">CODES D’ERREUR</a></h2>
 <p>Auncun code d’erreur spécifique défini. Hérite des erreurs de <code>SynchPutString</code> qui est utilisé en interne.</p>
 <h2 id="implémentation"><a class="header" href="#implémentation">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
-<ul>
-<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
-<li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handler_SC_PutInt()</code></li>
-<li><strong>Implémentation</strong> : Utilise <code>snprintf</code> + <code>SynchConsole::SynchPutString()</code></li>
-</ul>
 <h3 id="synchronisation"><a class="header" href="#synchronisation">Synchronisation</a></h3>
 <p>Hérite de la synchronisation de <code>SynchPutString</code> :</p>
 <ul>
@@ -342,10 +335,10 @@ int main() {
 <li><a href="./PutString.html">PutString</a> - Affichage de chaîne</li>
 <li><a href="./PutChar.html">PutChar</a> - Affichage d’un caractère</li>
 </ul>
-<h2 id="auteurs"><a class="header" href="#auteurs">AUTEURS</a></h2>
-<p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision"><a class="header" href="#dernière-révision">DERNIÈRE RÉVISION</a></h2>
-<p>20 Dec 2025 par Antoine</p>
+<h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
+<p>Antoine</p>
+<h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
+<p>18 Jan 2026</p>
 
                     </main>
 

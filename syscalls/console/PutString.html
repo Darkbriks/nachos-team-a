@@ -37,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-7a880c7f.js";
+            window.path_to_searchindex_js = "../../searchindex-1d10b05f.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-ea31cd0b.js"></script>
+        <script src="../../toc-57382a8e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -188,7 +188,6 @@ int PutString(char *s, int n);
 </code></pre>
 <h2 id="description"><a class="header" href="#description">DESCRIPTION</a></h2>
 <p><code>PutString</code> écrit jusqu’à <code>n</code> octets de la chaîne pointée par <code>s</code> vers la console de sortie standard. L’écriture s’arrête au premier caractère null (<code>\0</code>) rencontré ou après <code>n</code> octets, selon ce qui arrive en premier.</p>
-<p>Numéro d’appel système : <code>12</code></p>
 <h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
 <ul>
 <li>Écrit jusqu’à <code>n</code> octets depuis <code>s</code></li>
@@ -241,12 +240,6 @@ int PutString(char *s, int n);
 </table>
 </div>
 <h2 id="implémentation"><a class="header" href="#implémentation">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
-<ul>
-<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
-<li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handler_SC_putString()</code></li>
-<li><strong>Implémentation</strong> : <code>code/userprog/synchconsole.cc:SynchConsole::SynchPutString()</code></li>
-</ul>
 <h3 id="synchronisation"><a class="header" href="#synchronisation">Synchronisation</a></h3>
 <p><strong>Sémaphore <code>IO_Lock</code></strong></p>
 <ul>
@@ -346,21 +339,6 @@ int main() {
 <li><strong>Thread-safety partielle</strong> : Caractères atomiques mais pas les chaînes complètes</li>
 </ul>
 <h2 id="failles-et-vulnérabilités"><a class="header" href="#failles-et-vulnérabilités">FAILLES ET VULNÉRABILITÉS</a></h2>
-<div class="vulnerability-section severity-critical">
-<h4 id="aucune-validation-de-lespace-dadressage"><a class="header" href="#aucune-validation-de-lespace-dadressage">Aucune validation de l’espace d’adressage</a></h4>
-<p><strong>Description</strong> : Le handler vérifie seulement <code>addr &lt; 0</code> mais pas si l’adresse est dans l’espace utilisateur valide.</p>
-<p><strong>Impact</strong> :</p>
-<ul>
-<li><strong>Lecture arbitraire de mémoire noyau</strong> : Un programme malveillant peut lire la mémoire du noyau</li>
-</ul>
-<p><strong>Exploitation</strong> :</p>
-<pre><code class="language-c">// Lire 100 octets de mémoire noyau
-char *kernel_addr = (char *)0x00000000;  // Trouver une adresse noyau valide
-PutString(kernel_addr, 100);
-// Affiche le contenu de la mémoire noyau !
-</code></pre>
-</div>
-
 <div class="vulnerability-section severity-info">
 <p><strong>Description</strong> : Un programme peut monopoliser la console indéfiniment.</p>
 <p><strong>Impact</strong> : DoS par spam de PutString en boucle</p>
@@ -387,10 +365,10 @@ PutString(kernel_addr, 100);
 <li><a href="./PutInt.html">PutInt</a> - Affichage d’un entier</li>
 <li><a href="./GetString.html">GetString</a> - Lecture de chaîne</li>
 </ul>
-<h2 id="auteurs"><a class="header" href="#auteurs">AUTEURS</a></h2>
-<p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision"><a class="header" href="#dernière-révision">DERNIÈRE RÉVISION</a></h2>
-<p>20 Dec 2025 par Antoine</p>
+<h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
+<p>Antoine</p>
+<h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
+<p>18 Jan 2026</p>
 
                     </main>
 

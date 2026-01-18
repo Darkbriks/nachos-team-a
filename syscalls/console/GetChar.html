@@ -37,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-7a880c7f.js";
+            window.path_to_searchindex_js = "../../searchindex-1d10b05f.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-ea31cd0b.js"></script>
+        <script src="../../toc-57382a8e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -188,7 +188,6 @@ char GetChar(void);
 </code></pre>
 <h2 id="description"><a class="header" href="#description">DESCRIPTION</a></h2>
 <p><code>GetChar</code> lit et retourne un seul caractère depuis la console d’entrée standard (clavier). L’appel bloque jusqu’à ce qu’un caractère soit disponible.</p>
-<p>Numéro d’appel système : <code>13</code></p>
 <h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
 <ul>
 <li>L’appel bloque jusqu’à ce qu’un caractère soit tapé par l’utilisateur</li>
@@ -208,18 +207,11 @@ char GetChar(void);
 <p><strong>Type</strong> : <code>char</code> (registre <code>$2</code>)</p>
 <p><strong>Valeurs possibles</strong> :</p>
 <ul>
-<li>Caractère lu (0x00 à 0xFF, signé)</li>
+<li>Caractère lu (0x00 à 0x7F, signé)</li>
 <li><code>EOF</code> (-1) si fin de flux</li>
 </ul>
 <h2 id="codes-derreur"><a class="header" href="#codes-derreur">CODES D’ERREUR</a></h2>
 <p>Aucun code d’erreur. La variable <code>errno</code> n’est jamais modifiée.</p>
-<h2 id="implémentation"><a class="header" href="#implémentation">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
-<ul>
-<li><strong>Stub utilisateur</strong> : <code>code/test/start.S:214-221</code></li>
-<li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handler_SC_getChar()</code></li>
-<li><strong>Implémentation</strong> : <code>code/userprog/synchconsole.cc:SynchConsole::SynchGetChar()</code></li>
-</ul>
 <h3 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h3>
 <p>L’implementation utilise des sémaphores pour garantir un accès exclusif au buffer de la console, évitant les conditions de course lors de lectures concurrentes.</p>
 <h2 id="décisions-de-conception"><a class="header" href="#décisions-de-conception">DÉCISIONS DE CONCEPTION</a></h2>
@@ -335,10 +327,10 @@ int main() {
 <li><a href="./GetInt.html">GetInt</a> - Lecture d’un entier</li>
 <li><a href="./PutChar.html">PutChar</a> - Affiche un caractère</li>
 </ul>
-<h2 id="auteurs"><a class="header" href="#auteurs">AUTEURS</a></h2>
-<p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision"><a class="header" href="#dernière-révision">DERNIÈRE RÉVISION</a></h2>
-<p>20 Dec 2025 par Antoine</p>
+<h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
+<p>Antoine</p>
+<h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
+<p>18 Jan 2026</p>
 
                     </main>
 

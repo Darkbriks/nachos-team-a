@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>CreateThread - NachOS Manual</title>
+        <title>futex_wake - NachOS Manual</title>
 
 
         <!-- Custom HTML head -->
@@ -37,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-7a880c7f.js";
+            window.path_to_searchindex_js = "../../searchindex-1d10b05f.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-ea31cd0b.js"></script>
+        <script src="../../toc-57382a8e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -179,69 +179,31 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="pthreadcreate"><a class="header" href="#pthreadcreate">PthreadCreate</a></h1>
-<p><code>PthreadCreate</code> - Crée un nouveau thread utilisateur</p>
+                        <h1 id="futex_wake"><a class="header" href="#futex_wake">futex_wake</a></h1>
+<p><code>futex_wake</code> - Réveille des threads en attente sur un futex.</p>
 <h2 id="synopsis"><a class="header" href="#synopsis">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
-int PthreadCreate(posix_thread_t *thread, 
-                  const pthread_attr_t *attr,
-                  void *(*start_routine)(void *), 
-                  void *arg);
+int futex_wake(int* uaddr, int num_wake);
 </code></pre>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
-<p><code>PthreadCreate</code> crée un nouveau thread qui exécute la fonction <code>start_routine</code> avec l’argument <code>arg</code>. Le nouveau thread partage le même espace d’adressage que le thread appelant.</p>
-<p><strong>Numéro d’appel système</strong> : <code>SC_PthreadCreate</code> (17)</p>
-<h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
+<p><code>futex_wake</code> réveille jusqu’à <code>num_wake</code> threads qui attendent sur le futex à l’adresse <code>uaddr</code>.</p>
+<h3 id="comportement"><a class="header" href="#comportement">Comportement</a></h3>
 <ol>
-<li>Allocation d’un TID unique via <code>threads_bitmap</code></li>
-<li>Création d’un objet <code>Thread</code> noyau</li>
-<li>Configuration de l’état de détachement selon <code>attr</code></li>
-<li>Calcul de l’adresse de stack : <code>numPages * PageSize - (TID + 1) * stackSize</code></li>
-<li>Fork du thread noyau avec <code>StartUserThread</code></li>
-<li>Écriture du TID à l’adresse <code>thread</code></li>
-<li>Retour immédiat (le nouveau thread s’exécute de manière asynchrone)</li>
+<li>Désactive les interruptions</li>
+<li>Recherche la file d’attente associée à <code>uaddr</code></li>
+<li>Si aucun thread n’attend : retourne 0</li>
+<li>Réveille jusqu’à <code>num_wake</code> threads</li>
+<li>Si la file devient vide : libère les ressources</li>
+<li>Retourne le nombre de threads effectivement réveillés</li>
 </ol>
-<h3 id="initialisation-des-registres"><a class="header" href="#initialisation-des-registres">Initialisation des registres</a></h3>
-<p>Le nouveau thread démarre avec :</p>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Registre</th><th>Valeur</th></tr>
-</thead>
-<tbody>
-<tr><td><code>$pc</code></td><td>Adresse de <code>start_routine</code></td></tr>
-<tr><td><code>$sp</code></td><td>Sommet de la stack allouée</td></tr>
-<tr><td><code>$a0</code> ($4)</td><td>Valeur de <code>arg</code></td></tr>
-<tr><td><code>$ra</code></td><td>Adresse de <code>PthreadExit_wrapper</code></td></tr>
-</tbody>
-</table>
-</div>
-<div class="callout callout-note">
-    
-<div class="callout-title">Terminaison automatique</div>
-
-    
-<div class="callout-content">
-        Le registre <code>$ra</code> est configuré pour que le retour de <code>start_routine</code> 
-        appelle automatiquement <code>PthreadExit</code> avec la valeur de retour.
-    </div>
-
-</div>
-
 <h2 id="paramètres"><a class="header" href="#paramètres">Paramètres</a></h2>
-<h3 id="thread"><a class="header" href="#thread"><code>thread</code></a></h3>
-<p>Pointeur vers un <code>posix_thread_t</code> où sera stocké l’identifiant du nouveau thread.</p>
-<p><strong>Type</strong> : <code>posix_thread_t *</code> (pointeur vers <code>unsigned int</code>)<br><strong>Direction</strong> : OUT<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> : Doit être une adresse valide en espace utilisateur</p>
-<h3 id="attr"><a class="header" href="#attr"><code>attr</code></a></h3>
-<p>Attributs de création du thread. Si <code>NULL</code> ou <code>0</code>, les attributs par défaut sont utilisés.</p>
-<p><strong>Type</strong> : <code>const pthread_attr_t *</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$5</code><br><strong>Valeur par défaut</strong> : <code>JOINABLE</code>, stack de 2 pages</p>
-<h3 id="start_routine"><a class="header" href="#start_routine"><code>start_routine</code></a></h3>
-<p>Fonction à exécuter par le nouveau thread.</p>
-<p><strong>Type</strong> : <code>void *(*)(void *)</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$6</code><br><strong>Contraintes</strong> : Adresse valide de fonction utilisateur</p>
-<h3 id="arg"><a class="header" href="#arg"><code>arg</code></a></h3>
-<p>Argument passé à <code>start_routine</code>.</p>
-<p><strong>Type</strong> : <code>void *</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$7</code><br><strong>Contraintes</strong> : Aucune (peut être <code>NULL</code>)</p>
+<h3 id="uaddr"><a class="header" href="#uaddr"><code>uaddr</code></a></h3>
+<p>Adresse du futex sur lequel réveiller les threads.</p>
+<p><strong>Type</strong> : <code>int*</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> : Doit être une adresse utilisateur valide</p>
+<h3 id="num_wake"><a class="header" href="#num_wake"><code>num_wake</code></a></h3>
+<p>Nombre maximum de threads à réveiller.</p>
+<p><strong>Type</strong> : <code>int</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$5</code><br><strong>Valeurs spéciales</strong> : <code>INT_MAX</code> pour réveiller tous les threads en attente</p>
 <h2 id="valeur-de-retour"><a class="header" href="#valeur-de-retour">Valeur de retour</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <div class="table-wrapper">
@@ -250,220 +212,72 @@ int PthreadCreate(posix_thread_t *thread,
 <tr><th>Valeur</th><th>Signification</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0</code></td><td>Succès</td></tr>
+<tr><td><code>&gt;= 0</code></td><td>Nombre de threads réveillés</td></tr>
 <tr><td><code>-1</code></td><td>Erreur (consulter <code>errno</code>)</td></tr>
 </tbody>
 </table>
 </div>
-<h2 id="codes-derreur"><a class="header" href="#codes-derreur">Codes d’erreur</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
-</thead>
-<tbody>
-<tr><td>1</td><td><code>E_INVAL</code></td><td><code>start_routine</code> invalide ou écriture mémoire échouée</td></tr>
-<tr><td>2</td><td><code>E_FAULT</code></td><td>Adresse <code>thread</code> invalide</td></tr>
-<tr><td>7</td><td><code>E_NOMEM</code></td><td>Plus de TID disponibles (limite atteinte)</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="implémentation"><a class="header" href="#implémentation">Implémentation</a></h2>
-<h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
-<ul>
-<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
-<li><strong>Handler noyau</strong> : <code>code/userprog/userthread.cc:handle_SC_PthreadCreate()</code></li>
-<li><strong>Implémentation</strong> : <code>code/userprog/userthread.cc:do_PthreadCreate()</code></li>
-<li><strong>Démarrage thread</strong> : <code>code/userprog/userthread.cc:StartUserThread()</code></li>
-</ul>
-<h3 id="flux-dexécution"><a class="header" href="#flux-dexécution">Flux d’exécution</a></h3>
-<pre><code>PthreadCreate(&amp;tid, attr, func, arg)
-        │
-        ▼
-    start.S: PthreadCreate
-        │ charge $8 = PthreadExit_wrapper
-        ▼
-    syscall SC_PthreadCreate
-        │
-        ▼
-    handle_SC_PthreadCreate()
-        │ lit $4, $5, $6, $7, $8
-        ▼
-    do_PthreadCreate()
-        │ ├─ valide start_routine
-        │ ├─ lit/initialise attr
-        │ ├─ crée Thread via Process::CreateThread()
-        │ ├─ configure detached selon attr
-        │ ├─ crée Param(start_routine, arg, wrapper_addr)
-        │ └─ thread-&gt;Fork(StartUserThread, param)
-        ▼
-    [scheduler active le nouveau thread]
-        │
-        ▼
-    StartUserThread(param)
-        │ ├─ calcule stack_addr
-        │ ├─ InitRegisters()
-        │ ├─ configure PC, SP, $a0, $ra
-        │ └─ machine-&gt;Run()
-        ▼
-    [exécution de start_routine(arg)]
-</code></pre>
 <h2 id="exemples"><a class="header" href="#exemples">Exemples</a></h2>
-<h3 id="exemple-1--création-simple"><a class="header" href="#exemple-1--création-simple">Exemple 1 : Création simple</a></h3>
+<h3 id="exemple-1--réveiller-un-seul-thread"><a class="header" href="#exemple-1--réveiller-un-seul-thread">Exemple 1 : Réveiller un seul thread</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
-void *hello_thread(void *arg) {
-    PutString("Hello from thread!\n", 19);
-    return 0;
-}
+int signal = 0;
 
-int main() {
-    posix_thread_t tid;
+void signaler(int arg) {
+    // Préparer les données
+    // ...
     
-    if (PthreadCreate(&amp;tid, 0, hello_thread, 0) != 0) {
-        PutString("Error\n", 6);
-        return 1;
-    }
+    // Signaler qu'un thread peut continuer
+    atomic_store(&amp;signal, 1);
+    int woken = futex_wake(&amp;signal, 1);
     
-    PthreadJoin(tid, 0);
-    return 0;
-}
-</code></pre>
-<h3 id="exemple-2--passage-dargument-et-récupération-de-retour"><a class="header" href="#exemple-2--passage-dargument-et-récupération-de-retour">Exemple 2 : Passage d’argument et récupération de retour</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-void *compute(void *arg) {
-    int value = (int)(long)arg;
-    return (void *)(long)(value * value);
-}
-
-int main() {
-    posix_thread_t tid;
-    void *result;
-    
-    PthreadCreate(&amp;tid, 0, compute, (void *)7);
-    PthreadJoin(tid, &amp;result);
-    
-    PutString("7^2 = ", 6);
-    PutInt((int)(long)result);  // Affiche 49
+    PutString("Threads reveilles: ", 19);
+    PutInt(woken);
     PutChar('\n');
     
-    return 0;
+    thread_exit();
 }
 </code></pre>
-<h3 id="exemple-3--thread-détaché"><a class="header" href="#exemple-3--thread-détaché">Exemple 3 : Thread détaché</a></h3>
+<h3 id="exemple-2--broadcast-réveiller-tous"><a class="header" href="#exemple-2--broadcast-réveiller-tous">Exemple 2 : Broadcast (réveiller tous)</a></h3>
 <pre><code class="language-c">#include "syscall.h"
+#include "nos_stdlib.h"  // INT_MAX
 
-void *background_task(void *arg) {
-    PutString("Background task running\n", 24);
-    // Pas besoin de join
-    return 0;
-}
+int barrier = 0;
 
-int main() {
-    posix_thread_t tid;
-    pthread_attr_t attr;
+void broadcast_signal() {
+    atomic_store(&amp;barrier, 1);
     
-    Pthread_attr_init(&amp;attr);
-    Pthread_attr_setdetachstate(&amp;attr, DETACHED);
+    // Réveiller TOUS les threads en attente
+    int woken = futex_wake(&amp;barrier, INT_MAX);
     
-    PthreadCreate(&amp;tid, &amp;attr, background_task, 0);
-    
-    Pthread_attr_destroy(&amp;attr);
-    
-    // Le thread principal ne se termine pas tant que le thread détaché n'a pas fini
-    
-    return 0;
+    PutString("Broadcast: ", 11);
+    PutInt(woken);
+    PutString(" threads reveilles\n", 19);
 }
 </code></pre>
-<h3 id="exemple-4--gestion-derreur"><a class="header" href="#exemple-4--gestion-derreur">Exemple 4 : Gestion d’erreur</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-void *worker(void *arg) {
-    return 0;
-}
-
-int main() {
-    posix_thread_t tids[20];
-    int i;
-    
-    for (i = 0; i &lt; 20; i++) {
-        if (PthreadCreate(&amp;tids[i], 0, worker, 0) != 0) {
-            int err = GetLastError();
-            PutString("Failed at thread ", 17);
-            PutInt(i);
-            PutString(", errno=", 8);
-            PutInt(err);
-            PutChar('\n');
-            break;  // Limite de threads atteinte
-        }
-    }
-    
-    // Joindre les threads créés
-    while (--i &gt;= 0) {
-        PthreadJoin(tids[i], 0);
-    }
-    
-    return 0;
-}
-</code></pre>
-<h2 id="limitations"><a class="header" href="#limitations">Limitations</a></h2>
-<div class="callout callout-limitation">
-    
-<div class="callout-title">Stack statique</div>
-
-    
-<div class="callout-content">
-        La stack est allouée statiquement. Impossible de spécifier une taille de stack personnalisée 
-        ou d'utiliser une stack pré-allouée.
-    </div>
-
-</div>
-
-<div class="callout callout-limitation">
-    
-<div class="callout-title">Limite de threads</div>
-
-    
-<div class="callout-content">
-        Maximum <code>MAX_THREAD</code> threads par processus. Au-delà, <code>E_NOMEM</code> est retourné.
-    </div>
-
-</div>
-
 <h2 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h2>
-<p>L’appel est thread-safe. Plusieurs threads peuvent appeler <code>PthreadCreate</code> simultanément grâce à la protection du <code>threads_bitmap</code> par <code>threadNumberLock</code>.</p>
+<p>L’appel est thread-safe. Les opérations sur la file d’attente sont protégées par la désactivation des interruptions.</p>
 <h2 id="voir-aussi"><a class="header" href="#voir-aussi">Voir aussi</a></h2>
-<div class="callout callout-see-also">
-    
-<div class="callout-title">Voir aussi</div>
-
-    
-<div class="callout-content">
 <ul>
-<li><a href="./PthreadJoin.html">PthreadJoin</a> - Attendre un thread</li>
-<li><a href="./PthreadExit.html">PthreadExit</a> - Terminer un thread</li>
-<li><a href="./PthreadDetach.html">PthreadDetach</a> - Détacher un thread</li>
-<li><a href="./attrs.html">Attributs</a> - Configuration des attributs</li>
+<li><a href="./futex_wait.html">futex_wait</a> - Attendre sur un futex</li>
+<li><a href="./atomic_store.html">atomic_store</a> - Écriture atomique</li>
+<li><a href="../sync/Sync.html">Sémaphores</a> - Alternative haut niveau</li>
+<li><a href="./Threads.html">Threads Overview</a> - Vue d’ensemble</li>
 </ul>
-</div>
-
-</div>
-
 <h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
-<p>Antoine, 31 Dec 2025</p>
+<p>Antoine</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
-<p>31 Dec 2025</p>
+<p>18 Jan 2026</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../syscalls/threads/Threads.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../syscalls/threads/futex_wait.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../syscalls/threads/PthreadExit.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../syscalls/threads/atomic_cmpxchg.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -473,11 +287,11 @@ int main() {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../syscalls/threads/Threads.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../syscalls/threads/futex_wait.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../syscalls/threads/PthreadExit.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../syscalls/threads/atomic_cmpxchg.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>DetachThread - NachOS Manual</title>
+        <title>thread_create - NachOS Manual</title>
 
 
         <!-- Custom HTML head -->
@@ -37,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-7a880c7f.js";
+            window.path_to_searchindex_js = "../../searchindex-1d10b05f.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-ea31cd0b.js"></script>
+        <script src="../../toc-57382a8e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -179,40 +179,49 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="pthreaddetach"><a class="header" href="#pthreaddetach">PthreadDetach</a></h1>
-<p><code>PthreadDetach</code> - Détache un thread</p>
+                        <h1 id="thread_create"><a class="header" href="#thread_create">thread_create</a></h1>
+<p><code>thread_create</code> - Crée un nouveau thread dans le processus courant.</p>
 <h2 id="synopsis"><a class="header" href="#synopsis">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
-int PthreadDetach(posix_thread_t thread);
+int thread_create(void* args);
 </code></pre>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
-<p><code>PthreadDetach</code> marque le thread spécifié comme détaché. Un thread détaché ne peut plus être joint, et ses ressources sont automatiquement libérées à sa terminaison.</p>
-<p><strong>Numéro d’appel système</strong> : <code>SC_PthreadDetach</code> (20)</p>
-<h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
+<p><code>thread_create</code> crée un nouveau thread utilisateur qui partage l’espace d’adressage du processus appelant.</p>
+<h3 id="comportement"><a class="header" href="#comportement">Comportement</a></h3>
 <ol>
-<li>Recherche du thread via <code>Process::FindThread()</code></li>
-<li>Vérification que le thread n’est pas déjà détaché</li>
-<li>Vérification qu’aucun thread n’attend déjà un join</li>
-<li>Marquage du thread comme détaché</li>
-<li>Si déjà terminé : suppression immédiate de la liste</li>
+<li>Copie la structure <code>user_thread_args</code> depuis l’espace utilisateur</li>
+<li>Valide les paramètres (entry point, stack, TLS)</li>
+<li>Crée un nouveau thread noyau associé au processus</li>
+<li>Configure les registres utilisateur du nouveau thread</li>
+<li>Ajoute le thread à la file d’ordonnancement</li>
+<li>Retourne le TID du nouveau thread</li>
 </ol>
-<div class="callout callout-note">
-    
-<div class="callout-title">Détachement ≠ Annulation</div>
-
-    
-<div class="callout-content">
-        Détacher un thread ne l'arrête pas. Le thread continue son exécution normalement.
-        Seule la gestion des ressources à la terminaison change.
-    </div>
-
-</div>
-
 <h2 id="paramètres"><a class="header" href="#paramètres">Paramètres</a></h2>
-<h3 id="thread"><a class="header" href="#thread"><code>thread</code></a></h3>
-<p>Identifiant du thread à détacher.</p>
-<p><strong>Type</strong> : <code>posix_thread_t</code> (<code>unsigned int</code>)<br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> : Doit être un TID valide d’un thread non-détaché</p>
+<h3 id="args"><a class="header" href="#args"><code>args</code></a></h3>
+<p>Pointeur vers une structure <code>user_thread_args</code> :</p>
+<pre><code class="language-c">typedef struct {
+    ptr_32 entry;      // Adresse de la fonction à exécuter
+    ptr_32 arg;        // Argument passé à la fonction
+    ptr_32 user_sp;    // Stack pointer (0 = allocation auto)
+    ptr_32 tls_base;   // Base du TLS (0 = pas de TLS)
+} user_thread_args;
+</code></pre>
+<p><strong>Type</strong> : <code>void*</code> (pointeur vers <code>user_thread_args</code>)<br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code></p>
+<h4 id="champs-de-la-structure"><a class="header" href="#champs-de-la-structure">Champs de la structure</a></h4>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Champ</th><th>Description</th><th>Contraintes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>entry</code></td><td>Point d’entrée du thread</td><td>Adresse valide, alignée sur 4 octets, dans le segment code</td></tr>
+<tr><td><code>arg</code></td><td>Argument passé à la fonction</td><td>Aucune (peut être 0)</td></tr>
+<tr><td><code>user_sp</code></td><td>Stack pointer initial</td><td>0 ou adresse de stack valide</td></tr>
+<tr><td><code>tls_base</code></td><td>Base du Thread-Local Storage</td><td>0 ou adresse TLS valide</td></tr>
+</tbody>
+</table>
+</div>
 <h2 id="valeur-de-retour"><a class="header" href="#valeur-de-retour">Valeur de retour</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <div class="table-wrapper">
@@ -221,201 +230,133 @@ int PthreadDetach(posix_thread_t thread);
 <tr><th>Valeur</th><th>Signification</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0</code></td><td>Succès</td></tr>
+<tr><td><code>&gt;= 0</code></td><td>TID du thread créé</td></tr>
 <tr><td><code>-1</code></td><td>Erreur (consulter <code>errno</code>)</td></tr>
 </tbody>
 </table>
 </div>
-<h2 id="codes-derreur"><a class="header" href="#codes-derreur">Codes d’erreur</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
-</thead>
-<tbody>
-<tr><td>1</td><td><code>E_INVAL</code></td><td>Thread déjà détaché ou a déjà un joiner</td></tr>
-<tr><td>9</td><td><code>E_NOSPC</code></td><td>Thread non trouvé (TID invalide)</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="implémentation"><a class="header" href="#implémentation">Implémentation</a></h2>
-<h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
-<ul>
-<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
-<li><strong>Handler noyau</strong> : <code>code/userprog/userthread.cc:handle_SC_PthreadDetach()</code></li>
-<li><strong>Implémentation</strong> : <code>code/userprog/userthread.cc:do_PthreadDetach()</code></li>
-</ul>
-<h3 id="flux-dexécution"><a class="header" href="#flux-dexécution">Flux d’exécution</a></h3>
-<pre><code>PthreadDetach(tid)
-        │
-        ▼
-    syscall SC_PthreadDetach
-        │
-        ▼
-    do_PthreadDetach(tid)
-        │ ├─ thread = FindThread(tid)
-        │ ├─ if (!thread) return -E_NOSPC
-        │ ├─ if (thread-&gt;isDetached()) return -E_INVAL
-        │ ├─ if (thread-&gt;hasJoiner()) return -E_INVAL
-        │ ├─ thread-&gt;setDetached(true)
-        │ └─ if (thread-&gt;isTerminated())
-        │        process-&gt;RemoveThread(thread)
-        ▼
-    return 0
-</code></pre>
 <h2 id="exemples"><a class="header" href="#exemples">Exemples</a></h2>
-<h3 id="exemple-1--détachement-après-création"><a class="header" href="#exemple-1--détachement-après-création">Exemple 1 : Détachement après création</a></h3>
+<h3 id="exemple-1--création-simple"><a class="header" href="#exemple-1--création-simple">Exemple 1 : Création simple</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
-void *background_task(void *arg) {
-    PutString("Background task running\n", 24);
-    return 0;
+typedef struct {
+    unsigned int entry;
+    unsigned int arg;
+    unsigned int user_sp;
+    unsigned int tls_base;
+} thread_args;
+
+void worker(int value) {
+    PutString("Worker: ", 8);
+    PutInt(value);
+    PutChar('\n');
+    thread_exit();
 }
 
 int main() {
-    posix_thread_t tid;
+    thread_args args = {
+        .entry = (unsigned int)worker,
+        .arg = 42,
+        .user_sp = 0,
+        .tls_base = 0
+    };
     
-    // Créer un thread joinable
-    PthreadCreate(&amp;tid, 0, background_task, 0);
+    int tid = thread_create(&amp;args);
     
-    // Le détacher
-    if (PthreadDetach(tid) != 0) {
-        PutString("Detach failed\n", 14);
+    if (tid &gt;= 0) {
+        PutString("Thread cree: TID=", 17);
+        PutInt(tid);
+        PutChar('\n');
     }
     
-    // Pas besoin de join
-    // Le thread libérera ses ressources automatiquement
-    
     return 0;
 }
 </code></pre>
-<h3 id="exemple-2--création-détachée-alternative"><a class="header" href="#exemple-2--création-détachée-alternative">Exemple 2 : Création détachée (alternative)</a></h3>
+<h3 id="exemple-2--avec-tls-personnalisé"><a class="header" href="#exemple-2--avec-tls-personnalisé">Exemple 2 : Avec TLS personnalisé</a></h3>
 <pre><code class="language-c">#include "syscall.h"
+#include "tls.h"
 
-void *background_task(void *arg) {
-    return 0;
+// Allouer une zone TLS
+char tls_area[TLS_TOTAL_SIZE] __attribute__((aligned(4)));
+
+void thread_with_tls(int arg) {
+    // Le TLS est accessible via $gp
+    tls_t* tls = __get_tls();
+    tls-&gt;errno_val = 0;
+    
+    // ...
+    
+    thread_exit();
 }
 
 int main() {
-    posix_thread_t tid;
-    pthread_attr_t attr;
+    // Initialiser la structure TLS
+    tls_t* tls = (tls_t*)tls_area;
+    tls-&gt;self = tls;
+    tls-&gt;errno_val = 0;
     
-    // Créer directement en mode détaché
-    Pthread_attr_init(&amp;attr);
-    Pthread_attr_setdetachstate(&amp;attr, DETACHED);
+    thread_args args = {
+        .entry = (unsigned int)thread_with_tls,
+        .arg = 0,
+        .user_sp = 0,
+        .tls_base = (unsigned int)tls_area
+    };
     
-    PthreadCreate(&amp;tid, &amp;attr, background_task, 0);
+    thread_create(&amp;args);
     
-    // Pas besoin de PthreadDetach ni de PthreadJoin
-    
-    Pthread_attr_destroy(&amp;attr);
     return 0;
 }
 </code></pre>
-<div class="callout callout-tip">
+<h2 id="limitations"><a class="header" href="#limitations">Limitations</a></h2>
+<div class="callout callout-warning">
     
-<div class="callout-title">Préférer les attributs</div>
+<div class="callout-title">Pas de join natif</div>
 
     
 <div class="callout-content">
-        Si vous savez dès la création que le thread sera détaché, 
-        utilisez les attributs plutôt que <code>PthreadDetach</code>.
+        Le syscall <code>thread_create</code> ne fournit pas de mécanisme pour attendre
+        la terminaison du thread. Utilisez les futex ou la bibliothèque pthread pour
+        synchroniser avec les threads créés.
     </div>
 
 </div>
 
-<h3 id="exemple-3--gestion-des-erreurs"><a class="header" href="#exemple-3--gestion-des-erreurs">Exemple 3 : Gestion des erreurs</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-void *worker(void *arg) {
-    return 0;
-}
-
-int main() {
-    posix_thread_t tid;
+<div class="callout callout-warning">
     
-    PthreadCreate(&amp;tid, 0, worker, 0);
-    
-    // Premier détachement : OK
-    if (PthreadDetach(tid) != 0) {
-        PutString("First detach failed\n", 20);
-    } else {
-        PutString("First detach OK\n", 16);
-    }
-    
-    // Deuxième détachement : ERREUR
-    if (PthreadDetach(tid) != 0) {
-        PutString("Second detach failed (expected)\n", 32);
-    }
-    
-    // Join : ERREUR (thread détaché)
-    if (PthreadJoin(tid, 0) != 0) {
-        PutString("Join failed (expected)\n", 23);
-    }
-    
-    return 0;
-}
-</code></pre>
-<h2 id="cas-particuliers"><a class="header" href="#cas-particuliers">Cas particuliers</a></h2>
-<h3 id="thread-déjà-terminé"><a class="header" href="#thread-déjà-terminé">Thread déjà terminé</a></h3>
-<p>Si le thread est déjà terminé au moment du détachement, ses ressources sont libérées immédiatement.</p>
-<h3 id="thread-avec-joiner-en-attente"><a class="header" href="#thread-avec-joiner-en-attente">Thread avec joiner en attente</a></h3>
-<div class="callout callout-danger">
-    
-<div class="callout-title">Conflit Detach/Join</div>
+<div class="callout-title">Stack utilisateur</div>
 
     
 <div class="callout-content">
-        Si un autre thread attend déjà avec <code>PthreadJoin</code>, le détachement échoue avec <code>E_INVAL</code>.
+        Si <code>user_sp</code> est 0, la stack est allouée automatiquement par le noyau.
+        Si vous fournissez votre propre stack, assurez-vous qu'elle est correctement alignée
+        et de taille suffisante.
     </div>
 
 </div>
 
-<h2 id="comparaison--joinable-vs-détaché"><a class="header" href="#comparaison--joinable-vs-détaché">Comparaison : Joinable vs Détaché</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Aspect</th><th>Thread Joinable</th><th>Thread Détaché</th></tr>
-</thead>
-<tbody>
-<tr><td>Ressources</td><td>Conservées jusqu’au join</td><td>Libérées à la terminaison</td></tr>
-<tr><td>Valeur de retour</td><td>Récupérable via join</td><td>Perdue</td></tr>
-<tr><td>PthreadJoin</td><td>Obligatoire</td><td>Interdit</td></tr>
-</tbody>
-</table>
-</div>
 <h2 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h2>
-<p>L’appel est thread-safe. L’état de détachement est protégé par les flags du thread.</p>
+<p>L’appel <code>thread_create</code> est thread-safe. Plusieurs threads peuvent créer des threads simultanément.</p>
 <h2 id="voir-aussi"><a class="header" href="#voir-aussi">Voir aussi</a></h2>
-<div class="callout callout-see-also">
-    
-<div class="callout-title">Voir aussi</div>
-
-    
-<div class="callout-content">
 <ul>
-<li><a href="./PthreadCreate.html">PthreadCreate</a> - Créer un thread</li>
-<li><a href="./PthreadJoin.html">PthreadJoin</a> - Attendre un thread</li>
-<li><a href="./attrs.html">Attributs</a> - Création détachée via attributs</li>
+<li><a href="./thread_exit.html">thread_exit</a> - Terminer un thread</li>
+<li><a href="./thread_self.html">thread_self</a> - Obtenir son TID</li>
+<li><a href="./Threads.html">Threads Overview</a> - Vue d’ensemble</li>
+<li><a href="../../libs/errno.html">errno</a> - Gestion des erreurs</li>
 </ul>
-</div>
-
-</div>
-
 <h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
-<p>Antoine, 31 Dec 2025</p>
+<p>Antoine</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
-<p>31 Dec 2025</p>
+<p>18 Jan 2026</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../syscalls/threads/PthreadJoin.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../syscalls/threads/Threads.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../syscalls/threads/attrs.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../syscalls/threads/thread_exit.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -425,11 +366,11 @@ int main() {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../syscalls/threads/PthreadJoin.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../syscalls/threads/Threads.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../syscalls/threads/attrs.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../syscalls/threads/thread_exit.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

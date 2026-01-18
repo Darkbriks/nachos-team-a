@@ -37,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-7a880c7f.js";
+            window.path_to_searchindex_js = "../../searchindex-1d10b05f.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-ea31cd0b.js"></script>
+        <script src="../../toc-57382a8e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -188,7 +188,6 @@ int GetString(char *s, int n);
 </code></pre>
 <h2 id="description"><a class="header" href="#description">DESCRIPTION</a></h2>
 <p><code>GetString</code> lit jusqu’à <code>n-1</code> caractères depuis la console d’entrée et les stocke dans le buffer pointé par <code>s</code>. La lecture s’arrête lorsqu’un caractère newline (<code>\n</code>) est rencontré ou après <code>n-1</code> caractères. Un caractère null (<code>\0</code>) est toujours ajouté à la fin, ce qui justifie la lecture de <code>n-1</code> caractères maximum.</p>
-<p>Numéro d’appel système : <code>14</code></p>
 <h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
 <ul>
 <li>Lit jusqu’à <code>n-1</code> caractères (réserve 1 octet pour <code>\0</code>)</li>
@@ -244,12 +243,6 @@ int GetString(char *s, int n);
 </table>
 </div>
 <h2 id="implémentation"><a class="header" href="#implémentation">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
-<ul>
-<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
-<li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handler_SC_getString()</code></li>
-<li><strong>Implémentation</strong> : <code>code/userprog/synchconsole.cc:SynchConsole::SynchGetString()</code></li>
-</ul>
 <h3 id="synchronisation"><a class="header" href="#synchronisation">Synchronisation</a></h3>
 <p><strong>Sémaphore <code>IO_Lock</code></strong></p>
 <ul>
@@ -384,33 +377,6 @@ int main() {
 <li><strong>EOF</strong> : En fin de fichier, retourne caractères lus</li>
 </ul>
 <h2 id="failles-et-vulnérabilités"><a class="header" href="#failles-et-vulnérabilités">FAILLES ET VULNÉRABILITÉS</a></h2>
-<div class="vulnerability-section severity-critical">
-<h4 id="aucune-validation-de-lespace-dadressage"><a class="header" href="#aucune-validation-de-lespace-dadressage">Aucune validation de l’espace d’adressage</a></h4>
-<p><strong>Description</strong> : Seul <code>addr &lt; 0</code> est vérifié, pas si l’adresse est dans l’espace utilisateur valide.</p>
-<p><strong>Impact</strong> :</p>
-<ul>
-<li><strong>Écriture arbitraire en mémoire noyau</strong> : Corruption mémoire noyau</li>
-<li><strong>Ascension de privilèges</strong> : Modification de structures sensibles</li>
-</ul>
-<p><strong>Exploitation</strong> :</p>
-<pre><code class="language-c">// Écrire dans la mémoire noyau
-char *kernel_addr = (char *)0x00000000;
-GetString(kernel_addr, 100);
-// L'utilisateur peut injecter du code/données en mémoire noyau
-</code></pre>
-</div>
-
-<div class="vulnerability-section severity-critical">
-<h4 id="copystringtomachine-ignore-les-erreurs-décriture-de-machine-writemem"><a class="header" href="#copystringtomachine-ignore-les-erreurs-décriture-de-machine-writemem">copyStringToMachine ignore les erreurs d’écriture de <code>machine-&gt;WriteMem</code></a></h4>
-<p><strong>Description</strong> : <code>copyStringToMachine</code> ne vérifie pas les erreurs lors de l’écriture en mémoire utilisateur.</p>
-<p><strong>Impact</strong> :</p>
-<ul>
-<li><strong>Corruption mémoire utilisateur</strong> : Données incomplètes ou corrompues</li>
-<li><strong>Comportement indéfini</strong> : Programme utilisateur peut planter</li>
-<li><strong>Vulnérabilité de sécurité</strong> : Potentielle exploitation via des pointeurs invalides</li>
-</ul>
-</div>
-
 <div class="vulnerability-section severity-info">
 <h4 id="limitation-max_string_size"><a class="header" href="#limitation-max_string_size">Limitation MAX_STRING_SIZE</a></h4>
 <p><strong>Description</strong> : Ajouter une constante MAX_GET_STRING sur le modèle de MAX_PUT_STRING, et remplir plusieurs fois le buffer si nécessaire.</p>
@@ -444,10 +410,10 @@ while (offset &lt; 999) {
 <li><a href="./GetChar.html">GetChar</a> - Lecture d’un caractère</li>
 <li><a href="./GetInt.html">GetInt</a> - Lecture d’un entier</li>
 </ul>
-<h2 id="auteurs"><a class="header" href="#auteurs">AUTEURS</a></h2>
-<p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision"><a class="header" href="#dernière-révision">DERNIÈRE RÉVISION</a></h2>
-<p>20 Dec 2025 par Antoine</p>
+<h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
+<p>Antoine</p>
+<h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
+<p>18 Jan 2026</p>
 
                     </main>
 

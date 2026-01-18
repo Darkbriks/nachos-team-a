@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>JoinThread - NachOS Manual</title>
+        <title>futex_wait - NachOS Manual</title>
 
 
         <!-- Custom HTML head -->
@@ -37,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-7a880c7f.js";
+            window.path_to_searchindex_js = "../../searchindex-1d10b05f.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-ea31cd0b.js"></script>
+        <script src="../../toc-57382a8e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -179,47 +179,41 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="pthreadjoin"><a class="header" href="#pthreadjoin">PthreadJoin</a></h1>
-<p><code>PthreadJoin</code> - Attend la terminaison d’un thread</p>
+                        <h1 id="futex_wait"><a class="header" href="#futex_wait">futex_wait</a></h1>
+<p><code>futex_wait</code> - Attend sur un futex si sa valeur correspond à l’attendue.</p>
 <h2 id="synopsis"><a class="header" href="#synopsis">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
-int PthreadJoin(posix_thread_t thread, void **retval);
+int futex_wait(int* uaddr, int expected);
 </code></pre>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
-<p><code>PthreadJoin</code> bloque le thread appelant jusqu’à ce que le thread spécifié se termine. Si le thread cible est déjà terminé, la fonction retourne immédiatement.</p>
-<p><strong>Numéro d’appel système</strong> : <code>SC_PthreadJoin</code> (19)</p>
-<h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
+<p><code>futex_wait</code> vérifie atomiquement que la valeur à l’adresse <code>uaddr</code> est égale à <code>expected</code>, et si c’est le cas, met le thread appelant en sommeil jusqu’à ce qu’un autre thread appelle <code>futex_wake</code> sur la même adresse.</p>
+<h3 id="comportement"><a class="header" href="#comportement">Comportement</a></h3>
 <ol>
-<li>Recherche du thread cible via <code>Process::FindThread()</code></li>
-<li>Vérification des conditions (non-soi, non-détaché, non-déjà-joint)</li>
-<li>Configuration de la relation thread joiner ↔ thread join</li>
-<li>Appel à <code>thread-&gt;Join()</code> (bloquant sur sémaphore)</li>
-<li>Récupération de la valeur de retour</li>
-<li>Suppression du thread de la liste du processus</li>
-<li>Retour au thread appelant</li>
+<li>Désactive les interruptions</li>
+<li>Lit la valeur à <code>uaddr</code></li>
+<li>Si la valeur diffère de <code>expected</code> : retourne immédiatement avec <code>E_AGAIN</code></li>
+<li>Sinon : ajoute le thread à la file d’attente du futex et l’endort</li>
+<li>Au réveil : retourne 0</li>
 </ol>
-<h3 id="récupération-de-la-valeur-de-retour"><a class="header" href="#récupération-de-la-valeur-de-retour">Récupération de la valeur de retour</a></h3>
-<p>Si <code>retval</code> n’est pas <code>NULL</code>, la valeur passée à <code>PthreadExit()</code> (ou retournée par <code>start_routine</code>) est écrite à cette adresse.</p>
 <div class="callout callout-note">
     
-<div class="callout-title">Thread terminé</div>
+<div class="callout-title">Atomicité</div>
 
     
 <div class="callout-content">
-        Un thread terminé reste dans la liste des threads du processus jusqu'à ce qu'il soit 
-        joint ou détaché. C'est le <code>PthreadJoin</code> qui libère les ressources.
+        La vérification de la valeur et la mise en sommeil sont atomiques.
     </div>
 
 </div>
 
 <h2 id="paramètres"><a class="header" href="#paramètres">Paramètres</a></h2>
-<h3 id="thread"><a class="header" href="#thread"><code>thread</code></a></h3>
-<p>Identifiant du thread à attendre.</p>
-<p><strong>Type</strong> : <code>posix_thread_t</code> (<code>unsigned int</code>)<br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> : Doit être un TID valide d’un thread joinable</p>
-<h3 id="retval"><a class="header" href="#retval"><code>retval</code></a></h3>
-<p>Pointeur où stocker la valeur de retour du thread. Peut être <code>NULL</code> si la valeur n’est pas nécessaire.</p>
-<p><strong>Type</strong> : <code>void **</code><br><strong>Direction</strong> : OUT<br><strong>Registre</strong> : <code>$5</code><br><strong>Contraintes</strong> : Si non-NULL, doit être une adresse valide en espace utilisateur</p>
+<h3 id="uaddr"><a class="header" href="#uaddr"><code>uaddr</code></a></h3>
+<p>Adresse de l’entier à surveiller (le futex).</p>
+<p><strong>Type</strong> : <code>int*</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> : Doit être une adresse utilisateur valide, alignée sur 4 octets</p>
+<h3 id="expected"><a class="header" href="#expected"><code>expected</code></a></h3>
+<p>Valeur attendue à l’adresse <code>uaddr</code>.</p>
+<p><strong>Type</strong> : <code>int</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$5</code></p>
 <h2 id="valeur-de-retour"><a class="header" href="#valeur-de-retour">Valeur de retour</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <div class="table-wrapper">
@@ -228,199 +222,83 @@ int PthreadJoin(posix_thread_t thread, void **retval);
 <tr><th>Valeur</th><th>Signification</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0</code></td><td>Succès</td></tr>
+<tr><td><code>0</code></td><td>Succès (thread a été réveillé)</td></tr>
 <tr><td><code>-1</code></td><td>Erreur (consulter <code>errno</code>)</td></tr>
 </tbody>
 </table>
 </div>
-<h2 id="codes-derreur"><a class="header" href="#codes-derreur">Codes d’erreur</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
-</thead>
-<tbody>
-<tr><td>1</td><td><code>E_INVAL</code></td><td>Self-join, thread détaché, ou déjà un joiner</td></tr>
-<tr><td>2</td><td><code>E_FAULT</code></td><td>Écriture de <code>retval</code> échouée</td></tr>
-<tr><td>9</td><td><code>E_NOSPC</code></td><td>Thread non trouvé (TID invalide)</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="implémentation"><a class="header" href="#implémentation">Implémentation</a></h2>
-<h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
-<ul>
-<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
-<li><strong>Handler noyau</strong> : <code>code/userprog/userthread.cc:handle_SC_PthreadJoin()</code></li>
-<li><strong>Implémentation</strong> : <code>code/userprog/userthread.cc:do_PthreadJoin()</code></li>
-</ul>
 <h2 id="exemples"><a class="header" href="#exemples">Exemples</a></h2>
-<h3 id="exemple-1--join-basique"><a class="header" href="#exemple-1--join-basique">Exemple 1 : Join basique</a></h3>
+<h3 id="exemple-1--attente-simple"><a class="header" href="#exemple-1--attente-simple">Exemple 1 : Attente simple</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
-void *worker(void *arg) {
-    PutString("Worker done\n", 12);
-    return (void *)42;
+int flag = 0;
+
+void waiter(int arg) {
+    PutString("Attente du signal...\n", 21);
+    
+    // Attendre que flag devienne != 0
+    while (atomic_load(&amp;flag) == 0) {
+        futex_wait(&amp;flag, 0);
+    }
+    
+    PutString("Signal recu!\n", 13);
+    thread_exit();
 }
 
-int main() {
-    posix_thread_t tid;
-    void *result;
+void signaler(int arg) {
+    // Simuler du travail
+    for (volatile int i = 0; i &lt; 10000; i++);
     
-    PthreadCreate(&amp;tid, 0, worker, 0);
+    // Signaler
+    atomic_store(&amp;flag, 1);
+    futex_wake(&amp;flag, 1);
     
-    PutString("Waiting for worker...\n", 22);
-    PthreadJoin(tid, &amp;result);
-    
-    PutString("Worker returned: ", 17);
-    PutInt((int)(long)result);
-    PutChar('\n');
-    
-    return 0;
+    thread_exit();
 }
 </code></pre>
-<h3 id="exemple-2--join-sans-récupérer-la-valeur"><a class="header" href="#exemple-2--join-sans-récupérer-la-valeur">Exemple 2 : Join sans récupérer la valeur</a></h3>
+<h3 id="exemple-2--gestion-du-spurious-wakeup"><a class="header" href="#exemple-2--gestion-du-spurious-wakeup">Exemple 2 : Gestion du spurious wakeup</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
-void *task(void *arg) {
-    // Travail sans valeur de retour importante
-    return 0;
-}
+int ready = 0;
 
-int main() {
-    posix_thread_t tid;
+void consumer(int arg) {
+    // Boucle pour gérer les réveils intempestifs
+    while (atomic_load(&amp;ready) == 0) {
+        int ret = futex_wait(&amp;ready, 0);
+        
+        if (ret == -1 &amp;&amp; errno == E_AGAIN) {
+            // La valeur a changé, re-vérifier
+            continue;
+        }
+    }
     
-    PthreadCreate(&amp;tid, 0, task, 0);
-    
-    // On attend juste la fin, pas besoin de la valeur
-    PthreadJoin(tid, 0);
-    
-    return 0;
+    PutString("Donnee prete\n", 13);
+    thread_exit();
 }
 </code></pre>
-<h3 id="exemple-3--attendre-plusieurs-threads"><a class="header" href="#exemple-3--attendre-plusieurs-threads">Exemple 3 : Attendre plusieurs threads</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-#define NUM_THREADS 5
-
-void *compute(void *arg) {
-    int id = (int)(long)arg;
-    return (void *)(long)(id * id);
-}
-
-int main() {
-    posix_thread_t tids[NUM_THREADS];
-    void *results[NUM_THREADS];
-    int i, sum = 0;
-    
-    // Créer les threads
-    for (i = 0; i &lt; NUM_THREADS; i++) {
-        PthreadCreate(&amp;tids[i], 0, compute, (void *)(long)i);
-    }
-    
-    // Attendre tous les threads
-    for (i = 0; i &lt; NUM_THREADS; i++) {
-        PthreadJoin(tids[i], &amp;results[i]);
-        sum += (int)(long)results[i];
-    }
-    
-    PutString("Sum of squares: ", 16);
-    PutInt(sum);  // 0 + 1 + 4 + 9 + 16 = 30
-    PutChar('\n');
-    
-    return 0;
-}
-</code></pre>
-<h3 id="exemple-4--gestion-des-erreurs"><a class="header" href="#exemple-4--gestion-des-erreurs">Exemple 4 : Gestion des erreurs</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-void *worker(void *arg) {
-    return 0;
-}
-
-int main() {
-    posix_thread_t tid;
-    
-    // Test 1: Join sur soi-même
-    if (PthreadJoin(0, 0) != 0) {
-        PutString("Cannot self-join (expected)\n", 28);
-    }
-    
-    // Test 2: Join sur thread inexistant
-    if (PthreadJoin(9999, 0) != 0) {
-        PutString("Cannot join non-existent (expected)\n", 36);
-    }
-    
-    // Test 3: Double join
-    PthreadCreate(&amp;tid, 0, worker, 0);
-    PthreadJoin(tid, 0);
-    
-    if (PthreadJoin(tid, 0) != 0) {
-        PutString("Cannot double join (expected)\n", 30);
-    }
-    
-    return 0;
-}
-</code></pre>
-<h2 id="cas-particuliers"><a class="header" href="#cas-particuliers">Cas particuliers</a></h2>
-<h3 id="thread-déjà-terminé"><a class="header" href="#thread-déjà-terminé">Thread déjà terminé</a></h3>
-<p>Si le thread cible a déjà terminé (état <code>TERMINATED</code>), <code>PthreadJoin</code> retourne immédiatement avec la valeur de retour.</p>
-<h3 id="double-join"><a class="header" href="#double-join">Double join</a></h3>
-<p>Un thread ne peut être joint qu’une seule fois. Après un join réussi, le thread est supprimé de la liste et tout join subséquent échoue avec <code>E_NOSPC</code>.</p>
-<h3 id="join-sur-thread-détaché"><a class="header" href="#join-sur-thread-détaché">Join sur thread détaché</a></h3>
-<div class="callout callout-warning">
-    
-<div class="callout-title">Threads détachés</div>
-
-    
-<div class="callout-content">
-        Impossible de joindre un thread détaché. L'erreur <code>E_INVAL</code> est retournée.
-    </div>
-
-</div>
-
 <h2 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h2>
-<p>L’appel est thread-safe. Un seul thread peut joindre un thread donné grâce au flag <code>hasJoiner</code>.</p>
-<div class="callout callout-warning">
-    
-<div class="callout-title">Un seul joiner</div>
-
-    
-<div class="callout-content">
-        Si deux threads tentent de joindre le même thread, le second échoue avec <code>E_INVAL</code>.
-    </div>
-
-</div>
-
+<p>L’appel est thread-safe. La vérification et la mise en sommeil sont atomiques grâce à la désactivation des interruptions.</p>
 <h2 id="voir-aussi"><a class="header" href="#voir-aussi">Voir aussi</a></h2>
-<div class="callout callout-see-also">
-    
-<div class="callout-title">Voir aussi</div>
-
-    
-<div class="callout-content">
 <ul>
-<li><a href="./PthreadCreate.html">PthreadCreate</a> - Créer un thread</li>
-<li><a href="./PthreadExit.html">PthreadExit</a> - Terminer un thread</li>
-<li><a href="./PthreadDetach.html">PthreadDetach</a> - Détacher un thread</li>
+<li><a href="./futex_wake.html">futex_wake</a> - Réveiller des threads</li>
+<li><a href="./atomic_cmpxchg.html">atomic_cmpxchg</a> - Compare-and-swap atomique</li>
+<li><a href="./atomic_load.html">atomic_load</a> - Lecture atomique</li>
+<li><a href="./Threads.html">Threads Overview</a> - Vue d’ensemble</li>
 </ul>
-</div>
-
-</div>
-
 <h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
-<p>Antoine, 31 Dec 2025</p>
+<p>Antoine</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
-<p>31 Dec 2025</p>
+<p>18 Jan 2026</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../syscalls/threads/PthreadExit.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../syscalls/threads/thread_yield.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../syscalls/threads/PthreadDetach.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../syscalls/threads/futex_wake.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -430,11 +308,11 @@ int main() {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../syscalls/threads/PthreadExit.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../syscalls/threads/thread_yield.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../syscalls/threads/PthreadDetach.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../syscalls/threads/futex_wake.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

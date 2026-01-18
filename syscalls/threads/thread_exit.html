@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Syscalls List - NachOS Manual</title>
+        <title>thread_exit - NachOS Manual</title>
 
 
         <!-- Custom HTML head -->
@@ -12,35 +12,35 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="../favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="../favicon-8114d1fc.png">
-        <link rel="stylesheet" href="../css/variables-8adf115d.css">
-        <link rel="stylesheet" href="../css/general-2459343d.css">
-        <link rel="stylesheet" href="../css/chrome-ae938929.css">
-        <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
+        <link rel="icon" href="../../favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="../../favicon-8114d1fc.png">
+        <link rel="stylesheet" href="../../css/variables-8adf115d.css">
+        <link rel="stylesheet" href="../../css/general-2459343d.css">
+        <link rel="stylesheet" href="../../css/chrome-ae938929.css">
+        <link rel="stylesheet" href="../../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="../fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="../../fonts/fonts-9644e21d.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="mdbook-highlight-css" href="../highlight-493f70e1.css">
-        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../tomorrow-night-4c0ae647.css">
-        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
+        <link rel="stylesheet" id="mdbook-highlight-css" href="../../highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../../tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="../theme/custom-c9a1a890.css">
-        <link rel="stylesheet" href="../theme/callouts-599be5a1.css">
+        <link rel="stylesheet" href="../../theme/custom-c9a1a890.css">
+        <link rel="stylesheet" href="../../theme/callouts-599be5a1.css">
 
 
         <!-- Provide site root and default themes to javascript -->
         <script>
-            const path_to_root = "../";
+            const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-7a880c7f.js";
+            window.path_to_searchindex_js = "../../searchindex-1d10b05f.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-ea31cd0b.js"></script>
+        <script src="../../toc-57382a8e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -107,7 +107,7 @@
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
-                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
             </noscript>
             <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -142,7 +142,7 @@
                     <h1 class="menu-title">NachOS Manual</h1>
 
                     <div class="right-buttons">
-                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
                             <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
                         </a>
                         <a href="https://gricad-gitlab.univ-grenoble-alpes.fr/systeme/nachos-etu/2025-2026/team-a" title="Git repository" aria-label="Git repository">
@@ -179,95 +179,126 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="appels-système"><a class="header" href="#appels-système">Appels système</a></h1>
-<p><a href="Syscalls.html">Vue d’ensemble</a></p>
-<h1 id="contrôle-système"><a class="header" href="#contrôle-système">Contrôle Système</a></h1>
+                        <h1 id="thread_exit"><a class="header" href="#thread_exit">thread_exit</a></h1>
+<p><code>thread_exit</code> - Termine le thread courant.</p>
+<h2 id="synopsis"><a class="header" href="#synopsis">Synopsis</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+void thread_exit();
+</code></pre>
+<h2 id="description"><a class="header" href="#description">Description</a></h2>
+<p><code>thread_exit</code> termine immédiatement l’exécution du thread appelant. Les ressources du thread sont libérées et le thread est retiré de la liste des threads du processus.</p>
+<h3 id="comportement"><a class="header" href="#comportement">Comportement</a></h3>
+<ol>
+<li>Marque le thread comme <code>TERMINATED</code></li>
+<li>Signale au processus que le thread a terminé</li>
+<li>Retire le thread de la liste des threads du processus</li>
+<li>Libère le CPU</li>
+</ol>
+<div class="callout callout-warning">
+    
+<div class="callout-title">Pas de retour</div>
+
+    
+<div class="callout-content">
+        <code>thread_exit</code> ne retourne jamais. Tout code placé après cet appel
+        ne sera jamais exécuté.
+    </div>
+
+</div>
+
+<h2 id="paramètres"><a class="header" href="#paramètres">Paramètres</a></h2>
+<p>Aucun paramètre.</p>
+<h2 id="valeur-de-retour"><a class="header" href="#valeur-de-retour">Valeur de retour</a></h2>
+<p>Cette fonction ne retourne pas.</p>
+<h2 id="exemples"><a class="header" href="#exemples">Exemples</a></h2>
+<h3 id="exemple--terminaison-simple"><a class="header" href="#exemple--terminaison-simple">Exemple : Terminaison simple</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+void worker(int arg) {
+    PutString("Travail en cours...\n", 20);
+    
+    // Travail terminé
+    thread_exit();
+    
+    // Ce code n'est JAMAIS exécuté
+    PutString("Jamais affiche\n", 15);
+}
+</code></pre>
+<div class="callout callout-note">
+    
+<div class="callout-title">Thread principal</div>
+
+    
+<div class="callout-content">
+        Si le thread principal appelle <code>thread_exit()</code>, les autres threads
+        du processus continuent leur exécution. Le processus ne se termine que lorsque
+        tous ses threads ont terminé.
+    </div>
+
+</div>
+
+<h2 id="comportement-spécial"><a class="header" href="#comportement-spécial">Comportement spécial</a></h2>
+<h3 id="dernier-thread-du-processus"><a class="header" href="#dernier-thread-du-processus">Dernier thread du processus</a></h3>
+<p>Quand le dernier thread d’un processus appelle <code>thread_exit()</code> :</p>
+<ol>
+<li>Le processus est marqué comme terminé</li>
+<li>Le code de sortie est défini (0 par défaut)</li>
+<li>Les ressources du processus sont nettoyées</li>
+</ol>
+<h3 id="ressources-libérées"><a class="header" href="#ressources-libérées">Ressources libérées</a></h3>
+<p>À la terminaison d’un thread :</p>
 <ul>
-<li><a href="./system/SUMMARY.html">System Control</a>
+<li>Stack noyau : libérée</li>
+<li>Contexte CPU : abandonné</li>
+<li>TID : recyclé pour réutilisation</li>
+</ul>
+<div class="callout callout-warning">
+    
+<div class="callout-title">Ressources utilisateur</div>
+
+    
+<div class="callout-content">
+        Les ressources allouées en espace utilisateur (stack, TLS custom, etc.) ne sont
+        <strong>pas</strong> automatiquement libérées par <code>thread_exit</code>.
+        Si vous avez alloué manuellement ces ressources, utilisez la bibliothèque pthread
+        qui gère le nettoyage, ou libérez-les avant d'appeler <code>thread_exit</code>.
+    </div>
+
+</div>
+
+<h2 id="différence-avec-return"><a class="header" href="#différence-avec-return">Différence avec return</a></h2>
+<p>Dans une fonction thread, <code>return</code> et <code>thread_exit()</code> ont le même effet :</p>
+<pre><code class="language-c">void worker(int arg) {
+    // Ces deux sont équivalents :
+    thread_exit();
+    // ou
+    return;  // Appelle implicitement thread_exit()
+}
+</code></pre>
+<p>Cependant, <code>thread_exit()</code> peut être appelé depuis n’importe où dans la pile d’appels, pas seulement depuis la fonction de niveau supérieur.</p>
+<h2 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h2>
+<p>L’appel est thread-safe et peut être utilisé simultanément par plusieurs threads sans risque de corruption de données.</p>
+<h2 id="voir-aussi"><a class="header" href="#voir-aussi">Voir aussi</a></h2>
 <ul>
-<li><a href="./system/System.html">Vue d’ensemble</a></li>
-<li><a href="./system/Halt.html">Halt</a></li>
-<li><a href="./system/Exit.html">Exit</a></li>
+<li><a href="./thread_create.html">thread_create</a> - Créer un thread</li>
+<li><a href="./thread_self.html">thread_self</a> - Obtenir son TID</li>
+<li><a href="./Threads.html">Threads Overview</a> - Vue d’ensemble</li>
 </ul>
-</li>
-</ul>
-<h1 id="gestion-des-erreurs"><a class="header" href="#gestion-des-erreurs">Gestion des erreurs</a></h1>
-<ul>
-<li><a href="./errors.html">Gestion des erreurs</a></li>
-<li><a href="./errno.html">Liste des codes errno</a></li>
-</ul>
-<h1 id="console-io"><a class="header" href="#console-io">Console I/O</a></h1>
-<ul>
-<li><a href="./console/SUMMARY.html">Console</a>
-<ul>
-<li><a href="./console/Console.html">Vue d’ensemble</a></li>
-<li><a href="./console/PutChar.html">PutChar</a></li>
-<li><a href="./console/GetChar.html">GetChar</a></li>
-<li><a href="./console/PutString.html">PutString</a></li>
-<li><a href="./console/GetString.html">GetString</a></li>
-<li><a href="./console/PutInt.html">PutInt</a></li>
-<li><a href="./console/GetInt.html">GetInt</a></li>
-</ul>
-</li>
-</ul>
-<h1 id="threads"><a class="header" href="#threads">Threads</a></h1>
-<ul>
-<li><a href="./threads/SUMMARY.html">Threads</a>
-<ul>
-<li><a href="threads/Threads.html">Vue d’ensemble</a></li>
-<li><a href="./threads/PthreadCreate.html">PthreadCreate</a></li>
-<li><a href="./threads/PthreadExit.html">PthreadExit</a></li>
-<li><a href="./threads/PthreadJoin.html">PthreadJoin</a></li>
-<li><a href="./threads/PthreadDetach.html">PthreadDetach</a></li>
-<li><a href="./threads/PthreadSelf.html">SelfThread</a></li>
-<li><a href="./threads/attrs.html">Attributs de thread</a></li>
-</ul>
-</li>
-</ul>
-<h1 id="opérations-temporelles"><a class="header" href="#opérations-temporelles">Opérations temporelles</a></h1>
-<ul>
-<li><a href="./time/SUMMARY.html">Opérations temporelles</a>
-<ul>
-<li><a href="./time/Time.html">Vue d’ensemble</a></li>
-<li><a href="./time/Sleep.html">Sleep</a></li>
-<li><a href="./time/SleepUntil.html">SleepUntil</a></li>
-<li><a href="./time/GetCurrentTick.html">GetCurrentTick</a></li>
-</ul>
-</li>
-</ul>
-<h1 id="sémaphores"><a class="header" href="#sémaphores">Sémaphores</a></h1>
-<ul>
-<li><a href="./sync/SUMMARY.html">Sémaphores</a>
-<ul>
-<li><a href="./sync/Sync.html">Vue d’ensemble</a></li>
-<li><a href="./sync/SemInit.html">SemInit</a></li>
-<li><a href="sync/SemWait.html">SemWait</a></li>
-<li><a href="sync/SemPost.html">SemPost</a></li>
-<li><a href="./sync/SemDestroy.html">SemDestroy</a></li>
-<li><a href="./sync/SetMaxSemForProcess.html">SetMaxSemForProcess</a></li>
-</ul>
-</li>
-</ul>
-<h1 id="process"><a class="header" href="#process">Process</a></h1>
-<ul>
-<li><a href="./process/SUMMARY.html">Process</a>
-<ul>
-<li><a href="./process/Process.html">Vue d’ensemble</a></li>
-<li><a href="./process/ForkExec.html">ForkExec</a></li>
-<li><a href="./process/ForkJoin.html">ForkExec</a></li>
-</ul>
-</li>
-</ul>
+<h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
+<p>Antoine</p>
+<h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
+<p>18 Jan 2026</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../Constants.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../syscalls/threads/thread_create.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../syscalls/Syscalls.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../syscalls/threads/thread_self.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -277,11 +308,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../Constants.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../syscalls/threads/thread_create.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../syscalls/Syscalls.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../syscalls/threads/thread_self.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -301,16 +332,16 @@
         </script>
 
 
-        <script src="../elasticlunr-ef4e11c1.min.js"></script>
-        <script src="../mark-09e88c2c.min.js"></script>
-        <script src="../searcher-c2a407aa.js"></script>
+        <script src="../../elasticlunr-ef4e11c1.min.js"></script>
+        <script src="../../mark-09e88c2c.min.js"></script>
+        <script src="../../searcher-c2a407aa.js"></script>
 
-        <script src="../clipboard-1626706a.min.js"></script>
-        <script src="../highlight-abc7f01d.js"></script>
-        <script src="../book-a0b12cfe.js"></script>
+        <script src="../../clipboard-1626706a.min.js"></script>
+        <script src="../../highlight-abc7f01d.js"></script>
+        <script src="../../book-a0b12cfe.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../theme/custom-da2ff7a9.js"></script>
+        <script src="../../theme/custom-da2ff7a9.js"></script>
 
 
 

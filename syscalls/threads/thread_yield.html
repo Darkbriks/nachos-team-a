@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>SelfThread - NachOS Manual</title>
+        <title>thread_yield - NachOS Manual</title>
 
 
         <!-- Custom HTML head -->
@@ -37,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-7a880c7f.js";
+            window.path_to_searchindex_js = "../../searchindex-1d10b05f.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-ea31cd0b.js"></script>
+        <script src="../../toc-57382a8e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -179,282 +179,75 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="pthreadself"><a class="header" href="#pthreadself">PthreadSelf</a></h1>
-<p><code>PthreadSelf</code> - Obtient l’identifiant du thread courant</p>
+                        <h1 id="thread_yield"><a class="header" href="#thread_yield">thread_yield</a></h1>
+<p><code>thread_yield</code> - Cède volontairement le CPU à un autre thread.</p>
 <h2 id="synopsis"><a class="header" href="#synopsis">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
-posix_thread_t PthreadSelf(void);
+void thread_yield();
 </code></pre>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
-<p><code>PthreadSelf</code> retourne l’identifiant unique (TID) du thread appelant. Chaque thread dans un processus possède un TID unique attribué lors de sa création.</p>
-<p><strong>Numéro d’appel système</strong> : <code>SC_PthreadSelf</code> (21)</p>
-<h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
+<p><code>thread_yield</code> permet au thread appelant de céder volontairement son temps CPU. Le thread est replacé dans la file des threads prêts et le scheduler choisit le prochain thread à exécuter.</p>
+<h3 id="comportement"><a class="header" href="#comportement">Comportement</a></h3>
 <ol>
-<li>Récupération du pointeur vers le thread courant (<code>currentThread</code>)</li>
-<li>Extraction du TID via <code>currentThread-&gt;getTID()</code></li>
-<li>Retour immédiat du TID dans le registre <code>$2</code></li>
+<li>Le thread courant est déplacé de l’état <code>RUNNING</code> à <code>READY</code></li>
+<li>Le thread est ajouté à la fin de la file des threads prêts</li>
+<li>Le scheduler sélectionne le prochain thread à exécuter</li>
+<li>Si aucun autre thread n’est prêt, le thread appelant reprend immédiatement</li>
 </ol>
-<div class="callout callout-note">
-    
-<div class="callout-title">Thread principal</div>
-
-    
-<div class="callout-content">
-        Le thread principal d'un processus possède toujours le TID 0.
-    </div>
-
-</div>
-
 <h2 id="paramètres"><a class="header" href="#paramètres">Paramètres</a></h2>
-<p>Cette fonction ne prend aucun paramètre.</p>
+<p>Aucun paramètre.</p>
 <h2 id="valeur-de-retour"><a class="header" href="#valeur-de-retour">Valeur de retour</a></h2>
-<p><strong>Type</strong> : <code>posix_thread_t</code> (registre <code>$2</code>)</p>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Valeur</th><th>Signification</th></tr>
-</thead>
-<tbody>
-<tr><td><code>&gt;= 0</code></td><td>TID du thread courant (succès)</td></tr>
-<tr><td><code>-1</code></td><td>Erreur (consulter <code>errno</code>)</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="codes-derreur"><a class="header" href="#codes-derreur">Codes d’erreur</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
-</thead>
-<tbody>
-<tr><td>9</td><td><code>E_NOSPC</code></td><td>Pointeur de thread courant invalide (ne devrait jamais arriver)</td></tr>
-</tbody>
-</table>
-</div>
-<div class="callout callout-note">
-    
-<div class="callout-title">Fiabilité</div>
-
-    
-<div class="callout-content">
-        En pratique, <code>PthreadSelf</code> ne devrait jamais échouer dans un système correctement configuré,
-        car <code>currentThread</code> est toujours valide pendant l'exécution d'un thread.
-    </div>
-
-</div>
-
-<h2 id="implémentation"><a class="header" href="#implémentation">Implémentation</a></h2>
-<h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
-<ul>
-<li><strong>Stub utilisateur</strong> : <code>code/test/start.S:351</code></li>
-<li><strong>Handler noyau</strong> : <code>code/userprog/userthread.cc:handle_SC_PthreadSelf()</code></li>
-<li><strong>Implémentation</strong> : <code>code/userprog/userthread.cc:do_PthreadSelf()</code></li>
-</ul>
-<h3 id="flux-dexécution"><a class="header" href="#flux-dexécution">Flux d’exécution</a></h3>
-<pre><code>PthreadSelf()
-    │
-    ▼
-start.S: PthreadSelf
-    │ charge $2 = SC_PthreadSelf
-    ▼
-syscall SC_PthreadSelf
-    │
-    ▼
-handle_SC_PthreadSelf()
-    │
-    ▼
-do_PthreadSelf()
-    │ ├─ récupère currentThread
-    │ ├─ vérifie validité (protection)
-    │ └─ retourne currentThread-&gt;getTID()
-    ▼
-[registre $2 contient le TID]
-</code></pre>
+<p>Aucune valeur de retour.</p>
 <h2 id="exemples"><a class="header" href="#exemples">Exemples</a></h2>
-<h3 id="exemple-1--affichage-du-tid"><a class="header" href="#exemple-1--affichage-du-tid">Exemple 1 : Affichage du TID</a></h3>
+<h3 id="exemple--yield-simple"><a class="header" href="#exemple--yield-simple">Exemple : Yield simple</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
-void *worker(void *arg) {
-    posix_thread_t my_tid = PthreadSelf();
-
-    PutString("Thread TID=", 11);
-    PutInt(my_tid);
-    PutString(" is running\n", 12);
-
-    return 0;
-}
-
-int main() {
-    posix_thread_t tid1, tid2;
-    posix_thread_t main_tid = PthreadSelf();
-
-    PutString("Main thread TID=", 16);
-    PutInt(main_tid);
-    PutChar('\n');
-
-    PthreadCreate(&amp;tid1, 0, worker, 0);
-    PthreadCreate(&amp;tid2, 0, worker, 0);
-
-    PthreadJoin(tid1, 0);
-    PthreadJoin(tid2, 0);
-
-    return 0;
-}
-</code></pre>
-<p><strong>Sortie attendue</strong> :</p>
-<pre><code>Main thread TID=0
-Thread TID=1 is running
-Thread TID=2 is running
-</code></pre>
-<h3 id="exemple-2--comparaison-de-tid"><a class="header" href="#exemple-2--comparaison-de-tid">Exemple 2 : Comparaison de TID</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-posix_thread_t global_tid;
-
-void *compare_thread(void *arg) {
-    posix_thread_t my_tid = PthreadSelf();
-
-    if (my_tid == global_tid) {
-        PutString("TID matches!\n", 13);
-    } else {
-        PutString("TID mismatch!\n", 14);
-    }
-
-    return 0;
-}
-
-int main() {
-    PthreadCreate(&amp;global_tid, 0, compare_thread, 0);
-    PthreadJoin(global_tid, 0);
-    return 0;
-}
-</code></pre>
-<h3 id="exemple-3--thread-local-storage-simulé"><a class="header" href="#exemple-3--thread-local-storage-simulé">Exemple 3 : Thread-local storage simulé</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-#define MAX_THREADS 10
-
-int thread_data[MAX_THREADS];
-
-void set_thread_data(int value) {
-    posix_thread_t tid = PthreadSelf();
-    if (tid &gt;= 0 &amp;&amp; tid &lt; MAX_THREADS) {
-        thread_data[tid] = value;
-    }
-}
-
-int get_thread_data(void) {
-    posix_thread_t tid = PthreadSelf();
-    if (tid &gt;= 0 &amp;&amp; tid &lt; MAX_THREADS) {
-        return thread_data[tid];
-    }
-    return -1;
-}
-
-void *worker(void *arg) {
-    int value = (int)(long)arg;
-    set_thread_data(value);
-
-    PutString("Thread ", 7);
-    PutInt(PthreadSelf());
-    PutString(" stored value: ", 15);
-    PutInt(get_thread_data());
-    PutChar('\n');
-
-    return 0;
-}
-
-int main() {
-    posix_thread_t tid1, tid2;
-
-    PthreadCreate(&amp;tid1, 0, worker, (void *)42);
-    PthreadCreate(&amp;tid2, 0, worker, (void *)99);
-
-    PthreadJoin(tid1, 0);
-    PthreadJoin(tid2, 0);
-
-    return 0;
-}
-</code></pre>
-<p><strong>Sortie attendue</strong> :</p>
-<pre><code>Thread 1 stored value: 42
-Thread 2 stored value: 99
-</code></pre>
-<h3 id="exemple-4--gestion-derreur"><a class="header" href="#exemple-4--gestion-derreur">Exemple 4 : Gestion d’erreur</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-int main() {
-    posix_thread_t tid = PthreadSelf();
-
-    if (tid &lt; 0) {
-        int err = GetLastError();
-        PutString("PthreadSelf failed with errno=", 30);
-        PutInt(err);
+void worker(int id) {
+    for (int i = 0; i &lt; 5; i++) {
+        PutString("Thread ", 7);
+        PutInt(id);
+        PutString(" iteration ", 11);
+        PutInt(i);
         PutChar('\n');
-        return 1;
+        
+        thread_yield();  // Laisser les autres threads s'exécuter
     }
-
-    PutString("Current TID: ", 13);
-    PutInt(tid);
-    PutChar('\n');
-
-    return 0;
+    
+    thread_exit();
 }
 </code></pre>
-<h2 id="cas-dusage"><a class="header" href="#cas-dusage">Cas d’usage</a></h2>
-<h3 id="identification-de-thread"><a class="header" href="#identification-de-thread">Identification de thread</a></h3>
-<p><code>PthreadSelf</code> est particulièrement utile pour :</p>
-<ul>
-<li>Distinguer le thread principal des threads secondaires</li>
-<li>Implémenter un système de logging par thread</li>
-<li>Créer des structures de données thread-local</li>
-<li>Déboguer des problèmes de concurrence</li>
-</ul>
-<h3 id="comparaison-avec-pthread_equal"><a class="header" href="#comparaison-avec-pthread_equal">Comparaison avec pthread_equal</a></h3>
-<p>Contrairement à POSIX qui fournit <code>pthread_equal()</code> pour comparer des TID, Nachos utilise des entiers simples, donc la comparaison directe avec <code>==</code> est possible.</p>
+<p><strong>Sortie possible</strong> (entrelacement) :</p>
+<pre><code>Thread 1 iteration 0
+Thread 2 iteration 0
+Thread 1 iteration 1
+Thread 2 iteration 1
+...
+</code></pre>
 <h2 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h2>
-<p>L’appel est thread-safe. Chaque thread obtient son propre TID unique, et <code>currentThread</code> est toujours valide dans le contexte d’un thread en cours d’exécution.</p>
-<div class="callout callout-note">
-    
-<div class="callout-title">Macro RETURN</div>
-
-    
-<div class="callout-content">
-        L'implémentation utilise la macro <code>RETURN()</code> qui écrit directement
-        dans le registre <code>$2</code> et gère la convention d'appel système.
-    </div>
-
-</div>
-
+<p>L’appel est thread-safe. Chaque thread ne peut que se céder lui-même.</p>
 <h2 id="voir-aussi"><a class="header" href="#voir-aussi">Voir aussi</a></h2>
-<div class="callout callout-see-also">
-    
-<div class="callout-content">
 <ul>
-<li><a href="./PthreadCreate.html">PthreadCreate</a> - Créer un nouveau thread</li>
-<li><a href="./PthreadExit.html">PthreadExit</a> - Terminer un thread</li>
-<li><a href="./PthreadJoin.html">PthreadJoin</a> - Attendre un thread</li>
-<li><a href="./PthreadDetach.html">PthreadDetach</a> - Détacher un thread</li>
+<li><a href="./thread_create.html">thread_create</a> - Créer un thread</li>
+<li><a href="./thread_exit.html">thread_exit</a> - Terminer un thread</li>
+<li><a href="../time/Sleep.html">Sleep</a> - Attendre un délai</li>
+<li><a href="./futex_wait.html">futex_wait</a> - Attente sur futex</li>
+<li><a href="./Threads.html">Threads Overview</a> - Vue d’ensemble</li>
 </ul>
-</div>
-
-</div>
-
 <h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
-<p>Alioune Badara DIENE, 7 Jan 2026</p>
+<p>Antoine</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
-<p>7 Jan 2026</p>
+<p>18 Jan 2026</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../syscalls/threads/attrs.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../syscalls/threads/thread_self.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../syscalls/time/SUMMARY.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../syscalls/threads/futex_wait.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -464,11 +257,11 @@ int main() {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../syscalls/threads/attrs.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../syscalls/threads/thread_self.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../syscalls/time/SUMMARY.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../syscalls/threads/futex_wait.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

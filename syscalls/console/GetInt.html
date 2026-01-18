@@ -37,10 +37,10 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-7a880c7f.js";
+            window.path_to_searchindex_js = "../../searchindex-1d10b05f.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-ea31cd0b.js"></script>
+        <script src="../../toc-57382a8e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -188,7 +188,6 @@ int GetInt(int *n);
 </code></pre>
 <h2 id="description"><a class="header" href="#description">DESCRIPTION</a></h2>
 <p><code>GetInt</code> lit une ligne de texte depuis la console, la convertit en entier, et stocke le résultat à l’adresse pointée par <code>n</code>. La fonction attend que l’utilisateur tape Enter après avoir saisi un nombre.</p>
-<p>Numéro d’appel système : <code>16</code></p>
 <h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
 <ul>
 <li>Lit jusqu’à 11 caractères (taille d’un int 32-bit)</li>
@@ -232,12 +231,6 @@ int GetInt(int *n);
 </table>
 </div>
 <h2 id="implémentation"><a class="header" href="#implémentation">IMPLÉMENTATION</a></h2>
-<h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
-<ul>
-<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
-<li><strong>Handler noyau</strong> : <code>code/userprog/exception.cc:handler_SC_GetInt()</code></li>
-<li><strong>Implémentation</strong> : Utilise <code>SynchConsole::SynchGetString()</code> + <code>sscanf</code></li>
-</ul>
 <h3 id="synchronisation"><a class="header" href="#synchronisation">Synchronisation</a></h3>
 <p>Hérite de <code>SynchGetString</code> :</p>
 <ul>
@@ -387,44 +380,6 @@ int main() {
 <li><strong>Overflow</strong> : Comportement de <code>sscanf</code> (wraparound ou INT_MAX/MIN)</li>
 </ul>
 <h2 id="failles-et-vulnérabilités"><a class="header" href="#failles-et-vulnérabilités">FAILLES ET VULNÉRABILITÉS</a></h2>
-<div class="vulnerability-section severity-critical">
-<h4 id="aucune-validation-de-lespace-dadressage"><a class="header" href="#aucune-validation-de-lespace-dadressage">Aucune validation de l’espace d’adressage</a></h4>
-<p><strong>Description</strong> : Seul <code>addr &lt; 0</code> est vérifié.</p>
-<p><strong>Impact</strong> :</p>
-<ul>
-<li><strong>Écriture arbitraire en mémoire noyau</strong> : Corruption critique</li>
-<li><strong>Ascension de privilèges</strong> : Écraser des pointeurs/structures noyau</li>
-</ul>
-<p><strong>Exploitation</strong> :</p>
-<pre><code class="language-c">// Écrire dans la mémoire noyau
-int *kernel_ptr = (int *)0x00000000;
-GetInt(kernel_ptr);
-// L'utilisateur contrôle maintenant la valeur en mémoire noyau
-</code></pre>
-</div>
-
-<div class="vulnerability-section severity-critical">
-<h4 id="writemem-peut-échouer-silencieusement"><a class="header" href="#writemem-peut-échouer-silencieusement">WriteMem peut échouer silencieusement</a></h4>
-<p><strong>Description</strong> : <code>machine-&gt;WriteMem(addr, 4, *new_val)</code> peut échouer si la page n’est pas mappée ou accessible en écriture.</p>
-<p><strong>Impact</strong> :</p>
-<ul>
-<li><strong>Écriture ignorée</strong></li>
-<li><strong>Pas de notification d’erreur</strong></li>
-</ul>
-<p><strong>Code problématique</strong> :</p>
-<pre><code class="language-c">machine-&gt;WriteMem(addr, 4, *new_val);  // Potentielle échec ignoré
-delete new_val;
-RETURN(0);  // Succès même si WriteMem a échoué !
-</code></pre>
-</div>
-
-<div class="vulnerability-section severity-critical">
-<h4 id="buffer-overflow-potentiel-sur-synchgetstring"><a class="header" href="#buffer-overflow-potentiel-sur-synchgetstring">Buffer overflow potentiel sur SynchGetString</a></h4>
-<p><strong>Description</strong> : Si <code>SynchGetString</code> écrit plus de 12 octets (impossible normalement mais…), stack overflow.</p>
-<p><strong>Impact</strong> : Corruption de stack du noyau</p>
-<p><strong>Correction</strong> : <code>SynchGetString</code> limite à 12 mais vérifier quand même</p>
-</div>
-
 <div class="vulnerability-section severity-info">
 <h4 id="pas-de-timeout"><a class="header" href="#pas-de-timeout">Pas de timeout</a></h4>
 <p><strong>Description</strong> : Bloque indéfiniment en attendant l’utilisateur.</p>
@@ -445,10 +400,10 @@ RETURN(0);  // Succès même si WriteMem a échoué !
 <li><a href="./GetString.html">GetString</a> - Lecture de chaîne</li>
 <li><a href="./GetChar.html">GetChar</a> - Lecture d’un caractère</li>
 </ul>
-<h2 id="auteurs"><a class="header" href="#auteurs">AUTEURS</a></h2>
-<p>Antoine, 20 Dec 2025</p>
-<h2 id="dernière-révision"><a class="header" href="#dernière-révision">DERNIÈRE RÉVISION</a></h2>
-<p>20 Dec 2025 par Antoine</p>
+<h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
+<p>Antoine</p>
+<h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
+<p>18 Jan 2026</p>
 
                     </main>
 

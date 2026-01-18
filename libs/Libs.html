@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Errno Codes - NachOS Manual</title>
+        <title>Vue d&#x27;ensemble - NachOS Manual</title>
 
 
         <!-- Custom HTML head -->
@@ -37,10 +37,10 @@
             const path_to_root = "../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-7a880c7f.js";
+            window.path_to_searchindex_js = "../searchindex-1d10b05f.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-ea31cd0b.js"></script>
+        <script src="../toc-57382a8e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -179,147 +179,46 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="liste-des-codes-errno"><a class="header" href="#liste-des-codes-errno">Liste des codes errno</a></h1>
-<p>Documentation détaillée de tous les codes d’erreur utilisés dans NachOS.</p>
-<h2 id="définitions"><a class="header" href="#définitions">Définitions</a></h2>
-<p>Les codes d’erreur sont définis dans <code>code/userprog/syscall.h</code> :</p>
-<pre><code class="language-c">#define E_SUCCESS       0   /* No error */
-#define E_INVAL         1   /* Invalid argument */
-#define E_FAULT         2   /* Bad address / memory access error */
-#define E_OVERFLOW      3   /* Arithmetic overflow */
-#define E_IO            4   /* I/O error */
-#define E_FORMAT        5   /* Invalid format */
-#define E_EOF           6   /* End of file */
-#define E_NOMEM         7   /* Out of memory */
-#define E_RANGE         8   /* Result out of range */
-#define E_NOSPC         9   /* No such process */
-</code></pre>
-<h2 id="codes-derreur-détaillés"><a class="header" href="#codes-derreur-détaillés">Codes d’erreur détaillés</a></h2>
-<hr>
-<h3 id="e_success-0"><a class="header" href="#e_success-0">E_SUCCESS (0)</a></h3>
-<p><strong>Nom</strong> : Succès (pas d’erreur)</p>
-<p><strong>Description</strong> : Opération réussie, aucune erreur.</p>
-<p><strong>Quand positionné</strong> :</p>
-<ul>
-<li>Automatiquement par les stubs en cas de succès</li>
-<li><code>errno</code> est mis à 0 après chaque appel système réussi</li>
-</ul>
-<p><strong>Utilisation</strong> :</p>
-<pre><code class="language-c">int result = GetString(buffer, 100);
-if (result != -1) {
-    int err = GetLastError();  // err = 0 (E_SUCCESS)
-}
-</code></pre>
-<hr>
-<h3 id="e_inval-1"><a class="header" href="#e_inval-1">E_INVAL (1)</a></h3>
-<p><strong>Nom</strong> : Argument invalide</p>
-<p><strong>Description</strong> : Un ou plusieurs arguments passés à l’appel système sont invalides.</p>
-<p><strong>Causes courantes</strong> :</p>
-<ul>
-<li>Taille négative (<code>n &lt; 0</code>)</li>
-<li>Valeur hors limites</li>
-<li>Paramètre incohérent</li>
-<li>Format de données incorrect</li>
-</ul>
-<hr>
-<h3 id="e_fault-2"><a class="header" href="#e_fault-2">E_FAULT (2)</a></h3>
-<p><strong>Nom</strong> : Adresse mémoire invalide</p>
-<p><strong>Description</strong> : L’adresse mémoire fournie est invalide ou inaccessible.</p>
-<p><strong>Causes courantes</strong> :</p>
-<ul>
-<li>Pointeur NULL</li>
-<li>Adresse négative</li>
-<li>Adresse hors de l’espace utilisateur</li>
-<li>Page non mappée</li>
-</ul>
-<p><strong>Note</strong> : Dans NachOS actuel, la validation d’adresse est incomplète. Beaucoup de cas invalides ne sont pas détectés et causent des crashes.</p>
-<hr>
-<h3 id="e_overflow-3"><a class="header" href="#e_overflow-3">E_OVERFLOW (3)</a></h3>
-<p><strong>Nom</strong> : Dépassement arithmétique</p>
-<p><strong>Description</strong> : Une opération arithmétique a causé un dépassement de capacité. Peut également être utilisé de manière préventive pour éviter des dépassements d’adresse.</p>
-<p><strong>Causes courantes</strong> :</p>
-<ul>
-<li>Addition qui dépasse INT_MAX</li>
-<li>Vérification <code>n &gt; INT32_MAX - addr</code> (éviter overflow d’adresse)</li>
-</ul>
-<hr>
-<h3 id="e_io-4"><a class="header" href="#e_io-4">E_IO (4)</a></h3>
-<p><strong>Nom</strong> : Erreur d’entrée/sortie</p>
-<p><strong>Description</strong> : Erreur lors d’une opération d’entrée/sortie physique.</p>
-<p><strong>Causes courantes</strong> :</p>
-<ul>
-<li>Défaillance hardware (non simulée dans NachOS)</li>
-<li>Timeout de périphérique</li>
-<li>Erreur de transmission</li>
-</ul>
-<h2 id="note--actuellement-non-utilisé-notamment-car-le-matériel-simulé-ne-génère-pas-derreurs-io"><a class="header" href="#note--actuellement-non-utilisé-notamment-car-le-matériel-simulé-ne-génère-pas-derreurs-io"><strong>Note</strong> : Actuellement non utilisé, notamment car le matériel simulé ne génère pas d’erreurs I/O.</a></h2>
-<h3 id="e_format-5"><a class="header" href="#e_format-5">E_FORMAT (5)</a></h3>
-<p><strong>Nom</strong> : Format invalide</p>
-<p><strong>Description</strong> : Format de données incorrect ou non reconnu.</p>
-<p><strong>Causes courantes</strong> :</p>
-<ul>
-<li>Fichier corrompu</li>
-<li>En-tête invalide</li>
-<li>Structure de données mal formée</li>
-</ul>
-<hr>
-<h3 id="e_eof-6"><a class="header" href="#e_eof-6">E_EOF (6)</a></h3>
-<p><strong>Nom</strong> : Fin de fichier</p>
-<p><strong>Description</strong> : Tentative de lecture au-delà de la fin d’un fichier.</p>
-<p><strong>Causes courantes</strong> :</p>
-<ul>
-<li><code>Read</code> sur fichier épuisé</li>
-<li><code>GetChar</code> sur stdin redirigé depuis fichier terminé</li>
-</ul>
-<p><strong>Note</strong> : <code>GetChar</code> retourne EOF (-1) comme valeur, pas via errno.</p>
-<hr>
-<h3 id="e_nomem-7"><a class="header" href="#e_nomem-7">E_NOMEM (7)</a></h3>
-<p><strong>Nom</strong> : Mémoire insuffisante</p>
-<p><strong>Description</strong> : Allocation mémoire échouée, plus assez de mémoire disponible.</p>
-<p><strong>Causes courantes</strong> :</p>
-<ul>
-<li>Allocation de pages échouée</li>
-<li>Heap saturé</li>
-<li>Trop de threads créés</li>
-</ul>
-<hr>
-<h3 id="e_range-8"><a class="header" href="#e_range-8">E_RANGE (8)</a></h3>
-<p><strong>Nom</strong> : Résultat hors limites</p>
-<p><strong>Description</strong> : Le résultat d’une opération est hors des limites acceptables.</p>
-<p><strong>Causes courantes</strong> :</p>
-<ul>
-<li>Résultat mathématique hors intervalle</li>
-<li>Valeur retournée trop grande ou trop petite</li>
-</ul>
-<hr>
-<h3 id="e_nospc-9"><a class="header" href="#e_nospc-9">E_NOSPC (9)</a></h3>
-<p><strong>Nom</strong> : Aucun processus correspondant (No such process)</p>
-<p><strong>Description</strong> : Aucun processus/thread trouvé avec l’ID spécifié.</p>
-<p><strong>Causes courantes</strong> :</p>
-<ul>
-<li><code>JoinThread</code> avec TID invalide</li>
-<li>Thread déjà terminé</li>
-<li>TID jamais créé</li>
-</ul>
+                        <h1 id="bibliothèques-utilisateur"><a class="header" href="#bibliothèques-utilisateur">Bibliothèques utilisateur</a></h1>
+<p>Cette section documente les bibliothèques disponibles en espace utilisateur pour les programmes NachOS.</p>
+<h2 id="vue-densemble"><a class="header" href="#vue-densemble">Vue d’ensemble</a></h2>
+<p>Les bibliothèques utilisateur fournissent une couche d’abstraction au-dessus des appels système bruts, offrant une API plus simple et des fonctionnalités supplémentaires.</p>
+<h2 id="bibliothèques-disponibles"><a class="header" href="#bibliothèques-disponibles">Bibliothèques disponibles</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Bibliothèque</th><th>Header</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td>errno</td><td><code>nos_errno.h</code></td><td>Gestion des erreurs thread-safe</td></tr>
+<tr><td>stdlib</td><td><code>nos_stdlib.h</code></td><td>Fonctions utilitaires standard</td></tr>
+<tr><td>stdio</td><td><code>nos_stdio.h</code></td><td>Entrées/sorties formatées</td></tr>
+<tr><td>string</td><td><code>nos_string.h</code></td><td>Manipulation de chaînes</td></tr>
+<tr><td>pthread</td><td><code>pthread.h</code></td><td>Threads POSIX-like (haut niveau)</td></tr>
+</tbody>
+</table>
+</div>
 <h2 id="voir-aussi"><a class="header" href="#voir-aussi">Voir aussi</a></h2>
 <ul>
-<li><a href="./errors.html">Gestion des erreurs</a> - Vue d’ensemble du mécanisme errno</li>
-<li><a href="console/Console.html">Console I/O</a> - Appels avec gestion d’erreur</li>
-<li><a href="../userspace/my_stdlib.html">my_stdlib</a> - Fonctions print_error()</li>
+<li><a href="./errno.html">errno</a> - Gestion des erreurs</li>
+<li><a href="../syscalls/Syscalls.html">Appels système</a> - API bas niveau</li>
 </ul>
 <h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
-<p>Antoine, 20 Dec 2025</p>
+<p>Antoine</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
-<p>20 Dec 2025 par Antoine</p>
+<p>18 Jan 2026</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../syscalls/errors.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../syscalls/process/ForkJoin.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
+                            <a rel="next prefetch" href="../libs/errno.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -327,10 +226,13 @@ if (result != -1) {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../syscalls/errors.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../syscalls/process/ForkJoin.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
+                    <a rel="next prefetch" href="../libs/errno.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
             </nav>
 
         </div>
