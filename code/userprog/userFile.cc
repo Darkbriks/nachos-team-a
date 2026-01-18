@@ -33,14 +33,15 @@ void handle_SC_Open(){
     if ( ! CopyStringFromUser(addr, name ,MAX_PATH_SIZE)){
         RETURN(-E_FAULT);
     }
-    if ( ! currentThread->CanOpenFile()){
+    if ( currentThread->CanOpenFile() == INVALID_SECTOR){
         RETURN(-E_FTABLE);
     }
     OpenFile* file = fileSystem->Open(name);
     if (file == nullptr){
         RETURN(-E_NOENT);
     }
-    RETURN(currentThread->AddOpenFile(file));
+    int result = currentThread->AddOpenFile(file);
+    RETURN(result);
 }
 
 

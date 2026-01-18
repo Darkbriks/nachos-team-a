@@ -6,7 +6,7 @@ int main(){
     char buffer[200];
     int fd = Open("a");
     PutInt(Read(buffer, 200, fd));
-    printf("on lit %s \n", buffer);
+    printf("on lit %s car fd = %d \n", buffer, fd);
     for (int i = 0; i < 10; i++){
         buffer[i] = 'z';
     }

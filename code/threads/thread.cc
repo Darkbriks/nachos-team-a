@@ -45,6 +45,9 @@ Thread::Thread(const tid_t t, Process* p, const ptr_32 tlsBase)
     for (int r = NumGPRegs; r < NumTotalRegs; r++) {
         userRegisters[r] = 0;
     }
+    for (int i = 0; i < MAX_FILE_OPEN; i++){
+        openFiles[i] = nullptr;
+    }
 #endif
 }
 
@@ -462,7 +465,7 @@ void Thread::RestoreUserState() const {
 #endif
 
 bool Thread::IsOpenFile(OpenFileId id){
-    return id != INVALID_ID;
+    return id != INVALID_ID && openFiles[id] != nullptr;
 }
 OpenFileId Thread::AddOpenFile(OpenFile* file){
     OpenFileId index = CanOpenFile();
@@ -492,7 +495,7 @@ bool Thread::RemoveOpenFile(OpenFileId id){
 
 OpenFileId Thread::CanOpenFile(){
     for (int i = 0; i < MAX_FILE_OPEN; i++){
-        if (openFiles[i] != nullptr){
+        if (openFiles[i] == nullptr){
             return i;
         }
 
