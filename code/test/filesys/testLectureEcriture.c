@@ -11,9 +11,13 @@ int main(){
         buffer[i] = 'z';
     }
     buffer[10] = 0;
+
+    Close(fd);
+    fd = Open("a");
     Write(buffer, 10, fd);
     Close(fd);
     fd = Open("a");
     Read(buffer, 200, fd);
+    Close(fd);
     printf("on lit %s \n", buffer);
 }
