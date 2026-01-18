@@ -35,6 +35,7 @@
 #define E_NOTDIR        23  /* Not a directory */
 #define E_ISDIR         24  /* Is a directory */
 #define E_BADF          25  /* Bad file descriptor */
+#define E_DEADLK        26  /* Resource deadlock would occur */
 
 
 /* ============================================================

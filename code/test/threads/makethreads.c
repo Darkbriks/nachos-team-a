@@ -2,7 +2,7 @@
 #include "pthread.h"
 #include "pthread_mutex.h"
 
-pthread_mutex_t print_mutex;
+pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void super_fun_2(void *arg) {
     pthread_mutex_lock(&print_mutex);
@@ -23,8 +23,6 @@ void super_fun_1(void *arg) {
 }
 
 int main() {
-    pthread_mutex_init(&print_mutex);
-
     int x = 3;
     int my_tab[] = {0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192};
     for (int i = 0; i < x; i++) { pthread_create(0, 0, (void *(*)(void *)) &super_fun_1, &my_tab[i]); }

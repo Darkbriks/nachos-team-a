@@ -198,6 +198,7 @@ char* strerror(const int errnum) {
         case  E_NOTDIR: return "Not a directory";
         case  E_ISDIR: return "Is a directory";
         case  E_BADF: return "Bad file descriptor";
+        case  E_DEADLK: return "Resource deadlock would occur";
 
         // TODO: Uncomment on merge with network
         /*case  E_REFUSED: return "Connection refused";
