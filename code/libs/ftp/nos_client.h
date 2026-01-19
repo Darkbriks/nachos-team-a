@@ -9,36 +9,31 @@
  *        measures transfer time, and calculates throughput.
  */
 
+#ifndef NOS_CLIENT_H
+#define NOS_CLIENT_H
+
 #include "syscall.h"
 #include "nos_stdio.h"
 #include "nos_errno.h"
 #include "nos_string.h"
 
-#define SERVER_ADDR 0
-#define SERVER_PORT 60
-#define CHUNK_SIZE 20
-#define MAX_FILESIZE 4096
-
-char fileBuffer[MAX_FILESIZE];
-
-/* Convert int to string (simple itoa) */
-int intToStr(int num, char *buf);
-
+#define CLIENT_SERVER_ADDR 0
+#define CLIENT_SERVER_PORT 20  /* Must match SERVER_PORT in nos_fileserver.h */
+#define CLIENT_CHUNK_SIZE 20
+#define CLIENT_MAX_FILESIZE 4096
 
 /* Parse OK response to extract size */
-int parseOkResponse(char *response, int *size);
-
+int clientParseOkResponse(char *response, int *size);
 
 /* GET file from server */
-int getFile(int connId, char *filename, int *receivedSize,
-        long long *startTime, long long *endTime);
-
+int clientGetFile(int connId, char *filename, char *buffer, int bufSize,
+                  int *receivedSize, long long *startTime, long long *endTime);
 
 /* PUT file to server */
-int putFile(int connId, char *filename, char *data, int size,
-                   long long *startTime, long long *endTime);
-
+int clientPutFile(int connId, char *filename, char *data, int size,
+                  long long *startTime, long long *endTime);
 
 /* Calculate and display throughput */
-void displayThroughput(int bytes, long long startTime, long long endTime);
+void clientDisplayThroughput(int bytes, long long startTime, long long endTime);
 
+#endif /* NOS_CLIENT_H */

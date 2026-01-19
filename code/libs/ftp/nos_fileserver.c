@@ -1,8 +1,12 @@
 #include "nos_fileserver.h"
 
+/* File storage - static to this file */
+static char fileBuffer[SERVER_MAX_FILESIZE];
+static int fileSize = 0;
+static char storedFilename[SERVER_MAX_FILENAME];
 
-/* Convert int to string (simple itoa) */
-int intToStr(int num, char *buf) {
+/* Convert int to string (simple itoa) - static to avoid conflicts */
+static int intToStr(int num, char *buf) {
     int i = 0, j;
     char tmp[16];
 
@@ -26,7 +30,7 @@ int intToStr(int num, char *buf) {
 }
 
 /* Parse command from received data */
-int parseCommand(char *data, char *cmd, char *arg1, int *arg2) {
+int serverParseCommand(char *data, char *cmd, char *arg1, int *arg2) {
     int i = 0, j = 0;
 
     /* Extract command */
@@ -40,7 +44,7 @@ int parseCommand(char *data, char *cmd, char *arg1, int *arg2) {
 
     /* Extract first argument (filename) */
     j = 0;
-    while (data[i] != '\0' && data[i] != ' ' && j < MAX_FILENAME - 1) {
+    while (data[i] != '\0' && data[i] != ' ' && j < SERVER_MAX_FILENAME - 1) {
         arg1[j++] = data[i++];
     }
     arg1[j] = '\0';
@@ -59,7 +63,7 @@ int parseCommand(char *data, char *cmd, char *arg1, int *arg2) {
 }
 
 /* Handle GET request - send file to client */
-int handleGet(int connId, char *filename) {
+int serverHandleGet(int connId, char *filename) {
     char response[32];
     int sent = 0;
     int chunkSize;
@@ -87,8 +91,8 @@ int handleGet(int connId, char *filename) {
     /* Send file data in chunks */
     while (sent < fileSize) {
         chunkSize = fileSize - sent;
-        if (chunkSize > CHUNK_SIZE) {
-            chunkSize = CHUNK_SIZE;
+        if (chunkSize > SERVER_CHUNK_SIZE) {
+            chunkSize = SERVER_CHUNK_SIZE;
         }
 
         if (sendto(connId, fileBuffer + sent, chunkSize) < 0) {
@@ -111,14 +115,14 @@ int handleGet(int connId, char *filename) {
 }
 
 /* Handle PUT request - receive file from client */
-int handlePut(int connId, char *filename, int size) {
-    char buffer[CHUNK_SIZE + 1];
+int serverHandlePut(int connId, char *filename, int size) {
+    char buffer[SERVER_CHUNK_SIZE + 1];
     int received = 0;
     int n;
 
     printf("[SERVER] PUT request: '%s' (%d bytes)\n", filename, size);
 
-    if (size > MAX_FILESIZE) {
+    if (size > SERVER_MAX_FILESIZE) {
         printf("[SERVER] File too large\n");
         sendto(connId, "ERR 413", 8);
         return -1;
@@ -136,7 +140,7 @@ int handlePut(int connId, char *filename, int size) {
 
     /* Receive file data */
     while (received < size) {
-        n = recvfrom(connId, buffer, CHUNK_SIZE);
+        n = recvfrom(connId, buffer, SERVER_CHUNK_SIZE);
         if (n < 0) {
             printf("[SERVER] Failed to receive data, errno: %d\n", errno);
             return -1;
@@ -165,4 +169,3 @@ int handlePut(int connId, char *filename, int size) {
 
     return 0;
 }
-

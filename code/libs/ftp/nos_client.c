@@ -1,6 +1,7 @@
 #include "nos_client.h"
 
-int intToStr(int num, char *buf) {
+/* Convert int to string (simple itoa) - static to avoid conflicts */
+static int intToStr(int num, char *buf) {
     int i = 0, j;
     char tmp[16];
 
@@ -24,7 +25,7 @@ int intToStr(int num, char *buf) {
 }
 
 /* Parse OK response to extract size */
-int parseOkResponse(char *response, int *size) {
+int clientParseOkResponse(char *response, int *size) {
     int i = 0;
 
     /* Check for OK prefix */
@@ -47,10 +48,10 @@ int parseOkResponse(char *response, int *size) {
 }
 
 /* GET file from server */
-int getFile(int connId, char *filename, int *receivedSize,
-                   long long *startTime, long long *endTime) {
+int clientGetFile(int connId, char *filename, char *fileBuffer, int bufSize,
+                  int *receivedSize, long long *startTime, long long *endTime) {
     char cmd[80];
-    char buffer[CHUNK_SIZE + 1];
+    char buffer[CLIENT_CHUNK_SIZE + 1];
     int expectedSize = 0;
     int received = 0;
     int n;
@@ -85,7 +86,7 @@ int getFile(int connId, char *filename, int *receivedSize,
     }
 
     /* Parse OK response */
-    if (parseOkResponse(buffer, &expectedSize) < 0) {
+    if (clientParseOkResponse(buffer, &expectedSize) < 0) {
         printf("[CLIENT] Invalid response format\n");
         return -1;
     }
@@ -93,7 +94,7 @@ int getFile(int connId, char *filename, int *receivedSize,
 
     /* Receive file data */
     while (received < expectedSize) {
-        n = recvfrom(connId, buffer, CHUNK_SIZE);
+        n = recvfrom(connId, buffer, CLIENT_CHUNK_SIZE);
         if (n < 0) {
             printf("[CLIENT] Failed to receive data, errno: %d\n", errno);
             return -1;
@@ -110,7 +111,7 @@ int getFile(int connId, char *filename, int *receivedSize,
         }
 
         /* Store received data */
-        if (received + n <= MAX_FILESIZE) {
+        if (received + n <= bufSize) {
             memcpy(fileBuffer + received, buffer, n);
         }
         received += n;
@@ -119,7 +120,7 @@ int getFile(int connId, char *filename, int *receivedSize,
 
     /* Wait for EOF if not received yet */
     if (received >= expectedSize) {
-        n = recvfrom(connId, buffer, CHUNK_SIZE);
+        n = recvfrom(connId, buffer, CLIENT_CHUNK_SIZE);
         if (n > 0) {
             buffer[n] = '\0';
             printf("[CLIENT] Final message: %s\n", buffer);
@@ -134,8 +135,8 @@ int getFile(int connId, char *filename, int *receivedSize,
 }
 
 /* PUT file to server */
-int putFile(int connId, char *filename, char *data, int size,
-                   long long *startTime, long long *endTime) {
+int clientPutFile(int connId, char *filename, char *data, int size,
+                  long long *startTime, long long *endTime) {
     char cmd[80];
     char buffer[32];
     int sent = 0;
@@ -175,8 +176,8 @@ int putFile(int connId, char *filename, char *data, int size,
     /* Send file data in chunks */
     while (sent < size) {
         chunkSize = size - sent;
-        if (chunkSize > CHUNK_SIZE) {
-            chunkSize = CHUNK_SIZE;
+        if (chunkSize > CLIENT_CHUNK_SIZE) {
+            chunkSize = CLIENT_CHUNK_SIZE;
         }
 
         if (sendto(connId, data + sent, chunkSize) < 0) {
@@ -208,7 +209,7 @@ int putFile(int connId, char *filename, char *data, int size,
 }
 
 /* Calculate and display throughput */
-void displayThroughput(int bytes, long long startTime, long long endTime) {
+void clientDisplayThroughput(int bytes, long long startTime, long long endTime) {
     int elapsed = (int)(endTime - startTime);
     int bytesPerSec;
 
@@ -242,4 +243,3 @@ void displayThroughput(int bytes, long long startTime, long long endTime) {
         printf("Transfer too fast to measure\n");
     }
 }
-
