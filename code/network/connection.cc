@@ -109,7 +109,7 @@ int Connection::Read(char* buffer, int maxLength) {
             state == CONN_CLOSED) {
             lock->Release();
             return 0;
-            }
+        }
 
         recvCond->Wait(lock);
     }
@@ -119,9 +119,19 @@ int Connection::Read(char* buffer, int maxLength) {
     ReceivedData* rd = static_cast<ReceivedData*>(recvQueue->Remove());
 
     // TODO: For now, it's UDP like
+    
     int available = rd->length - rd->offset;
     const int toCopy = (available < maxLength) ? available : maxLength;
-    bcopy(rd->data + rd->offset, buffer, toCopy);
+
+    // TODO : au cas ou pour retrouver le coupable
+    int i = 0;
+    while (rd->data[i] != EOF || i < toCopy) {
+        buffer[bufferPosition + i] = rd->data[i]+rd->offset;
+        i++;
+    }
+
+    // bcopy(rd->data + rd->offset, buffer, toCopy);
+    bufferPosition += toCopy;
 
     delete rd;
     return toCopy;

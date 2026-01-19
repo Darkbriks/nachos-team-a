@@ -5,6 +5,7 @@
 #include "netprotocol.h"
 #include "synch.h"
 #include "synchlist.h"
+#include "exception.h"
 
 class ConnectionManager;
 
@@ -61,6 +62,8 @@ private:
     Condition* recvCond;
     Condition* sendCond;
     Condition* closeCond;
+
+    int bufferPosition = 0;
 
     long long lastActivityTime = 0;
     long long connectStartTime = 0;

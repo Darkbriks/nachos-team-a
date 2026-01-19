@@ -5,6 +5,7 @@
 #include "netprotocol.h"
 #include "connection.h"
 #include "synch.h"
+#include "exception.h"
 
 struct Listener {
     bool active = false;
@@ -66,6 +67,7 @@ private:
 
     Thread* workerThread = nullptr;
 
+    char buffer[MAX_PUT_STRING];
 
     int AllocateConnection();
     void FreeConnection(int connId);

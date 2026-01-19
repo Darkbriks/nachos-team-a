@@ -224,6 +224,7 @@ int ConnectionManager::CloseListener(const int listenerId) {
 }
 
 int ConnectionManager::Send(const int connId, const char* data, int length) {
+    
     if (!initialized) { return E_INVAL; }
 
     Connection* conn = GetConnection(connId);
@@ -231,8 +232,28 @@ int ConnectionManager::Send(const int connId, const char* data, int length) {
     if (!conn->CanSend()) { return E_NOTCONN; }
 
     if (length > static_cast<int>(MAX_RELIABLE_DATA)) {
-        // TODO: decoupage
-        return E_INVAL;
+        int dataLength = strlen(data);
+
+        if (dataLength > MAX_PUT_STRING){
+            strncpy(buffer, data, MAX_PUT_STRING);
+            buffer[MAX_PUT_STRING-1] = 0;
+            dataLength = MAX_PUT_STRING;
+        }
+        else{
+            strncpy(buffer,data,dataLength);
+            buffer[dataLength-1] = 0;
+        }
+
+        int result;
+        for (int i = 0, y=dataLength; i <=dataLength ; i+=MAX_RELIABLE_DATA, y-=MAX_RELIABLE_DATA){
+            if(y < MAX_RELIABLE_DATA){
+                result = conn->QueueSend(buffer+i, y);
+            } else {
+                result = conn->QueueSend(buffer+i, MAX_RELIABLE_DATA);
+            }
+        }
+
+        return result;
     }
 
     if (const int result = conn->QueueSend(data, length); result < 0) {
@@ -242,11 +263,12 @@ int ConnectionManager::Send(const int connId, const char* data, int length) {
     return length;
 }
 
-int ConnectionManager::Recv(const int connId, char* buffer, const int maxLength) {
+int ConnectionManager::Recv(const int connId, char* recv_buffer, const int maxLength) {
     if (!initialized) { return E_INVAL; }
     Connection* conn = GetConnection(connId);
     if (conn == nullptr) { return E_INVAL; }
-    return conn->Read(buffer, maxLength);
+    
+    return conn->Read(recv_buffer, maxLength);
 }
 
 int ConnectionManager::Close(const int connId) {
