@@ -67,8 +67,6 @@ private:
 
     Thread* workerThread = nullptr;
 
-    char conn_buffer[MAX_PUT_STRING];
-
     int AllocateConnection();
     void FreeConnection(int connId);
 
@@ -89,8 +87,8 @@ private:
     void HandleIncomingSYN(PacketHeader pktHdr, const ReliableHeader* relHdr);
     void RouteToConnection(PacketHeader pktHdr, const ReliableHeader* relHdr, const char* payload);
 
-    void SendPacket(NetworkAddress destAddr, uint16_t srcPort, uint16_t dstPort,
-                   MessageType type, uint32_t seqNum, uint32_t ackNum, const char* data, int dataLen);
+    void SendPacket(NetworkAddress destAddr, uint16_t srcPort, uint16_t dstPort,MessageType type,
+        uint32_t seqNum, uint32_t ackNum, const char* data, int dataLen, uint8_t flags);
 
     void SendRST(NetworkAddress destAddr, uint16_t srcPort, uint16_t dstPort, uint32_t seqNum, uint32_t ackNum);
 

@@ -6,9 +6,10 @@
 
 #include <strings.h>
 
-ReceivedData::ReceivedData(const char* src, const int len) {
+ReceivedData::ReceivedData(const char* src, const int len, const MessageFlag msgFlags) {
     length = len;
     offset = 0;
+    flags = msgFlags;
     data = new char[len];
     bcopy(src, data, len);
 }
@@ -58,7 +59,7 @@ bool Connection::CanReceive() {
     return result;
 }
 
-int Connection::QueueSend(const char* data, int length) {
+int Connection::QueueSend(const char* data, int length, const uint8_t flags) {
     lock->Acquire();
 
     if (state != CONN_ESTABLISHED && state != CONN_CLOSE_WAIT) {
@@ -90,6 +91,7 @@ int Connection::QueueSend(const char* data, int length) {
     slot->type = MessageType::MSG_DATA;
     slot->flags |= FLAG_ACTIVE;
     slot->flags &= ~FLAG_ACKED;
+    slot->pendingFlags = flags;
 
     bcopy(data, slot->data, length);
     pendingCount++;
@@ -100,52 +102,35 @@ int Connection::QueueSend(const char* data, int length) {
     return seqNum;
 }
 
-int Connection::Read(char* buffer, int maxLength) {
-    int toCopy = 0;
-    while (true){
-        lock->Acquire();
-    
-        while (recvQueue->IsEmpty()) {
-            if (state == CONN_CLOSE_WAIT || state == CONN_CLOSING ||
-                state == CONN_TIME_WAIT || state == CONN_TERMINATED ||
-                state == CONN_CLOSED) {
-                lock->Release();
-                return 0;
-            }
-    
-            recvCond->Wait(lock);
-        }
-    
-        lock->Release();
-    
-        ReceivedData* rd = static_cast<ReceivedData*>(recvQueue->Remove());
-    
-        int available = rd->length - rd->offset;
-        toCopy = (available < maxLength) ? available : maxLength;
+int Connection::Read(char* buffer, int maxLength, MessageFlag* outFlags) {
+    lock->Acquire();
 
-        // TODO: For now, it's UDP like
-        int i = 0;
-        while (i < toCopy){
-            if (rd->data[i+rd->offset] != '\0'){
-                return toCopy;
+    while (recvQueue->IsEmpty()) {
+        if (state == CONN_CLOSE_WAIT || state == CONN_CLOSING ||
+            state == CONN_TIME_WAIT || state == CONN_TERMINATED ||
+            state == CONN_CLOSED) {
+            lock->Release();
+            return 0;
             }
 
-            if(i == MIN((int)MAX_RELIABLE_DATA, maxLength)){
-                break;
-            }
-            buffer[bufferPosition + i] = rd->data[i+rd->offset]; 
-            maxLength--;
-            i++;
-        }
-    
-        // bcopy(rd->data + rd->offset, buffer, toCopy);
-        bufferPosition += toCopy;
-
-        delete rd;
+        recvCond->Wait(lock);
     }
-    
-    return toCopy;
 
+    lock->Release();
+
+    ReceivedData* rd = static_cast<ReceivedData*>(recvQueue->Remove());
+
+    // TODO: For now, it's UDP like
+    int available = rd->length - rd->offset;
+    const int toCopy = (available < maxLength) ? available : maxLength;
+    bcopy(rd->data + rd->offset, buffer, toCopy);
+
+    if (outFlags != nullptr) {
+        *outFlags = rd->flags;
+    }
+
+    delete rd;
+    return toCopy;
 }
 
 bool Connection::HasDataAvailable() {
@@ -247,8 +232,8 @@ void Connection::AcknowledgeMessage(uint32_t seqNum) {
     }
 }
 
-void Connection::EnqueueReceivedData(const char* data, const int length) {
-    auto rd = new ReceivedData(data, length);
+void Connection::EnqueueReceivedData(const char* data, const int length, const uint8_t flags) {
+    auto rd = new ReceivedData(data, length, static_cast<MessageFlag>(flags));
 
     lock->Release();
     recvQueue->Append(rd);
@@ -346,7 +331,7 @@ void Connection::HandleACK(const ReliableHeader* hdr) {
     lock->Release();
 }
 
-void Connection::HandleDATA(const ReliableHeader* hdr, const char* payload) {
+void Connection::HandleDATA(const ReliableHeader* hdr, const char* payload, const uint8_t flags) {
     lock->Acquire();
 
     DEBUG('n', "[Conn %d] Received DATA seq=%u len=%u\n", connId, hdr->seqNum, hdr->dataLen);
@@ -359,7 +344,7 @@ void Connection::HandleDATA(const ReliableHeader* hdr, const char* payload) {
 
     if (hdr->seqNum == recvSeqNum) {
         recvSeqNum++;
-        EnqueueReceivedData(payload, hdr->dataLen);
+        EnqueueReceivedData(payload, hdr->dataLen, flags);
         SendACK();
     } else if (hdr->seqNum < recvSeqNum) {
         SendACK();
@@ -432,7 +417,7 @@ void Connection::SendControlMessage(const MessageType type, uint32_t seqNum, uin
           connId, MessageTypeToString(type), seqNum, ackNum, key.remoteAddr, key.remotePort);
 
     manager->SendPacket(key.remoteAddr, key.localPort, key.remotePort,
-                       type, seqNum, ackNum, nullptr, 0);
+                       type, seqNum, ackNum, nullptr, 0, static_cast<uint8_t>(MessageFlag::FLAG_CONTROL));
 
     lastActivityTime = stats->totalTicks;
 }
@@ -450,7 +435,7 @@ void Connection::TransmitPending(PendingMessage* msg) {
     }
 
     manager->SendPacket(key.remoteAddr, key.localPort, key.remotePort,
-                       MessageType::MSG_DATA, msg->seqNum, recvSeqNum, msg->data, msg->dataLen);
+                       MessageType::MSG_DATA, msg->seqNum, recvSeqNum, msg->data, msg->dataLen, msg->pendingFlags);
 
     msg->attempts++;
     msg->sentTime = stats->totalTicks;

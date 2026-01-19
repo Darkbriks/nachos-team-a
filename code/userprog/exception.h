@@ -14,8 +14,6 @@
         } \
     } while (0)
 
-#define MAX_PUT_STRING 8192
-
 #define GET_PROCESS_ADDRSPACE()                        \
     Process *process = currentThread->getProcess();    \
     VALIDATE_ARG(process != nullptr, E_FAULT);         \

@@ -17,8 +17,9 @@ struct ReceivedData {
     char* data;
     int length;
     int offset;
+    MessageFlag flags;
 
-    ReceivedData(const char* src, int len);
+    ReceivedData(const char* src, int len, MessageFlag msgFlags);
     ~ReceivedData();
 };
 
@@ -35,8 +36,8 @@ public:
     bool CanSend();
     bool CanReceive();
 
-    int QueueSend(const char* data, int length);
-    int Read(char* buffer, int maxLength);
+    int QueueSend(const char* data, int length, uint8_t flags);
+    int Read(char* buffer, int maxLength, MessageFlag* outFlags);
     bool HasDataAvailable();
 
 
@@ -82,14 +83,14 @@ private:
     PendingMessage* FindPending(uint32_t seqNum);
 
     void AcknowledgeMessage(uint32_t seqNum);
-    void EnqueueReceivedData(const char* data, int length);
+    void EnqueueReceivedData(const char* data, int length, uint8_t flags);
 
     uint32_t GenerateInitialSeqNum();
 
     void HandleSYN(const ReliableHeader* hdr, NetworkAddress from);
     void HandleSYNACK(const ReliableHeader* hdr);
     void HandleACK(const ReliableHeader* hdr);
-    void HandleDATA(const ReliableHeader* hdr, const char* payload);
+    void HandleDATA(const ReliableHeader* hdr, const char* payload, uint8_t flags);
     void HandleFIN(const ReliableHeader* hdr);
     void HandleFINACK(const ReliableHeader* hdr);
     void HandleRST(const ReliableHeader* hdr);

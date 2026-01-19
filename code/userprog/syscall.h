@@ -15,6 +15,7 @@
 
 #include "copyright.h"
 
+#define MAX_PUT_STRING 8192
 #define MAX_STRING_SIZE 256
 #define MAX_PATH_SIZE 1024
 

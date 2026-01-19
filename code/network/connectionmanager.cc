@@ -3,6 +3,9 @@
 #include "thread.h"
 #include "process.h"
 #include "nos_errno.h"
+#include "../libs/stdlib/nos_errno.h"
+#include "../threads/utility.h"
+#include "../userprog/syscall.h"
 
 #include <cstdio>
 #include <strings.h>
@@ -224,7 +227,6 @@ int ConnectionManager::CloseListener(const int listenerId) {
 }
 
 int ConnectionManager::Send(const int connId, const char* data, int length) {
-    
     if (!initialized) { return E_INVAL; }
 
     Connection* conn = GetConnection(connId);
@@ -232,43 +234,64 @@ int ConnectionManager::Send(const int connId, const char* data, int length) {
     if (!conn->CanSend()) { return E_NOTCONN; }
 
     if (length > static_cast<int>(MAX_RELIABLE_DATA)) {
-        int dataLength = strlen(data);
-
-        if (dataLength > MAX_PUT_STRING){
-            strncpy(conn_buffer, data, MAX_PUT_STRING);
-            conn_buffer[MAX_PUT_STRING-1] = 0;
-            dataLength = MAX_PUT_STRING;
-        }
-        else{
-            strncpy(conn_buffer,data,dataLength);
-            conn_buffer[dataLength-1] = 0;
-        }
-
-        int result;
-        for (int i = 0, y=dataLength; i <=dataLength ; i+=MAX_RELIABLE_DATA, y-=MAX_RELIABLE_DATA){
-            if(y < (int)MAX_RELIABLE_DATA){
-                result = conn->QueueSend(conn_buffer+i, y);
-            } else {
-                result = conn->QueueSend(conn_buffer+i, MAX_RELIABLE_DATA);
+        if (length > MAX_PUT_STRING) { return E_INVAL; }
+        DEBUG('Y', "Send: Fragmenting message of length %d on connection %d\n", length, connId);
+        int totalSent = 0;
+        while (totalSent < length) {
+            int chunkSize = MIN(static_cast<int>(MAX_RELIABLE_DATA), length - totalSent);
+            uint8_t flags = static_cast<uint8_t>(MessageFlag::FLAG_MORE_FRAGMENTS);
+            if (totalSent + chunkSize >= length) {
+                flags = static_cast<uint8_t>(MessageFlag::FLAG_END_OF_MESSAGE);
+                DEBUG('Y', "Send: Sending final fragment of size %d on connection %d\n", chunkSize, connId);
             }
+            if (const int result = conn->QueueSend(data + totalSent, chunkSize, flags); result < 0) {
+                return result;
+            }
+            totalSent += chunkSize;
+            DEBUG('Y', "Send: Sent fragment of size %d on connection %d\n", chunkSize, connId);
         }
-
-        return result;
+    } else {
+        if (const int result = conn->QueueSend(data, length, static_cast<uint8_t>(MessageFlag::FLAG_END_OF_MESSAGE)); result < 0) {
+            return result;
+        }
+        DEBUG('Y', "Send: Sent message of size %d on connection %d\n", length, connId);
     }
 
-    if (const int result = conn->QueueSend(data, length); result < 0) {
-        return result;
-    }
+    DEBUG('Y', "Send: Total %d bytes sent on connection %d\n", length, connId);
 
     return length;
 }
 
+// TODO: UDP like
 int ConnectionManager::Recv(const int connId, char* recv_buffer, const int maxLength) {
     if (!initialized) { return E_INVAL; }
     Connection* conn = GetConnection(connId);
     if (conn == nullptr) { return E_INVAL; }
-    
-    return conn->Read(recv_buffer, maxLength);
+
+    int totalReceived = 0;
+    char buffer[MAX_RELIABLE_DATA];
+    bool endOfMessage = false;
+    while (!endOfMessage && totalReceived < maxLength) {
+        DEBUG('Y', "Recv: Waiting for data on connection %d\n", connId);
+        MessageFlag flags;
+        const int bytesRead = conn->Read(buffer, MAX_RELIABLE_DATA, &flags);
+        if (bytesRead < 0) {
+            DEBUG('Y', "Recv: Error %d reading data on connection %d\n", bytesRead, connId);
+            return bytesRead;
+        }
+        DEBUG('Y', "Recv: Received %d bytes on connection %d\n", bytesRead, connId);
+
+        const int bytesToCopy = MIN(bytesRead, maxLength - totalReceived);
+        bcopy(buffer, recv_buffer + totalReceived, bytesToCopy);
+        totalReceived += bytesToCopy;
+        DEBUG('Y', "Recv: Copied %d bytes to user buffer on connection %d\n", bytesToCopy, connId);
+
+        endOfMessage = flags == MessageFlag::FLAG_END_OF_MESSAGE;
+        DEBUG('Y', "Recv: endOfMessage=%s on connection %d\n", endOfMessage ? "true" : "false", connId);
+    }
+
+    DEBUG('Y', "Recv: Total %d bytes received on connection %d\n", totalReceived, connId);
+    return totalReceived;
 }
 
 int ConnectionManager::Close(const int connId) {
@@ -518,10 +541,10 @@ void ConnectionManager::ProcessIncomingPacket(PacketHeader pktHdr, const MailHea
     const auto relHdr = (ReliableHeader*)data;
     const char* payload = data + sizeof(ReliableHeader);
 
-    DEBUG('n', "ProcessIncomingPacket: %s from %d:%d to port %d seq=%u ack=%u\n",
-          MessageTypeToString(relHdr->type), pktHdr.from, relHdr->srcPort, relHdr->dstPort, relHdr->seqNum, relHdr->ackNum);
+    DEBUG('n', "ProcessIncomingPacket: %s from %d:%d to port %d seq=%u ack=%u (flags=0x%02x)\n",
+          MessageTypeToString(relHdr->getType()), pktHdr.from, relHdr->srcPort, relHdr->dstPort, relHdr->seqNum, relHdr->ackNum, relHdr->getFlags());
 
-    if (relHdr->type == MessageType::MSG_SYN) { HandleIncomingSYN(pktHdr, relHdr); }
+    if (relHdr->getType() == MessageType::MSG_SYN) { HandleIncomingSYN(pktHdr, relHdr); }
     else { RouteToConnection(pktHdr, relHdr, payload); }
 }
 
@@ -587,14 +610,14 @@ void ConnectionManager::RouteToConnection(PacketHeader pktHdr, const ReliableHea
     Connection* conn = FindConnectionByKey(key);
 
     if (conn == nullptr) {
-        if (relHdr->type != MessageType::MSG_RST) {
+        if (relHdr->getType() != MessageType::MSG_RST) {
             DEBUG('n', "No connection for packet from %d:%d, sending RST\n", pktHdr.from, relHdr->srcPort);
             SendRST(pktHdr.from, relHdr->dstPort, relHdr->srcPort, relHdr->ackNum, relHdr->seqNum + 1);
         }
         return;
     }
 
-    switch (relHdr->type) {
+    switch (relHdr->getType()) {
         case MessageType::MSG_SYN:
             conn->HandleSYN(relHdr, pktHdr.from);
             break;
@@ -605,7 +628,7 @@ void ConnectionManager::RouteToConnection(PacketHeader pktHdr, const ReliableHea
             conn->HandleACK(relHdr);
             break;
         case MessageType::MSG_DATA:
-            conn->HandleDATA(relHdr, payload);
+            conn->HandleDATA(relHdr, payload, relHdr->getFlags());
             break;
         case MessageType::MSG_FIN:
             conn->HandleFIN(relHdr);
@@ -617,7 +640,7 @@ void ConnectionManager::RouteToConnection(PacketHeader pktHdr, const ReliableHea
             conn->HandleRST(relHdr);
             break;
         default:
-            DEBUG('n', "Unknown message type: %d\n", relHdr->type);
+            DEBUG('n', "Unknown message type: %d\n", relHdr->getType());
             break;
     }
 }
@@ -625,18 +648,19 @@ void ConnectionManager::RouteToConnection(PacketHeader pktHdr, const ReliableHea
 void ConnectionManager::SendPacket(NetworkAddress destAddr, const uint16_t srcPort,
                                    uint16_t dstPort, const MessageType type,
                                    uint32_t seqNum, uint32_t ackNum,
-                                   const char* data, int dataLen) {
+                                   const char* data, int dataLen, const uint8_t flags) {
     PacketHeader pktHdr;
     MailHeader mailHdr;
     char buffer[MaxMailSize];
 
-    const auto relHdr = reinterpret_cast<ReliableHeader*>(buffer);
-    relHdr->type = type;
+    auto relHdr = reinterpret_cast<ReliableHeader*>(buffer);
     relHdr->srcPort = srcPort;
     relHdr->dstPort = dstPort;
     relHdr->seqNum = seqNum;
     relHdr->ackNum = ackNum;
     relHdr->dataLen = dataLen;
+    relHdr->setType(type);
+    relHdr->setFlags(flags);
 
     if (data != nullptr && dataLen > 0) {
         bcopy(data, buffer + sizeof(ReliableHeader), dataLen);
@@ -658,7 +682,7 @@ void ConnectionManager::SendPacket(NetworkAddress destAddr, const uint16_t srcPo
 void ConnectionManager::SendRST(NetworkAddress destAddr, const uint16_t srcPort,
                                 const uint16_t dstPort, const uint32_t seqNum,
                                 const uint32_t ackNum) {
-    SendPacket(destAddr, srcPort, dstPort, MessageType::MSG_RST, seqNum, ackNum, nullptr, 0);
+    SendPacket(destAddr, srcPort, dstPort, MessageType::MSG_RST, seqNum, ackNum, nullptr, 0, static_cast<uint8_t>(MessageFlag::FLAG_CONTROL));
 }
 
 void ConnectionManager::CheckAllTimeouts() {

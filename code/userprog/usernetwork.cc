@@ -123,7 +123,7 @@ void handle_SC_recvfrom() {
     ConnectionManager* mgr = GetConnectionManager();
     if (mgr == nullptr) { RETURN(-E_NOSYS); }
 
-    int bufSize = (size > static_cast<int>(MaxMailSize)) ? MaxMailSize : size;
+    int bufSize = size > MAX_PUT_STRING ? MAX_PUT_STRING : size;
     char* buffer = new char[bufSize];
 
     int result = mgr->Recv(connId, buffer, bufSize);

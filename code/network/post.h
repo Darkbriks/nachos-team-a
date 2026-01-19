@@ -33,7 +33,7 @@
 
 // Mailbox address -- uniquely identifies a mailbox on a given machine.
 // A mailbox is just a place for temporary storage for messages.
-typedef int MailBoxAddress;
+typedef short MailBoxAddress;
 
 // The following class defines part of the message header.  
 // This is prepended to the message by the PostOffice, before the message 
