@@ -235,29 +235,29 @@ int ConnectionManager::Send(const int connId, const char* data, int length) {
 
     if (length > static_cast<int>(MAX_RELIABLE_DATA)) {
         if (length > MAX_PUT_STRING) { return E_INVAL; }
-        DEBUG('Y', "Send: Fragmenting message of length %d on connection %d\n", length, connId);
+        DEBUG('n', "Send: Fragmenting message of length %d on connection %d\n", length, connId);
         int totalSent = 0;
         while (totalSent < length) {
             int chunkSize = MIN(static_cast<int>(MAX_RELIABLE_DATA), length - totalSent);
             uint8_t flags = static_cast<uint8_t>(MessageFlag::FLAG_MORE_FRAGMENTS);
             if (totalSent + chunkSize >= length) {
                 flags = static_cast<uint8_t>(MessageFlag::FLAG_END_OF_MESSAGE);
-                DEBUG('Y', "Send: Sending final fragment of size %d on connection %d\n", chunkSize, connId);
+                DEBUG('n', "Send: Sending final fragment of size %d on connection %d\n", chunkSize, connId);
             }
             if (const int result = conn->QueueSend(data + totalSent, chunkSize, flags); result < 0) {
                 return result;
             }
             totalSent += chunkSize;
-            DEBUG('Y', "Send: Sent fragment of size %d on connection %d\n", chunkSize, connId);
+            DEBUG('n', "Send: Sent fragment of size %d on connection %d\n", chunkSize, connId);
         }
     } else {
         if (const int result = conn->QueueSend(data, length, static_cast<uint8_t>(MessageFlag::FLAG_END_OF_MESSAGE)); result < 0) {
             return result;
         }
-        DEBUG('Y', "Send: Sent message of size %d on connection %d\n", length, connId);
+        DEBUG('n', "Send: Sent message of size %d on connection %d\n", length, connId);
     }
 
-    DEBUG('Y', "Send: Total %d bytes sent on connection %d\n", length, connId);
+    DEBUG('n', "Send: Total %d bytes sent on connection %d\n", length, connId);
 
     return length;
 }
@@ -272,25 +272,25 @@ int ConnectionManager::Recv(const int connId, char* recv_buffer, const int maxLe
     char buffer[MAX_RELIABLE_DATA];
     bool endOfMessage = false;
     while (!endOfMessage && totalReceived < maxLength) {
-        DEBUG('Y', "Recv: Waiting for data on connection %d\n", connId);
+        DEBUG('n', "Recv: Waiting for data on connection %d\n", connId);
         MessageFlag flags;
         const int bytesRead = conn->Read(buffer, MAX_RELIABLE_DATA, &flags);
         if (bytesRead < 0) {
-            DEBUG('Y', "Recv: Error %d reading data on connection %d\n", bytesRead, connId);
+            DEBUG('n', "Recv: Error %d reading data on connection %d\n", bytesRead, connId);
             return bytesRead;
         }
-        DEBUG('Y', "Recv: Received %d bytes on connection %d\n", bytesRead, connId);
+        DEBUG('n', "Recv: Received %d bytes on connection %d\n", bytesRead, connId);
 
         const int bytesToCopy = MIN(bytesRead, maxLength - totalReceived);
         bcopy(buffer, recv_buffer + totalReceived, bytesToCopy);
         totalReceived += bytesToCopy;
-        DEBUG('Y', "Recv: Copied %d bytes to user buffer on connection %d\n", bytesToCopy, connId);
+        DEBUG('n', "Recv: Copied %d bytes to user buffer on connection %d\n", bytesToCopy, connId);
 
         endOfMessage = flags == MessageFlag::FLAG_END_OF_MESSAGE;
-        DEBUG('Y', "Recv: endOfMessage=%s on connection %d\n", endOfMessage ? "true" : "false", connId);
+        DEBUG('n', "Recv: endOfMessage=%s on connection %d\n", endOfMessage ? "true" : "false", connId);
     }
 
-    DEBUG('Y', "Recv: Total %d bytes received on connection %d\n", totalReceived, connId);
+    DEBUG('n', "Recv: Total %d bytes received on connection %d\n", totalReceived, connId);
     return totalReceived;
 }
 
