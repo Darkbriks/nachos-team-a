@@ -67,7 +67,7 @@ private:
 
     Thread* workerThread = nullptr;
 
-    char buffer[MAX_PUT_STRING];
+    char conn_buffer[MAX_PUT_STRING];
 
     int AllocateConnection();
     void FreeConnection(int connId);

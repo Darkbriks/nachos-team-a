@@ -235,21 +235,21 @@ int ConnectionManager::Send(const int connId, const char* data, int length) {
         int dataLength = strlen(data);
 
         if (dataLength > MAX_PUT_STRING){
-            strncpy(buffer, data, MAX_PUT_STRING);
-            buffer[MAX_PUT_STRING-1] = 0;
+            strncpy(conn_buffer, data, MAX_PUT_STRING);
+            conn_buffer[MAX_PUT_STRING-1] = 0;
             dataLength = MAX_PUT_STRING;
         }
         else{
-            strncpy(buffer,data,dataLength);
-            buffer[dataLength-1] = 0;
+            strncpy(conn_buffer,data,dataLength);
+            conn_buffer[dataLength-1] = 0;
         }
 
         int result;
         for (int i = 0, y=dataLength; i <=dataLength ; i+=MAX_RELIABLE_DATA, y-=MAX_RELIABLE_DATA){
-            if(y < MAX_RELIABLE_DATA){
-                result = conn->QueueSend(buffer+i, y);
+            if(y < (int)MAX_RELIABLE_DATA){
+                result = conn->QueueSend(conn_buffer+i, y);
             } else {
-                result = conn->QueueSend(buffer+i, MAX_RELIABLE_DATA);
+                result = conn->QueueSend(conn_buffer+i, MAX_RELIABLE_DATA);
             }
         }
 
