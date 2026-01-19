@@ -8,7 +8,7 @@
 
 #define MAX_CONNECTIONS 16
 #define MAX_LISTENERS 8
-#define MAX_PENDING_MSGS 16
+#define MAX_PENDING_MSGS 64
 #define MAX_PENDING_ACCEPTS 4
 #define MAX_INCOMING_MSGS 4
 #define MAX_RETRANSMISSIONS 10
@@ -105,14 +105,14 @@ inline const char* ConnectionStateToString(const ConnectionState state) {
 
 struct ReliableHeader {
     uint32_t seqNum;
-    uint16_t ackNum;
+    uint32_t ackNum;
     uint16_t srcPort;
     uint16_t dstPort;
     uint8_t dataLen;
     uint8_t type_and_flags; // 4 bits low for type, 4 bits high for flags
 
     ReliableHeader() : seqNum(0), ackNum(0), srcPort(0), dstPort(0), dataLen(0), type_and_flags(0) {}
-    ReliableHeader(const MessageType t, const uint16_t sPort, const uint16_t dPort, const uint32_t sNum, const uint16_t aNum, const uint8_t len, const uint8_t flags)
+    ReliableHeader(const MessageType t, const uint16_t sPort, const uint16_t dPort, const uint32_t sNum, const uint32_t aNum, const uint8_t len, const uint8_t flags)
         : seqNum(sNum), ackNum(aNum), srcPort(sPort), dstPort(dPort), dataLen(len) {
             type_and_flags = (static_cast<uint8_t>(t) & 0x0F) | ((flags & 0x0F) << 4);
         }

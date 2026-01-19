@@ -19,7 +19,7 @@ typedef unsigned long size_t;
  */
 #define EOF (-1)
 
-#define BUFSIZ 1024
+#define BUFSIZ 8196
 
 #define _IOFBF 0  // Fully buffered
 #define _IOLBF 1  // Line buffered

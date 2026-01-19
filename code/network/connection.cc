@@ -227,6 +227,8 @@ void Connection::AcknowledgeMessage(uint32_t seqNum) {
         if (!(msg->flags & FLAG_ACKED)) {
             DEBUG('n', "[Conn %d] ACK received for seq %u\n", connId, seqNum);
             msg->flags |= FLAG_ACKED;
+            msg->flags &= ~FLAG_ACTIVE;
+            pendingCount--;
             sendCond->Broadcast(lock);
         }
     }

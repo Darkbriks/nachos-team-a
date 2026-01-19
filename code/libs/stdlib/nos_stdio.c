@@ -383,7 +383,7 @@ int printf(const char * format, ...){
                     PutChar(va_arg(ap, char));
                     break;
                 case 's':
-                    PutString(va_arg(ap, char * ), MAX_STRING_SIZE);
+                    PutString(va_arg(ap, char * ), MAX_PUT_STRING);
                     break;
             }
             carac++;
