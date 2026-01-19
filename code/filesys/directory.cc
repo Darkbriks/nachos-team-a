@@ -21,9 +21,17 @@
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
+#include "file.h"
 #include "utility.h"
 #include "filehdr.h"
 #include "directory.h"
+
+Directory* Directory::getDirectory(const int sector) {
+    auto* result = new Directory(NumDirEntries);
+    OpenFile file(sector);
+    result->FetchFrom(&file);
+    return result;
+}
 
 //----------------------------------------------------------------------
 // Directory::Directory
@@ -35,11 +43,11 @@
 //	"size" is the number of entries in the directory
 //----------------------------------------------------------------------
 
-Directory::Directory(int size){
+Directory::Directory(const int size) {
     table = new DirectoryEntry[size];
     tableSize = size;
-    for (int i = 0; i < tableSize; i++){
-        table[i].inUse = FALSE;
+    for (int i = 0; i < tableSize; i++) {
+        table[i].inUse = false;
     }
 }
 
@@ -48,7 +56,7 @@ Directory::Directory(int size){
 // 	De-allocate directory data structure.
 //----------------------------------------------------------------------
 
-Directory::~Directory(){
+Directory::~Directory() {
     delete [] table;
 } 
 
@@ -59,8 +67,8 @@ Directory::~Directory(){
 //	"file" -- file containing the directory contents
 //----------------------------------------------------------------------
 
-void Directory::FetchFrom(OpenFile *file){
-    (void) file->ReadAt((char *)table, tableSize * sizeof(DirectoryEntry), 0);
+void Directory::FetchFrom(OpenFile *file) const {
+    (void) file->ReadAt(reinterpret_cast<char *>(table), tableSize * static_cast<int>(sizeof(DirectoryEntry)), 0);
 }
 
 //----------------------------------------------------------------------
@@ -70,8 +78,8 @@ void Directory::FetchFrom(OpenFile *file){
 //	"file" -- file to contain the new directory contents
 //----------------------------------------------------------------------
 
-void Directory::WriteBack(OpenFile *file){
-    (void) file->WriteAt((char *)table, tableSize * sizeof(DirectoryEntry), 0);
+void Directory::WriteBack(OpenFile *file) const {
+    (void) file->WriteAt(reinterpret_cast<char *>(table), tableSize * static_cast<int>(sizeof(DirectoryEntry)), 0);
 }
 
 //----------------------------------------------------------------------
@@ -82,13 +90,41 @@ void Directory::WriteBack(OpenFile *file){
 //	"name" -- the file name to look up
 //----------------------------------------------------------------------
 
-int Directory::FindIndex(const char *name){
-    for (int i = 0; i < tableSize; i++){
-        if (table[i].inUse && !strncmp(table[i].name, name, FileNameMaxLen)){
+int Directory::FindIndex(const char *name) const {
+    for (int i = 0; i < tableSize; i++) {
+        if (table[i].inUse && !strncmp(table[i].name, name, FileNameMaxLen)) {
             return i;
         }
     }
-    return -1;		// name not in directory
+    return -1; // name not in directory
+}
+
+File_Type Directory::GetType(const char* name) const {
+    if (const int i = FindIndex(name); i != -1) {
+        return table[i].type;
+    }
+    return NULL_T;
+}
+
+char* Directory::GetName(const int index) const {
+    if (index < 0 || index >= tableSize || !table[index].inUse) {
+        return nullptr;
+    }
+    return table[index].name;
+}
+
+File_Type Directory::GetType(const int index) const {
+    if (index < 0 || index >= tableSize || !table[index].inUse) {
+        return NULL_T;
+    }
+    return table[index].type;
+}
+
+int Directory::GetSector(const int index) const {
+    if (index < 0 || index >= tableSize || !table[index].inUse) {
+        return -1;
+    }
+    return table[index].sector;
 }
 
 //----------------------------------------------------------------------
@@ -100,10 +136,8 @@ int Directory::FindIndex(const char *name){
 //	"name" -- the file name to look up
 //----------------------------------------------------------------------
 
-int Directory::Find(const char *name){
-    int i = FindIndex(name);
-
-    if (i != -1){
+int Directory::Find(const char *name) const {
+    if (const int i = FindIndex(name); i != -1) {
         return table[i].sector;
     }
     return -1;
@@ -111,47 +145,81 @@ int Directory::Find(const char *name){
 
 //----------------------------------------------------------------------
 // Directory::Add
-// 	Add a file into the directory.  Return TRUE if successful;
-//	return FALSE if the file name is already in the directory, or if
+// 	Add a file into the directory.  Return true if successful;
+//	return false if the file name is already in the directory, or if
 //	the directory is completely full, and has no more space for
 //	additional file names.
 //
 //	"name" -- the name of the file being added
 //	"newSector" -- the disk sector containing the added file's header
+//	"type" -- the type of the document ( file, directory ... )
 //----------------------------------------------------------------------
 
-bool Directory::Add(const char *name, int newSector){
-    if (FindIndex(name) != -1){
-        return FALSE;
+bool Directory::Add(const char *name, const int newSector, const File_Type type) const {
+    DEBUG('f', "Try to add file %s in the directory \n", name);
+    if (FindIndex(name) != -1) {
+        DEBUG('f', "File %s already exist in this directory\n", name);
+        return false;
     }
 
-    for (int i = 0; i < tableSize; i++){
+    for (int i = 0; i < tableSize; i++) {
         if (!table[i].inUse) {
-            table[i].inUse = TRUE;
-            strncpy(table[i].name, name, FileNameMaxLen); 
+            table[i].inUse = true;
+            table[i].type = type;
             table[i].sector = newSector;
-            return TRUE;
+            strncpy(table[i].name, name, FileNameMaxLen); 
+            DEBUG('f', "Sucessfully add file %s in the directory \n", name);
+            return true;
         }
     }
-    return FALSE;	// no space.  Fix when we have extensible files.
+    return false; // no space. Fix when we have extensible files.
+}
+
+/**
+ * @brief return all entry in this directory including "." and ".."
+ *
+ * @return  The number of file and directory in this directory
+ */
+unsigned int Directory::NbEntry() const {
+    unsigned int result = 0;
+    for (int i = 0; i < tableSize; i++) {
+        if (table[i].inUse) {
+            result++;
+        }
+    }
+    return result;
 }
 
 //----------------------------------------------------------------------
 // Directory::Remove
-// 	Remove a file name from the directory.  Return TRUE if successful;
-//	return FALSE if the file isn't in the directory. 
+// 	Remove a file name from the directory.  Return true if successful;
+//	return false if the file isn't in the directory. 
 //
 //	"name" -- the file name to be removed
 //----------------------------------------------------------------------
 
-bool Directory::Remove(const char *name){
-    int i = FindIndex(name);
+bool Directory::Remove(const char *name) const {
+    const int i = FindIndex(name);
 
-    if (i == -1){
-        return FALSE; 		// name not in directory
+    if (i == -1) {
+        DEBUG('f', "Don't found file %s to remove it\n", name);
+        return false; // name not in directory
     }
-    table[i].inUse = FALSE;
-    return TRUE;	
+
+    if (table[i].type == DIRECTORY_T) {
+        DEBUG('f', "Try to remove directory %s\n", name);
+        const Directory* child = getDirectory(table[i].sector);
+        if (const unsigned int nb = child->NbEntry(); nb != 2) { // Two is for "." and ".."
+            DEBUG('f', "Directory %s is not empty and contains %d iterms\n", name, nb);
+            delete child;
+            return false;
+        }
+        delete child;
+    }
+
+    DEBUG('f', "Successfully deleted file %s\n", name);
+    table[i].inUse = false;
+    return true;
 }
 
 //----------------------------------------------------------------------
@@ -159,10 +227,28 @@ bool Directory::Remove(const char *name){
 // 	List all the file names in the directory. 
 //----------------------------------------------------------------------
 
-void Directory::List(){
-    for (int i = 0; i < tableSize; i++){
-        if (table[i].inUse){
-            printf("%s\n", table[i].name);
+void Directory::List() const {
+    for (int i = 0; i < tableSize; i++) {
+        if (table[i].inUse) {
+            FileHeader *file = new FileHeader();
+            file->FetchFrom(table[i].sector);
+            printf("%c %s %d bits\n", file_type_to_char(table[i].type), table[i].name, file->FileLength());
+        }
+    }
+}
+
+#define TAB(n) for (unsigned int xyz = 0; xyz < n; xyz++) { printf(" "); }
+
+void Directory::Tree(const unsigned int tabulation) const {
+    for (int i = 0; i < tableSize; i++) {
+        if (table[i].inUse) {
+            TAB(tabulation);
+            printf("%c %s\n", file_type_to_char(table[i].type), table[i].name);
+            if (table[i].type == DIRECTORY_T && strcmp(table[i].name, ".") != 0 && strcmp(table[i].name, "..") != 0) {
+                const Directory* subdir = getDirectory(table[i].sector);
+                subdir->Tree(tabulation + 3);
+                delete subdir;
+            }
         }
     }
 }
@@ -173,14 +259,20 @@ void Directory::List(){
 //	and the contents of each file.  For debugging.
 //----------------------------------------------------------------------
 
-void Directory::Print(){
-    FileHeader *hdr = new FileHeader;
+void Directory::Print() const {
+    auto *hdr = new FileHeader;
 
     printf("Directory contents:\n");
-    for (int i = 0; i < tableSize; i++){
+    for (int i = 0; i < tableSize; i++) {
         if (table[i].inUse) {
-            printf("Name: %s, Sector: %d\n", table[i].name, table[i].sector);
+            printf("------------------------------------------------------------------\n");
+            printf("Name: %s, Sector: %d de type %s\n", table[i].name, table[i].sector, file_type_to_str(table[i].type));
             hdr->FetchFrom(table[i].sector);
+            if (hdr->getRedirect() != -1 && table[i].type == FILE_T) {
+                File *file = new File();
+                file->FetchFrom(hdr->getRedirect());
+                file->Print();
+            }
             hdr->Print();
         }
     }

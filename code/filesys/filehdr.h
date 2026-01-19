@@ -16,9 +16,8 @@
 
 #include "disk.h"
 #include "bitmap.h"
-
-#define NumDirect 	((SectorSize - 2 * sizeof(int)) / sizeof(int))
-#define MaxFileSize 	(NumDirect * SectorSize)
+#include "filetype.h"
+#include "fileconst.h"
 
 // The following class defines the Nachos "file header" (in UNIX terms,  
 // the "i-node"), describing where on disk to find all of the data in the file.
@@ -35,32 +34,43 @@
 // by allocating blocks for the file (if it is a new file), or by
 // reading it from disk.
 
+class File;
+
 class FileHeader {
   public:
     bool Allocate(BitMap *bitMap, int fileSize);// Initialize a file header, 
 						//  including allocating space 
 						//  on disk for the file data
-    void Deallocate(BitMap *bitMap);  		// De-allocate this file's 
+    void Deallocate(BitMap *bitMap)const;  		// De-allocate this file's 
 						//  data blocks
 
     void FetchFrom(int sectorNumber); 	// Initialize file header from disk
     void WriteBack(int sectorNumber); 	// Write modifications to file header
 					//  back to disk
 
-    int ByteToSector(int offset);	// Convert a byte offset into the file
+    int ByteToSector(int offset)const;	// Convert a byte offset into the file
 					// to the disk sector containing
 					// the byte
 
-    int FileLength();			// Return the length of the file 
+    int FileLength()const;			// Return the length of the file 
 					// in bytes
 
-    void Print();			// Print the contents of the file.
+    void Print()const;			// Print the contents of the file.
+
+    void setRedirect(sector_t s){redirect = s;}
+    sector_t getRedirect(){return redirect;}
+    void initializeDirectData( BitMap *bitMap, int* nb_necessary);
+    File* initializeFirstIndirection(BitMap* bitMap, int* nb_necessary);
+    void initializeSecondIndirection(BitMap* bitMap, int* nb_necessary, File* file);
 
   private:
+    sector_t redirect;      // POint on a fileSector ie a File object
     int numBytes;			// Number of bytes in the file
     int numSectors;			// Number of data sectors in the file
-    int dataSectors[NumDirect];		// Disk sector numbers for each data 
+    sector_t dataSectors[NumDirect];		// Disk sector numbers for each data 
 					// block in the file
 };
+
+static_assert(sizeof(FileHeader) == SectorSize);
 
 #endif // FILEHDR_H

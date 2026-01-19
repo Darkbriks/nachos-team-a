@@ -37,7 +37,7 @@ FrameProvider::FrameProvider(IAllocationStrategy* strategy) : numFrames(NumPhysP
     if (strategy != nullptr) { allocationStrategy = strategy; }
 	else { allocationStrategy = new SequentialAllocationStrategy(); }
 
-    DEBUG('f', "FrameProvider: Initialized with %u frames.\n", numFrames);
+    DEBUG('F', "FrameProvider: Initialized with %u frames.\n", numFrames);
 }
 
 FrameProvider::~FrameProvider() {
@@ -49,7 +49,7 @@ int FrameProvider::GetEmptyFrame() {
     int frameNumber = allocationStrategy->SelectFrame(bitmap, numFrames);
 
     if (frameNumber == -1) [[unlikely]] {
-        DEBUG('f', "Frame Provider: No available frames!\n");
+        DEBUG('F', "Frame Provider: No available frames!\n");
         return -1;
     }
 
@@ -58,20 +58,20 @@ int FrameProvider::GetEmptyFrame() {
     char* frameAddress = &(machine->mainMemory[frameNumber * PageSize]);
     bzero(frameAddress, PageSize);
 
-    DEBUG('f', "Frame Provider: Allocated frame %d at physical address 0x%X.\n", frameNumber, (unsigned int)frameAddress);
+    DEBUG('F', "Frame Provider: Allocated frame %d at physical address 0x%X.\n", frameNumber, (unsigned int)frameAddress);
 
     return frameNumber;
 }
 
 void FrameProvider::SetAllocationStrategy(IAllocationStrategy* strategy) {
     if (strategy == nullptr) {
-        DEBUG('f', "Frame Provider: Cannot set null allocation strategy.\n");
+        DEBUG('F', "Frame Provider: Cannot set null allocation strategy.\n");
         return;
     }
 
 	delete allocationStrategy;
     allocationStrategy = strategy;
-    DEBUG('f', "Frame Provider: Allocation strategy updated.\n");
+    DEBUG('F', "Frame Provider: Allocation strategy updated.\n");
 }
 
 void FrameProvider::ReleaseFrame(int frameNumber) {
@@ -79,7 +79,7 @@ void FrameProvider::ReleaseFrame(int frameNumber) {
 
     bitmap->Clear(frameNumber);
 
-    DEBUG('f', "Frame Provider: Released frame %d.\n", frameNumber);
+    DEBUG('F', "Frame Provider: Released frame %d.\n", frameNumber);
 }
 
 int FrameProvider::NumAvailFrame() {

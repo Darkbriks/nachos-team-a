@@ -17,13 +17,16 @@
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
+#include "copyright.h"
+
 #ifndef OPENFILE_H
 #define OPENFILE_H
 
-#include "copyright.h"
 #include "utility.h"
+#include "filetype.h"
+#include "fileconst.h"
 
-#ifdef FILESYS_STUB			// Temporarily implement calls to 
+#ifdef FILESYS_STUB // Temporarily implement calls to
 					// Nachos file system as calls to UNIX!
 					// See definitions listed under #else
 class OpenFile {
@@ -62,13 +65,11 @@ class OpenFile {
 class FileHeader;
 
 class OpenFile {
-  public:
-    OpenFile(int sector);		// Open a file whose header is located
-					// at "sector" on the disk
-    ~OpenFile();			// Close the file
+public:
+    explicit OpenFile(int sector); // Open a file whose header is located at "sector" on the disk
+    ~OpenFile(); // Close the file
 
-    void Seek(int position); 		// Set the position from which to 
-					// start reading/writing -- UNIX lseek
+    void Seek(int position); // Set the position from which to start reading/writing -- UNIX lseek
 
     int Read(char *into, int numBytes); // Read/write bytes from the file,
 					// starting at the implicit position.
@@ -76,19 +77,21 @@ class OpenFile {
 					// and increment position in file.
     int Write(const char *from, int numBytes);
 
-    int ReadAt(char *into, int numBytes, int position);
+    int ReadAt(char *into, int numBytes, int position) const;
     					// Read/write bytes from the file,
 					// bypassing the implicit position.
-    int WriteAt(const char *from, int numBytes, int position);
+    int WriteAt(const char *from, int numBytes, int position) const;
 
-    int Length(); 			// Return the number of bytes in the
+    [[nodiscard]] int Length()const; 	// Return the number of bytes in the
 					// file (this interface is simpler 
 					// than the UNIX idiom -- lseek to 
 					// end of file, tell, lseek back 
-    
-  private:
+    [[nodiscard]] int GetSector() const { return sector; }
+
+private:
     FileHeader *hdr;			// Header for this file 
     int seekPosition;			// Current position within the file
+    int sector;
 };
 
 #endif // FILESYS

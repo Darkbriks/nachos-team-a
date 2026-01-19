@@ -20,7 +20,7 @@
 #include "switch.h"
 #include "sysdep.h"
 #include "system.h"
-#include "tls.h"
+#include "nos_tls.h"
 
 #define STACK_FENCEPOST                                                        \
     0xdeadbeef // this is put at the top of the
@@ -44,6 +44,9 @@ Thread::Thread(const tid_t t, Process* p, const ptr_32 tlsBase)
     // user threads.
     for (int r = NumGPRegs; r < NumTotalRegs; r++) {
         userRegisters[r] = 0;
+    }
+    for (int i = 0; i < MAX_FILE_OPEN; i++){
+        openFiles[i] = nullptr;
     }
 #endif
 }
@@ -460,3 +463,41 @@ void Thread::RestoreUserState() const {
     }
 }
 #endif
+
+bool Thread::IsOpenFile(const OpenFileId id) const {
+    return id != INVALID_ID && openFiles[id] != nullptr;
+}
+
+OpenFileId Thread::AddOpenFile(OpenFile* file){
+    if (const OpenFileId index = CanOpenFile(); index != INVALID_ID) {
+        openFiles[index] = file;
+        return index;
+    }
+    return INVALID_ID;
+}
+
+OpenFile* Thread::GetOpenFile(const OpenFileId id) const {
+    if (!IsOpenFile(id)) {
+        return nullptr;
+    }
+    return openFiles[id];
+
+}
+
+bool Thread::RemoveOpenFile(const OpenFileId id) {
+    if (!IsOpenFile(id)) {
+        return false;
+    }
+    openFiles[id] = nullptr;
+    return true;
+
+}
+
+OpenFileId Thread::CanOpenFile() const {
+    for (int i = 0; i < MAX_FILE_OPEN; i++) {
+        if (openFiles[i] == nullptr) {
+            return i;
+        }
+    }
+    return INVALID_ID;
+}

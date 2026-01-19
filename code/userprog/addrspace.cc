@@ -25,7 +25,7 @@
 #include "stackmanager.h"
 #include "synch.h"
 #include "system.h"
-#include "tls.h"
+#include "nos_tls.h"
 
 //----------------------------------------------------------------------
 // SwapHeader

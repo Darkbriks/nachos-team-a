@@ -2,7 +2,7 @@
 #include "nos_stdio.h"
 #include "nos_stdlib.h"
 #include "nos_string.h"
-#include "pthread.h"
+#include "nos_pthread.h"
 
 #define SERVER_PORT 8080
 #define MAX_CLIENTS 5

@@ -1,4 +1,4 @@
-#include "pthread_attr.h"
+#include "nos_pthread_attr.h"
 #include "nos_string.h"
 
 #define PTHREAD_ATTR_SET_FLAG(name, _flag)  \

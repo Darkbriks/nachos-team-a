@@ -37,59 +37,93 @@
 
 #include "copyright.h"
 #include "openfile.h"
+#include "filetype.h"
+#include "fileconst.h"
+#include "inodetable.h"
 
 #ifdef FILESYS_STUB 		// Temporarily implement file system calls as 
-				// calls to UNIX, until the real file system
-				// implementation is available
+                            // calls to UNIX, until the real file system
+                            // implementation is available
 class FileSystem {
-  public:
-    FileSystem(bool format) {}
+    public:
+        FileSystem(bool format) {}
 
-    bool Create(const char *name, int initialSize) { 
-	int fileDescriptor = OpenForWrite(name);
+        bool Create(const char *name, int initialSize) { 
+            int fileDescriptor = OpenForWrite(name);
 
-	if (fileDescriptor == -1) return FALSE;
-	Close(fileDescriptor); 
-	return TRUE; 
-	}
+            if (fileDescriptor == -1) return FALSE;
+            Close(fileDescriptor); 
+            return TRUE; 
+        }
 
-    OpenFile* Open(char *name) {
-	  int fileDescriptor = OpenForReadWrite(name, FALSE);
+        OpenFile* Open(char *name) {
+            int fileDescriptor = OpenForReadWrite(name, FALSE);
 
-	  if (fileDescriptor == -1) return NULL;
-	  return new OpenFile(fileDescriptor);
-      }
+            if (fileDescriptor == -1) return NULL;
+            return new OpenFile(fileDescriptor);
+        }
 
-    bool Remove(char *name) { return Unlink(name) == 0; }
+        bool Remove(char *name) { return Unlink(name) == 0; }
 
 };
 
 #else // FILESYS
+
+class Directory;
+class InodeTable;
+
+
 class FileSystem {
-  public:
-    FileSystem(bool format);		// Initialize the file system.
-					// Must be called *after* "synchDisk" 
-					// has been initialized.
-    					// If "format", there is nothing on
-					// the disk, so initialize the directory
-    					// and the bitmap of free blocks.
+    friend class PathNavigator;
+public:
+    explicit FileSystem(bool format); // Initialize the file system.
+                                      // Must be called *after* "synchDisk"
+                                      // has been initialized.
+                                      // If "format", there is nothing on
+                                      // the disk, so initialize the directory
+                                      // and the bitmap of free blocks.
+    ~FileSystem() = default;
 
-    bool Create(const char *name, int initialSize);  	
-					// Create a file (UNIX creat)
+    bool Create(const char *name, int initialSize, File_Type type = FILE_T); // Create a file (UNIX creat)
+    OpenFile* Open(const char *name); // Open a file (UNIX open)
+    bool Close(const char* name);
+    bool Close(OpenFile* name);
+    bool Remove(const char *name); // Delete a file (UNIX unlink)
+    bool Remove(OpenFile* name); // Delete a file (UNIX unlink)
+    bool Read(OpenFile* file, char* buffer, int n); 
+    bool Write(OpenFile* file, char* buffer, int n); 
 
-    OpenFile* Open(const char *name); 	// Open a file (UNIX open)
+    bool Change_Directory(const char * name);
+    void ReadAllFile(const char* name);
 
-    bool Remove(const char *name); 	// Delete a file (UNIX unlink)
+    void List()const;     // List all the files in the file system
+    void Print_FS()const; // List all the files and their contents
+    [[nodiscard]] int GetWorkingSector() const;
+    [[nodiscard]] char* GetWorkingPath() const;
 
-    void List();			// List all the files in the file system
+    void Tree()const;
 
-    void Print();			// List all the files and their contents
+    void DisplayInodes();
 
-  private:
-   OpenFile* freeMapFile;		// Bit map of free disk blocks,
-					// represented as a file
-   OpenFile* directoryFile;		// "Root" directory -- list of 
-					// file names, represented as a file
+
+    [[nodiscard]] OpenFile* GetCurrentDirectory() const { return directoryFile; }
+    void SetCurrentDirectory(sector_t sector);
+
+private:
+    InodeTable inodes;
+    OpenFile* freeMapFile;		// Bit map of free disk blocks,
+                                    // represented as a file
+    OpenFile* directoryFile;		// "Root" directory -- list of
+                                    // file names, represented as a file
+    bool createSubDirectory(int prev_sector, int curr_sector, FileHeader* hdr, BitMap *freeMap)const;
+    static void createFile(int initialSize, BitMap* freeMap, FileHeader* hdr);
+
+    sector_t GetSectorByName(const char* name);
+    bool _Create(const char *name, int initialSize, File_Type type) const;
+    inode_t _Open(const char *name); 	// Open a file (UNIX open)
+    bool _Close(const char* name);
+    bool _Remove(const char *name);
+    bool _Change_Directory(const char * name);
 };
 
 #endif // FILESYS

@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "nos_threads.h"
-#include "pthread_attr.h"
+#include "nos_pthread_attr.h"
 
 #define MAX_THREAD 30
 #define MAX_PROCESS 15
@@ -12,7 +12,7 @@
 
 typedef int pthread_t;
 
-typedef struct pthread{
+typedef struct nos_pthread{
     pthread_t tid;
     unsigned int pid;
 
