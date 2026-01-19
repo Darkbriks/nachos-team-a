@@ -34,12 +34,15 @@ USERPROG_LIBS=start.S                     \
               ../libs/allocator/nos_mem_space.c \
               ../libs/pthread/nos_pthread.c \
               ../libs/pthread/nos_pthread_attr.c \
+			  ../libs/ftp/nos_fileserver.c \
+			  ../libs/ftp/nos_client.c	\
 
 AUTOLOAD_CPPFLAGS=-DCHANGED               \
     -I$(topsrc_dir)/libs                  \
     -I$(topsrc_dir)/libs/stdlib           \
     -I$(topsrc_dir)/libs/allocator        \
     -I$(topsrc_dir)/libs/pthread		  \
+	-I$(topsrc_dir)/libs/ftp			  \
 
 # each program 'p' can specify extra sources in 'p'_EXTRA_SOURCES
 # => declare here program sources to add in addition to
