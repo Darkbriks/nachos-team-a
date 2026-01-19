@@ -464,28 +464,28 @@ void Thread::RestoreUserState() const {
 }
 #endif
 
-bool Thread::IsOpenFile(OpenFileId id){
+bool Thread::IsOpenFile(const OpenFileId id) const {
     return id != INVALID_ID && openFiles[id] != nullptr;
 }
+
 OpenFileId Thread::AddOpenFile(OpenFile* file){
-    OpenFileId index = CanOpenFile();
-    if ( index != INVALID_ID){
+    if (const OpenFileId index = CanOpenFile(); index != INVALID_ID) {
         openFiles[index] = file;
         return index;
     }
     return INVALID_ID;
 }
 
-OpenFile* Thread::GetOpenFile(OpenFileId id){
-    if ( ! IsOpenFile(id)){
+OpenFile* Thread::GetOpenFile(const OpenFileId id) const {
+    if (!IsOpenFile(id)) {
         return nullptr;
     }
     return openFiles[id];
 
 }
 
-bool Thread::RemoveOpenFile(OpenFileId id){
-    if ( ! IsOpenFile(id)){
+bool Thread::RemoveOpenFile(const OpenFileId id) {
+    if (!IsOpenFile(id)) {
         return false;
     }
     openFiles[id] = nullptr;
@@ -493,12 +493,11 @@ bool Thread::RemoveOpenFile(OpenFileId id){
 
 }
 
-OpenFileId Thread::CanOpenFile(){
-    for (int i = 0; i < MAX_FILE_OPEN; i++){
-        if (openFiles[i] == nullptr){
+OpenFileId Thread::CanOpenFile() const {
+    for (int i = 0; i < MAX_FILE_OPEN; i++) {
+        if (openFiles[i] == nullptr) {
             return i;
         }
-
     }
     return INVALID_ID;
 }

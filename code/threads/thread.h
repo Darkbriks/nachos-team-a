@@ -113,7 +113,6 @@ private:
 
     Thread(tid_t tid, Process* process, ptr_32 tlsBase = 0);
 
-
     void StackAllocate(VoidFunctionPtr func, int arg); // Allocate a stack for thread. Used internally by Fork()
 
     void SetDebugName(const char* debugName) { name = debugName; }
@@ -161,10 +160,10 @@ public:
 
     void Print() const { printf("%s, ", name); }
 
-    bool IsOpenFile(OpenFileId id);
+    bool IsOpenFile(OpenFileId id) const;
     OpenFileId AddOpenFile(OpenFile* id);
-    OpenFileId CanOpenFile();
-    OpenFile* GetOpenFile(OpenFileId id);
+    OpenFileId CanOpenFile() const;
+    OpenFile* GetOpenFile(OpenFileId id) const;
     bool RemoveOpenFile(OpenFileId id);
 };
 

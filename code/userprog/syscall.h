@@ -135,12 +135,12 @@ typedef int OpenFileId;
 #define ConsoleOutput 1
 
 /* Create a Nachos file, with "name" */
-void Create(char *name);
+void Create(char *name, int size);
 
 /* Open the Nachos file "name", and return an "OpenFileId" that can
  * be used to read and write to the file.
  */
-OpenFileId Open(char *name);
+OpenFileId Open(char *name, int size);
 
 /* Write "size" bytes from "buffer" to the open file. */
 void Write(char *buffer, int size, OpenFileId id);

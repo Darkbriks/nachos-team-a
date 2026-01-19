@@ -4,7 +4,7 @@
 
 int main(){
     char buffer[200];
-    int fd = Open("a");
+    int fd = Open("a", 1);
     PutInt(Read(buffer, 200, fd));
     printf("on lit %s car fd = %d \n", buffer, fd);
     for (int i = 0; i < 10; i++){
@@ -13,10 +13,10 @@ int main(){
     buffer[10] = 0;
 
     Close(fd);
-    fd = Open("a");
+    fd = Open("a", 1);
     Write(buffer, 10, fd);
     Close(fd);
-    fd = Open("a");
+    fd = Open("a", 1);
     Read(buffer, 200, fd);
     Close(fd);
     printf("on lit %s \n", buffer);

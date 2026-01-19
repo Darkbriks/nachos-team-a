@@ -6,74 +6,68 @@
 #include "exception.h"
 #include "thread.h"
 #include "filesys.h"
+#include "process.h"
 
 #include "userFile.h"
 
-void handle_SC_Create(){
+void handle_SC_Create() {
     ptr_32 addr = reinterpret_cast<ptr_32>(machine->ReadRegister(4));
+    int size = machine->ReadRegister(5);
 
-    if (addr < 0) { RETURN(-E_FAULT); } // TODO Add more checks (addr is in valid user space, for example)
-    // TODO remove 10 for minSize)
+    GET_PROCESS_ADDRSPACE();
+
+    VALIDATE_ARG(space->IsValidUserRange(addr, size), E_FAULT);
+
     char name[MAX_PATH_SIZE];
-    if ( ! CopyStringFromUser(addr, name ,MAX_PATH_SIZE)){
-        RETURN(-E_FAULT);
-    }
-    if (! fileSystem->Create(name, 10)){
-        RETURN(-E_FULL_DISK);
-    }
+    VALIDATE_ARG(CopyStringFromUser(addr, name ,MAX_PATH_SIZE), E_FAULT);
+    VALIDATE_ARG(fileSystem->Create(name, 10), E_FULL_DISK);
+
     RETURN(0);
 }
 
-void handle_SC_Open(){
+void handle_SC_Open() {
     ptr_32 addr = reinterpret_cast<ptr_32>(machine->ReadRegister(4));
+    int size = machine->ReadRegister(5);
 
-    if (addr < 0) { RETURN(-E_FAULT); } // TODO Add more checks (addr is in valid user space, for example)
-    // TODO remove 10 for minSize)
+    GET_PROCESS_ADDRSPACE();
+    VALIDATE_ARG(space->IsValidUserRange(addr, size), E_FAULT);
+
     char name[MAX_PATH_SIZE];
-    if ( ! CopyStringFromUser(addr, name ,MAX_PATH_SIZE)){
-        RETURN(-E_FAULT);
-    }
-    if ( currentThread->CanOpenFile() == INVALID_SECTOR){
-        RETURN(-E_FTABLE);
-    }
+    VALIDATE_ARG(CopyStringFromUser(addr, name ,MAX_PATH_SIZE), E_FAULT);
+    VALIDATE_ARG(currentThread->CanOpenFile() != INVALID_ID, E_FTABLE);
+
     OpenFile* file = fileSystem->Open(name);
-    if (file == nullptr){
-        RETURN(-E_NOENT);
-    }
-    int result = currentThread->AddOpenFile(file);
+    VALIDATE_ARG(file != nullptr, E_NOENT);
+
+    const OpenFileId result = currentThread->AddOpenFile(file);
     RETURN(result);
 }
 
 
-void handle_SC_Close(){
+void handle_SC_Close() {
     OpenFileId id = reinterpret_cast<OpenFileId>(machine->ReadRegister(4));
-    if ( ! currentThread->IsOpenFile(id)){
-        RETURN(-E_BADF);
-    }
+    VALIDATE_ARG(currentThread->IsOpenFile(id), E_BADF);
     OpenFile* file = currentThread->GetOpenFile(id);
-    if (! fileSystem->Close(file)){
-        RETURN(-E_FAULT);
-    }
+    VALIDATE_ARG(fileSystem->Close(file), E_FAULT);
+    VALIDATE_ARG(currentThread->RemoveOpenFile(id), E_FAULT);
     RETURN(0);
-
 }
 
-void handle_SC_Write(){
+void handle_SC_Write() {
     int addr = machine->ReadRegister(4);
     int n = machine->ReadRegister(5);
     OpenFileId id = reinterpret_cast<OpenFileId>(machine->ReadRegister(6));
-    if ( ! currentThread->IsOpenFile(id)){
-        RETURN(-E_BADF);
-    }
 
-    if (n > MAX_PUT_STRING) {
-        n = MAX_PUT_STRING;
-    }
+    GET_PROCESS_ADDRSPACE();
 
-    if (addr < 0) { RETURN(-E_FAULT); } // TODO Add more checks (addr is in valid user space, for example)
-    if (n < 0) { RETURN(-E_INVAL); }
-    if (n == 0) { RETURN(0); }
-    if (n > INT_MAX - addr) { RETURN(-E_OVERFLOW); } // Prevent overflow
+    VALIDATE_ARG(currentThread->IsOpenFile(id), E_BADF);
+
+    if (n > MAX_PUT_STRING) { n = MAX_PUT_STRING; }
+
+    VALIDATE_ARG(space->IsValidUserRange(addr, n), E_FAULT);
+    VALIDATE_ARG(n >= 0, E_INVAL);
+    VALIDATE_ARG(n != 0, 0);
+    VALIDATE_ARG(addr <= INT_MAX - n, E_OVERFLOW); // Prevent overflow
 
     // currentThread->isOpenFIle(fileDescriptor);
 
@@ -82,9 +76,7 @@ void handle_SC_Write(){
 
     OpenFile* file = currentThread->GetOpenFile(id);
     while (offset < n) {
-        if (!CopyStringFromUser(addr + offset, buffer, MAX_STRING_SIZE)) {
-            RETURN(-E_FAULT);
-        }
+        VALIDATE_ARG(CopyStringFromUser(addr + offset, buffer, MAX_STRING_SIZE), E_FAULT);
         DEBUG('a', "Write got string: %s\n", buffer);
         if (const int res = fileSystem->Write(file, buffer, MAX_STRING_SIZE); res <= 0) { break; }
         else { offset += res; }
@@ -93,29 +85,24 @@ void handle_SC_Write(){
 }
 
 
-void handle_SC_Read(){
+void handle_SC_Read() {
     int addr = machine->ReadRegister(4);
     int n = machine->ReadRegister(5);
     OpenFileId id = reinterpret_cast<OpenFileId>(machine->ReadRegister(6));
-    if ( ! currentThread->IsOpenFile(id)){
-        RETURN(-E_BADF);
-    }
 
-    if (addr < 0) { RETURN(-E_FAULT); } // TODO Add more checks (addr is in valid user space, for example)
-    if (n < 0) { RETURN(-E_INVAL); }
-    if (n == 0) { RETURN(0); }
-
+    GET_PROCESS_ADDRSPACE();
+    VALIDATE_ARG(currentThread->IsOpenFile(id), E_BADF);
+    VALIDATE_ARG(space->IsValidUserRange(addr, n), E_FAULT);
+    VALIDATE_ARG(n >= 0, E_INVAL);
+    VALIDATE_ARG(n != 0, 0);
+    VALIDATE_ARG(addr <= INT_MAX - n, E_OVERFLOW); // Prevent overflow
 
     OpenFile* file = currentThread->GetOpenFile(id);
     if (n > MAX_STRING_SIZE) { n = MAX_STRING_SIZE; }
     {
         char buffer[n];
         int res = fileSystem->Read(file, buffer, n);
-        if (!CopyStringToUser(buffer, addr, n)) {
-            RETURN(-E_FAULT);
-        }
+        VALIDATE_ARG(CopyStringToUser(buffer, addr, n), E_FAULT);
         RETURN(res);
     }
 }
-
-
