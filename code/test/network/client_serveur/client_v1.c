@@ -6,7 +6,7 @@
 #define SERVER_ADDR 0
 #define SERVER_PORT 8080
 #define NUM_MESSAGES 5
-#define BUFFER_SIZE 64
+#define BUFFER_SIZE 300
 
 int main() {
     char buffer[BUFFER_SIZE];
@@ -25,7 +25,7 @@ int main() {
     printf("[Client] Connected! (connId=%d)\n", connId);
 
     for (int i = 1; i <= NUM_MESSAGES; i++) {
-        strcpy(message, "MSG-");
+        strcpy(message, "Bonjour voici un message qui va declencher une segfault, ratio.\0");
         char msgNumStr[12];
         itoa(i, msgNumStr, 10);
         strcat(message, msgNumStr);

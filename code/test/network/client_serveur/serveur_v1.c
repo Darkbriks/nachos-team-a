@@ -6,7 +6,7 @@
 
 #define SERVER_PORT 8080
 #define MAX_CLIENTS 5
-#define BUFFER_SIZE 64
+#define BUFFER_SIZE 300
 
 typedef struct {
     int connId;

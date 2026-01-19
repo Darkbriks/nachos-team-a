@@ -7,6 +7,10 @@
 #include "synchlist.h"
 #include "exception.h"
 
+
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+
+
 class ConnectionManager;
 
 struct ReceivedData {

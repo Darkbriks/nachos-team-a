@@ -7,6 +7,8 @@
 #include "system.h"
 #include "nos_limits.h"
 #include "syscall.h"
+#include "thread.h"
+#include "process.h"
 
 #include <cstdint>
 
@@ -74,11 +76,15 @@ void handle_SC_sendto() {
     const int dataAddr = machine->ReadRegister(5);
     int size = machine->ReadRegister(6);
 
+    GET_PROCESS_ADDRSPACE();
+
+    VALIDATE_ARG(space->IsValidUserRange(dataAddr, size), E_FAULT);
+
     DEBUG('n', "SC_sendto: connId=%d dataAddr=0x%x size=%d\n", connId, dataAddr, size);
 
     if (connId < 0) { RETURN(-E_INVAL); }
     if (size <= 0) { RETURN(-E_INVAL); }
-    if (size > static_cast<int>(MAX_RELIABLE_DATA)) {
+    if (size > static_cast<int>(MAX_PUT_STRING)) {
         // TODO: Support larger messages with fragmentation
         RETURN(-E_INVAL);
     }
@@ -105,6 +111,9 @@ void handle_SC_recvfrom() {
     int connId = machine->ReadRegister(4);
     const int bufferAddr = machine->ReadRegister(5);
     int size = machine->ReadRegister(6);
+
+    GET_PROCESS_ADDRSPACE();
+    VALIDATE_ARG(space->IsValidUserRange(bufferAddr, size), E_FAULT);
 
     DEBUG('n', "SC_recvfrom: connId=%d bufferAddr=0x%x size=%d\n", connId, bufferAddr, size);
 

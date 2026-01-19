@@ -101,40 +101,51 @@ int Connection::QueueSend(const char* data, int length) {
 }
 
 int Connection::Read(char* buffer, int maxLength) {
-    lock->Acquire();
-
-    while (recvQueue->IsEmpty()) {
-        if (state == CONN_CLOSE_WAIT || state == CONN_CLOSING ||
-            state == CONN_TIME_WAIT || state == CONN_TERMINATED ||
-            state == CONN_CLOSED) {
-            lock->Release();
-            return 0;
-        }
-
-        recvCond->Wait(lock);
-    }
-
-    lock->Release();
-
-    ReceivedData* rd = static_cast<ReceivedData*>(recvQueue->Remove());
-
-    // TODO: For now, it's UDP like
+    int toCopy = 0;
+    while (true){
+        lock->Acquire();
     
-    int available = rd->length - rd->offset;
-    const int toCopy = (available < maxLength) ? available : maxLength;
+        while (recvQueue->IsEmpty()) {
+            if (state == CONN_CLOSE_WAIT || state == CONN_CLOSING ||
+                state == CONN_TIME_WAIT || state == CONN_TERMINATED ||
+                state == CONN_CLOSED) {
+                lock->Release();
+                return 0;
+            }
+    
+            recvCond->Wait(lock);
+        }
+    
+        lock->Release();
+    
+        ReceivedData* rd = static_cast<ReceivedData*>(recvQueue->Remove());
+    
+        int available = rd->length - rd->offset;
+        toCopy = (available < maxLength) ? available : maxLength;
 
-    // TODO : au cas ou pour retrouver le coupable
-    int i = 0;
-    while (rd->data[i] != EOF || i < toCopy) {
-        buffer[bufferPosition + i] = rd->data[i]+rd->offset;
-        i++;
+        // TODO: For now, it's UDP like
+        int i = 0;
+        while (i < toCopy){
+            if (rd->data[i+rd->offset] != '\0'){
+                return toCopy;
+            }
+
+            if(i == MIN((int)MAX_RELIABLE_DATA, maxLength)){
+                break;
+            }
+            buffer[bufferPosition + i] = rd->data[i+rd->offset]; 
+            maxLength--;
+            i++;
+        }
+    
+        // bcopy(rd->data + rd->offset, buffer, toCopy);
+        bufferPosition += toCopy;
+
+        delete rd;
     }
-
-    // bcopy(rd->data + rd->offset, buffer, toCopy);
-    bufferPosition += toCopy;
-
-    delete rd;
+    
     return toCopy;
+
 }
 
 bool Connection::HasDataAvailable() {
