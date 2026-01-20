@@ -1,5 +1,5 @@
+#include "nos_errno.h"
 #include "types.h"
-#include "nos_stdlib.h"
 #include "syscall.h"
 #include "pthread.h"
 #include "nos_stdio.h"
@@ -25,11 +25,11 @@ void *consommateur(void *args) {
     int i, valeur;
     for (i=0; i < d->iterations; i++) {
         if (SemWait(d->producteurs_consommateur.empty_list) != 0){
-            print_error("bas semaphore");
+            printf("bas semaphore (errno=%d)\n", errno);
         }
 
         if ( SemWait(d->producteurs_consommateur.resource) != 0){
-            print_error("bas semaphore");
+            printf("bas semaphore (errno=%d)\n", errno);
         }
         valeur = d->donnee[d->nb_data_dispo];
         d->nb_data_dispo--;
@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
     } 
     for (i=0; i<nb_consommateurs; i++){
         if ( pthread_create(&threads[index ++], NULL, consommateur, &donnees_thread) != 0){
-            print_error("ça a pas crée le thread\n");
+            printf("ça a pas crée le thread (errno=%d)\n", errno);
         }
     }
 

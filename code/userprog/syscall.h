@@ -364,9 +364,10 @@ typedef int posix_process_t;
 /**
  * @brief Fork and execute a new process
  * @param name Name of the executable file
+ * @param size Size of the name string
  * @return Process ID on success, negative error code on failure
  */
-posix_process_t ForkExec(char *name);
+posix_process_t ForkExec(char *name, int size);
 
 /**
  * @brief  Wait for the process finish
@@ -378,8 +379,8 @@ posix_process_t ForkExec(char *name);
 int ForkJoin(posix_process_t PID, int *adrr_result);
 
 /**
- * @brief Get the PID of the current process 
- * @return The PID of the current process 
+ * @brief Get the PID of the current process
+ * @return The PID of the current process
  */
 int ForkSelf();
 

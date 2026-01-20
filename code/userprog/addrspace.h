@@ -30,7 +30,8 @@
 #define INITIAL_HEAP_PAGES 2
 #define MAX_HEAP_PAGES  256
 
-class BitMapThreadSafe;
+class BitMap;
+class Lock;
 class StackManager;
 class Process;
 
@@ -109,6 +110,8 @@ class AddrSpace {
         [[nodiscard]] bool IsInStackArea(unsigned int addr) const;
         [[nodiscard]] bool IsValidTLS(unsigned int tlsAddr) const;
 
+        [[nodiscard]] bool IsValid() const { return pageTable != nullptr; }
+
     private:
         TranslationEntry *pageTable; // Assume linear page table translation for now!
         unsigned int numPages; // Number of pages in the virtual address space
@@ -122,7 +125,8 @@ class AddrSpace {
         StackManager* stackManager = nullptr;
 
         unsigned int maxSemaphores = 0;
-        BitMapThreadSafe* semaphoreBitmap = nullptr;
+        BitMap* semaphoreBitmap = nullptr;
+        Lock* semaphoreBitMapLock = nullptr;
         semaphore_descriptor* semaphoreTable = nullptr;
 
         [[nodiscard]] class Semaphore* GetSemaphore(int semId)const;

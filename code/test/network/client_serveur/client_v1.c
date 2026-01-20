@@ -59,10 +59,7 @@ int main() {
     printf("[Client] Connected! (connId=%d)\n", connId);
 
     for (int i = 1; i <= NUM_MESSAGES; i++) {
-        strcpy(message, msg);
-        char msgNumStr[12];
-        itoa(i, msgNumStr, 10);
-        strcat(message, msgNumStr);
+        snprintf(message, BUFFER_SIZE, "--- Message %d ---\n%s\n", i, msg);
 
         printf("[Client] Sending: '%s' (%d)\n", message, strlen(message));
         int sent = sendto(connId, message, strlen(message) + 1);

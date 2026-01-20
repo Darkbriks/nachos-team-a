@@ -46,10 +46,7 @@ void* handle_client(void* arg) {
             break;
         }
 
-        strcpy(response, "ACK-");
-        char msgNumStr[12];
-        itoa(msgCount, msgNumStr, 10);
-        strcat(response, msgNumStr);
+        snprintf(response, BUFFER_SIZE, "ACK-%d", msgCount);
         int sent = sendto(connId, response, strlen(response) + 1);
 
         if (sent < 0) {

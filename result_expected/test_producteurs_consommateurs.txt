@@ -1,7 +1,7 @@
 Si pas de print avant alors tout a marché !! 
 Machine halting!
 
-Ticks: total 162281, idle 4700, system 24010, user 133571
+Ticks: total 171996, idle 4700, system 26210, user 141086
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 47
 Paging: faults 0

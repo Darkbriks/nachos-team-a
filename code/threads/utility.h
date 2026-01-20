@@ -77,4 +77,22 @@ extern void DEBUG(char flag, const char *format, ...); // Print debug message
         Abort();                                                               \
     }
 
+//----------------------------------------------------------------------
+// ASSERT_KP
+//      If condition is false,  print a message and kernel panic.
+//      Useful for documenting assumptions in the code.
+//
+//      NOTE: needs to be a #define, to be able to print the location
+//      where the error occurred.
+//
+//      NOTE: kernelpanic.h must be included where this macro is used
+//----------------------------------------------------------------------
+#define ASSERT_KP(condition)                                                   \
+    if (!(condition)) {                                                        \
+        fprintf(stderr, "Assertion failed: line %d, file \"%s\"\n", __LINE__,  \
+                __FILE__);                                                     \
+        fflush(stderr);                                                        \
+        KERNEL_PANIC_ON_ASSERT(condition);                                     \
+    }
+
 #endif /* UTILITY_H */

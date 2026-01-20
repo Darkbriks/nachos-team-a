@@ -6,6 +6,7 @@
 #include "../machine/machine.h"
 #include "../threads/synch.h"
 #include "../threads/utility.h"
+#include "kernelpanic.h"
 
 StackManager::StackManager(AddrSpace* space, unsigned int top, unsigned int bottom, unsigned int max)
     : addrSpace(space),
@@ -16,7 +17,7 @@ StackManager::StackManager(AddrSpace* space, unsigned int top, unsigned int bott
       allocatedCount(0),
       regions(new StackRegion[max]),
       lock(new Lock("StackManager Lock")) {
-    ASSERT(top > bottom);
+    ASSERT_KP(top > bottom);
     DEBUG('s', "StackManager::StackManager: created with top=0x%x, bottom=0x%x, max=%d\n", stackAreaTop, stackAreaBottom, maxStacks);
 }
 
@@ -168,14 +169,17 @@ void StackManager::MarkInUse(const unsigned int base, const unsigned int tid) co
     lock->Release();
 }
 
-StackRegion* StackManager::GetStackInfo(const unsigned int base) const {
+bool StackManager::GetStackInfo(unsigned int base, StackRegion &outRegion) const{
     lock->Acquire();
 
-    const int slot = FindByBase(base);
-    StackRegion *result = (slot >= 0) ? &regions[slot] : nullptr;
+    if (const int slot = FindByBase(base); slot >= 0) {
+        outRegion = regions[slot];
+        lock->Release();
+        return true;
+    }
 
     lock->Release();
-    return result;
+    return false;
 }
 
 bool StackManager::IsInStack(const unsigned int addr) const {

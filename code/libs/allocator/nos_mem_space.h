@@ -1,6 +1,8 @@
 #ifndef NOS_MEM_SPACE_H
 #define NOS_MEM_SPACE_H
 
+#define MEM_SPACE_MIN_EXTENSION 4096 // Minimum extension size in bytes, to avoid repeated small extensions
+
 /**
  * @brief Initialize the memory space with the given size
  *

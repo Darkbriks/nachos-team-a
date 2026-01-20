@@ -1,10 +1,9 @@
-
 #include "userSleep.h"
 #include "exception.h"
 #include "system.h"
 #include "thread.h"
 #include "nos_errno.h"
-
+#include "process.h"
 
 int do_UserSleep(const int numTicks) {
     if (numTicks < 0) { return -E_INVAL; }
@@ -48,13 +47,17 @@ void handle_SC_SleepUntil() {
 void handle_SC_GetCurrentTick() {
     const ptr_32 addr = machine->ReadRegister(4);
 
-    if (addr < 0) { RETURN(-E_FAULT); } // TODO Add more checks (addr is in valid user space, for example)
+    Process *process = currentThread->getProcess();
+    VALIDATE_ARG(process != nullptr, E_FAULT);
+
+    const AddrSpace *space = process->getSpace();
+    VALIDATE_ARG(space != nullptr, E_FAULT);
+
+    VALIDATE_ARG(space->IsValidUserRange(addr, 8), E_FAULT);
 
     const long long current_tick = stats->totalTicks;
     const auto high = static_cast<int>(current_tick >> 32);
     const auto low = static_cast<int>(current_tick & 0xFFFFFFFF);
-
-    DEBUG('a', "GetCurrentTick: current_tick=%lld, high=0x%x, low=0x%x\n", current_tick, high, low);
 
     if (!machine->WriteMem(addr, 4, low) || !machine->WriteMem(addr + 4, 4, high)) {
         RETURN(-E_FAULT);

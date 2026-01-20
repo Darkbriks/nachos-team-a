@@ -13,8 +13,6 @@ char GetChar(void);
 
 `GetChar` lit et retourne un seul caractère depuis la console d'entrée standard (clavier). L'appel bloque jusqu'à ce qu'un caractère soit disponible.
 
-Numéro d'appel système : `13`
-
 ### Comportement nominal
 
 - L'appel bloque jusqu'à ce qu'un caractère soit tapé par l'utilisateur
@@ -37,20 +35,12 @@ Aucun paramètre.
 **Type** : `char` (registre `$2`)
 
 **Valeurs possibles** :
-- Caractère lu (0x00 à 0xFF, signé)
+- Caractère lu (0x00 à 0x7F, signé)
 - `EOF` (-1) si fin de flux
 
 ## CODES D'ERREUR
 
 Aucun code d'erreur. La variable `errno` n'est jamais modifiée.
-
-## IMPLÉMENTATION
-
-### Localisation du code
-
-- **Stub utilisateur** : `code/test/start.S:214-221`
-- **Handler noyau** : `code/userprog/exception.cc:handler_SC_getChar()`
-- **Implémentation** : `code/userprog/synchconsole.cc:SynchConsole::SynchGetChar()`
 
 ### Thread-safety
 
@@ -190,10 +180,10 @@ Aucun bug connu à ce jour.
 - [GetInt](./GetInt.md) - Lecture d'un entier
 - [PutChar](./PutChar.md) - Affiche un caractère
 
-## AUTEURS
+## Auteurs
 
-Antoine, 20 Dec 2025
+Antoine
 
-## DERNIÈRE RÉVISION
+## Dernière révision
 
-20 Dec 2025 par Antoine
+18 Jan 2026

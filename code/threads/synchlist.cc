@@ -14,6 +14,7 @@
 
 #include "synchlist.h"
 #include "copyright.h"
+#include "kernelpanic.h"
 
 //----------------------------------------------------------------------
 // SynchList::SynchList
@@ -70,7 +71,7 @@ void *SynchList::Remove() {
     while (list->IsEmpty())
         listEmpty->Wait(lock); // wait until list isn't empty
     item = list->Remove();
-    ASSERT(item != NULL);
+    ASSERT_KP(item != NULL);
     lock->Release();
     return item;
 }

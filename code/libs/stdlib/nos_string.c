@@ -1,4 +1,7 @@
 #include "nos_string.h"
+
+#include "nos_errno.h"
+#include "nos_mem.h"
 #include "nos_stddef.h"
 #include "types.h"
 #include "syscall.h"
@@ -156,26 +159,58 @@ size_t strcspn(const char* str, const char* reject) {
 }
 
 char* strdup(const char* s) {
-    // TODO: Needs malloc
-    NOT_YET_IMPLEMENTED(strdup);
-    return NULL;
+    if (s == NULL) { return NULL; }
+
+    const size_t len = strlen(s) + 1; // +1 pour le '\0'
+    char* dup = (char*)mem_alloc(len);
+
+    if (dup == NULL) { return NULL; }
+
+    memcpy(dup, s, len);
+    return dup;
 }
 
 char* strerror(const int errnum) {
-    // TODO: MaJ
     switch (errnum) {
-        case  0: return "No error";
-        case  1: return "Invalid argument";
-        case  2: return "Bad address or memory access error";
-        case  3: return "Arithmetic overflow";
-        case  4: return "I/O error";
-        case  5: return "Invalid format";
-        case  6: return "End of file";
-        case  7: return "Out of memory";
-        case  8: return "Result out of range";
-        case  9: return "No such process";
-        case 10: return "Allocation table full";
-        case 11: return "No such file or directory or table entry";
+        case  E_SUCCESS: return "No error";
+        case  E_INVAL: return "Invalid argument";
+        case  E_FAULT: return "Bad address / memory access error";
+        case  E_OVERFLOW: return "Arithmetic overflow";
+        case  E_IO: return "I/O error";
+        case  E_FORMAT: return "Invalid format";
+        case  E_EOF: return "End of file";
+        case  E_NOMEM: return "Out of memory";
+        case  E_RANGE: return "Result out of range";
+        case  E_NOSPC: return "No such process";
+        case  E_FTABLE: return "Allocation table full (file table, semaphore table, etc.)";
+        case  E_NOENT: return "No such file or directory or table entry";
+        case  E_NOCPC: return "Not a child process";
+        case  E_THREAD_LIMIT: return "Maximum threads reached";
+        case  E_STACK_ADDR: return "Invalid stack address";
+        case  E_BUSY: return "Resource busy";
+        case  E_AGAIN: return "Resource temporarily unavailable";
+        case  E_DOM: return "Math argument out of domain";
+        case  E_ILSEQ: return "Illegal byte sequence";
+        case  E_PERM: return "Operation not permitted";
+        case  E_ACCES: return "Permission denied";
+        case  E_EXIST: return "File exists";
+        case  E_NOSYS: return "Function not implemented";
+        case  E_NOTDIR: return "Not a directory";
+        case  E_ISDIR: return "Is a directory";
+        case  E_BADF: return "Bad file descriptor";
+        case  E_DEADLK: return "Resource deadlock would occur";
+
+        // TODO: Uncomment on merge with network
+        /*case  E_REFUSED: return "Connection refused";
+        case  E_NOTCONN: return "Not connected";
+        case  E_ADDRINUSE: return "Address/port already in use";
+        case  E_PIPE: return "Broken pipe (peer closed)";
+        case  E_CONNRESET: return "Connection reset by peer";
+        case  E_TIMEOUT: return "Connection timed out";
+        case  E_CLOSED: return "Connection closed";
+        case  E_NOPORT: return "No available port";
+        case  E_NOAVAILCONN: return "No available connection";
+        case  E_WOULDBLOCK: return "Operation would block (non-blocking mode)";*/
         default: return "Unknown error";
     }
 }
@@ -224,9 +259,17 @@ char* strncpy(char* dest, const char* src, size_t n) {
 }
 
 char* strndup(const char* s, size_t n) {
-    // TODO: Needs malloc
-    NOT_YET_IMPLEMENTED(strndup);
-    return NULL;
+    if (s == NULL) { return NULL; }
+
+    size_t len = 0;
+    while (len < n && s[len] != '\0') { len++; }
+
+    char* dup = (char*)mem_alloc(len + 1);
+    if (dup == NULL) { return NULL; }
+
+    memcpy(dup, s, len);
+    dup[len] = '\0';
+    return dup;
 }
 
 char* strpbrk(const char* s1, const char* s2) {

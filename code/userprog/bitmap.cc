@@ -9,6 +9,7 @@
 #include "bitmap.h"
 #include "copyright.h"
 #include "utility.h"
+#include "kernelpanic.h"
 
 //----------------------------------------------------------------------
 // BitMap::BitMap
@@ -46,7 +47,7 @@ BitMap::~BitMap() {
 //----------------------------------------------------------------------
 
 void BitMap::Mark(int which) {
-    ASSERT(which >= 0 && which < numBits);
+    ASSERT_KP(which >= 0 && which < numBits);
     map[which / BitsInWord] |= 1 << (which % BitsInWord);
 }
 
@@ -58,7 +59,7 @@ void BitMap::Mark(int which) {
 //----------------------------------------------------------------------
 
 void BitMap::Clear(int which) {
-    ASSERT(which >= 0 && which < numBits);
+    ASSERT_KP(which >= 0 && which < numBits);
     map[which / BitsInWord] &= ~(1 << (which % BitsInWord));
 }
 
@@ -70,7 +71,7 @@ void BitMap::Clear(int which) {
 //----------------------------------------------------------------------
 
 bool BitMap::Test(int which) {
-    ASSERT(which >= 0 && which < numBits);
+    ASSERT_KP(which >= 0 && which < numBits);
 
     if (map[which / BitsInWord] & (1 << (which % BitsInWord)))
         return TRUE;
