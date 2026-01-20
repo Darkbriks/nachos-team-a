@@ -58,7 +58,7 @@ class AddrSpace {
          *
          * @param executable The executable file in NOFF format
          */
-        explicit AddrSpace(OpenFile *executable);
+        explicit AddrSpace(inode_t inode);
 
         /**
          * @brief De-allocate an address space

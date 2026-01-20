@@ -60,6 +60,7 @@
 #define MAX_FILE_OPEN 10
 #define INVALID_ID -1
 
+typedef inode_t thread_inode_t;
 class Process;
 
 // Thread state
@@ -79,8 +80,6 @@ extern void ThreadPrint(int arg);
 //  Some threads also belong to a user address space; threads
 //  that only run in the kernel have a NULL address space.
 
-typedef int OpenFileId;
-
 class Thread {
 
 friend Process;
@@ -92,7 +91,7 @@ private:
     int machineState[MachineStateSize] = {}; // all registers except for stackTop
 
     int* stack = nullptr; // Bottom of the stack. NULL if this is the main thread (If NULL, don't deallocate stack)
-    OpenFile* openFiles[MAX_FILE_OPEN];
+    inode_t openFiles[MAX_FILE_OPEN];
 
 #ifdef USER_PROGRAM
     // A thread running a user program actually has *two* sets of CPU registers
@@ -160,11 +159,11 @@ public:
 
     void Print() const { printf("%s, ", name); }
 
-    bool IsOpenFile(OpenFileId id) const;
-    OpenFileId AddOpenFile(OpenFile* id);
-    OpenFileId CanOpenFile() const;
-    OpenFile* GetOpenFile(OpenFileId id) const;
-    bool RemoveOpenFile(OpenFileId id);
+    bool IsOpenFile(thread_inode_t id) const;
+    thread_inode_t AddOpenFile(inode_t id);
+    thread_inode_t CanOpenFile() const;
+    inode_t GetOpenFile(thread_inode_t id) const;
+    bool RemoveOpenFile(thread_inode_t id);
 };
 
 // Magical machine-dependent routines, defined in switch.s

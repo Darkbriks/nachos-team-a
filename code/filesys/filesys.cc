@@ -144,11 +144,12 @@ bool FileSystem::Create(const char* name, const int initialSize, const File_Type
     return _Create(nav.getLastComponent(), initialSize, type);
 }
 
-int FileSystem::Read(OpenFile* file, char* buffer, int n){
-    return file->Read(buffer, n);
+int FileSystem::Read(inode_t inode, char* buffer, int n){
+    return inodes.GetFile(inode)->Read(buffer, n);
 }
 
-int FileSystem::Write(OpenFile* file, char* buffer, int n){ 
+int FileSystem::Write(inode_t inode, char* buffer, int n){ 
+    OpenFile* file = inodes.GetFile(inode);
     if (n + file->GetPosition() > file->Length()){
         auto *freeMap = new BitMap(NumSectors);
         freeMap->FetchFrom(freeMapFile);
@@ -165,11 +166,10 @@ bool FileSystem::Remove(const char *name) {
     return _Remove(nav.getLastComponent());
 }
 
-
-OpenFile* FileSystem::Open(const char *name) {
+inode_t FileSystem::Open(const char *name) {
     const PathNavigator nav(this, name);
-    if (!nav.isValid()) { return nullptr; }
-    return inodes.GetFile(_Open(nav.getLastComponent()));
+    if (!nav.isValid()) { return INVALID_INODE; }
+    return _Open(nav.getLastComponent());
 }
 
 bool FileSystem::Close(const char *name) {
@@ -178,8 +178,8 @@ bool FileSystem::Close(const char *name) {
     return _Close(nav.getLastComponent());
 }
 
-bool FileSystem::Close(OpenFile* file) {
-    return inodes.Close(inodes.FindByFile(file));
+bool FileSystem::Close(inode_t inode) {
+    return inodes.Close(inode) >= 0;
 }
 
 bool FileSystem::Change_Directory(const char * name) {

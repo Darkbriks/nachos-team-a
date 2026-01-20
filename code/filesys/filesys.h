@@ -75,6 +75,7 @@ class InodeTable;
 
 class FileSystem {
     friend class PathNavigator;
+    friend class AddrSpace;
 public:
     explicit FileSystem(bool format); // Initialize the file system.
                                       // Must be called *after* "synchDisk"
@@ -85,13 +86,12 @@ public:
     ~FileSystem() = default;
 
     bool Create(const char *name, int initialSize, File_Type type = FILE_T); // Create a file (UNIX creat)
-    OpenFile* Open(const char *name); // Open a file (UNIX open)
+    inode_t Open(const char *name); // Open a file (UNIX open)
     bool Close(const char* name);
-    bool Close(OpenFile* name);
+    bool Close(inode_t inode);
     bool Remove(const char *name); // Delete a file (UNIX unlink)
-    bool Remove(OpenFile* name); // Delete a file (UNIX unlink)
-    int Read(OpenFile* file, char* buffer, int n); 
-    int Write(OpenFile* file, char* buffer, int n); 
+    int Read(inode_t inode, char* buffer, int n); 
+    int Write(inode_t inode, char* buffer, int n); 
 
     bool Change_Directory(const char * name);
     void ReadAllFile(const char* name);
@@ -124,6 +124,7 @@ private:
     bool _Close(const char* name);
     bool _Remove(const char *name);
     bool _Change_Directory(const char * name);
+    OpenFile* getFileWithInode(inode_t inode){return inodes.GetFile(inode);}
 };
 
 #endif // FILESYS

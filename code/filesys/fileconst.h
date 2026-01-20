@@ -26,5 +26,6 @@ typedef int inode_t;
 
 
 #define INVALID_SECTOR -1
+#define INVALID_INODE -1
 
 #endif // FILECONST_H

@@ -2,7 +2,7 @@
 #include "nos_string.h"
 #include "nos_unistd.h"
 
-int close (int __fd){
+bool close (int __fd){
     return Close(__fd) == 0;
 }
 

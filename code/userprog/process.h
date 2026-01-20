@@ -19,7 +19,7 @@ class Lock;
 class Process {
     friend class Thread;
     private:
-        Process(OpenFile * executable, char* return_code);
+        Process(inode_t inode, char* return_code);
 
         static class BitMap *all_process;
         static Lock* all_process_lock;
@@ -54,7 +54,7 @@ class Process {
         static unsigned int getCurrentNumberOfProcess();
         static Process* FindProcessByPID(const unsigned int PID); 
 
-        static Process* createProcess(OpenFile* executable);
+        static Process* createProcess(inode_t executable);
 
         [[nodiscard]] unsigned int getPId() const { return PID; }
         [[nodiscard]] AddrSpace* getSpace() const { return space; }

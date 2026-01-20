@@ -147,7 +147,7 @@ void Initialize(int argc, char **argv) {
     // But if it ever tries to give up the CPU, we better have a Thread
     // object to save its state.
 
-    Process * process = Process::createProcess(nullptr);
+    Process * process = Process::createProcess(INVALID_INODE);
     if (process == nullptr){
         KERNEL_PANIC("Failed to create kernel process during initialization");
     }

@@ -117,7 +117,9 @@ int main(int argc, char **argv) {
 #ifdef FILESYS
         if (!strcmp(*argv, "-cp")) {
             Copy(*(argv + 1), *(argv + 2));
-
+        }
+        if (!strcmp(*argv, "-rm")) {
+            fileSystem->Remove(*(argv + 1));
         }
         if (!strcmp(*argv, "-shell")) {
             FileSysShell shell(fileSystem);

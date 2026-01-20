@@ -60,10 +60,11 @@ static void ReadAtVirtual(OpenFile* executable, const int virtualaddr, const int
     delete[] tmp;
 }
 
-AddrSpace::AddrSpace(OpenFile *executable) {
+AddrSpace::AddrSpace(inode_t inode) {
     NoffHeader noffH;
 
     // Read in the file header
+    OpenFile* executable = fileSystem->getFileWithInode(inode);
     executable->ReadAt(reinterpret_cast<char *>(&noffH), sizeof(noffH), 0);
     if ((noffH.noffMagic != NOFFMAGIC) && (WordToHost(noffH.noffMagic) == NOFFMAGIC)) {
         SwapHeader(&noffH);

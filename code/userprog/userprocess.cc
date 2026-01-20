@@ -43,16 +43,16 @@ void handle_SC_ForkExec() {
     }
     DEBUG('p', "ForkExec: Request to execute '%s'\n", filename);
 
-    OpenFile* executable = fileSystem->Open(filename);
-    if (executable == nullptr) {
+    inode_t inode = fileSystem->Open(filename);
+    if (inode == INVALID_INODE) {
         DEBUG('p', "ForkExec: Unable to open file '%s'\n", filename);
         RETURN(-E_NOENT);
     }
 
-    Process* newProcess = Process::createProcess(executable);
+    Process* newProcess = Process::createProcess(inode);
     if (newProcess == nullptr) {
         DEBUG('p', "ForkExec: Failed to create process for '%s'\n", filename);
-        delete executable;
+        fileSystem->Close(inode);
         RETURN(-E_NOMEM);
     }
 
