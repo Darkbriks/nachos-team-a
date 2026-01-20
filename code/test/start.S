@@ -117,6 +117,8 @@ DEFINE_SYSCALL_STUB sendto, SC_sendto
 DEFINE_SYSCALL_STUB recvfrom, SC_recvfrom
 DEFINE_SYSCALL_STUB close, SC_close
 
+DEFINE_SYSCALL_STUB time, SC_time
+
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main

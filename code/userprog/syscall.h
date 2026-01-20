@@ -86,6 +86,7 @@
 #define SC_Write  40
 #define SC_Close  41
 
+#define SC_time 42
 #ifdef IN_USER_MODE
 
 // LB: This part is read only on compiling the test/*.c files.
@@ -498,6 +499,14 @@ int Read(char *buffer, int size, OpenFileId id);
 
 /* Close the file, we're done reading and writing to it. */
 void Close(OpenFileId id);
+
+/*
+ * Retrieves the current calendar time (wall clock time) in seconds since the Unix epoch 
+ * (January 1, 1970, 00:00:00 UTC)
+ */
+typedef long long time_t;
+
+int time(time_t *loc);
 
 #endif // IN_USER_MODE
 

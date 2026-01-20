@@ -1,34 +1,5 @@
 #include "nos_fileserver.h"
 
-/* File storage - static to this file */
-static char fileBuffer[SERVER_MAX_FILESIZE];
-static int fileSize = 0;
-static char storedFilename[SERVER_MAX_FILENAME];
-
-/* Convert int to string (simple itoa) - static to avoid conflicts */
-static int intToStr(int num, char *buf) {
-    int i = 0, j;
-    char tmp[16];
-
-    if (num == 0) {
-        buf[0] = '0';
-        buf[1] = '\0';
-        return 1;
-    }
-
-    while (num > 0) {
-        tmp[i++] = '0' + (num % 10);
-        num /= 10;
-    }
-
-    /* Reverse */
-    for (j = 0; j < i; j++) {
-        buf[j] = tmp[i - 1 - j];
-    }
-    buf[i] = '\0';
-    return i;
-}
-
 /* Parse command from received data */
 int serverParseCommand(char *data, char *cmd, char *arg1, int *arg2) {
     int i = 0, j = 0;
@@ -62,88 +33,79 @@ int serverParseCommand(char *data, char *cmd, char *arg1, int *arg2) {
     return 0;
 }
 
-/* Handle GET request - send file to client */
+/* Handle GET request - send file to client using real filesystem */
 int serverHandleGet(int connId, char *filename) {
-    char response[32];
-    int sent = 0;
-    int chunkSize;
+    char buffer[SERVER_CHUNK_SIZE];
+    OpenFileId fd;
+    int sent = 0, n;
 
     printf("[SERVER] GET request for '%s'\n", filename);
 
-    /* Check if we have the file */
-    if (strcmp(filename, storedFilename) != 0 || fileSize == 0) {
+    /* Open the file from real filesystem */
+    fd = Open(filename, strlen(filename));
+    if (fd < 0) {
         printf("[SERVER] File not found: %s\n", filename);
-        if (sendto(connId, "ERR 404", 8) < 0) {
-            return -1;
-        }
+        sendto(connId, "ERR 404", 8);
         return 0;
     }
 
-    /* Send OK with file size */
-    strcpy(response, "OK ");
-    intToStr(fileSize, response + 3);
-    printf("[SERVER] Sending: %s\n", response);
-    if (sendto(connId, response, strlen(response) + 1) < 0) {
-        printf("[SERVER] Failed to send OK response\n");
-        return -1;
-    }
+    /* Send OK (size unknown, will use EOF marker) */
+    sendto(connId, "OK", 3);
+    printf("[SERVER] Sending file...\n");
 
-    /* Send file data in chunks */
-    while (sent < fileSize) {
-        chunkSize = fileSize - sent;
-        if (chunkSize > SERVER_CHUNK_SIZE) {
-            chunkSize = SERVER_CHUNK_SIZE;
-        }
-
-        if (sendto(connId, fileBuffer + sent, chunkSize) < 0) {
-            printf("[SERVER] Failed to send data chunk at offset %d\n", sent);
+    /* Read and send file in chunks */
+    while ((n = Read(buffer, SERVER_CHUNK_SIZE, fd)) > 0) {
+        if (sendto(connId, buffer, n) < 0) {
+            printf("[SERVER] Failed to send data chunk\n");
+            Close(fd);
             return -1;
         }
-
-        sent += chunkSize;
-        printf("[SERVER] Sent %d/%d bytes\n", sent, fileSize);
+        sent += n;
+        printf("[SERVER] Sent %d bytes\n", sent);
     }
+
+    Close(fd);
 
     /* Send EOF marker */
-    if (sendto(connId, "EOF", 4) < 0) {
-        printf("[SERVER] Failed to send EOF\n");
-        return -1;
-    }
-
-    printf("[SERVER] File transfer complete: %d bytes sent\n", fileSize);
+    sendto(connId, "EOF", 4);
+    printf("[SERVER] File transfer complete: %d bytes sent\n", sent);
     return 0;
 }
 
-/* Handle PUT request - receive file from client */
+/* Handle PUT request - receive file from client using real filesystem */
 int serverHandlePut(int connId, char *filename, int size) {
     char buffer[SERVER_CHUNK_SIZE + 1];
+    OpenFileId fd;
     int received = 0;
     int n;
 
     printf("[SERVER] PUT request: '%s' (%d bytes)\n", filename, size);
 
-    if (size > SERVER_MAX_FILESIZE) {
-        printf("[SERVER] File too large\n");
-        sendto(connId, "ERR 413", 8);
+    /* Create the file in real filesystem */
+    Create(filename, size);
+    printf("[SERVER] Create done, errno: %d\n", errno);
+
+    /* Open for writing */
+    fd = Open(filename, strlen(filename));
+    if (fd < 0) {
+        printf("[SERVER] Cannot open file: %s, errno: %d\n", filename, errno);
+        sendto(connId, "ERR 500", 8);
         return -1;
     }
-
-    /* Store filename */
-    strcpy(storedFilename, filename);
-    fileSize = size;
 
     /* Send OK to confirm ready to receive */
     if (sendto(connId, "OK", 3) < 0) {
         printf("[SERVER] Failed to send OK\n");
+        Close(fd);
         return -1;
     }
 
-    /* Receive file data */
+    /* Receive and write file data */
     while (received < size) {
         n = recvfrom(connId, buffer, SERVER_CHUNK_SIZE);
         if (n < 0) {
             printf("[SERVER] Failed to receive data, errno: %d\n", errno);
-            return -1;
+            break;
         }
         if (n == 0) {
             printf("[SERVER] Connection closed by client\n");
@@ -155,14 +117,14 @@ int serverHandlePut(int connId, char *filename, int size) {
             break;
         }
 
-        /* Copy data to buffer */
-        memcpy(fileBuffer + received, buffer, n);
+        /* Write to file */
+        Write(buffer, n, fd);
         received += n;
         printf("[SERVER] Received %d/%d bytes\n", received, size);
     }
 
-    fileSize = received;
-    printf("[SERVER] File stored: '%s' (%d bytes)\n", storedFilename, fileSize);
+    Close(fd);
+    printf("[SERVER] File saved: '%s' (%d bytes)\n", filename, received);
 
     /* Send final confirmation */
     sendto(connId, "OK", 3);

@@ -1,5 +1,6 @@
 #include "nos_client.h"
 
+
 /* Convert int to string (simple itoa) - static to avoid conflicts */
 static int intToStr(int num, char *buf) {
     int i = 0, j;
@@ -23,8 +24,7 @@ static int intToStr(int num, char *buf) {
     buf[i] = '\0';
     return i;
 }
-
-/* Parse OK response to extract size */
+/* Parse OK response to extract size (may be 0 if server doesn't know size) */
 int clientParseOkResponse(char *response, int *size) {
     int i = 0;
 
@@ -47,21 +47,21 @@ int clientParseOkResponse(char *response, int *size) {
     return 0;
 }
 
-/* GET file from server */
-int clientGetFile(int connId, char *filename, char *fileBuffer, int bufSize,
-                  int *receivedSize, long long *startTime, long long *endTime) {
+/* GET file from server and save to local filesystem */
+int clientGetFile(int connId, char *remoteFile, char *localFile, int maxSize,
+                  int *receivedSize, time_t *startTime, time_t *endTime) {
     char cmd[80];
     char buffer[CLIENT_CHUNK_SIZE + 1];
-    int expectedSize = 0;
+    OpenFileId fd;
     int received = 0;
     int n;
 
     /* Build GET command */
     strcpy(cmd, "GET ");
-    strcat(cmd, filename);
+    strcat(cmd, remoteFile);
 
     /* Record start time */
-    GetCurrentTick(startTime);
+    time(startTime);
 
     /* Send GET request */
     printf("[CLIENT] Sending: %s\n", cmd);
@@ -71,7 +71,7 @@ int clientGetFile(int connId, char *filename, char *fileBuffer, int bufSize,
     }
 
     /* Receive response */
-    n = recvfrom(connId, buffer, sizeof(buffer) - 1);
+    n = recvfrom(connId, buffer, CLIENT_CHUNK_SIZE);
     if (n <= 0) {
         printf("[CLIENT] Failed to receive response\n");
         return -1;
@@ -85,24 +85,18 @@ int clientGetFile(int connId, char *filename, char *fileBuffer, int bufSize,
         return -1;
     }
 
-    /* Parse OK response */
-    if (clientParseOkResponse(buffer, &expectedSize) < 0) {
-        printf("[CLIENT] Invalid response format\n");
+    /* Create local file */
+    Create(localFile, maxSize);
+    fd = Open(localFile, strlen(localFile));
+    if (fd < 0) {
+        printf("[CLIENT] Cannot create local file: %s\n", localFile);
         return -1;
     }
-    printf("[CLIENT] Expecting %d bytes\n", expectedSize);
 
-    /* Receive file data */
-    while (received < expectedSize) {
+    /* Receive and write file data */
+    while (1) {
         n = recvfrom(connId, buffer, CLIENT_CHUNK_SIZE);
-        if (n < 0) {
-            printf("[CLIENT] Failed to receive data, errno: %d\n", errno);
-            return -1;
-        }
-        if (n == 0) {
-            printf("[CLIENT] Connection closed\n");
-            break;
-        }
+        if (n <= 0) break;
 
         /* Check for EOF marker */
         if (n == 4 && strcmp(buffer, "EOF") == 0) {
@@ -110,136 +104,147 @@ int clientGetFile(int connId, char *filename, char *fileBuffer, int bufSize,
             break;
         }
 
-        /* Store received data */
-        if (received + n <= bufSize) {
-            memcpy(fileBuffer + received, buffer, n);
-        }
+        /* Write to local file */
+        Write(buffer, n, fd);
         received += n;
-        printf("[CLIENT] Received %d/%d bytes\n", received, expectedSize);
+        printf("[CLIENT] Received %d bytes\n", received);
     }
 
-    /* Wait for EOF if not received yet */
-    if (received >= expectedSize) {
-        n = recvfrom(connId, buffer, CLIENT_CHUNK_SIZE);
-        if (n > 0) {
-            buffer[n] = '\0';
-            printf("[CLIENT] Final message: %s\n", buffer);
-        }
-    }
+    Close(fd);
 
     /* Record end time */
-    GetCurrentTick(endTime);
+    time(endTime);
 
     *receivedSize = received;
+    printf("[CLIENT] Download complete: %d bytes\n", received);
     return 0;
 }
 
-/* PUT file to server */
-int clientPutFile(int connId, char *filename, char *data, int size,
-                  long long *startTime, long long *endTime) {
+/* PUT local file to server */
+int clientPutFile(int connId, char *localFile, char *remoteFile, int maxSize,
+                  time_t *startTime, time_t *endTime) {
     char cmd[80];
-    char buffer[32];
+    char buffer[CLIENT_CHUNK_SIZE];
+    char response[32];
+    OpenFileId fd;
     int sent = 0;
-    int chunkSize;
+    int fileSize = 0;
     int n;
 
-    /* Build PUT command: "PUT filename size" */
+    /* Open local file */
+    fd = Open(localFile, strlen(localFile));
+    if (fd < 0) {
+        printf("[CLIENT] Cannot open local file: %s\n", localFile);
+        return -1;
+    }
+
+    /* Read file to get size (read and count) */
+    {
+        char tempBuf[CLIENT_CHUNK_SIZE];
+        while ((n = Read(tempBuf, CLIENT_CHUNK_SIZE, fd)) > 0) {
+            fileSize += n;
+            if (fileSize >= maxSize) break;
+        }
+    }
+    Close(fd);
+    printf("[CLIENT] Local file size: %d bytes\n", fileSize);
+
+    /* Build PUT command: "PUT remoteFile size" */
     strcpy(cmd, "PUT ");
-    strcat(cmd, filename);
+    strcat(cmd, remoteFile);
     strcat(cmd, " ");
-    intToStr(size, cmd + strlen(cmd));
+    intToStr(fileSize, cmd + strlen(cmd));
 
     /* Record start time */
-    GetCurrentTick(startTime);
+    time(startTime);
 
     /* Send PUT request */
     printf("[CLIENT] Sending: %s\n", cmd);
     if (sendto(connId, cmd, strlen(cmd) + 1) < 0) {
-        printf("[CLIENT] Failed to send PUT command\n");
+        printf("[CLIENT] Failed to send PUT command, errno: %d\n", errno);
         return -1;
     }
 
     /* Wait for OK */
-    n = recvfrom(connId, buffer, sizeof(buffer) - 1);
+    n = recvfrom(connId, response, sizeof(response) - 1);
     if (n <= 0) {
         printf("[CLIENT] Failed to receive response\n");
         return -1;
     }
-    buffer[n] = '\0';
-    printf("[CLIENT] Response: %s\n", buffer);
+    response[n] = '\0';
+    printf("[CLIENT] Response: %s\n", response);
 
-    if (buffer[0] != 'O') {
-        printf("[CLIENT] Server rejected PUT: %s\n", buffer);
+    if (response[0] != 'O') {
+        printf("[CLIENT] Server rejected PUT: %s\n", response);
+        return -1;
+    }
+
+    /* Reopen file and send data */
+    fd = Open(localFile, strlen(localFile));
+    if (fd < 0) {
+        printf("[CLIENT] Cannot reopen local file\n");
         return -1;
     }
 
     /* Send file data in chunks */
-    while (sent < size) {
-        chunkSize = size - sent;
-        if (chunkSize > CLIENT_CHUNK_SIZE) {
-            chunkSize = CLIENT_CHUNK_SIZE;
-        }
-
-        if (sendto(connId, data + sent, chunkSize) < 0) {
+    while ((n = Read(buffer, CLIENT_CHUNK_SIZE, fd)) > 0) {
+        if (sendto(connId, buffer, n) < 0) {
             printf("[CLIENT] Failed to send data chunk\n");
+            Close(fd);
             return -1;
         }
-
-        sent += chunkSize;
-        printf("[CLIENT] Sent %d/%d bytes\n", sent, size);
+        sent += n;
+        printf("[CLIENT] Sent %d/%d bytes\n", sent, fileSize);
     }
+
+    Close(fd);
 
     /* Send EOF */
-    if (sendto(connId, "EOF", 4) < 0) {
-        printf("[CLIENT] Failed to send EOF\n");
-        return -1;
-    }
+    sendto(connId, "EOF", 4);
 
     /* Wait for final confirmation */
-    n = recvfrom(connId, buffer, sizeof(buffer) - 1);
+    n = recvfrom(connId, response, sizeof(response) - 1);
     if (n > 0) {
-        buffer[n] = '\0';
-        printf("[CLIENT] Final response: %s\n", buffer);
+        response[n] = '\0';
+        printf("[CLIENT] Final response: %s\n", response);
     }
 
     /* Record end time */
-    GetCurrentTick(endTime);
+    time(endTime);
 
+    printf("[CLIENT] Upload complete: %d bytes\n", sent);
     return 0;
 }
 
-/* Calculate and display throughput */
-void clientDisplayThroughput(int bytes, long long startTime, long long endTime) {
-    int elapsed = (int)(endTime - startTime);
+/* Calculate and display throughput using real time */
+
+void clientDisplayThroughput(int bytes, time_t startTime, time_t endTime) {
+    time_t elapsed = endTime - startTime;
     int bytesPerSec;
+    int minutes, seconds;
 
     printf("\n=== Transfer Statistics ===\n");
     printf("Bytes transferred: %d\n", bytes);
-    printf("Start tick: %d\n", (int)startTime);
-    printf("End tick: %d\n", (int)endTime);
-    printf("Elapsed ticks: %d\n", elapsed);
 
-    /*
-     * NachOS timing model:
-     * - SystemTick = 10 (context switch every 10 ticks)
-     * - TimerTicks = 100 (timer interrupt every 100 ticks)
-     * - Approximately 100,000 ticks = 1 second of simulated time
-     *
-     * Throughput calculation:
-     * bytes_per_second = bytes * 100000 / elapsed_ticks
-     * KB_per_second = bytes_per_second / 1024
-     */
-    if (elapsed > 0) {
-        /* Calculate bytes per second: bytes * 100000 / elapsed */
-        /* To avoid overflow: (bytes * 100) / (elapsed / 1000) when elapsed > 1000 */
-        if (elapsed > 1000) {
-            bytesPerSec = (bytes * 100) / (elapsed / 1000);
-        } else {
-            bytesPerSec = (bytes * 100000) / elapsed;
-        }
-        printf("Throughput: %d bytes/second\n", bytesPerSec);
-        printf("Throughput: %d KB/s\n", bytesPerSec / 1024);
+    /* Display elapsed time in human-readable format */
+    seconds = (int)elapsed;
+    minutes = seconds / 60;
+    seconds = seconds % 60;
+
+    if (minutes > 0) {
+        printf("Elapsed time: %d min %d sec\n", minutes, seconds);
     } else {
-        printf("Transfer too fast to measure\n");
+        printf("Elapsed time: %d sec\n", seconds);
+    }
+
+    if (elapsed > 0) {
+        bytesPerSec = bytes / (int)elapsed;
+        printf("Throughput: %d bytes/sec\n", bytesPerSec);
+        if (bytesPerSec >= 1024) {
+            printf("Throughput: %d KB/sec\n", bytesPerSec / 1024);
+        }
+    } else {
+        printf("Transfer completed in less than 1 second\n");
+        printf("Throughput: >%d bytes/sec\n", bytes);
     }
 }

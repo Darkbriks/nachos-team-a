@@ -4,7 +4,7 @@
 #include "nos_limits.h"
 #include "syscall.h"
 #include "process.h"
-
+#include <time.h>
 #include "userIO.h"
 
 void handle_SC_PutChar(){
@@ -100,5 +100,26 @@ void handle_SC_GetInt(){
     }
     machine->WriteMem(addr, 4, new_val);
 
+    RETURN(0);
+}
+
+
+void handle_SC_time(){
+    int addr = machine->ReadRegister(4);
+
+    GET_PROCESS_ADDRSPACE();
+
+    VALIDATE_ARG(space->IsValidUserRange(static_cast<unsigned int>(addr), static_cast<unsigned int>(sizeof(long long))), E_FAULT);
+
+    time_t local = time(NULL);
+
+    /* Cast to 64-bit to handle both 32-bit and 64-bit time_t */
+    long long local64 = static_cast<long long>(local);
+    const int high = static_cast<int>(local64 >> 32);
+    const int low = static_cast<int>(local64 & 0xFFFFFFFF);
+
+    if (!machine->WriteMem(addr, 4, low) || !machine->WriteMem(addr + 4, 4, high)) {
+        RETURN(-E_FAULT);
+    }
     RETURN(0);
 }

@@ -1,23 +1,24 @@
 #include "nos_fileserver.h"
 
-static char localFileBuffer[SERVER_MAX_FILESIZE];
-static int localFileSize = 0;
-static char localStoredFilename[SERVER_MAX_FILENAME];
-
 int main() {
     int listenerId, connId;
     char buffer[128];
     char cmd[16], filename[SERVER_MAX_FILENAME];
     int size;
     int n;
+    OpenFileId fd;
+    char testData[] = "Hello from NachOS file server! This is a test file for network transfer.";
 
-    /* Initialize stored file with some test data */
-    strcpy(localStoredFilename, "test.txt");
-    strcpy(localFileBuffer, "Hello from NachOS file server! This is a test file for network transfer.");
-    localFileSize = strlen(localFileBuffer);
+    printf("=== NachOS File Server (Real FS) ===\n");
 
-    printf("=== NachOS File Server ===\n");
-    printf("Pre-loaded file: '%s' (%d bytes)\n", localStoredFilename, localFileSize);
+    /* Create a test file in the filesystem */
+    Create("test.txt", 100);
+    fd = Open("test.txt", 8);
+    if (fd >= 0) {
+        Write(testData, strlen(testData), fd);
+        Close(fd);
+        printf("Created test file: 'test.txt' (%d bytes)\n", strlen(testData));
+    }
 
     /* Start listening */
     listenerId = listen(SERVER_PORT);

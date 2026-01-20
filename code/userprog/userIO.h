@@ -8,5 +8,5 @@ void handle_SC_GetChar();
 void handle_SC_GetString();
 void handle_SC_PutInt();
 void handle_SC_GetInt();
-
+void handle_SC_time();
 #endif // USER_IO

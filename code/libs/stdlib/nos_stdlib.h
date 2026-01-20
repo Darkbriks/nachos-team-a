@@ -61,6 +61,9 @@ float strtof(const char* str, char** endptr);
 double strtod(const char* str, char** endptr);
 long double strtold(const char* str, char** endptr);
 
+/* Integer to string conversion */
+char* itoa(int value, char* str, int base);
+
 /* =============================================================
  * Miscellaneous Algorithms and Math Functions
  * =============================================================

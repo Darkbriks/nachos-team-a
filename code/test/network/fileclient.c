@@ -1,21 +1,30 @@
 /**
- * File Transfer Client for NachOS - Test Program
+ * File Transfer Client for NachOS - Test Program (Real FS)
  */
 
 #include "nos_client.h"
 
-/* Local buffer for received file */
-static char localFileBuffer[CLIENT_MAX_FILESIZE];
-
 int main() {
     int connId;
     int receivedSize = 0;
-    long long startTime, endTime;
+    int sentSize = 0;
+    time_t startTime, endTime;
+    OpenFileId fd;
     char testData[] = "This is test data being uploaded from client to server. "
                       "NachOS file transfer test for Part IV of Step 6.";
-    int testSize = strlen(testData);
+    char verifyBuf[256];
+    int n;
 
-    printf("=== NachOS File Transfer Client ===\n");
+    printf("=== NachOS File Transfer Client (Real FS) ===\n");
+
+    /* Create a local test file for upload */
+    Create("local.txt", 200);
+    fd = Open("local.txt", 16);
+    if (fd >= 0) {
+        Write(testData, strlen(testData), fd);
+        Close(fd);
+        printf("Created local file: 'local.txt' (%d bytes)\n", strlen(testData));
+    }
 
     /* Connect to server */
     printf("Connecting to server %d:%d...\n", CLIENT_SERVER_ADDR, CLIENT_SERVER_PORT);
@@ -26,21 +35,33 @@ int main() {
     }
     printf("Connected (connId: %d)\n\n", connId);
 
-    /* Test 1: GET file */
+    /* Test 1: GET file from server */
     printf("--- Test 1: GET file ---\n");
-    if (clientGetFile(connId, "test.txt", localFileBuffer, CLIENT_MAX_FILESIZE,
+    if (clientGetFile(connId, "test.txt", "downloaded.txt", CLIENT_MAX_FILESIZE,
                       &receivedSize, &startTime, &endTime) == 0) {
-        localFileBuffer[receivedSize] = '\0';
-        printf("\nFile contents:\n%s\n", localFileBuffer);
         clientDisplayThroughput(receivedSize, startTime, endTime);
+
+        /* Verify downloaded file */
+        printf("\nVerifying downloaded file:\n");
+        fd = Open("downloaded.txt", 14);
+        if (fd >= 0) {
+            n = Read(verifyBuf, 255, fd);
+            if (n > 0) {
+                verifyBuf[n] = '\0';
+                printf("Content: %s\n", verifyBuf);
+            }
+            Close(fd);
+        }
     } else {
         printf("GET failed\n");
     }
 
+    /* Test 2: PUT local file to server */
     printf("\n--- Test 2: PUT file ---\n");
-    if (clientPutFile(connId, "upload.txt", testData, testSize, &startTime, &endTime) == 0) {
-        printf("PUT successful\n");
-        clientDisplayThroughput(testSize, startTime, endTime);
+    if (clientPutFile(connId, "local.txt", "upload.txt", CLIENT_MAX_FILESIZE,
+                      &startTime, &endTime) == 0) {
+        sentSize = strlen(testData);
+        clientDisplayThroughput(sentSize, startTime, endTime);
     } else {
         printf("PUT failed\n");
     }

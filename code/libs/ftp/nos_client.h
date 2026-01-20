@@ -25,15 +25,15 @@
 /* Parse OK response to extract size */
 int clientParseOkResponse(char *response, int *size);
 
-/* GET file from server */
-int clientGetFile(int connId, char *filename, char *buffer, int bufSize,
-                  int *receivedSize, long long *startTime, long long *endTime);
+/* GET file from server and save to local filesystem */
+int clientGetFile(int connId, char *remoteFile, char *localFile, int maxSize,
+                  int *receivedSize, time_t *startTime, time_t *endTime);
 
-/* PUT file to server */
-int clientPutFile(int connId, char *filename, char *data, int size,
-                  long long *startTime, long long *endTime);
+/* PUT local file to server */
+int clientPutFile(int connId, char *localFile, char *remoteFile, int maxSize,
+                  time_t *startTime, time_t *endTime);
 
-/* Calculate and display throughput */
-void clientDisplayThroughput(int bytes, long long startTime, long long endTime);
+/* Calculate and display throughput using real time */
+void clientDisplayThroughput(int bytes, time_t startTime, time_t endTime);
 
 #endif /* NOS_CLIENT_H */
