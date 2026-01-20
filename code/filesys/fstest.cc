@@ -31,7 +31,7 @@
 
 void Copy(const char *from, const char *to){
     FILE *fp;
-    OpenFile* openFile;
+    inode_t inode;
     int amountRead, fileLength;
     char *buffer;
 
@@ -54,8 +54,8 @@ void Copy(const char *from, const char *to){
         return;
     }
 
-    openFile = fileSystem->Open(to);
-    if (! openFile) {
+    inode = fileSystem->Open(to);
+    if (! inode) {
         printf("Copy: File %s is created but we can't write into\n", to);
         return; 
     }
@@ -64,7 +64,7 @@ void Copy(const char *from, const char *to){
     // Copy the data in TransferSize chunks
     buffer = new char[TransferSize];
     while ((amountRead = fread(buffer, sizeof(char), TransferSize, fp)) > 0){
-        openFile->Write(buffer, amountRead);	
+        fileSystem->Write(inode, buffer, amountRead);	
     }
     fileSystem->Close(to);
     delete [] buffer;
@@ -80,17 +80,17 @@ void Copy(const char *from, const char *to){
 //----------------------------------------------------------------------
 
 void Print(const char *name){
-    OpenFile *openFile;    
+    inode_t inode;    
     int i, amountRead;
     char *buffer;
 
-    if ((openFile = fileSystem->Open(name)) == NULL){
+    if ((inode = fileSystem->Open(name)) == INVALID_INODE){
         printf("Print: unable to open file %s\n", name);
         return;
     }
 
     buffer = new char[TransferSize];
-    while ((amountRead = openFile->Read(buffer, TransferSize)) > 0){
+    while ((amountRead = fileSystem->Read(inode, buffer, TransferSize)) > 0){
         for (i = 0; i < amountRead; i++){
             printf("%c", buffer[i]);
         }
@@ -119,7 +119,7 @@ void Print(const char *name){
 #define FileSize 	((int)(ContentSize * 5000))
 
 static void FileWrite(){
-    OpenFile *openFile;    
+    inode_t inode;    
     int i, numBytes;
 
     printf("Sequential write of %d byte file, in %zd byte chunks\n", 
@@ -128,13 +128,13 @@ static void FileWrite(){
         printf("Perf test: can't create %s\n", FileName);
         return;
     }
-    openFile = fileSystem->Open(FileName);
-    if (openFile == NULL) {
+    inode = fileSystem->Open(FileName);
+    if (inode == INVALID_INODE) {
         printf("Perf test: unable to open %s\n", FileName);
         return;
     }
     for (i = 0; i < FileSize; i += ContentSize) {
-        numBytes = openFile->Write(Contents, ContentSize);
+        numBytes = fileSystem->Write(inode, (char*) Contents, ContentSize);
         if (numBytes < 10) {
             printf("Perf test: unable to write %s\n", FileName);
             fileSystem->Close(FileName);
@@ -145,20 +145,20 @@ static void FileWrite(){
 }
 
 static void FileRead(){
-    OpenFile *openFile;    
+    inode_t inode;    
     char *buffer = new char[ContentSize];
     int i, numBytes;
 
     printf("Sequential read of %d byte file, in %zd byte chunks\n", 
             FileSize, ContentSize);
 
-    if ((openFile = fileSystem->Open(FileName)) == NULL) {
+    if ((inode = fileSystem->Open(FileName)) == INVALID_INODE) {
         printf("Perf test: unable to open file %s\n", FileName);
         delete [] buffer;
         return;
     }
     for (i = 0; i < FileSize; i += ContentSize) {
-        numBytes = openFile->Read(buffer, ContentSize);
+        numBytes = fileSystem->Read(inode, buffer, ContentSize);
         if ((numBytes < 10) || strncmp(buffer, Contents, ContentSize)) {
             printf("Perf test: unable to read %s\n", FileName);
             fileSystem->Close(FileName);

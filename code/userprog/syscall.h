@@ -112,6 +112,63 @@
  */
 void Halt() __attribute__((noreturn));
 
+
+/* -------------------------------------------------------------
+ * PROCESS MANAGEMENT
+ * -------------------------------------------------------------
+ */
+
+/* This user program is done (status = 0 means exited normally). */
+void Exit(int status) __attribute__((noreturn));
+
+
+/* -------------------------------------------------------------
+ * FILE SYSTEM OPERATIONS
+ *
+ * These functions are patterned after UNIX -- files represent
+ * both files *and* hardware I/O devices.
+ *
+ * If this assignment is done before doing the file system assignment,
+ * note that the Nachos file system has a stub implementation, which
+ * will work for the purposes of testing out these routines.
+ * -------------------------------------------------------------
+ */
+
+/* A unique identifier for an open Nachos file. */
+typedef int OpenFileId;
+
+/* when an address space starts up, it has two open files, representing
+ * keyboard input and display output (in UNIX terms, stdin and stdout).
+ * Read and Write can be used directly on these, without first opening
+ * the console device.
+ */
+
+#define ConsoleInput 0
+#define ConsoleOutput 1
+
+/* Create a Nachos file, with "name" 
+ * return true on succes and false on error
+ */
+int Create(char *name, int size);
+
+/* Open the Nachos file "name", and return an "OpenFileId" that can
+ * be used to read and write to the file.
+ */
+OpenFileId Open(char *name, int size);
+
+/* Write "size" bytes from "buffer" to the open file. */
+int Write(char *buffer, int size, OpenFileId id);
+
+/* Read "size" bytes from the open file into "buffer".
+ * Return the number of bytes actually read -- if the open file isn't
+ * long enough, or if it is an I/O device, and there aren't enough
+ * characters to read, return whatever is available (for I/O devices,
+ * you should always wait until you can return at least one character).
+ */
+int Read(char *buffer, int size, OpenFileId id);
+
+/* Close the file, we're done reading and writing to it. */
+int Close(OpenFileId id);
 /* -------------------------------------------------------------
  * CONSOLE I/O
  * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/console/Console.html">Full documentation</a>
@@ -478,27 +535,6 @@ typedef int OpenFileId;
 #define ConsoleInput 0
 #define ConsoleOutput 1
 
-/* Create a Nachos file, with "name" */
-void Create(char *name, int size);
-
-/* Open the Nachos file "name", and return an "OpenFileId" that can
- * be used to read and write to the file.
- */
-OpenFileId Open(char *name, int size);
-
-/* Write "size" bytes from "buffer" to the open file. */
-void Write(char *buffer, int size, OpenFileId id);
-
-/* Read "size" bytes from the open file into "buffer".
- * Return the number of bytes actually read -- if the open file isn't
- * long enough, or if it is an I/O device, and there aren't enough
- * characters to read, return whatever is available (for I/O devices,
- * you should always wait until you can return at least one character).
- */
-int Read(char *buffer, int size, OpenFileId id);
-
-/* Close the file, we're done reading and writing to it. */
-void Close(OpenFileId id);
 
 /*
  * Retrieves the current calendar time (wall clock time) in seconds since the Unix epoch 

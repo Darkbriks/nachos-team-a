@@ -57,13 +57,13 @@ unsigned int Process::getCurrentNumberOfProcess(){
     return MAX_PROCESS - tmp;
 }
 
-Process* Process::createProcess(OpenFile * executable) {
+Process* Process::createProcess(inode_t inode) {
     if (Process::getCurrentNumberOfProcess() == MAX_PROCESS){
         return nullptr;
     }
     Process* result = nullptr;
     const auto status_code = new char;
-    result = new Process(executable, status_code);
+    result = new Process(inode, status_code);
     if (*status_code == -1 && result != nullptr) {
         delete result;
         result = nullptr;
@@ -73,7 +73,7 @@ Process* Process::createProcess(OpenFile * executable) {
 }
 
 
-Process::Process(OpenFile * executable, char* return_code) {
+Process::Process(inode_t inode , char* return_code) {
     *return_code = 0;
 
     all_process_lock->Acquire();
@@ -104,12 +104,11 @@ Process::Process(OpenFile * executable, char* return_code) {
 
     exitCode = 0;
     threadNumber = 0; // The main thread
-    mainThread = CreateThread(executable ? "main" : "kernel");
+    mainThread = CreateThread(inode != INVALID_INODE ? "main" : "kernel");
     this->space = nullptr;
 
-    if (executable != nullptr) {
-        this->space = new AddrSpace(executable);
-        delete executable; // close file
+    if (inode != INVALID_INODE) {
+        this->space = new AddrSpace(inode);
 
         if (!this->space->IsValid()) {
             DEBUG('p', "Process: Failed to create address space\n");

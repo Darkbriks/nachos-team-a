@@ -24,6 +24,7 @@ class FirstIndirection {
         void setSector(int index, sector_t sector);
         sector_t getSector(int index);
         bool InUse(int index);
+        int getNumberFree();
         //BITLMPA
 
         sector_t entries[MAX_INDIRECT_LEVEL_ONE];

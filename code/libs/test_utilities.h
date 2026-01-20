@@ -33,6 +33,14 @@ static int tests_passed = 0;
         } \
     } while(0)
 
+#define ASSERT_NEQ(actual, expected, msg) \
+    do { \
+        if ((actual) == (expected)) { \
+            TEST_FAIL(msg); \
+            return; \
+        } \
+    } while(0)
+
 #define ASSERT_STREQ(actual, expected, msg) \
     do { \
         if (strcmp(actual, expected) != 0) { \

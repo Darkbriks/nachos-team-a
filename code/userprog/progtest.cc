@@ -23,15 +23,15 @@
 //----------------------------------------------------------------------
 
 void StartProcess(char *filename) {
-    OpenFile* executable = fileSystem->Open(filename);
+    inode_t inode = fileSystem->Open(filename);
 
-    if (executable == nullptr) {
+    if (inode == INVALID_INODE) {
         printf("Unable to open file %s\n", filename);
         interrupt->Halt();
         return;
     }
 
-    const Process* newProcess = Process::createProcess(executable);
+    const Process* newProcess = Process::createProcess(inode);
     if (newProcess == nullptr) {
         KERNEL_PANIC("StartProcess: Failed to create process");
     }

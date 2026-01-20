@@ -47,7 +47,7 @@ Thread::Thread(const tid_t t, Process* p, const ptr_32 tlsBase)
         userRegisters[r] = 0;
     }
     for (int i = 0; i < MAX_FILE_OPEN; i++){
-        openFiles[i] = nullptr;
+        openFiles[i] = INVALID_INODE;
     }
 #endif
 }
@@ -467,38 +467,41 @@ void Thread::RestoreUserState() const {
 }
 #endif
 
-bool Thread::IsOpenFile(const OpenFileId id) const {
-    return id != INVALID_ID && openFiles[id] != nullptr;
+bool Thread::IsOpenFile(const thread_inode_t id) const {
+    if (id < 0 || id >= MAX_FILE_OPEN){
+        return false;
+    }
+    return openFiles[id] != INVALID_INODE;
 }
 
-OpenFileId Thread::AddOpenFile(OpenFile* file){
-    if (const OpenFileId index = CanOpenFile(); index != INVALID_ID) {
-        openFiles[index] = file;
+thread_inode_t Thread::AddOpenFile(inode_t inode){
+    if (const thread_inode_t index = CanOpenFile(); index != INVALID_ID) {
+        openFiles[index] = inode;
         return index;
     }
     return INVALID_ID;
 }
 
-OpenFile* Thread::GetOpenFile(const OpenFileId id) const {
+inode_t Thread::GetOpenFile(const thread_inode_t id) const {
     if (!IsOpenFile(id)) {
-        return nullptr;
+        return INVALID_INODE;
     }
     return openFiles[id];
 
 }
 
-bool Thread::RemoveOpenFile(const OpenFileId id) {
+bool Thread::RemoveOpenFile(const thread_inode_t id) {
     if (!IsOpenFile(id)) {
         return false;
     }
-    openFiles[id] = nullptr;
+    openFiles[id] = INVALID_INODE;
     return true;
 
 }
 
-OpenFileId Thread::CanOpenFile() const {
+thread_inode_t Thread::CanOpenFile() const {
     for (int i = 0; i < MAX_FILE_OPEN; i++) {
-        if (openFiles[i] == nullptr) {
+        if (openFiles[i] == INVALID_INODE) {
             return i;
         }
     }

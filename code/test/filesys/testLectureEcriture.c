@@ -1,23 +1,24 @@
 #include "syscall.h"
 #include "nos_stdio.h"
 #include "nos_stdlib.h"
+#include "nos_unistd.h"
 
 int main(){
     char buffer[200];
-    int fd = Open("a", 1);
-    PutInt(Read(buffer, 200, fd));
+    int fd = open("a", 0);
+    PutInt(read(fd, buffer, 200));
     printf("on lit %s car fd = %d \n", buffer, fd);
     for (int i = 0; i < 10; i++){
         buffer[i] = 'z';
     }
     buffer[10] = 0;
 
-    Close(fd);
-    fd = Open("a", 1);
-    Write(buffer, 10, fd);
-    Close(fd);
-    fd = Open("a", 1);
-    Read(buffer, 200, fd);
-    Close(fd);
+    close_file(fd);
+    fd = open("a", 0);
+    write(fd, buffer, 10);
+    close_file(fd);
+    fd = open("a", 0);
+    read(fd, buffer, 200);
+    close_file(fd);
     printf("on lit %s \n", buffer);
 }
