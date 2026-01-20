@@ -26,7 +26,7 @@
 //    -c tests the console
 //
 //  FILESYS
-//    -f causes the physical disk to be formatted // TODO
+//    -f causes the physical disk to be formatted
 //    -cp copies a file from UNIX to Nachos
 //    -p prints a Nachos file to stdout
 //    -r removes a Nachos file from the file system
@@ -58,14 +58,15 @@
 
 // External functions used by this file
 
-extern void ThreadTest(void),
-    Copy(const char *unixFile, const char *nachosFile);
+extern void ThreadTest(void);
+extern void Copy(const char *unixFile, const char *nachosFile);
 extern void Print(const char *file), PerformanceTest(void);
 extern void StartProcess(char *file), ConsoleTest(char *in, char *out), SynchConsoleTest(char *in, char *out);
 extern void MailTest(int networkID);
 extern void RingTest(int myAddr, int numMachines);
 extern void ReliableMailTest(int farAddr);
 extern void ReliableMailChunkerTest(int farAddr);
+
 //---------------------------------------------------------------------
 // main
 //      Bootstrap the operating system kernel.
@@ -81,8 +82,7 @@ extern void ReliableMailChunkerTest(int farAddr);
 //----------------------------------------------------------------------
 
 int main(int argc, char **argv) {
-    int argCount; // the number of arguments
-    // for a particular command
+    int argCount; // the number of arguments for a particular command
 
     DEBUG('t', "Entering main");
     (void)Initialize(argc, argv);
@@ -93,41 +93,33 @@ int main(int argc, char **argv) {
 
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
         argCount = 1;
-        if (!strcmp(*argv, "-z")) // print copyright
-            printf("%s", copyright);
+        if (!strcmp(*argv, "-z")) { printf("%s", copyright); } // print copyright
 #ifdef USER_PROGRAM
         if (!strcmp(*argv, "-x")) { // run a user program
             ASSERT(argc > 1);
             StartProcess(*(argv + 1));
             argCount = 2;
         } else if (!strcmp(*argv, "-c")) { // test the console
-            if (argc == 1)
-                ConsoleTest(NULL, NULL);
+            if (argc == 1)  { ConsoleTest(NULL, NULL); }
             else {
                 ASSERT(argc > 2);
                 ConsoleTest(*(argv + 1), *(argv + 2));
                 argCount = 3;
             }
-            interrupt->Halt(); // once we start the console, then
-                               // Nachos will loop forever waiting
-                               // for console input
+            interrupt->Halt(); // once we start the console, then Nachos will loop forever waiting for console input
         } else if (!strcmp(*argv, "-sc")) { // test the synchronized console
-            if (argc == 1)
-                SynchConsoleTest(NULL, NULL);
+            if (argc == 1) { SynchConsoleTest(NULL, NULL); }
             else {
                 ASSERT(argc > 2);
                 SynchConsoleTest(*(argv + 1), *(argv + 2));
                 argCount = 3;
             }
-            interrupt->Halt(); // once we start the console, then
-                               // Nachos will loop forever waiting
-                               // for console input
+            interrupt->Halt(); // once we start the console, then Nachos will loop forever waiting for console input
         }
 #endif // USER_PROGRAM
 #ifdef FILESYS
         if (!strcmp(*argv, "-cp")) {
             Copy(*(argv + 1), *(argv + 2));
-
         }
         if (!strcmp(*argv, "-shell")) {
             FileSysShell shell(fileSystem);
@@ -138,9 +130,7 @@ int main(int argc, char **argv) {
 #ifdef NETWORK
         if (!strcmp(*argv, "-o")) {
             ASSERT(argc > 1);
-            Delay(2); // delay for 2 seconds
-            // to give the user time to
-            // start up another nachos
+            Delay(2); // delay for 2 seconds to give the user time to start up another nachos
             MailTest(atoi(*(argv + 1)));
             argCount = 2;
         } else if (!strcmp(*argv, "-g")) {
@@ -164,13 +154,5 @@ int main(int argc, char **argv) {
     }
 
     interrupt->Halt();
-    currentThread->Finish(); // NOTE: if the procedure "main"
-    // returns, then the program "nachos"
-    // will exit (as any other normal program
-    // would).  But there may be other
-    // threads on the ready list.  We switch
-    // to those threads by saying that the
-    // "main" thread is finished, preventing
-    // it from returning.
     return (0); // Not reached...
 }

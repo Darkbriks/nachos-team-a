@@ -4,7 +4,7 @@
 #include "nos_threads.h"
 #include "nos_pthread.h"
 
-pthread_mutex_t mutex;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 int shared_counter = 0;
 const int NUM_THREADS = 5;
 const int INCREMENTS_PER_THREAD = 1000;
@@ -19,8 +19,6 @@ void* thread_function(void* arg) {
 }
 
 int main() {
-    pthread_mutex_init(&mutex);
-
     pthread_t threads[NUM_THREADS];
 
     for (int i = 0; i < NUM_THREADS; i++) {

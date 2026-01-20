@@ -23,6 +23,7 @@
 #include "process.h"
 #include "system.h"
 #include "thread.h"
+#include "kernelpanic.h"
 
 //----------------------------------------------------------------------
 // Scheduler::Scheduler
@@ -47,7 +48,7 @@ Scheduler::~Scheduler() { delete readyList; delete sleepList; }
 //----------------------------------------------------------------------
 
 void Scheduler::ReadyToRun(Thread *thread) {
-    DEBUG('t', "Putting thread %s on ready list.\n", thread->getName());
+    DEBUG('S', "Putting thread %s on ready list.\n", thread->getName());
 
     thread->setStatus(READY);
     readyList->Append((void *)thread);
@@ -81,7 +82,7 @@ void Scheduler::Run(Thread *nextThread) {
     Thread *oldThread = currentThread;
 
     // LB: For safety...
-    ASSERT(interrupt->getLevel() == IntOff);
+    ASSERT_KP(interrupt->getLevel() == IntOff);
     // End of addition
 
 #ifdef USER_PROGRAM                     // ignore until running user programs
@@ -97,7 +98,7 @@ void Scheduler::Run(Thread *nextThread) {
     currentThread = nextThread;        // switch to the next thread
     currentThread->setStatus(RUNNING); // nextThread is now running
 
-    DEBUG('t', "Switching from thread \"%s\" to thread \"%s\"\n",
+    DEBUG('S', "Switching from thread \"%s\" to thread \"%s\"\n",
           oldThread->getName(), nextThread->getName());
 
     // This is a machine-dependent assembly language routine defined
@@ -107,7 +108,7 @@ void Scheduler::Run(Thread *nextThread) {
 
     SWITCH(oldThread, nextThread);
 
-    DEBUG('t', "Now in thread \"%s\"\n", currentThread->getName());
+    DEBUG('S', "Now in thread \"%s\"\n", currentThread->getName());
 
     // If the old thread gave up the processor because it was finishing,
     // we need to delete its carcass.  Note we cannot delete the thread
@@ -137,7 +138,7 @@ void Scheduler::Run(Thread *nextThread) {
 //----------------------------------------------------------------------
 
 void Scheduler::AddToSleepList(Thread *thread) {
-    DEBUG('t', "Adding thread %s to sleep list (wake time: %lld)\n", thread->getName(), thread->getWaitTime());
+    DEBUG('S', "Adding thread %s to sleep list (wake time: %lld)\n", thread->getName(), thread->getWaitTime());
     thread->setStatus(BLOCKED);
     sleepList->SortedInsert(thread, thread->getWaitTime());
 }
@@ -157,7 +158,7 @@ void Scheduler::WakeUpThreads() {
         long long key;
         sleepList->SortedRemove(&key);
 
-        DEBUG('t', "Waking up thread %s (wake time: %lld, current tick: %lld)\n", thread->getName(), thread->getWaitTime(), currentTick);
+        DEBUG('S', "Waking up thread %s (wake time: %lld, current tick: %lld)\n", thread->getName(), thread->getWaitTime(), currentTick);
         ReadyToRun(thread);
     }
 }

@@ -2,14 +2,15 @@
 
 #include "syscall.h"
 #include "addrspace.h"
-#include "bitmap_thread_safe.h"
 #include "bitmap.h"
+#include "kernelpanic.h"
 #include "stackmanager.h"
 #include "thread.h"
 #include "nos_tls.h"
 #include "../threads/system.h"
 
-BitMapThreadSafe* Process::all_process = new BitMapThreadSafe(MAX_PROCESS);
+BitMap* Process::all_process = new BitMap(MAX_PROCESS);
+Lock* Process::all_process_lock = new Lock("all process lock");
 int Process::activeProcessCount = 0;
 Lock* Process::processCountLock = new Lock("process count lock");
 LinkedList<Process>* Process::all_process_addr = new LinkedList<Process>();
@@ -17,6 +18,7 @@ LinkedList<Process>* Process::all_process_addr = new LinkedList<Process>();
 void Process::freeAllStatic(){
     delete Process::processCountLock;
     delete Process::all_process;
+    delete Process::all_process_lock;
     delete Process::all_process_addr;
 }
 
@@ -28,7 +30,10 @@ bool Process::isLastActiveProcess() {
 }
 
 bool Process::doesProcessExist(int PID){
-    return all_process->Test(PID);
+    all_process_lock->Acquire();
+    const bool result = all_process->Test(PID);
+    all_process_lock->Release();
+    return result;
 }
 
 bool searchProcess(Process* P, const unsigned int value) {
@@ -43,7 +48,9 @@ Process* Process::FindProcessByPID(const unsigned int PID) {
 }
 
 unsigned int Process::getCurrentNumberOfProcess(){
-    int tmp = all_process->NumClearThreadSafe();
+    all_process_lock->Acquire();
+    int tmp = all_process->NumClear();
+    all_process_lock->Release();
     if (tmp == -1){
         tmp = 0;
     }
@@ -69,7 +76,9 @@ Process* Process::createProcess(OpenFile * executable) {
 Process::Process(OpenFile * executable, char* return_code) {
     *return_code = 0;
 
+    all_process_lock->Acquire();
     const int pid = all_process->Find();
+    all_process_lock->Release();
     if (pid == -1) { *return_code = -1; return; }
 
     PID = static_cast<unsigned int>(pid);
@@ -101,6 +110,14 @@ Process::Process(OpenFile * executable, char* return_code) {
     if (executable != nullptr) {
         this->space = new AddrSpace(executable);
         delete executable; // close file
+
+        if (!this->space->IsValid()) {
+            DEBUG('p', "Process: Failed to create address space\n");
+            delete this->space;
+            this->space = nullptr;
+            *return_code = -1;
+            return;
+        }
 
         unsigned int mainStackTop, mainStackLimit;
 
@@ -147,7 +164,9 @@ Process::~Process() {
     delete threadExitSemaphore;
     delete all_threads_addr;
     delete threads_bitmap;
-    all_process->ClearThreadSafe(static_cast<int>(PID));
+    all_process_lock->Acquire();
+    all_process->Clear(static_cast<int>(PID));
+    all_process_lock->Release();
     if (PID > 0) {
         processCountLock->Acquire();
         activeProcessCount--;
@@ -162,6 +181,9 @@ Process::~Process() {
             interrupt->Halt();
         }
     } else {
+        processCountLock->Acquire();
+        all_process_addr->RemoveInList(this);
+        processCountLock->Release();
         DEBUG('p', "Kernel process %d destroyed\n", PID);
     }
 }
@@ -185,12 +207,12 @@ void Process::ThreadTerminated(Thread* thread) {
             interrupt->Halt();
         }
 
-        ASSERT(processToBeDestroyed == nullptr);
+        ASSERT_KP(processToBeDestroyed == nullptr);
         processToBeDestroyed = currentThread->getProcess();
 
         currentThread->Finish();
 
-        ASSERT(FALSE);
+        KERNEL_PANIC("Returned from Thread::Finish() in ThreadTerminated (should never happen)");
     }
     threadNumberLock->Release();
 

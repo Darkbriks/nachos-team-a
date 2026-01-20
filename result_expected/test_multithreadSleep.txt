@@ -1,30 +1,31 @@
 === Test Sleep syscall with multiple threads ===
-MTain: Created thread with ID 2
-hrMTead 1: Starting sleep test
-ain: CrTeated thread with ID 3
-hrMTead 2: Starting sleep test
-hread 1: WokeT up after 1000 ticks
-Thread 1: Slept for 1081 ticks (expected ~1000)
-ain: Created thread with ID 4
-hrMTead 3: Starting sleep test
-hread 2: Woke up aTfter 2000 ticks
-Thread 2: Slept for 2245 ticks (expected ~2000)
-ain: Created thread with ID 5
-hrMTead 3: Woke up after 3000 ticks
-Thread 3: Slept for 3140 ticks (expected ~3000)
-hread 4: Starting sleep test
-hread 5: Starting sleep Ttest
-ain: Created thread with ID 6
-hrTMead 4: Woke up after 4000 ticks
-Thread 4: Slept for 4178 ticks (expected ~4000)
-hread 5: Woke up after 5000 ticks
-Thread 5: Slept for 5304 ticks (expected ~5000)
+21MMain: Created thread with ID Thread : Starting sleep test
+
+ai3M2Mn: Created thread with ID 
+Thread : Starting sleep testain: CreT Woke up after 1000 tar4M3Mn: Created thread with ID 
+Thread : Starting sleep test
+hin: Created thTp after 2000 ticks
+Thread 1: Slept for 1130 ticks (expected ~1000)
+aread 1: Slept for 1130 ticks (expected ~1000)
+sleep test
+aread 1: Slept for 11Tr 3000 thr5M4Mn: Created thread with ID 
+ThreaThread 2: Slept for 2201 ticks (expected ~2000)
+hread 2: Slept for 2201 ticks (expThread 3: Slept for 3119 ticks (expected ~3000)
+aread 3: Slept for 3119 ticks (expected ~3000)
+sleep test
+aread 3: Slept for 3119 ticT thr6M5Mn: Created thread with ID 
+ThreaThread 4: Slept for 4094 ticks (expected ~4000)
+aread 4: Slept for 4094 ticksareM thread finished.
+94 ticks (expected ~4000)
+sleep test
 ain thread finished.
+Thread 5: Woke up after 5000 ticks
+Thread 5: Slept for 5084 ticks (expected ~5000)
 Machine halting!
 
-Ticks: total 169677, idle 77296, system 37820, user 54561
+Ticks: total 335392, idle 95667, system 45480, user 194245
 Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 791
+Console I/O: reads 0, writes 969
 Paging: faults 0
 Network I/O: packets received 0, sent 0
 

@@ -100,7 +100,7 @@ mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 foo
-mem_realloc: Next block is corrupted
+mem_realloc: Unable to allocate new block
 ça marche :) !
 bar
 hey2
@@ -112,9 +112,9 @@ hey2
 3
 Machine halting!
 
-Ticks: total 363909, idle 177400, system 64940, user 121569
+Ticks: total 671257, idle 177900, system 72070, user 421287
 Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 1774
+Console I/O: reads 0, writes 1779
 Paging: faults 0
 Network I/O: packets received 0, sent 0
 

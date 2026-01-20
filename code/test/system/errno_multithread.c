@@ -1,8 +1,7 @@
 /* Test errno with tls in multithreaded environment */
 #include "syscall.h"
 #include "nos_errno.h"
-#include "nos_mem_space.h"
-#include "nos_stdlib.h"
+#include "nos_stdio.h"
 #include "nos_stddef.h"
 #include "nos_pthread.h"
 
@@ -41,7 +40,7 @@ int main(void) {
 
     for (int i = 0; i < NUM_THREADS; i++) {
         if (pthread_create(&threads[i], NULL, (void*(*)(void*))thread_function, (void*)(long)i) != 0) {
-            print_error("Failed to create thread "); PutInt(i); PutChar('\n');
+            printf("Failed to create thread %d (errno=%d)\n", i, errno);
             return -1;
         }
     }

@@ -2,6 +2,7 @@
 #include "bitmap.h"
 #include "system.h"
 #include "synch.h"
+#include "kernelpanic.h"
 
 Semaphore *sem = new Semaphore("Frame_provider", 1);
 
@@ -53,7 +54,7 @@ int FrameProvider::GetEmptyFrame() {
         return -1;
     }
 
-    ASSERT(frameNumber >= 0 && frameNumber < (int)numFrames);
+    ASSERT_KP(frameNumber >= 0 && frameNumber < (int)numFrames);
 
     char* frameAddress = &(machine->mainMemory[frameNumber * PageSize]);
     bzero(frameAddress, PageSize);
@@ -75,7 +76,7 @@ void FrameProvider::SetAllocationStrategy(IAllocationStrategy* strategy) {
 }
 
 void FrameProvider::ReleaseFrame(int frameNumber) {
-    ASSERT(frameNumber >= 0 && frameNumber < (int)numFrames);
+    ASSERT_KP(frameNumber >= 0 && frameNumber < (int)numFrames);
 
     bitmap->Clear(frameNumber);
 

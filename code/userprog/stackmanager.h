@@ -4,13 +4,12 @@
 class AddrSpace;
 class Lock;
 
-// TODO: Regroup flags into a bitfield
 struct StackRegion {
     unsigned int base;      // High address (top of stack, where SP starts)
     unsigned int limit;     // Low address (bottom of stack)
     bool inUse;             // Currently allocated to a thread
     bool userProvided;      // Stack was provided by user (don't free memory)
-    unsigned int threadTid; // TID of thread using this stack (for debugging)
+    unsigned short threadTid; // TID of thread using this stack (for debugging)
 
     StackRegion() : base(0), limit(0), inUse(false), userProvided(false), threadTid(0) {}
 
@@ -82,12 +81,12 @@ public:
 
     /**
      * @brief Get stack info for a given base address
-     * TODO: returning an internal pointer is bad
      *
      * @param base Stack base address
-     * @return Pointer to StackRegion or nullptr if not found
+     * @param outRegion Output parameter for stack region
+     * @return true if found, false if not found
      */
-    [[nodiscard]] StackRegion* GetStackInfo(unsigned int base) const;
+    [[nodiscard]] bool GetStackInfo(unsigned int base, StackRegion& outRegion) const;
 
     /**
      * @brief Check if an address is within any allocated stack

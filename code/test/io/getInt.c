@@ -1,5 +1,6 @@
+#include "nos_errno.h"
 #include "syscall.h"
-#include "nos_stdlib.h"
+#include "nos_stdio.h"
 
 void get(int n)
 {
@@ -11,8 +12,7 @@ void get(int n)
         return;
     }
 
-    print_error("Value given was not a number.");
-
+    printf("Value given was not a number. (errno=%d)\n", errno);
 }
 
 int main()

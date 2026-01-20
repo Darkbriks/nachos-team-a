@@ -3,6 +3,7 @@
 #include "system.h"
 #include "nos_limits.h"
 #include "syscall.h"
+#include "process.h"
 
 #include "userIO.h"
 
@@ -18,10 +19,17 @@ void handle_SC_PutString(){
         n = MAX_PUT_STRING;
     }
 
-    if (addr < 0) { RETURN(-E_FAULT); } // TODO Add more checks (addr is in valid user space, for example)
     if (n < 0) { RETURN(-E_INVAL); }
     if (n == 0) { RETURN(0); }
     if (n > INT_MAX - addr) { RETURN(-E_OVERFLOW); } // Prevent overflow
+
+    Process *process = currentThread->getProcess();
+    VALIDATE_ARG(process != nullptr, E_FAULT);
+
+    const AddrSpace *space = process->getSpace();
+    VALIDATE_ARG(space != nullptr, E_FAULT);
+
+    VALIDATE_ARG(space->IsValidUserRange(static_cast<unsigned int>(addr), static_cast<unsigned int>(n)), E_FAULT);
 
     int offset = 0;
     char buffer[MAX_STRING_SIZE];
@@ -30,7 +38,6 @@ void handle_SC_PutString(){
         if (!CopyStringFromUser(addr + offset, buffer, MAX_STRING_SIZE)) {
             RETURN(-E_FAULT);
         }
-        DEBUG('a', "PutString got string: %s\n", buffer);
         if (const int res = synchConsole->SynchPutString(buffer, MAX_STRING_SIZE); res <= 0) { break; }
         else { offset += res; }
     }
@@ -45,9 +52,16 @@ void handle_SC_GetString(){
     int addr = machine->ReadRegister(4);
     int n = machine->ReadRegister(5);
 
-    if (addr < 0) { RETURN(-E_FAULT); } // TODO Add more checks (addr is in valid user space, for example)
     if (n < 0) { RETURN(-E_INVAL); }
     if (n == 0) { RETURN(0); }
+
+    Process *process = currentThread->getProcess();
+    VALIDATE_ARG(process != nullptr, E_FAULT);
+
+    const AddrSpace *space = process->getSpace();
+    VALIDATE_ARG(space != nullptr, E_FAULT);
+
+    VALIDATE_ARG(space->IsValidUserRange(static_cast<unsigned int>(addr), static_cast<unsigned int>(n)), E_FAULT);
 
     if (n > MAX_STRING_SIZE) { n = MAX_STRING_SIZE; }
     {
@@ -64,14 +78,22 @@ void handle_SC_PutInt(){
     int value = machine->ReadRegister(4);
     char value_str[12]; // An integer is never bigger than 12 character.
     snprintf(value_str, 12, "%d", value);
-    RETURN(synchConsole->SynchPutString(value_str, 12)); // TODO handle future errno exception
+    RETURN(synchConsole->SynchPutString(value_str, 12));
 }
 
 void handle_SC_GetInt(){
     ptr_32 addr = (ptr_32) machine->ReadRegister(4);
-    if (addr < 0) { RETURN(-E_FAULT); }
+
+    Process *process = currentThread->getProcess();
+    VALIDATE_ARG(process != nullptr, E_FAULT);
+
+    const AddrSpace *space = process->getSpace();
+    VALIDATE_ARG(space != nullptr, E_FAULT);
+
+    VALIDATE_ARG(space->IsValidUserRange(static_cast<unsigned int>(addr), sizeof(int)), E_FAULT);
+
     char value[12]; // An integer is never bigger than 12 character.
-    synchConsole->SynchGetString(value, 12); // TODO handle future errno exception
+    synchConsole->SynchGetString(value, 12);
     int new_val;
     if (sscanf(value, "%d", &new_val) !=1){
         RETURN(-E_INVAL);

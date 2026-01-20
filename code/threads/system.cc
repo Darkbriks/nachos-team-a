@@ -9,6 +9,7 @@
 #include "copyright.h"
 #include "futex.h"
 #include "frameprovider.h"
+#include "kernelpanic.h"
 #include "process.h"
 #include "thread.h"
 #include "connectionmanager.h"
@@ -149,8 +150,7 @@ void Initialize(int argc, char **argv) {
 
     Process * process = Process::createProcess(nullptr);
     if (process == nullptr){
-        // real kernel panick
-        ASSERT(FALSE);
+        KERNEL_PANIC("Failed to create kernel process during initialization");
     }
     currentThread = process->getMainThread();
     currentThread->setStatus(RUNNING);
@@ -191,20 +191,18 @@ void freeAllStatic(){
 //      Nachos is halting.  De-allocate global data structures.
 //----------------------------------------------------------------------
 
-
 void Cleanup() {
     printf("\nCleaning up...\n");
-    Process* tmp;
     if (threadToBeDestroyed != nullptr){
         delete threadToBeDestroyed;
         threadToBeDestroyed = nullptr;
     }
     if (processToBeDestroyed != nullptr){
-        tmp = processToBeDestroyed;
         delete processToBeDestroyed;
+        processToBeDestroyed = nullptr;
     }
 
-    tmp = currentThread->getProcess();
+    Process * tmp = currentThread->getProcess();
     for (int i = 1; i < MAX_PROCESS; i++){
         tmp = Process::FindProcessByPID(i);
         if (tmp != nullptr){
@@ -212,10 +210,12 @@ void Cleanup() {
             delete tmp;
         }
     }
-    tmp = Process::FindProcessByPID(0);
-    ASSERT(tmp != nullptr);
-    tmp->KillAllThreads();
-    delete tmp;
+
+    Process* kernel = Process::FindProcessByPID(0);
+    if (kernel != nullptr){
+        kernel->KillAllThreads();
+        delete kernel;
+    }
 
 #ifdef NETWORK
     ConnectionManager::GetInstance()->Shutdown();
@@ -240,9 +240,11 @@ void Cleanup() {
     delete interrupt;
     delete futexQueue;
     delete frameProvider;
-    freeAllStatic();
     delete stats;
-    DEBUG('a',"\nShutdown\n");
+
+    freeAllStatic();
+
+    DEBUG('C',"\nShutdown\n");
     Exit(0);
 }
 

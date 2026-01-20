@@ -26,6 +26,7 @@
 #include "system.h"
 #include <vector>
 #include "thread.h"
+#include "kernelpanic.h"
 
 //----------------------------------------------------------------------
 // Semaphore::Semaphore
@@ -112,7 +113,7 @@ void Lock::Acquire() {
 }
 
 void Lock::Release() {
-    ASSERT(isHeldByCurrentThread());
+    ASSERT_KP(isHeldByCurrentThread());
     holder = nullptr;
     sem->V();
 }
@@ -132,7 +133,7 @@ Condition::~Condition() {
 }
 
 void Condition::Wait(Lock *conditionLock) { 
-    ASSERT(conditionLock->isHeldByCurrentThread());
+    ASSERT_KP(conditionLock->isHeldByCurrentThread());
 
     waiters++;
     conditionLock->Release();
@@ -143,7 +144,7 @@ void Condition::Wait(Lock *conditionLock) {
 }
 
 void Condition::Signal(Lock *conditionLock) {
-    ASSERT(conditionLock->isHeldByCurrentThread());
+    ASSERT_KP(conditionLock->isHeldByCurrentThread());
 
     if (waiters > 0) {
         waiters--;
@@ -152,7 +153,7 @@ void Condition::Signal(Lock *conditionLock) {
 }
 
 void Condition::Broadcast(Lock *conditionLock) {
-    ASSERT(conditionLock->isHeldByCurrentThread());
+    ASSERT_KP(conditionLock->isHeldByCurrentThread());
 
     while (waiters > 0) {
         waiters--;

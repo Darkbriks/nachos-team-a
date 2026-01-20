@@ -417,7 +417,7 @@ if __name__ == "__main__":
 
     all_test.append(Test(
                         file_expect ="test_ExceptionCatch.txt",
-                        line_to_execute = f'echo -e "./system/testCorruptionCode\n./system/testStackOverflow\n./system/testCorruptionMemoire" | {nachos} -x ./our_shell',
+                        line_to_execute = f'echo -e "./system/testCorruptionCode\n./system/testStackOverflow\n./system/testCorruptionMemoire\nexit" | {nachos} -x ./our_shell',
                         name = "Test main thread create a process and the new one try to write on code section, then create a stack overflow and last try to go after the stack in memory",
                         description = "Lance le shell pour lui faire exexuter un processus. Celui ci va faire une erreur que le kernel attrape pour renvoyer une exception et prévenir le shell que son processus fils à mal fini, test 3 exception sur la mémoire" 
                     )

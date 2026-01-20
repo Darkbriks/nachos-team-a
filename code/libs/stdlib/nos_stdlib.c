@@ -56,9 +56,9 @@ int exit(const int status) {
         atexit_handlers[i]();
     }
 
-    // TODO: FLush all stdio buffers
-    // TODO: Close stdio streams (buffers, files, etc.)
-    // TODO: Free libc allocated memory
+    // For now, only stdio as ressource to clean up,
+    // and that is done with atexit handlers,
+    // so just call _exit.
 
     _exit(status);
     __builtin_unreachable();
@@ -236,71 +236,3 @@ type name(const type j) {      \
 ABS_MACRO(int, abs)
 ABS_MACRO(long int, labs)
 ABS_MACRO(long long int, llabs)
-
-void print_error(char* msg) {
-    int err = __get_errno();
-    // TODO: Optimize syscall number by using buffered and formattted output
-    if (msg) { printf(msg); }
-    PutString(" (errno=", 8);
-    PutInt(err);
-    PutString(")\n", 2);
-}
-
-int scanf_simple(char *format, void *result){
-    char tmp[255];
-    int i;
-    switch (format[1]){
-        case 'd':
-            if ( ( i = GetString(tmp, 255) )<  0 ){
-                return -1;
-            }
-            *((int *) result) = (int) atoi(tmp, 10);
-            return i;
-
-        case 's':
-            if ( ( i = GetString((char *) result, 255) )<  0 ){
-                return -1;
-            }
-            ((char *)result)[i] = 0;
-            return i;
-
-        case 'c':
-            if ( ( i = GetString(tmp, 255) ) != 1 ){
-                return -1;
-            }
-            *((char *) result) = tmp[0];
-            return 1;
-        default:
-            return -1;
-    }
-    return 0;
-}
-
-char* itoa(int value, char* str, int base) {
-    static const char digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    char* ptr = str;
-    int negative = 0;
-    long val = value; // long to avoid overflow when value is INT_MIN
-
-    if (base < 2 || base > 36) { *str = '\0'; return str; }
-    if (value < 0 && base == 10) { negative = 1; val = -val; }
-
-    do {
-        long tmp_value = val;
-        val /= base;
-        *ptr++ = digits[tmp_value - val * base];
-    } while (val);
-
-    if (negative) { *ptr++ = '-'; }
-
-    *ptr-- = '\0';
-
-    char* reverse_ptr = str;
-    while (reverse_ptr < ptr) {
-        char tmp_char = *ptr;
-        *ptr-- = *reverse_ptr;
-        *reverse_ptr++ = tmp_char;
-    }
-
-    return str;
-}
