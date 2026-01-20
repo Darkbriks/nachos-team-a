@@ -101,13 +101,13 @@ void handle_SC_sendto() {
         for (int i = 0; currentSize > 0 ; i += maxSize){
             sizeToSend = currentSize > maxSize ? maxSize : currentSize;
             auto data = new char[sizeToSend];
-            if (!CopyFromUserRaw(data, dataAddr, sizeToSend)) {
+            if (!CopyFromUserRaw(data, dataAddr+i, sizeToSend)) {
                 delete[] data;
                 RETURN(-E_FAULT);
             }
             currentSize -= sizeToSend;
 
-            result = mgr->Send(connId, data+i, sizeToSend);
+            result = mgr->Send(connId, data, sizeToSend);
             delete[] data;
 
             if (result < 0) { RETURN(-result); }
@@ -152,10 +152,10 @@ void handle_SC_recvfrom() {
     ConnectionManager* mgr = GetConnectionManager();
     if (mgr == nullptr) { RETURN(-E_NOSYS); }
 
-    int bufSize = size > MAX_PUT_STRING ? MAX_PUT_STRING : size;
+    int bufSize = size;
     char* buffer = new char[bufSize];
 
-    MessageType msgType;
+    MessageType msgType = MessageType::MSG_DATA;
 
     int result = mgr->Recv(connId, buffer, bufSize, &msgType);
 

@@ -101,6 +101,8 @@ private:
     void SendACK();
 
     bool CheckTimeouts(long long currentTime);
+
+    void InitiateChunkTransmission(MessageType type);
 };
 
 #endif

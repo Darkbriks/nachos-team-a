@@ -156,6 +156,12 @@ void Connection::InitiateClose() {
     lock->Release();
 }
 
+void Connection::InitiateChunkTransmission(MessageType type){
+    lock->Acquire();
+    SendControlMessage(type, sendSeqNum++, recvSeqNum);
+    lock->Release();
+}
+
 bool Connection::IsTerminated() {
     lock->Acquire();
     const bool result = (state == CONN_TERMINATED || state == CONN_CLOSED);
@@ -341,7 +347,7 @@ void Connection::HandleACK(const ReliableHeader* hdr) {
 void Connection::HandleDATA(const ReliableHeader* hdr, const char* payload, const uint8_t flags) {
     lock->Acquire();
 
-    DEBUG('n', "[Conn %d] Received DATA seq=%u len=%u\n", connId, hdr->seqNum, hdr->dataLen);
+    DEBUG('n', "[Conn %d] Received DATA seq=%u len=%u type=%s\n", connId, hdr->seqNum, hdr->dataLen, MessageTypeToString(hdr->getType()));
 
     if (state != CONN_ESTABLISHED && state != CONN_FIN_WAIT_1 &&
         state != CONN_FIN_WAIT_2) {

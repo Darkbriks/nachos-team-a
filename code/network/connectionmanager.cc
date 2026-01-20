@@ -234,12 +234,12 @@ int ConnectionManager::Send(const int connId, const char* data, int length) {
     if (!conn->CanSend()) { return E_NOTCONN; }
 
     if (length == -1){
-        conn->SendControlMessage(MessageType::MSG_CHUNK_BEGIN);
+        conn->InitiateChunkTransmission(MessageType::MSG_CHUNK_BEGIN);
         return 0;
         
     } 
     else if (length == -2){
-        conn->SendControlMessage(MessageType::MSG_CHUNK_END);
+        conn->InitiateChunkTransmission(MessageType::MSG_CHUNK_END);
         return 0;
     }
 
@@ -650,6 +650,8 @@ void ConnectionManager::RouteToConnection(PacketHeader pktHdr, const ReliableHea
             conn->HandleRST(relHdr);
             break;
         case MessageType::MSG_CHUNK_BEGIN:
+            conn->HandleDATA(relHdr, payload, relHdr->getFlags());
+        case MessageType::MSG_CHUNK_END:
             conn->HandleDATA(relHdr, payload, relHdr->getFlags());
         default:
             DEBUG('n', "Unknown message type: %d\n", relHdr->getType());
