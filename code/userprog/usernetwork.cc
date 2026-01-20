@@ -81,16 +81,45 @@ void handle_SC_sendto() {
     VALIDATE_ARG(space->IsValidUserRange(dataAddr, size), E_FAULT);
 
     DEBUG('n', "SC_sendto: connId=%d dataAddr=0x%x size=%d\n", connId, dataAddr, size);
-
     if (connId < 0) { RETURN(-E_INVAL); }
     if (size <= 0) { RETURN(-E_INVAL); }
-    if (size > static_cast<int>(MAX_PUT_STRING)) {
-        // TODO: Support larger messages with fragmentation
-        RETURN(-E_INVAL);
-    }
+
 
     ConnectionManager* mgr = GetConnectionManager();
     if (mgr == nullptr) { RETURN(-E_NOSYS); }
+
+    int maxSize = static_cast<int>(MAX_PUT_STRING);
+    
+    if (size > maxSize) {
+        int result = mgr->Send(connId, NULL, -1);
+
+        if (result < 0) { RETURN(-result); }
+
+        int sizeToSend = maxSize;
+        int currentSize = size;
+
+        for (int i = 0; currentSize > 0 ; i += maxSize){
+            sizeToSend = currentSize > maxSize ? maxSize : currentSize;
+            auto data = new char[sizeToSend];
+            if (!CopyFromUserRaw(data, dataAddr, sizeToSend)) {
+                delete[] data;
+                RETURN(-E_FAULT);
+            }
+            currentSize -= sizeToSend;
+
+            int result = mgr->Send(connId, data+i, sizeToSend);
+            delete[] data;
+
+            if (result < 0) { RETURN(-result); }
+        }
+
+        int result = mgr->Send(connId, NULL, -2);
+
+        if (result < 0) { RETURN(-result); }
+
+        RETURN(size);
+
+    }
 
     auto data = new char[size];
     if (!CopyFromUserRaw(data, dataAddr, size)) {
@@ -126,9 +155,24 @@ void handle_SC_recvfrom() {
     int bufSize = size > MAX_PUT_STRING ? MAX_PUT_STRING : size;
     char* buffer = new char[bufSize];
 
-    int result = mgr->Recv(connId, buffer, bufSize);
+    MessageType msgType;
+
+    int result = mgr->Recv(connId, buffer, bufSize, &msgType);
 
     if (result < 0) { delete[] buffer; RETURN(-result); }
+
+    if (msgType == MessageType::MSG_CHUNK_BEGIN){
+        while (msgType != MessageType::MSG_CHUNK_END){
+            int result = mgr->Recv(connId, buffer, bufSize, &msgType);
+
+            if (result > 0) {
+                if (!CopyToUserRaw(bufferAddr, buffer, result)) {
+                    delete[] buffer;
+                    RETURN(-E_FAULT);
+                }
+            }
+        }
+    }
 
     if (result > 0) {
         if (!CopyToUserRaw(bufferAddr, buffer, result)) {

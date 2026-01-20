@@ -31,34 +31,39 @@
 
 // WARNING: This field is write on 4 bit only in type_and_flags, so max 16 types
 enum class MessageType : uint8_t {
-    MSG_SYN     = 1,
-    MSG_SYN_ACK = 2,
-    MSG_ACK     = 3,
-    MSG_DATA    = 4,
-    MSG_FIN     = 5,
-    MSG_FIN_ACK = 6,
-    MSG_RST     = 7
+    MSG_SYN         = 1,
+    MSG_SYN_ACK     = 2,
+    MSG_ACK         = 3,
+    MSG_DATA        = 4,
+    MSG_FIN         = 5,
+    MSG_FIN_ACK     = 6,
+    MSG_RST         = 7,
+    MSG_CHUNK_BEGIN = 8,
+    MSG_CHUNK_END   = 9
 };
 
 inline const char* MessageTypeToString(const MessageType type) {
     switch (type) {
-    case MessageType::MSG_SYN:       return "SYN";
-    case MessageType::MSG_SYN_ACK:   return "SYN_ACK";
-    case MessageType::MSG_ACK:       return "ACK";
-    case MessageType::MSG_DATA:      return "DATA";
-    case MessageType::MSG_FIN:       return "FIN";
-    case MessageType::MSG_FIN_ACK:   return "FIN_ACK";
-    case MessageType::MSG_RST:       return "RST";
-    default:                         return "UNKNOWN";
+    case MessageType::MSG_SYN:          return "SYN";
+    case MessageType::MSG_SYN_ACK:      return "SYN_ACK";
+    case MessageType::MSG_ACK:          return "ACK";
+    case MessageType::MSG_DATA:         return "DATA";
+    case MessageType::MSG_FIN:          return "FIN";
+    case MessageType::MSG_FIN_ACK:      return "FIN_ACK";
+    case MessageType::MSG_RST:          return "RST";
+    case MessageType::MSG_CHUNK_BEGIN:  return "MSG_CHUNK_BEGIN";
+    case MessageType::MSG_CHUNK_END:    return "MSG_CHUNK_END";
+    default:                            return "UNKNOWN";
     }
 }
 
 // WARNING: This field is write on 4 bit only in type_and_flags, so max 16 flags
 enum class MessageFlag : uint8_t {
-    FLAG_NONE           = 0,
-    FLAG_MORE_FRAGMENTS = 1,
-    FLAG_END_OF_MESSAGE = 2,
-    FLAG_CONTROL        = 4
+    FLAG_NONE                   = 0,
+    FLAG_MORE_FRAGMENTS         = 1,
+    FLAG_END_OF_MESSAGE         = 2,
+    FLAG_CONTROL                = 4,
+    FLAG_BIG_MESSAGE_FRAGMENTS  = 6,
 };
 
 enum ConnectionState {

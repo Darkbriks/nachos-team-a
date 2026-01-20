@@ -39,7 +39,7 @@ public:
     int CloseListener(int listenerId);
 
     int Send(int connId, const char* data, int length);
-    int Recv(int connId, char* buffer, int maxLength);
+    int Recv(int connId, char* buffer, int maxLength, MessageType *messageType);
     int Close(int connId);
 
     bool IsValidConnection(int connId);
