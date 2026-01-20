@@ -156,9 +156,31 @@ void Connection::InitiateClose() {
     lock->Release();
 }
 
-void Connection::InitiateChunkTransmission(MessageType type){
+void Connection::InitiateChunkTransmission(MessageType type) {
     lock->Acquire();
-    SendControlMessage(type, sendSeqNum++, recvSeqNum);
+
+    if (state != CONN_ESTABLISHED && state != CONN_CLOSE_WAIT) { lock->Release(); return; }
+
+    PendingMessage* slot = nullptr;
+    while ((slot = GetFreePendingSlot()) == nullptr) {
+        sendCond->Wait(lock);
+        if (state != CONN_ESTABLISHED && state != CONN_CLOSE_WAIT) { lock->Release(); return; }
+    }
+
+    const uint32_t seqNum = sendSeqNum++;
+    slot->sentTime = 0;
+    slot->seqNum = seqNum;
+    slot->attempts = 0;
+    slot->dataLen = 0;
+    slot->type = type;
+    slot->flags |= FLAG_ACTIVE;
+    slot->flags &= ~FLAG_ACKED;
+    slot->pendingFlags = static_cast<uint8_t>(MessageFlag::FLAG_CONTROL);
+
+    pendingCount++;
+
+    TransmitPending(slot);
+
     lock->Release();
 }
 
@@ -442,6 +464,7 @@ void Connection::TransmitPending(PendingMessage* msg) {
         DEBUG('n', "[Conn %d] Message seq %u failed after %d attempts\n", connId, msg->seqNum, msg->attempts);
         msg->flags &= ~FLAG_ACTIVE;
         pendingCount--;
+        sendCond->Broadcast(lock);
         return;
     }
 
@@ -449,8 +472,13 @@ void Connection::TransmitPending(PendingMessage* msg) {
         DEBUG('n', "[Conn %d] Retransmitting seq %u (attempt %d)\n", connId, msg->seqNum, msg->attempts + 1);
     }
 
-    manager->SendPacket(key.remoteAddr, key.localPort, key.remotePort,
-                       MessageType::MSG_DATA, msg->seqNum, recvSeqNum, msg->data, msg->dataLen, msg->pendingFlags);
+    if (msg->type == MessageType::MSG_CHUNK_BEGIN || msg->type == MessageType::MSG_CHUNK_END) {
+        manager->SendPacket(key.remoteAddr, key.localPort, key.remotePort,
+                            msg->type, msg->seqNum, recvSeqNum, nullptr, 0, msg->pendingFlags);
+    } else {
+        manager->SendPacket(key.remoteAddr, key.localPort, key.remotePort,
+                            MessageType::MSG_DATA, msg->seqNum, recvSeqNum, msg->data, msg->dataLen, msg->pendingFlags);
+    }
 
     msg->attempts++;
     msg->sentTime = stats->totalTicks;
