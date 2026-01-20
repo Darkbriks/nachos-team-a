@@ -90,8 +90,8 @@ public:
     bool Close(OpenFile* name);
     bool Remove(const char *name); // Delete a file (UNIX unlink)
     bool Remove(OpenFile* name); // Delete a file (UNIX unlink)
-    bool Read(OpenFile* file, char* buffer, int n); 
-    bool Write(OpenFile* file, char* buffer, int n); 
+    int Read(OpenFile* file, char* buffer, int n); 
+    int Write(OpenFile* file, char* buffer, int n); 
 
     bool Change_Directory(const char * name);
     void ReadAllFile(const char* name);

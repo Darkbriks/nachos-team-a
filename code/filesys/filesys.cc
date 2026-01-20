@@ -144,14 +144,12 @@ bool FileSystem::Create(const char* name, const int initialSize, const File_Type
     return _Create(nav.getLastComponent(), initialSize, type);
 }
 
-bool FileSystem::Read(OpenFile* file, char* buffer, int n){
-    file->Read(buffer, n);
-    return true;
+int FileSystem::Read(OpenFile* file, char* buffer, int n){
+    return file->Read(buffer, n);
 }
 
-bool FileSystem::Write(OpenFile* file, char* buffer, int n){ 
-    file->Write(buffer, n);
-    return true;
+int FileSystem::Write(OpenFile* file, char* buffer, int n){ 
+    return file->Write(buffer, n);
 }
 
 bool FileSystem::Remove(const char *name) {

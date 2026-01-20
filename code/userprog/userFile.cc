@@ -20,7 +20,7 @@ void handle_SC_Create() {
 
     char name[MAX_PATH_SIZE];
     VALIDATE_ARG(CopyStringFromUser(addr, name ,MAX_PATH_SIZE), E_FAULT);
-    VALIDATE_ARG(fileSystem->Create(name, 10), E_FULL_DISK);
+    VALIDATE_ARG(fileSystem->Create(name, 0), E_FULL_DISK);
 
     RETURN(0);
 }
@@ -81,7 +81,7 @@ void handle_SC_Write() {
         if (const int res = fileSystem->Write(file, buffer, MAX_STRING_SIZE); res <= 0) { break; }
         else { offset += res; }
     }
-    RETURN(n);
+    RETURN(offset);
 }
 
 
