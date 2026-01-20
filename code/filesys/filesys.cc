@@ -149,7 +149,14 @@ int FileSystem::Read(OpenFile* file, char* buffer, int n){
 }
 
 int FileSystem::Write(OpenFile* file, char* buffer, int n){ 
-    return file->Write(buffer, n);
+    if (n + file->GetPosition() > file->Length()){
+        auto *freeMap = new BitMap(NumSectors);
+        freeMap->FetchFrom(freeMapFile);
+        file->Reallocate(freeMap, file->Length() + n - (file->Length() - file->GetPosition()));
+        freeMap->WriteBack(freeMapFile);
+    }
+    int result = file->Write(buffer, n);
+    return result;
 }
 
 bool FileSystem::Remove(const char *name) {

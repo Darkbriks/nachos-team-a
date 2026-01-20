@@ -201,6 +201,7 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(Read);
         CASE_HANDLER(Write);
         CASE_HANDLER(Close);
+        CASE_HANDLER(Create);
 
         default:
             Process * process = currentThread->getProcess();

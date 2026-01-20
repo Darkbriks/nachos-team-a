@@ -137,6 +137,14 @@ int OpenFile::ReadAt(char *into, int numBytes, int position) const {
     return numBytes;
 }
 
+bool OpenFile::Reallocate(BitMap* freeSector, int numBytes){
+    bool result = hdr->Allocate(freeSector, numBytes);
+    if (result){
+        hdr->WriteBack(sector);
+    }
+    return result;
+}
+
 int OpenFile::WriteAt(const char *from, int numBytes, int position) const {
     int fileLength = hdr->FileLength();
     int i, firstSector, lastSector, numSectors;

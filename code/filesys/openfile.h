@@ -63,6 +63,7 @@ class OpenFile {
 
 #else // FILESYS
 class FileHeader;
+class BitMap;
 
 class OpenFile {
 public:
@@ -87,6 +88,8 @@ public:
 					// than the UNIX idiom -- lseek to 
 					// end of file, tell, lseek back 
     [[nodiscard]] int GetSector() const { return sector; }
+    [[nodiscard]] int GetPosition() const { return seekPosition; }
+    bool Reallocate(BitMap* freeSector, int numBytes);
 
 private:
     FileHeader *hdr;			// Header for this file 

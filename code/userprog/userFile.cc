@@ -53,6 +53,9 @@ void handle_SC_Close() {
     RETURN(0);
 }
 
+#define MIN(a, b) \
+    a > b ? b : a
+
 void handle_SC_Write() {
     int addr = machine->ReadRegister(4);
     int n = machine->ReadRegister(5);
@@ -78,7 +81,7 @@ void handle_SC_Write() {
     while (offset < n) {
         VALIDATE_ARG(CopyStringFromUser(addr + offset, buffer, MAX_STRING_SIZE), E_FAULT);
         DEBUG('a', "Write got string: %s\n", buffer);
-        if (const int res = fileSystem->Write(file, buffer, MAX_STRING_SIZE); res <= 0) { break; }
+        if (const int res = fileSystem->Write(file, buffer, MIN(MAX_STRING_SIZE, n - offset)); res <= 0) { break; }
         else { offset += res; }
     }
     RETURN(offset);
