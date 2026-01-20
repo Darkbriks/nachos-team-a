@@ -200,8 +200,7 @@ char* strerror(const int errnum) {
         case  E_BADF: return "Bad file descriptor";
         case  E_DEADLK: return "Resource deadlock would occur";
 
-        // TODO: Uncomment on merge with network
-        /*case  E_REFUSED: return "Connection refused";
+        case  E_REFUSED: return "Connection refused";
         case  E_NOTCONN: return "Not connected";
         case  E_ADDRINUSE: return "Address/port already in use";
         case  E_PIPE: return "Broken pipe (peer closed)";
@@ -210,7 +209,7 @@ char* strerror(const int errnum) {
         case  E_CLOSED: return "Connection closed";
         case  E_NOPORT: return "No available port";
         case  E_NOAVAILCONN: return "No available connection";
-        case  E_WOULDBLOCK: return "Operation would block (non-blocking mode)";*/
+        case  E_WOULDBLOCK: return "Operation would block (non-blocking mode)";
         default: return "Unknown error";
     }
 }
