@@ -17,7 +17,7 @@ void handle_SC_connect() {
     int remotePort = machine->ReadRegister(5);
     int localPort = machine->ReadRegister(6);
 
-    DEBUG('n', "SC_connect: remoteAddr=%d remotePort=%d localPort=%d\n", remoteAddr, remotePort, localPort);
+    DEBUG('Y', "SC_connect: remoteAddr=%d remotePort=%d localPort=%d\n", remoteAddr, remotePort, localPort);
 
     if (remoteAddr < 0 || remoteAddr > 9) { RETURN(-E_INVAL); }
     if (remotePort <= 0 || remotePort > 65535) { RETURN(-E_INVAL); }
@@ -32,14 +32,14 @@ void handle_SC_connect() {
 
     if (result < 0) { RETURN(-result); }
 
-    DEBUG('n', "SC_connect: success, connId=%d\n", result);
+    DEBUG('Y', "SC_connect: success, connId=%d\n", result);
     RETURN(result);
 }
 
 void handle_SC_listen() {
     const int port = machine->ReadRegister(4);
 
-    DEBUG('n', "SC_listen: port=%d\n", port);
+    DEBUG('Y', "SC_listen: port=%d\n", port);
 
     if (port <= 0 || port > 65535) { RETURN(-E_INVAL); }
 
@@ -49,7 +49,7 @@ void handle_SC_listen() {
     const int result = mgr->Listen(static_cast<uint16_t>(port));
     if (result < 0) { RETURN(-result); }
 
-    DEBUG('n', "SC_listen: success, listenerId=%d\n", result);
+    DEBUG('Y', "SC_listen: success, listenerId=%d\n", result);
     RETURN(result);
 }
 
@@ -57,7 +57,7 @@ void handle_SC_accept() {
     int listenerId = machine->ReadRegister(4);
     int timeoutMs = machine->ReadRegister(5);
 
-    DEBUG('n', "SC_accept: listenerId=%d timeoutMs=%d\n", listenerId, timeoutMs);
+    DEBUG('Y', "SC_accept: listenerId=%d timeoutMs=%d\n", listenerId, timeoutMs);
 
     if (listenerId < 0) { RETURN(-E_INVAL); }
 
@@ -67,7 +67,7 @@ void handle_SC_accept() {
     const int result = mgr->Accept(listenerId, timeoutMs);
     if (result < 0) { RETURN(-result); }
 
-    DEBUG('n', "SC_accept: success, connId=%d\n", result);
+    DEBUG('Y', "SC_accept: success, connId=%d\n", result);
     RETURN(result);
 }
 
@@ -80,7 +80,7 @@ void handle_SC_sendto() {
 
     VALIDATE_ARG(space->IsValidUserRange(dataAddr, size), E_FAULT);
 
-    DEBUG('n', "SC_sendto: connId=%d dataAddr=0x%x size=%d\n", connId, dataAddr, size);
+    DEBUG('Y', "SC_sendto: connId=%d dataAddr=0x%x size=%d\n", connId, dataAddr, size);
     if (connId < 0) { RETURN(-E_INVAL); }
     if (size <= 0) { RETURN(-E_INVAL); }
 
@@ -132,7 +132,7 @@ void handle_SC_sendto() {
 
     if (result < 0) { RETURN(-result); }
 
-    DEBUG('n', "SC_sendto: success, sent=%d bytes\n", result);
+    DEBUG('Y', "SC_sendto: success, sent=%d bytes\n", result);
     RETURN(result);
 }
 
@@ -156,40 +156,55 @@ void handle_SC_recvfrom() {
     char* buffer = new char[bufSize];
 
     MessageType msgType = MessageType::MSG_DATA;
-
     int result = mgr->Recv(connId, buffer, bufSize, &msgType);
+
+    DEBUG('Y', "SC_recvfrom: first Recv returned %d bytes, msgType=%d\n", result, static_cast<int>(msgType));
 
     if (result < 0) { delete[] buffer; RETURN(-result); }
 
-    if (msgType == MessageType::MSG_CHUNK_BEGIN){
-        while (msgType != MessageType::MSG_CHUNK_END){
+    int totalReceived = 0;
+    int userOffset = 0;
+
+    if (msgType == MessageType::MSG_CHUNK_BEGIN) {
+        while (msgType != MessageType::MSG_CHUNK_END) {
+            DEBUG('Y', "SC_recvfrom: in chunk, userOffset=%d\n", userOffset);
             result = mgr->Recv(connId, buffer, bufSize, &msgType);
 
-            if (result > 0) {
-                if (!CopyToUserRaw(bufferAddr, buffer, result)) {
-                    delete[] buffer;
-                    RETURN(-E_FAULT);
+            if (result < 0) { delete[] buffer; RETURN(-result); }
+
+            if (result > 0 && msgType != MessageType::MSG_CHUNK_END) {
+                int spaceLeft = size - userOffset;
+                int toCopy = (result < spaceLeft) ? result : spaceLeft;
+
+                if (toCopy > 0) {
+                    if (!CopyToUserRaw(bufferAddr + userOffset, buffer, toCopy)) {
+                        delete[] buffer;
+                        RETURN(-E_FAULT);
+                    }
+                    userOffset += toCopy;
                 }
             }
         }
-    }
-
-    if (result > 0) {
-        if (!CopyToUserRaw(bufferAddr, buffer, result)) {
-            delete[] buffer;
-            RETURN(-E_FAULT);
+        totalReceived = userOffset;
+    } else {
+        if (result > 0) {
+            if (!CopyToUserRaw(bufferAddr, buffer, result)) {
+                delete[] buffer;
+                RETURN(-E_FAULT);
+            }
         }
+        totalReceived = result;
     }
 
     delete[] buffer;
-    DEBUG('n', "SC_recvfrom: success, received=%d bytes\n", result);
-    RETURN(result);
+    DEBUG('Y', "SC_recvfrom: success, received=%d bytes\n", totalReceived);
+    RETURN(totalReceived);
 }
 
 void handle_SC_close() {
     int id = machine->ReadRegister(4);
 
-    DEBUG('n', "SC_close: id=%d\n", id);
+    DEBUG('Y', "SC_close: id=%d\n", id);
 
     if (id < 0) { RETURN(-E_INVAL); }
 
@@ -200,6 +215,6 @@ void handle_SC_close() {
     if (result == E_INVAL) { result = mgr->CloseListener(id); }
     if (result < 0) { RETURN(-result); }
 
-    DEBUG('n', "SC_close: success\n");
+    DEBUG('Y', "SC_close: success\n");
     RETURN(E_SUCCESS);
 }

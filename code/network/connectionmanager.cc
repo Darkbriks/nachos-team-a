@@ -233,12 +233,11 @@ int ConnectionManager::Send(const int connId, const char* data, int length) {
     if (conn == nullptr) { return E_INVAL; }
     if (!conn->CanSend()) { return E_NOTCONN; }
 
-    if (length == -1){
+    if (length == -1) {
         conn->InitiateChunkTransmission(MessageType::MSG_CHUNK_BEGIN);
         return 0;
-        
     } 
-    else if (length == -2){
+    if (length == -2) {
         conn->InitiateChunkTransmission(MessageType::MSG_CHUNK_END);
         return 0;
     }
@@ -284,12 +283,21 @@ int ConnectionManager::Recv(const int connId, char* recv_buffer, const int maxLe
     while (!endOfMessage && totalReceived < maxLength) {
         DEBUG('n', "Recv: Waiting for data on connection %d\n", connId);
         MessageFlag flags;
-        const int bytesRead = conn->Read(buffer, MAX_RELIABLE_DATA, &flags, messageType);
+        MessageType messageTypeLocal;
+        const int bytesRead = conn->Read(buffer, MAX_RELIABLE_DATA, &flags, &messageTypeLocal);
         if (bytesRead < 0) {
             DEBUG('n', "Recv: Error %d reading data on connection %d\n", bytesRead, connId);
             return bytesRead;
         }
         DEBUG('n', "Recv: Received %d bytes on connection %d\n", bytesRead, connId);
+
+        if (messageTypeLocal == MessageType::MSG_CHUNK_BEGIN || messageTypeLocal == MessageType::MSG_CHUNK_END) {
+            if (messageType != nullptr) {
+                *messageType = messageTypeLocal;
+            }
+            DEBUG('n', "Recv: Received chunk message of type %d on connection %d\n", static_cast<int>(messageTypeLocal), connId);
+            return 0;
+        }
 
         const int bytesToCopy = MIN(bytesRead, maxLength - totalReceived);
         bcopy(buffer, recv_buffer + totalReceived, bytesToCopy);
@@ -650,9 +658,9 @@ void ConnectionManager::RouteToConnection(PacketHeader pktHdr, const ReliableHea
             conn->HandleRST(relHdr);
             break;
         case MessageType::MSG_CHUNK_BEGIN:
-            conn->HandleDATA(relHdr, payload, relHdr->getFlags());
         case MessageType::MSG_CHUNK_END:
             conn->HandleDATA(relHdr, payload, relHdr->getFlags());
+            break;
         default:
             DEBUG('n', "Unknown message type: %d\n", relHdr->getType());
             break;
