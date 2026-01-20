@@ -107,13 +107,13 @@ void handle_SC_sendto() {
             }
             currentSize -= sizeToSend;
 
-            int result = mgr->Send(connId, data+i, sizeToSend);
+            result = mgr->Send(connId, data+i, sizeToSend);
             delete[] data;
 
             if (result < 0) { RETURN(-result); }
         }
 
-        int result = mgr->Send(connId, NULL, -2);
+        result = mgr->Send(connId, NULL, -2);
 
         if (result < 0) { RETURN(-result); }
 
@@ -163,7 +163,7 @@ void handle_SC_recvfrom() {
 
     if (msgType == MessageType::MSG_CHUNK_BEGIN){
         while (msgType != MessageType::MSG_CHUNK_END){
-            int result = mgr->Recv(connId, buffer, bufSize, &msgType);
+            result = mgr->Recv(connId, buffer, bufSize, &msgType);
 
             if (result > 0) {
                 if (!CopyToUserRaw(bufferAddr, buffer, result)) {

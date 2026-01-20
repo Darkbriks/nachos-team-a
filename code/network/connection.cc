@@ -60,7 +60,7 @@ bool Connection::CanReceive() {
     return result;
 }
 
-int Connection::QueueSend(const char* data, int length, const uint8_t flags, const MessageType type) {
+int Connection::QueueSend(const char* data, int length, const uint8_t flags) {
     lock->Acquire();
 
     if (state != CONN_ESTABLISHED && state != CONN_CLOSE_WAIT) {
@@ -89,7 +89,7 @@ int Connection::QueueSend(const char* data, int length, const uint8_t flags, con
     slot->seqNum = seqNum;
     slot->attempts = 0;
     slot->dataLen = length;
-    slot->type = type;
+    slot->type = MessageType::MSG_DATA;
     slot->flags |= FLAG_ACTIVE;
     slot->flags &= ~FLAG_ACKED;
     slot->pendingFlags = flags;
