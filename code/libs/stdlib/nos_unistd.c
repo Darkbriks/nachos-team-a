@@ -22,9 +22,9 @@ int open(char* name, int flags){
             return -1;
         }
     }
-    return Open(name, strlen(name));
+    return Open(name, strlen(name) + 1);
 }
 
 bool create(char *name){
-    return Create(name, strlen(name)) == 0;
+    return Create(name, strlen(name) + 1) == 0;
 }

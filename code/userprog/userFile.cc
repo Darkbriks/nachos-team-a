@@ -79,7 +79,7 @@ void handle_SC_Write() {
 
     inode_t inode = currentThread->GetOpenFile(id);
     while (offset < n) {
-        VALIDATE_ARG(CopyStringFromUser(addr + offset, buffer, MAX_STRING_SIZE), E_FAULT);
+        VALIDATE_ARG(CopyFromUserRaw(buffer, addr + offset, MIN(MAX_STRING_SIZE, n - offset)), E_FAULT);
         DEBUG('a', "Write got string: %s\n", buffer);
         if (const int res = fileSystem->Write(inode, buffer, MIN(MAX_STRING_SIZE, n - offset)); res <= 0) { break; }
         else { offset += res; }
@@ -105,7 +105,7 @@ void handle_SC_Read() {
     {
         char buffer[n];
         int res = fileSystem->Read(inode, buffer, n);
-        VALIDATE_ARG(CopyStringToUser(buffer, addr, n), E_FAULT);
+        VALIDATE_ARG(CopyToUserRaw(addr, buffer, res), E_FAULT);
         RETURN(res);
     }
 }

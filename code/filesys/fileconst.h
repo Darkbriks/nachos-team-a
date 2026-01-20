@@ -19,7 +19,7 @@
 #define NumDirEntries     10
 #define DirectoryFileSize (sizeof(DirectoryEntry) * NumDirEntries)
 
-#define MAX_INODES 3
+#define MAX_INODES 10
 
 typedef int sector_t;
 typedef int inode_t;

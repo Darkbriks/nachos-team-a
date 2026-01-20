@@ -3,6 +3,7 @@
  */
 
 #include "nos_client.h"
+#include "nos_unistd.h"
 
 int main() {
     int connId;
@@ -18,11 +19,10 @@ int main() {
     printf("=== NachOS File Transfer Client (Real FS) ===\n");
 
     /* Create a local test file for upload */
-    Create("local.txt", 200);
-    fd = Open("local.txt", 16);
+    fd = open("local.txt", O_CREATE);
     if (fd >= 0) {
-        Write(testData, strlen(testData), fd);
-        Close(fd);
+        write(fd, testData, strlen(testData));
+        close_file(fd);
         printf("Created local file: 'local.txt' (%d bytes)\n", strlen(testData));
     }
 
@@ -37,20 +37,20 @@ int main() {
 
     /* Test 1: GET file from server */
     printf("--- Test 1: GET file ---\n");
-    if (clientGetFile(connId, "test.txt", "downloaded.txt", CLIENT_MAX_FILESIZE,
+    if (clientGetFile(connId, "test.txt", "from_s", CLIENT_MAX_FILESIZE,
                       &receivedSize, &startTime, &endTime) == 0) {
         clientDisplayThroughput(receivedSize, startTime, endTime);
 
         /* Verify downloaded file */
         printf("\nVerifying downloaded file:\n");
-        fd = Open("downloaded.txt", 14);
+        fd = open("from_s", 0);
         if (fd >= 0) {
-            n = Read(verifyBuf, 255, fd);
+            n = read(fd, verifyBuf, 255);
             if (n > 0) {
                 verifyBuf[n] = '\0';
                 printf("Content: %s\n", verifyBuf);
             }
-            Close(fd);
+            close_file(fd);
         }
     } else {
         printf("GET failed\n");

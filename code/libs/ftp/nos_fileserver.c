@@ -57,14 +57,14 @@ int serverHandleGet(int connId, char *filename) {
     while ((n = read(fd, buffer, SERVER_CHUNK_SIZE)) > 0) {
         if (sendto(connId, buffer, n) < 0) {
             printf("[SERVER] Failed to send data chunk\n");
-            close(fd);
+            close_file(fd);
             return -1;
         }
         sent += n;
         printf("[SERVER] Sent %d bytes\n", sent);
     }
 
-    close(fd);
+    close_file(fd);
 
     /* Send EOF marker */
     sendto(connId, "EOF", 4);
@@ -94,7 +94,7 @@ int serverHandlePut(int connId, char *filename, int size) {
     /* Send OK to confirm ready to receive */
     if (sendto(connId, "OK", 3) < 0) {
         printf("[SERVER] Failed to send OK\n");
-        close(fd);
+        close_file(fd);
         return -1;
     }
 
@@ -121,7 +121,7 @@ int serverHandlePut(int connId, char *filename, int size) {
         printf("[SERVER] Received %d/%d bytes\n", received, size);
     }
 
-    close(fd);
+    close_file(fd);
     printf("[SERVER] File saved: '%s' (%d bytes)\n", filename, received);
 
     /* Send final confirmation */

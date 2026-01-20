@@ -192,6 +192,9 @@ bool FileHeader::Allocate(BitMap *bitMap, const int fileSize) {
 void FileHeader::Deallocate(BitMap *bitMap) const {
     int mini = MIN(numSectors, NumDirect);
     for (int i = 0; i < mini; i++) {
+        if (dataSectors[i] == INVALID_SECTOR){
+            continue;
+        }
         ASSERT(bitMap->Test(dataSectors[i])); // ought to be marked!
         bitMap->Clear(dataSectors[i]);
     }

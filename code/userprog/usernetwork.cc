@@ -29,6 +29,7 @@ void handle_SC_connect() {
                               static_cast<uint16_t>(localPort));
 
     if (result < 0) { RETURN(-result); }
+    VALIDATE_ARG(mgr->IsValidConnection(result), E_NOTCONN);
 
     DEBUG('n', "SC_connect: success, connId=%d\n", result);
     RETURN(result);

@@ -108,7 +108,7 @@ int clientGetFile(int connId, char *remoteFile, char *localFile, int maxSize,
         printf("[CLIENT] Received %d bytes\n", received);
     }
 
-    close(fd);
+    close_file(fd);
 
     /* Record end time */
     time(endTime);
@@ -132,19 +132,21 @@ int clientPutFile(int connId, char *localFile, char *remoteFile, int maxSize,
     /* Open local file */
     fd = open(localFile, 0);
     if (fd < 0) {
-        printf("[CLIENT] Cannot open local file: %s\n", localFile);
+        printf("[CLIENT] Cannot open local file: %s, fd = %d\n", localFile, fd);
         return -1;
     }
 
     /* Read file to get size (read and count) */
     {
         char tempBuf[CLIENT_CHUNK_SIZE];
-        while ((n = read(fd, tempBuf,CLIENT_CHUNK_SIZE)) > 0) {
+        printf("fd = %d sur name = %s\n", fd, localFile);
+        while ((n = read(fd, tempBuf, CLIENT_CHUNK_SIZE)) > 0) {
+            printf("hey\n");
             fileSize += n;
             if (fileSize >= maxSize) break;
         }
     }
-    close(fd);
+    close_file(fd);
     printf("[CLIENT] Local file size: %d bytes\n", fileSize);
 
     /* Build PUT command: "PUT remoteFile size" */
@@ -188,14 +190,14 @@ int clientPutFile(int connId, char *localFile, char *remoteFile, int maxSize,
     while ((n = read(fd, buffer, CLIENT_CHUNK_SIZE)) > 0) {
         if (sendto(connId, buffer, n) < 0) {
             printf("[CLIENT] Failed to send data chunk\n");
-            close(fd);
+            close_file(fd);
             return -1;
         }
         sent += n;
         printf("[CLIENT] Sent %d/%d bytes\n", sent, fileSize);
     }
 
-    close(fd);
+    close_file(fd);
 
     /* Send EOF */
     sendto(connId, "EOF", 4);
