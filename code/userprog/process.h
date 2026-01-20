@@ -8,7 +8,11 @@
 #include "synch.h"
 
 #define MAX_THREAD 30 // TODO check for user's max process
-#define MAX_PROCESS 15 // TODO PUT it in User
+#define MAX_PROCESS 15
+
+// TODO: One day, create User class for multiUser OS
+//       Put MAX_PROCESS, all_process, all_process_lock, activeProcessCount, processCountLock in User class
+//       And add a User* owner in Process class
 
 class Lock;
 
@@ -17,7 +21,8 @@ class Process {
     private:
         Process(OpenFile * executable, char* return_code);
 
-        static class BitMapThreadSafe *all_process; // TODO put it in USer one day ... I hope but I really don't know
+        static class BitMap *all_process;
+        static Lock* all_process_lock;
         static int activeProcessCount;
         static Lock *processCountLock;
         int exitCode;
@@ -40,8 +45,6 @@ class Process {
          * @brief  Our global list of process in the machine
          */
         LinkedList<Thread>* all_threads_addr;
-
-        //User owner; // TODO create User class for multiUser OS 
 
     public:
         ~Process();

@@ -1,5 +1,4 @@
 #include "syscall.h"
-#include "nos_stdlib.h"
 #include "nos_stddef.h"
 #include "nos_pthread.h"
 #include "nos_stdio.h"
@@ -16,13 +15,8 @@ void func2(void *arg) {
     Sleep(1000 * thread_id);
     GetCurrentTick(&after_sleep);
 
-    printf("Thread "); PutInt(thread_id); printf(": Woke up after ");
-    PutInt(1000 * thread_id);
-    printf(" ticks\n");
-
-    printf("Thread "); PutInt(thread_id); printf(": Slept for ");
-    PutInt(after_sleep - before_sleep);
-    printf(" ticks (expected ~"); PutInt(1000 * thread_id); printf(")\n");
+    printf("Thread %d: Woke up after %d ticks\n", thread_id, 1000 * thread_id);
+    printf("Thread %d: Slept for %d ticks (expected ~%d)\n", thread_id, (int)(after_sleep - before_sleep), 1000 * thread_id);
 
     pthread_exit(0);
 }

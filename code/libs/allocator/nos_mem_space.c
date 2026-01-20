@@ -12,7 +12,10 @@ static unsigned int round_up_to_page(unsigned int size) {
 }
 
 void* mem_space_init(unsigned int size) {
-    if (initialized) { return mem_base; }
+    if (initialized) {
+        mem_space_extend(size);
+        return mem_base;
+    }
 
     unsigned int rounded_size = round_up_to_page(size);
     unsigned int pages_needed = rounded_size / PAGE_SIZE;

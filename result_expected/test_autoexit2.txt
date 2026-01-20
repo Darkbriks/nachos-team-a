@@ -1,7 +1,7 @@
 SABD
 Machine halting!
 
-Ticks: total 24069, idle 300, system 13530, user 10239
+Ticks: total 26258, idle 300, system 15690, user 10268
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 5
 Paging: faults 0

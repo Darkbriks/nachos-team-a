@@ -11,6 +11,7 @@
 #include "addrspace.h"
 #include "synchconsole.h"
 #include "copyright.h"
+#include "kernelpanic.h"
 #include "synch.h"
 #include "system.h"
 #include "process.h"
@@ -32,20 +33,18 @@ void StartProcess(char *filename) {
 
     const Process* newProcess = Process::createProcess(executable);
     if (newProcess == nullptr) {
-        ASSERT(FALSE);  // machine->Run never returns;
+        KERNEL_PANIC("StartProcess: Failed to create process");
     }
 
     const AddrSpace* space = newProcess->getSpace();
-    ASSERT(space != nullptr);
+    ASSERT_KP(space != nullptr);
     space->InitRegisters();
     space->RestoreState();
 
     currentThread = newProcess->getMainThread();
     currentThread->setStatus(RUNNING);
     machine->Run(); // jump to the user progam
-    ASSERT(FALSE);  // machine->Run never returns;
-    // the address space exits
-    // by doing the syscall "exit"
+    KERNEL_PANIC("Returned from machine->Run() in StartProcess (should never happen)");
 }
 
 // Data structures needed for the console test.  Threads making
@@ -78,8 +77,11 @@ void ConsoleTest(char *in, char *out) {
     for (;;) {
         readAvail->P(); // wait for character to arrive
         const char ch = console->GetChar();
-        if (ch == 'q' || ch == EOF)
+        if (ch == 'q' || ch == EOF) {
+            delete readAvail;
+            delete writeDone;
             return; // if q, quit
+        }
         // if (ch == 'c'){
         //     console->PutChar('<'); // echo it!
         //     writeDone->P();       // wait for write to finish

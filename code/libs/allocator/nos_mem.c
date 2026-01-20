@@ -143,9 +143,21 @@ void* mem_alloc(size_t size) {
     mem_block_t* chosen_block = fit_strategy(init->first, final_user_size);
 
     if (chosen_block == (mem_block_t*)0) {
-        // TODO: implémenter l'extension automatique de l'espace mémoire
-        PRINT_STRING("mem_alloc: Aucune mémoire libre disponible pour l'allocation\n");
-        return NULL;
+        PRINT_SIS("mem_alloc: Aucun bloc trouvé, tentative d'extension (besoin de ", (int)needed_total_size, " bytes)\n");
+        const unsigned int added_size = ALIGN(MAX(needed_total_size, MEM_SPACE_MIN_EXTENSION));
+
+        if (mem_space_extend(added_size) != 0) {
+            PRINT_STRING("mem_alloc: Échec de l'extension de la mémoire\n");
+            return NULL;
+        }
+
+        chosen_block = fit_strategy(init->first, final_user_size);
+        if (chosen_block == (mem_block_t*)0) {
+            PRINT_STRING("mem_alloc: Aucun bloc trouvé même après extension\n");
+            return NULL;
+        }
+
+        PRINT_STRING("mem_alloc: Extension réussie\n");
     }
 
 	// Retirer le bloc de la liste des libres

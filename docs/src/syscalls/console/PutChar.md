@@ -13,8 +13,6 @@ void PutChar(char c);
 
 `PutChar` écrit le caractère spécifié `c` dans la console de sortie standard. Cette opération est bloquante et attend que le caractère soit effectivement affiché avant de retourner le contrôle au programme appelant.
 
-Numéro d'appel système : `11`
-
 ### Comportement nominal
 
 - Le caractère `c` est immédiatement envoyé au périphérique de sortie.
@@ -51,12 +49,6 @@ Auncune valeur de retour (`void`). Cet appel ne produit pas de code d'erreur.
 Aucun code d'erreur n'est défini pour cet appel système. En cas de problème matériel, le comportement est indéfini.
 
 ## IMPLÉMENTATION
-
-### Localisation du code
-
-- **Stub utilisateur** : `code/test/start.S:186-193`
-- **Handler noyau** : `code/userprog/exception.cc:handleSC_PutChar()`
-- **Implémentation** : `code/userprog/synchconsole.cc:SynchConsole::SynchPutChar()`
 
 ### Thread-safety
 
@@ -162,10 +154,10 @@ Aucun bug connu à ce jour.
 - [PutInt](./PutInt.md) - Écrit un entier
 - [GetChar](./GetChar.md) - Lecture d'un caractère
 
-## AUTEURS
+## Auteurs
 
-Antoine, 20 Dec 2025
+Antoine
 
-## DERNIÈRE RÉVISION
+## Dernière révision
 
-20 Dec 2025 par Antoine
+18 Jan 2026

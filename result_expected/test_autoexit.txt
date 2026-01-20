@@ -15,7 +15,7 @@ ain: Waiting for thread 2...
 Main: All threads finished successfully!
 Machine halting!
 
-Ticks: total 81025, idle 43360, system 26590, user 11075
+Ticks: total 83214, idle 43360, system 28750, user 11104
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 437
 Paging: faults 0

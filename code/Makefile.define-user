@@ -25,15 +25,17 @@ USERPROG_NOPROGRAM=
 # IMPORTANT: the 4 original user programs (halt, ...) cannot have extra
 #  sources and will always be linked only with start.S (USERPROG_LIBS
 #  and ..._EXTRA_SOURCES are ignored for them)
-USERPROG_LIBS=start.S                     \
-              libgcc.c                    \
-              ../libs/stdlib/nos_stdio.c  \
-              ../libs/stdlib/nos_stdlib.c \
-              ../libs/stdlib/nos_string.c \
-              ../libs/allocator/nos_mem.c \
+USERPROG_LIBS=start.S                           \
+              libgcc.c                          \
+              ../libs/stdlib/nos_ctype.c        \
+              ../libs/stdlib/nos_stdio.c        \
+              ../libs/stdlib/nos_stdlib.c       \
+              ../libs/stdlib/nos_string.c       \
+              ../libs/allocator/nos_mem.c       \
               ../libs/allocator/nos_mem_space.c \
-              ../libs/pthread/nos_pthread.c \
-              ../libs/pthread/nos_pthread_attr.c \
+              ../libs/pthread/nos_pthread.c         \
+              ../libs/pthread/nos_pthread_attr.c    \
+              ../libs/pthread/nos_pthread_mutex.c   \
 
 AUTOLOAD_CPPFLAGS=-DCHANGED               \
     -I$(topsrc_dir)/libs                  \
@@ -107,7 +109,7 @@ USER_FLAVORS=step5
 #     futex.cc userIO.cc userprocess.cc userSbrk.cc userSem.cc userSleep.cc userthread.cc))
 
 $(eval $(call define-flavor,step5,userprog filesys,\
-    bitmap_thread_safe.cc frameprovider.cc process.cc stackmanager.cc synchconsole.cc \
+    frameprovider.cc process.cc stackmanager.cc synchconsole.cc \
     futex.cc userIO.cc userprocess.cc userSbrk.cc userSem.cc userSleep.cc userthread.cc \
     filesysshell.cc inodetable.cc pathnavigator.cc file.cc fileindirection.cc userFile.cc))
 

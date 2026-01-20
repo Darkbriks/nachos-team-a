@@ -13,8 +13,6 @@ int GetString(char *s, int n);
 
 `GetString` lit jusqu'à `n-1` caractères depuis la console d'entrée et les stocke dans le buffer pointé par `s`. La lecture s'arrête lorsqu'un caractère newline (`\n`) est rencontré ou après `n-1` caractères. Un caractère null (`\0`) est toujours ajouté à la fin, ce qui justifie la lecture de `n-1` caractères maximum.
 
-Numéro d'appel système : `14`
-
 ### Comportement nominal
 
 - Lit jusqu'à `n-1` caractères (réserve 1 octet pour `\0`)
@@ -77,12 +75,6 @@ Taille du buffer (incluant l'espace pour `\0`).
 | 2     | `E_FAULT`  | `addr < 0` |
 
 ## IMPLÉMENTATION
-
-### Localisation du code
-
-- **Stub utilisateur** : `code/test/start.S`
-- **Handler noyau** : `code/userprog/exception.cc:handler_SC_getString()`
-- **Implémentation** : `code/userprog/synchconsole.cc:SynchConsole::SynchGetString()`
 
 ### Synchronisation
 
@@ -239,39 +231,6 @@ int main() {
 
 ## FAILLES ET VULNÉRABILITÉS
 
-<div class="vulnerability-section severity-critical">
-
-#### Aucune validation de l'espace d'adressage
-
-**Description** : Seul `addr < 0` est vérifié, pas si l'adresse est dans l'espace utilisateur valide.
-
-**Impact** :
-- **Écriture arbitraire en mémoire noyau** : Corruption mémoire noyau
-- **Ascension de privilèges** : Modification de structures sensibles
-
-**Exploitation** :
-```c
-// Écrire dans la mémoire noyau
-char *kernel_addr = (char *)0x00000000;
-GetString(kernel_addr, 100);
-// L'utilisateur peut injecter du code/données en mémoire noyau
-```
-
-</div>
-
-<div class="vulnerability-section severity-critical">
-
-#### copyStringToMachine ignore les erreurs d'écriture de `machine->WriteMem`
-
-**Description** : `copyStringToMachine` ne vérifie pas les erreurs lors de l'écriture en mémoire utilisateur.
-
-**Impact** :
-- **Corruption mémoire utilisateur** : Données incomplètes ou corrompues
-- **Comportement indéfini** : Programme utilisateur peut planter
-- **Vulnérabilité de sécurité** : Potentielle exploitation via des pointeurs invalides
-
-</div>
-
 <div class="vulnerability-section severity-info">
 
 #### Limitation MAX_STRING_SIZE
@@ -316,10 +275,10 @@ Aucun bug connu à ce jour.
 - [GetChar](./GetChar.md) - Lecture d'un caractère
 - [GetInt](./GetInt.md) - Lecture d'un entier
 
-## AUTEURS
+## Auteurs
 
-Antoine, 20 Dec 2025
+Antoine
 
-## DERNIÈRE RÉVISION
+## Dernière révision
 
-20 Dec 2025 par Antoine
+18 Jan 2026

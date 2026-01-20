@@ -12,9 +12,15 @@ Semaphore* SynchConsole::IO_Lock = new Semaphore("IO_Lock", 1);
 Semaphore* SynchConsole::writeAvail = new Semaphore("write avail", 1);
 
 void SynchConsole::freeAllStatic(){
-    // delete SynchConsole::readAvail;
-    // delete SynchConsole::writeDone;
-    // delete SynchConsole::IO_Lock;
+    delete SynchConsole::readAvail;
+    delete SynchConsole::writeDone;
+    delete SynchConsole::IO_Lock;
+    delete SynchConsole::writeAvail;
+
+    SynchConsole::readAvail = nullptr;
+    SynchConsole::writeDone = nullptr;
+    SynchConsole::IO_Lock = nullptr;
+    SynchConsole::writeAvail = nullptr;
 }
 
 
@@ -26,9 +32,6 @@ SynchConsole::SynchConsole(char *readFile, char *writeFile)
 SynchConsole::~SynchConsole()
 {
     delete console;
-    delete writeDone;
-    delete readAvail;
-    delete writeAvail;
 }
 
 void SynchConsole::ReadAvail(int arg) { 

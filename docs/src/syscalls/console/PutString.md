@@ -13,8 +13,6 @@ int PutString(char *s, int n);
 
 `PutString` écrit jusqu'à `n` octets de la chaîne pointée par `s` vers la console de sortie standard. L'écriture s'arrête au premier caractère null (`\0`) rencontré ou après `n` octets, selon ce qui arrive en premier.
 
-Numéro d'appel système : `12`
-
 ### Comportement nominal
 
 - Écrit jusqu'à `n` octets depuis `s`
@@ -73,12 +71,6 @@ Nombre maximum d'octets à écrire (`\0` est exclu).
 | 3     | `E_OVERFLOW` | `n > INT32_MAX - addr` |
 
 ## IMPLÉMENTATION
-
-### Localisation du code
-
-- **Stub utilisateur** : `code/test/start.S`
-- **Handler noyau** : `code/userprog/exception.cc:handler_SC_putString()`
-- **Implémentation** : `code/userprog/synchconsole.cc:SynchConsole::SynchPutString()`
 
 ### Synchronisation
 
@@ -199,25 +191,6 @@ int main() {
 
 ## FAILLES ET VULNÉRABILITÉS
 
-<div class="vulnerability-section severity-critical">
-
-#### Aucune validation de l'espace d'adressage
-
-**Description** : Le handler vérifie seulement `addr < 0` mais pas si l'adresse est dans l'espace utilisateur valide.
-
-**Impact** :
-- **Lecture arbitraire de mémoire noyau** : Un programme malveillant peut lire la mémoire du noyau
-
-**Exploitation** :
-```c
-// Lire 100 octets de mémoire noyau
-char *kernel_addr = (char *)0x00000000;  // Trouver une adresse noyau valide
-PutString(kernel_addr, 100);
-// Affiche le contenu de la mémoire noyau !
-```
-
-</div>
-
 <div class="vulnerability-section severity-info">
 
 **Description** : Un programme peut monopoliser la console indéfiniment.
@@ -251,10 +224,10 @@ Aucun bug connu à ce jour.
 - [PutInt](./PutInt.md) - Affichage d'un entier
 - [GetString](./GetString.md) - Lecture de chaîne
 
-## AUTEURS
+## Auteurs
 
-Antoine, 20 Dec 2025
+Antoine
 
-## DERNIÈRE RÉVISION
+## Dernière révision
 
-20 Dec 2025 par Antoine
+18 Jan 2026

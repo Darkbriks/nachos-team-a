@@ -13,8 +13,6 @@ int GetInt(int *n);
 
 `GetInt` lit une ligne de texte depuis la console, la convertit en entier, et stocke le résultat à l'adresse pointée par `n`. La fonction attend que l'utilisateur tape Enter après avoir saisi un nombre.
 
-Numéro d'appel système : `16`
-
 ### Comportement nominal
 
 - Lit jusqu'à 11 caractères (taille d'un int 32-bit)
@@ -60,12 +58,6 @@ Pointeur vers l'entier où stocker le résultat.
 | 2      | `E_FAULT` | `addr < 0`                      |
 
 ## IMPLÉMENTATION
-
-### Localisation du code
-
-- **Stub utilisateur** : `code/test/start.S`
-- **Handler noyau** : `code/userprog/exception.cc:handler_SC_GetInt()`
-- **Implémentation** : Utilise `SynchConsole::SynchGetString()` + `sscanf`
 
 ### Synchronisation
 
@@ -237,57 +229,6 @@ int main() {
 
 ## FAILLES ET VULNÉRABILITÉS
 
-<div class="vulnerability-section severity-critical">
-
-#### Aucune validation de l'espace d'adressage
-
-**Description** : Seul `addr < 0` est vérifié.
-
-**Impact** :
-- **Écriture arbitraire en mémoire noyau** : Corruption critique
-- **Ascension de privilèges** : Écraser des pointeurs/structures noyau
-
-**Exploitation** :
-```c
-// Écrire dans la mémoire noyau
-int *kernel_ptr = (int *)0x00000000;
-GetInt(kernel_ptr);
-// L'utilisateur contrôle maintenant la valeur en mémoire noyau
-```
-
-</div>
-
-<div class="vulnerability-section severity-critical">
-
-#### WriteMem peut échouer silencieusement
-
-**Description** : `machine->WriteMem(addr, 4, *new_val)` peut échouer si la page n'est pas mappée ou accessible en écriture.
-
-**Impact** :
-- **Écriture ignorée**
-- **Pas de notification d'erreur**
-
-**Code problématique** :
-```c
-machine->WriteMem(addr, 4, *new_val);  // Potentielle échec ignoré
-delete new_val;
-RETURN(0);  // Succès même si WriteMem a échoué !
-```
-
-</div>
-
-<div class="vulnerability-section severity-critical">
-
-#### Buffer overflow potentiel sur SynchGetString
-
-**Description** : Si `SynchGetString` écrit plus de 12 octets (impossible normalement mais...), stack overflow.
-
-**Impact** : Corruption de stack du noyau
-
-**Correction** : `SynchGetString` limite à 12 mais vérifier quand même
-
-</div>
-
 <div class="vulnerability-section severity-info">
 
 #### Pas de timeout
@@ -314,10 +255,10 @@ Aucun bug connu à ce jour.
 - [GetString](./GetString.md) - Lecture de chaîne
 - [GetChar](./GetChar.md) - Lecture d'un caractère
 
-## AUTEURS
+## Auteurs
 
-Antoine, 20 Dec 2025
+Antoine
 
-## DERNIÈRE RÉVISION
+## Dernière révision
 
-20 Dec 2025 par Antoine
+18 Jan 2026

@@ -28,6 +28,7 @@
 #include "process.h"
 #include "exception.h"
 #include "futex.h"
+#include "kernelpanic.h"
 #include "userIO.h"
 #include "userSbrk.h"
 #include "userprocess.h"
@@ -52,13 +53,13 @@
     process->KillAllThreads(false);   \
     printf(error_name);   \
     if (Process::isLastActiveProcess()) {   \
-        ASSERT(false) /* To hit gdb */ \
+        ASSERT_KP(false) /* To hit gdb */ \
         interrupt->Halt();   \
     }   \
     process->setExitCode(-error_code);   \
     process->AncestorSigChild();   \
     currentThread->Finish();  \
-    ASSERT(false) /* To hit gdb */ \
+    ASSERT_KP(false) /* To hit gdb */ \
     break;
 
 
@@ -121,13 +122,13 @@ void handle_SC_Exit() {
         interrupt->Halt();
     }
 
-    ASSERT(processToBeDestroyed == nullptr);
+    ASSERT_KP(processToBeDestroyed == nullptr);
     process->setExitCode(return_code);
     process->AncestorSigChild();
 
     currentThread->Finish();
 
-    ASSERT(FALSE);
+    KERNEL_PANIC("Returned from Thread::Finish() in handle_SC_Exit (should never happen)");
 }
 
 void handle_Error(ExceptionType which, int type){
