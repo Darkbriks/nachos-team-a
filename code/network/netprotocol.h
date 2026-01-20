@@ -8,8 +8,9 @@
 
 #define MAX_CONNECTIONS 16
 #define MAX_LISTENERS 8
-#define MAX_PENDING_MSGS 10
+#define MAX_PENDING_MSGS 300
 #define MAX_PENDING_ACCEPTS 4
+#define MAX_INCOMING_MSGS 4
 #define MAX_RETRANSMISSIONS 10
 #define MAX_CONNECT_ATTEMPTS 10
 
@@ -28,28 +29,42 @@
 
 #define RELIABLE_MAILBOX 3 // 3 for no conflict with legacy tests
 
+// WARNING: This field is write on 4 bit only in type_and_flags, so max 16 types
 enum class MessageType : uint8_t {
-    MSG_SYN     = 1,
-    MSG_SYN_ACK = 2,
-    MSG_ACK     = 3,
-    MSG_DATA    = 4,
-    MSG_FIN     = 5,
-    MSG_FIN_ACK = 6,
-    MSG_RST     = 7
+    MSG_SYN         = 1,
+    MSG_SYN_ACK     = 2,
+    MSG_ACK         = 3,
+    MSG_DATA        = 4,
+    MSG_FIN         = 5,
+    MSG_FIN_ACK     = 6,
+    MSG_RST         = 7,
+    MSG_CHUNK_BEGIN = 8,
+    MSG_CHUNK_END   = 9
 };
 
 inline const char* MessageTypeToString(const MessageType type) {
     switch (type) {
-    case MessageType::MSG_SYN:       return "SYN";
-    case MessageType::MSG_SYN_ACK:   return "SYN_ACK";
-    case MessageType::MSG_ACK:       return "ACK";
-    case MessageType::MSG_DATA:      return "DATA";
-    case MessageType::MSG_FIN:       return "FIN";
-    case MessageType::MSG_FIN_ACK:   return "FIN_ACK";
-    case MessageType::MSG_RST:       return "RST";
-    default:                         return "UNKNOWN";
+    case MessageType::MSG_SYN:          return "SYN";
+    case MessageType::MSG_SYN_ACK:      return "SYN_ACK";
+    case MessageType::MSG_ACK:          return "ACK";
+    case MessageType::MSG_DATA:         return "DATA";
+    case MessageType::MSG_FIN:          return "FIN";
+    case MessageType::MSG_FIN_ACK:      return "FIN_ACK";
+    case MessageType::MSG_RST:          return "RST";
+    case MessageType::MSG_CHUNK_BEGIN:  return "MSG_CHUNK_BEGIN";
+    case MessageType::MSG_CHUNK_END:    return "MSG_CHUNK_END";
+    default:                            return "UNKNOWN";
     }
 }
+
+// WARNING: This field is write on 4 bit only in type_and_flags, so max 16 flags
+enum class MessageFlag : uint8_t {
+    FLAG_NONE                   = 0,
+    FLAG_MORE_FRAGMENTS         = 1,
+    FLAG_END_OF_MESSAGE         = 2,
+    FLAG_CONTROL                = 4,
+    FLAG_BIG_MESSAGE_FRAGMENTS  = 6,
+};
 
 enum ConnectionState {
     // Initial states
@@ -98,12 +113,20 @@ struct ReliableHeader {
     uint32_t ackNum;
     uint16_t srcPort;
     uint16_t dstPort;
-    uint16_t dataLen;
-    MessageType  type;
+    uint8_t dataLen;
+    uint8_t type_and_flags; // 4 bits low for type, 4 bits high for flags
 
-    ReliableHeader() : seqNum(0), ackNum(0), srcPort(0), dstPort(0), dataLen(0), type() {}
-    ReliableHeader(const MessageType t, const uint16_t sPort, const uint16_t dPort, const uint32_t sNum, const uint32_t aNum, const uint16_t len)
-        : seqNum(sNum), ackNum(aNum), srcPort(sPort), dstPort(dPort), dataLen(len), type(t) {}
+    ReliableHeader() : seqNum(0), ackNum(0), srcPort(0), dstPort(0), dataLen(0), type_and_flags(0) {}
+    ReliableHeader(const MessageType t, const uint16_t sPort, const uint16_t dPort, const uint32_t sNum, const uint32_t aNum, const uint8_t len, const uint8_t flags)
+        : seqNum(sNum), ackNum(aNum), srcPort(sPort), dstPort(dPort), dataLen(len) {
+            type_and_flags = (static_cast<uint8_t>(t) & 0x0F) | ((flags & 0x0F) << 4);
+        }
+
+    MessageType getType() const { return static_cast<MessageType>(type_and_flags & 0x0F); }
+    uint8_t getFlags() const { return (type_and_flags >> 4) & 0x0F; }
+
+    void setType(MessageType t) { type_and_flags = (type_and_flags & 0xF0) | (static_cast<uint8_t>(t) & 0x0F); }
+    void setFlags(const uint8_t flags) { type_and_flags = (type_and_flags & 0x0F) | ((flags & 0x0F) << 4); }
 };
 
 #define MAX_RELIABLE_DATA (MaxMailSize - sizeof(ReliableHeader))
@@ -124,7 +147,8 @@ struct PendingMessage {
     int attempts;
     uint16_t dataLen;
     MessageType type;
-    uint8_t flags;
+    uint8_t flags; // Flags for the PendingMessage struct
+    uint8_t pendingFlags; // Flags for the message itself
     char data[MAX_RELIABLE_DATA];
 };
 

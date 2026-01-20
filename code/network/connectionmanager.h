@@ -5,6 +5,7 @@
 #include "netprotocol.h"
 #include "connection.h"
 #include "synch.h"
+#include "exception.h"
 
 struct Listener {
     bool active = false;
@@ -38,7 +39,7 @@ public:
     int CloseListener(int listenerId);
 
     int Send(int connId, const char* data, int length);
-    int Recv(int connId, char* buffer, int maxLength);
+    int Recv(int connId, char* buffer, int maxLength, MessageType *messageType);
     int Close(int connId);
 
     bool IsValidConnection(int connId);
@@ -66,7 +67,6 @@ private:
 
     Thread* workerThread = nullptr;
 
-
     int AllocateConnection();
     void FreeConnection(int connId);
 
@@ -87,8 +87,8 @@ private:
     void HandleIncomingSYN(PacketHeader pktHdr, const ReliableHeader* relHdr);
     void RouteToConnection(PacketHeader pktHdr, const ReliableHeader* relHdr, const char* payload);
 
-    void SendPacket(NetworkAddress destAddr, uint16_t srcPort, uint16_t dstPort,
-                   MessageType type, uint32_t seqNum, uint32_t ackNum, const char* data, int dataLen);
+    void SendPacket(NetworkAddress destAddr, uint16_t srcPort, uint16_t dstPort,MessageType type,
+        uint32_t seqNum, uint32_t ackNum, const char* data, int dataLen, uint8_t flags);
 
     void SendRST(NetworkAddress destAddr, uint16_t srcPort, uint16_t dstPort, uint32_t seqNum, uint32_t ackNum);
 
