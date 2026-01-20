@@ -1,5 +1,5 @@
 #include "nos_client.h"
-
+#include "nos_unistd.h"
 
 /* Convert int to string (simple itoa) - static to avoid conflicts */
 static int intToStr(int num, char *buf) {
@@ -85,9 +85,7 @@ int clientGetFile(int connId, char *remoteFile, char *localFile, int maxSize,
         return -1;
     }
 
-    /* Create local file */
-    Create(localFile, maxSize);
-    fd = Open(localFile, strlen(localFile));
+    fd = open(localFile, O_CREATE);
     if (fd < 0) {
         printf("[CLIENT] Cannot create local file: %s\n", localFile);
         return -1;
@@ -105,12 +103,12 @@ int clientGetFile(int connId, char *remoteFile, char *localFile, int maxSize,
         }
 
         /* Write to local file */
-        Write(buffer, n, fd);
+        write(fd, buffer, n);
         received += n;
         printf("[CLIENT] Received %d bytes\n", received);
     }
 
-    Close(fd);
+    close(fd);
 
     /* Record end time */
     time(endTime);
@@ -132,7 +130,7 @@ int clientPutFile(int connId, char *localFile, char *remoteFile, int maxSize,
     int n;
 
     /* Open local file */
-    fd = Open(localFile, strlen(localFile));
+    fd = open(localFile, 0);
     if (fd < 0) {
         printf("[CLIENT] Cannot open local file: %s\n", localFile);
         return -1;
@@ -141,12 +139,12 @@ int clientPutFile(int connId, char *localFile, char *remoteFile, int maxSize,
     /* Read file to get size (read and count) */
     {
         char tempBuf[CLIENT_CHUNK_SIZE];
-        while ((n = Read(tempBuf, CLIENT_CHUNK_SIZE, fd)) > 0) {
+        while ((n = read(fd, tempBuf,CLIENT_CHUNK_SIZE)) > 0) {
             fileSize += n;
             if (fileSize >= maxSize) break;
         }
     }
-    Close(fd);
+    close(fd);
     printf("[CLIENT] Local file size: %d bytes\n", fileSize);
 
     /* Build PUT command: "PUT remoteFile size" */
@@ -180,24 +178,24 @@ int clientPutFile(int connId, char *localFile, char *remoteFile, int maxSize,
     }
 
     /* Reopen file and send data */
-    fd = Open(localFile, strlen(localFile));
+    fd = open(localFile, 0);
     if (fd < 0) {
         printf("[CLIENT] Cannot reopen local file\n");
         return -1;
     }
 
     /* Send file data in chunks */
-    while ((n = Read(buffer, CLIENT_CHUNK_SIZE, fd)) > 0) {
+    while ((n = read(fd, buffer, CLIENT_CHUNK_SIZE)) > 0) {
         if (sendto(connId, buffer, n) < 0) {
             printf("[CLIENT] Failed to send data chunk\n");
-            Close(fd);
+            close(fd);
             return -1;
         }
         sent += n;
         printf("[CLIENT] Sent %d/%d bytes\n", sent, fileSize);
     }
 
-    Close(fd);
+    close(fd);
 
     /* Send EOF */
     sendto(connId, "EOF", 4);

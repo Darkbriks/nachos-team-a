@@ -1,5 +1,5 @@
 #include "nos_fileserver.h"
-
+#include "nos_unistd.h"
 /* Parse command from received data */
 int serverParseCommand(char *data, char *cmd, char *arg1, int *arg2) {
     int i = 0, j = 0;
@@ -42,7 +42,7 @@ int serverHandleGet(int connId, char *filename) {
     printf("[SERVER] GET request for '%s'\n", filename);
 
     /* Open the file from real filesystem */
-    fd = Open(filename, strlen(filename));
+    fd = open(filename, 0);
     if (fd < 0) {
         printf("[SERVER] File not found: %s\n", filename);
         sendto(connId, "ERR 404", 8);
@@ -53,18 +53,18 @@ int serverHandleGet(int connId, char *filename) {
     sendto(connId, "OK", 3);
     printf("[SERVER] Sending file...\n");
 
-    /* Read and send file in chunks */
-    while ((n = Read(buffer, SERVER_CHUNK_SIZE, fd)) > 0) {
+    /* read and send file in chunks */
+    while ((n = read(fd, buffer, SERVER_CHUNK_SIZE)) > 0) {
         if (sendto(connId, buffer, n) < 0) {
             printf("[SERVER] Failed to send data chunk\n");
-            Close(fd);
+            close(fd);
             return -1;
         }
         sent += n;
         printf("[SERVER] Sent %d bytes\n", sent);
     }
 
-    Close(fd);
+    close(fd);
 
     /* Send EOF marker */
     sendto(connId, "EOF", 4);
@@ -82,11 +82,9 @@ int serverHandlePut(int connId, char *filename, int size) {
     printf("[SERVER] PUT request: '%s' (%d bytes)\n", filename, size);
 
     /* Create the file in real filesystem */
-    Create(filename, size);
-    printf("[SERVER] Create done, errno: %d\n", errno);
+    fd = open(filename, O_CREATE);
 
     /* Open for writing */
-    fd = Open(filename, strlen(filename));
     if (fd < 0) {
         printf("[SERVER] Cannot open file: %s, errno: %d\n", filename, errno);
         sendto(connId, "ERR 500", 8);
@@ -96,7 +94,7 @@ int serverHandlePut(int connId, char *filename, int size) {
     /* Send OK to confirm ready to receive */
     if (sendto(connId, "OK", 3) < 0) {
         printf("[SERVER] Failed to send OK\n");
-        Close(fd);
+        close(fd);
         return -1;
     }
 
@@ -117,13 +115,13 @@ int serverHandlePut(int connId, char *filename, int size) {
             break;
         }
 
-        /* Write to file */
-        Write(buffer, n, fd);
+        /* write to file */
+        write(fd,buffer,n);
         received += n;
         printf("[SERVER] Received %d/%d bytes\n", received, size);
     }
 
-    Close(fd);
+    close(fd);
     printf("[SERVER] File saved: '%s' (%d bytes)\n", filename, received);
 
     /* Send final confirmation */

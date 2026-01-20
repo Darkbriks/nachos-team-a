@@ -1,5 +1,5 @@
 #include "nos_fileserver.h"
-
+#include "nos_unistd.h"
 int main() {
     int listenerId, connId;
     char buffer[128];
@@ -12,11 +12,10 @@ int main() {
     printf("=== NachOS File Server (Real FS) ===\n");
 
     /* Create a test file in the filesystem */
-    Create("test.txt", 100);
-    fd = Open("test.txt", 8);
+    fd = open("test.txt", O_CREATE);
     if (fd >= 0) {
-        Write(testData, strlen(testData), fd);
-        Close(fd);
+        write(fd, testData, strlen(testData));
+        close_file(fd);
         printf("Created test file: 'test.txt' (%d bytes)\n", strlen(testData));
     }
 
