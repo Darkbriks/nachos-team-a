@@ -23,6 +23,15 @@ public:
   void setFirstIndirection(sector_t i) { indirect = i; }
   void setRedirect2(sector_t s, int i) { second_indercetion[i] = s; }
   sector_t getRedirect2(int i) { return second_indercetion[i]; }
+  int getRedirect2InUse(){
+      int result = 0;
+      for (int i = 0; i < MAX_INDIRECT_LEVEL_TWO; i++){
+          if (second_indercetion[i] != INVALID_SECTOR){
+              result++;
+          }
+      }
+      return result;
+  }
 
   sector_t indirect;
   // Second Indirection
