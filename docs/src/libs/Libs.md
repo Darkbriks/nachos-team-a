@@ -55,8 +55,9 @@ Types de base pour l'espace utilisateur 32-bit : `uint8_t` à `uint64_t`, `size_
 
 ## Auteurs
 
-Antoine
+Antoine PATRON
+Alioune Badara DIENE
 
 ## Dernière révision
 
-18 Jan 2026
+21 Jan 2026
