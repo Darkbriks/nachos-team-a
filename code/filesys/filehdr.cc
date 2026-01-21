@@ -170,7 +170,7 @@ bool FileHeader::Allocate(BitMap *bitMap, const int fileSize) {
     int nb_necessary = MAX(divRoundUp(fileSize, SectorSize) - numSectors, 0);
     DEBUG('R', "Need %d sectors car filesize = %d\n", numSectors, fileSize);
     if (bitMap->NumClear() < nb_necessary) { // TODO count sector for redirection 
-        DEBUG('R', "Need %d sectors but not enought space available\n", numSectors);
+        DEBUG('N', "Need %d sectors but not enought space available\n", numSectors);
         return false; // not enough space
     }
 

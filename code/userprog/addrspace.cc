@@ -144,7 +144,6 @@ AddrSpace::AddrSpace(inode_t inode) {
     }
 
     // then, copy in the code and data segments into memory
-    // TODO: Set pageTable[i].readOnly = TRUE for code segment
     if (noffH.code.size > 0) {
         DEBUG('a', "AddrSpace::AddrSpace: Initializing code segment, at 0x%x, size %d\n", noffH.code.virtualAddr, noffH.code.size);
         ReadAtVirtual(executable, noffH.code.virtualAddr, noffH.code.size, noffH.code.inFileAddr, pageTable, numPages);

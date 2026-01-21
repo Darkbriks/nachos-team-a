@@ -6,5 +6,7 @@ void handle_SC_Open();
 void handle_SC_Read();
 void handle_SC_Write();
 void handle_SC_Close();
+void handle_SC_FileLen();
+void handle_SC_Seek();
 
 #endif // USERFILE_H

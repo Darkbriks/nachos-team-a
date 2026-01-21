@@ -26,7 +26,7 @@
 //    -c tests the console
 //
 //  FILESYS
-//    -f causes the physical disk to be formatted // TODO
+//    -f causes the physical disk to be formatted
 //    -cp copies a file from UNIX to Nachos
 //    -p prints a Nachos file to stdout
 //    -r removes a Nachos file from the file system
@@ -66,6 +66,7 @@ extern void MailTest(int networkID);
 extern void RingTest(int myAddr, int numMachines);
 extern void ReliableMailTest(int farAddr);
 extern void ReliableMailChunkerTest(int farAddr);
+
 //---------------------------------------------------------------------
 // main
 //      Bootstrap the operating system kernel.

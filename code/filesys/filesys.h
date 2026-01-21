@@ -92,7 +92,9 @@ public:
     bool Remove(const char *name); // Delete a file (UNIX unlink)
     int Read(inode_t inode, char* buffer, int n); 
     int Write(inode_t inode, char* buffer, int n); 
-    void Seek(inode_t inode, unsigned int seek_pos); 
+    int Seek(inode_t inode, unsigned int seek_pos); 
+    unsigned int Len(inode_t inode);
+    
 
     bool Change_Directory(const char * name);
     void ReadAllFile(const char* name);

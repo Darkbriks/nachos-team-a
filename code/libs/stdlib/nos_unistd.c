@@ -1,6 +1,7 @@
 #include "syscall.h"
 #include "nos_string.h"
 #include "nos_unistd.h"
+#include "nos_stdio.h"
 
 bool close_file(int __fd){
     return Close(__fd) == 0;
@@ -22,9 +23,22 @@ int open(char* name, int flags){
             return -1;
         }
     }
-    return Open(name, strlen(name));
+    return Open(name, strlen(name) + 1);
 }
 
 bool create(char *name){
-    return Create(name, strlen(name)) == 0;
+    return Create(name, strlen(name) + 1) == 0;
+}
+
+bool fileLen(char* name, unsigned int *fileSize){
+    int fd;
+    /* Open local file */
+    fd = open(name, 0);
+    if (fd < 0) {
+        printf("[CLIENT] Cannot open local file: %s, fd = %d\n", name, fd);
+        return false;
+    }
+    *fileSize = FileLen(fd);
+    close_file(fd);
+    return true;
 }

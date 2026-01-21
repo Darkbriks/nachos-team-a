@@ -86,9 +86,12 @@
 #define SC_Read   39
 #define SC_Write  40
 #define SC_Close  41
+#define SC_FileLen 43
+#define SC_Seek 44
 
 
 
+#define SC_time 42
 #ifdef IN_USER_MODE
 
 // LB: This part is read only on compiling the test/*.c files.
@@ -170,8 +173,13 @@ int Write(char *buffer, int size, OpenFileId id);
 int Read(char *buffer, int size, OpenFileId id);
 
 /* Close the file, we're done reading and writing to it. */
-int Close(OpenFileId id);
+int Close(int fd);
 
+// return numbe rof bytes in the file
+unsigned int FileLen(int fd);
+
+// Return the new seek
+int Seek(int fd, int new_seek);
 /* -------------------------------------------------------------
  * CONSOLE I/O
  * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/console/Console.html">Full documentation</a>
@@ -538,6 +546,14 @@ typedef int OpenFileId;
 #define ConsoleInput 0
 #define ConsoleOutput 1
 
+
+/*
+ * Retrieves the current calendar time (wall clock time) in seconds since the Unix epoch 
+ * (January 1, 1970, 00:00:00 UTC)
+ */
+typedef long long time_t;
+
+int time(time_t *loc);
 
 #endif // IN_USER_MODE
 

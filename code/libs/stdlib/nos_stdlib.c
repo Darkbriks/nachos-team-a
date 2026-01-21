@@ -212,6 +212,46 @@ long double strtold(const char* str, char** endptr) {
     return 0.0L;
 }
 
+char* itoa(int value, char* str, int base) {
+    if (str == NULL || base < 2 || base > 36) {
+        return NULL;
+    }
+
+    char* ptr = str;
+    char* ptr1 = str;
+    char tmp_char;
+    int tmp_value;
+
+    /* Handle negative numbers for base 10 */
+    int is_negative = 0;
+    if (value < 0 && base == 10) {
+        is_negative = 1;
+        value = -value;
+    }
+
+    /* Convert to string in reverse order */
+    do {
+        tmp_value = value;
+        value /= base;
+        *ptr++ = "0123456789abcdefghijklmnopqrstuvwxyz"[tmp_value - value * base];
+    } while (value);
+
+    /* Add negative sign if needed */
+    if (is_negative) {
+        *ptr++ = '-';
+    }
+    *ptr-- = '\0';
+
+    /* Reverse the string */
+    while (ptr1 < ptr) {
+        tmp_char = *ptr;
+        *ptr-- = *ptr1;
+        *ptr1++ = tmp_char;
+    }
+
+    return str;
+}
+
 /* =============================================================
  * Miscellaneous Algorithms and Math Functions
  * =============================================================

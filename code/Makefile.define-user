@@ -25,24 +25,28 @@ USERPROG_NOPROGRAM=
 # IMPORTANT: the 4 original user programs (halt, ...) cannot have extra
 #  sources and will always be linked only with start.S (USERPROG_LIBS
 #  and ..._EXTRA_SOURCES are ignored for them)
-USERPROG_LIBS=start.S                           \
-              libgcc.c                          \
-              ../libs/stdlib/nos_ctype.c        \
-              ../libs/stdlib/nos_stdio.c        \
-              ../libs/stdlib/nos_stdlib.c       \
-              ../libs/stdlib/nos_string.c       \
-              ../libs/stdlib/nos_unistd.c       \
-              ../libs/allocator/nos_mem.c       \
-              ../libs/allocator/nos_mem_space.c \
+USERPROG_LIBS=start.S                               \
+              libgcc.c                              \
+              ../libs/stdlib/nos_ctype.c            \
+              ../libs/stdlib/nos_stdio.c            \
+              ../libs/stdlib/nos_stdlib.c           \
+              ../libs/stdlib/nos_string.c           \
+              ../libs/allocator/nos_mem.c           \
+              ../libs/allocator/nos_mem_space.c     \
               ../libs/pthread/nos_pthread.c         \
               ../libs/pthread/nos_pthread_attr.c    \
               ../libs/pthread/nos_pthread_mutex.c   \
+              ../libs/ftp/nos_fileserver.c          \
+              ../libs/ftp/nos_client.c	            \
+              ../libs/ftp/nos_common.c	            \
+              ../libs/stdlib/nos_unistd.c       \
 
 AUTOLOAD_CPPFLAGS=-DCHANGED               \
     -I$(topsrc_dir)/libs                  \
     -I$(topsrc_dir)/libs/stdlib           \
     -I$(topsrc_dir)/libs/allocator        \
     -I$(topsrc_dir)/libs/pthread		  \
+	-I$(topsrc_dir)/libs/ftp			  \
 
 # each program 'p' can specify extra sources in 'p'_EXTRA_SOURCES
 # => declare here program sources to add in addition to
@@ -104,7 +108,7 @@ USER_FLAVORS=final
 # $(eval $(call define-flavor,step2,userprog filesys-stub,synchconsole.cc))
 # $(eval $(call define-flavor,step3,userprog filesys-stub,synchconsole.cc userthread.cc process.cc bitmap_thread_safe.cc \
 # 	userIO.cc userSem.cc userSleep.cc ))
-#
+
 # $(eval $(call define-flavor,step4,userprog filesys-stub, \
 #     bitmap_thread_safe.cc frameprovider.cc process.cc stackmanager.cc synchconsole.cc \
 #     futex.cc userIO.cc userprocess.cc userSbrk.cc userSem.cc userSleep.cc userthread.cc))
@@ -123,6 +127,17 @@ $(eval $(call define-flavor,final,userprog filesys network, \
 
 # $(eval $(call define-flavor,mynetwork,userprog filesys-stub network, \
 #     synchconsole.cc userthread.cc))
+# $(eval $(call define-flavor,step6,userprog filesys-stub network, \
+#     frameprovider.cc process.cc stackmanager.cc synchconsole.cc \
+#     futex.cc userIO.cc userprocess.cc userSbrk.cc userSem.cc userSleep.cc userthread.cc \
+#     usernetwork.cc reliablepost.cc connection.cc connectionmanager.cc userFile.cc))
+
+# $(eval $(call define-flavor,step6bis,userprog filesys network, \
+#     frameprovider.cc process.cc stackmanager.cc synchconsole.cc \
+#     futex.cc userIO.cc userprocess.cc userSbrk.cc userSem.cc userSleep.cc userthread.cc \
+#     usernetwork.cc reliablepost.cc connection.cc connectionmanager.cc \
+#     filesysshell.cc inodetable.cc pathnavigator.cc file.cc fileindirection.cc userFile.cc))
+#
 # $(eval $(call define-flavor,final,userprog filesys network,\
 #     synchconsole.cc userthread.cc))
 

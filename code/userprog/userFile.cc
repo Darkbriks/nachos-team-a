@@ -19,7 +19,7 @@ void handle_SC_Create() {
     VALIDATE_ARG(space->IsValidUserRange(addr, size), E_FAULT);
 
     char name[MAX_PATH_SIZE];
-    VALIDATE_ARG(CopyStringFromUser(addr, name ,MAX_PATH_SIZE), E_FAULT);
+    VALIDATE_ARG(CopyStringFromUser(addr, name ,size), E_FAULT);
     VALIDATE_ARG(fileSystem->Create(name, 0), E_FULL_DISK);
 
     RETURN(0);
@@ -33,7 +33,7 @@ void handle_SC_Open() {
     VALIDATE_ARG(space->IsValidUserRange(addr, size), E_FAULT);
 
     char name[MAX_PATH_SIZE];
-    VALIDATE_ARG(CopyStringFromUser(addr, name ,MAX_PATH_SIZE), E_FAULT);
+    VALIDATE_ARG(CopyStringFromUser(addr, name ,size), E_FAULT);
     VALIDATE_ARG(currentThread->CanOpenFile() != INVALID_ID, E_FTABLE);
 
     inode_t inode = fileSystem->Open(name);
@@ -119,4 +119,27 @@ void handle_SC_Read() {
         RETURN(res);
 
     }
+}
+
+void handle_SC_FileLen(){
+    thread_inode_t id = reinterpret_cast<thread_inode_t>(machine->ReadRegister(4));
+
+    GET_PROCESS_ADDRSPACE();
+    VALIDATE_ARG(currentThread->IsOpenFile(id), E_BADF);
+    inode_t inode = currentThread->GetOpenFile(id, nullptr);
+    RETURN(fileSystem->Len(inode));
+}
+
+void handle_SC_Seek(){
+    thread_inode_t id = reinterpret_cast<thread_inode_t>(machine->ReadRegister(4));
+    int pos_seek = reinterpret_cast<int>(machine->ReadRegister(5));
+
+    GET_PROCESS_ADDRSPACE();
+    VALIDATE_ARG(currentThread->IsOpenFile(id), E_BADF);
+    inode_t inode = currentThread->GetOpenFile(id, nullptr);
+    int result = fileSystem->Seek(inode, pos_seek);
+    if (result >= 0){
+        currentThread->setSeek(inode, result);
+    }
+    RETURN(result);
 }

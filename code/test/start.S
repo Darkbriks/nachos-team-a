@@ -73,6 +73,8 @@ DEFINE_SIMPLE_SYSCALL Open, SC_Open
 DEFINE_SIMPLE_SYSCALL Read, SC_Read
 DEFINE_SIMPLE_SYSCALL Write, SC_Write
 DEFINE_SIMPLE_SYSCALL Close, SC_Close
+DEFINE_SYSCALL_STUB FileLen, SC_FileLen
+DEFINE_SYSCALL_STUB Seek, SC_Seek
 
 DEFINE_SIMPLE_SYSCALL PutChar, SC_PutChar
 DEFINE_SYSCALL_STUB PutString, SC_PutString
@@ -116,6 +118,8 @@ DEFINE_SYSCALL_STUB accept, SC_accept
 DEFINE_SYSCALL_STUB sendto, SC_sendto
 DEFINE_SYSCALL_STUB recvfrom, SC_recvfrom
 DEFINE_SYSCALL_STUB close, SC_close
+
+DEFINE_SYSCALL_STUB time, SC_time
 
 /* dummy function to keep gcc happy */
         .globl  __main

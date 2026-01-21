@@ -70,7 +70,7 @@ public:
     explicit OpenFile(int sector); // Open a file whose header is located at "sector" on the disk
     ~OpenFile(); // Close the file
 
-    void Seek(int position); // Set the position from which to start reading/writing -- UNIX lseek
+    int Seek(int position); // Set the position from which to start reading/writing -- UNIX lseek
 
     int Read(char *into, int numBytes); // Read/write bytes from the file,
 					// starting at the implicit position.

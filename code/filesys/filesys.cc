@@ -160,6 +160,10 @@ int FileSystem::Write(inode_t inode, char* buffer, int n){
     return result;
 }
 
+unsigned int FileSystem::Len(inode_t inode){
+    return inodes.GetFile(inode)->Length();
+}
+
 bool FileSystem::Remove(const char *name) {
     const PathNavigator nav(this, name);
     if (!nav.isValid()) { return false; }
@@ -522,10 +526,12 @@ bool FileSystem::_Remove(const char *name) {
     return true;
 }
 
-void FileSystem::Seek(inode_t inode, unsigned int seek_pos){
+int FileSystem::Seek(inode_t inode, unsigned int seek_pos){
     OpenFile* file = inodes.GetFile(inode);
     if (file){
-        file->Seek(seek_pos);
+        return file->Seek(seek_pos);
+    } else{
+        return -1;
     }
 }
 

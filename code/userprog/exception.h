@@ -28,6 +28,4 @@
     StackManager *stackMgr = space->GetStackManager(); \
     VALIDATE_ARG(stackMgr != nullptr, E_FAULT);
 
-#define MAX_PUT_STRING 8192
-
 #endif // EXCEPTION_H
