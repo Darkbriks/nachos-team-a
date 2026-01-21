@@ -15,6 +15,23 @@ int ConnectionManager::Connect(int remoteAddr, int remotePort, int localPort);
 
 `connect` permet d'établir une connexion à un serveur distant
 
+## Comportement nominal
+
+- vérifie si les ports sont valides ou déjà utilisés
+- alloue une connexion
+- récupère la connexion
+- remplit la structure de connexion
+- envoie un message de contrôle
+- vérifie que la connexion soit établie
+
+## Cas particuliers
+
+- **remoteAddr < 0 || remoteAddr > 9** : Retourne -1, `errno = E_INVAL`
+- **remotePort <= 0 || remotePort > 65535** : Retourne -1, `errno = E_INVAL`
+- **localPort <= 0 || localPort > 65535** : Retourne -1, `errno = E_INVAL`
+- **mgrr == nullptr** : Retourne -1, `errno = E_NOSYS`
+- **mgr->IsValidConnection(result) == false** : Retourne -1, `errno = E_NOTCONN`
+
 ## Paramètres
 
 ### `remoteAddr`
@@ -53,7 +70,7 @@ int ConnectionManager::Connect(int remoteAddr, int remotePort, int localPort);
 |-------|-----------|-----------|
 | 105 | `E_TIMEOUT` | Temps écoulé |
 | 100 | `E_REFUSED` | Connexion refusée |
-| 1 | `E_INVAL` |  |
+| 1 | `E_INVAL` | Paramètre invalide |
 | 107 | `E_NOPORT` | Port non défini |
 | 101 | `E_NOTCONN` | Echec de connexion |
 | 102 | `E_ADDRINUSE` | Port déjà utilisé |
@@ -84,37 +101,32 @@ connect(remoteAddr, remotePort, localPort)
         │ ├─ lit $4
         │ ├─ lit $5
         │ ├─ lit $6
-        │ ├─ valide le PID
-        │ └─ currentThread->getProcess()->WaitForChild(child)
+        │ └─ GetConnectionManager()
         ▼
-    WaitForChild(child, addr_result)
-        │ ├─ valide le PID
-        │ ├─ Attend le process 
-        │ ├─ Met l'exitcode dans la mémoire 
-        │ └─ Détruit le process finit
+    Connect(remoteAddr, remotePort, localPort)
+        │ ├─ AllocateEphemeralPort()
+        │ ├─ connId = AllocateConnection()
+        │ ├─ GetConnection(connId)
+        │ └─ SendControlMessage(MSG_SYN,              initialSeqNum, 0)
+        | └─ FreeConnection(connId) 
         ▼
 ```
 
-## Exemples
+## FAILLES ET VULNÉRABILITÉS
 
-### Exemple : Connexion d'un client
+Aucune faille de sécurité connue.
 
-```c
-#include "syscall.h"
+## BUGS CONNUS
 
-int main() {
-    ...
-    int connId = connect(SERVER_ADDR, SERVER_PORT, 0);
-    if (connId < 0) {
-        printf("[Client] ERROR: connect() failed with %d\n", connId);
-        return 1;
-    }
-    printf("[Client] Connected! (connId=%d)\n", connId);
-    ...
-}
-```
+Aucun bug connu à ce jour.
 
-## Limitations
+## VOIR AUSSI
+
+- [Accept](./Accept.md) - Accepter une connexion
+- [Close](./Close.md) - Fermer une connexion
+- [Listen](./Listen.md) - Ecouter les demandes de connexions
+- [sendto](./Send.md) - Envoyer des données
+- [recvfrom](./Recv.md) - Recevoir des données
 
 
 ## Auteurs
