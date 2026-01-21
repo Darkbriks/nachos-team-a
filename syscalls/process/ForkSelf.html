@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>futex_wait - NachOS Manual</title>
+        <title>ForkSelf - NachOS Manual</title>
 
 
         <!-- Custom HTML head -->
@@ -179,41 +179,23 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="futex_wait"><a class="header" href="#futex_wait">futex_wait</a></h1>
-<p><code>futex_wait</code> - Attend sur un futex si sa valeur correspond à l’attendue.</p>
+                        <h1 id="forkself"><a class="header" href="#forkself">ForkSelf</a></h1>
+<p><code>ForkSelf</code> - Obtient le PID du processus courant</p>
 <h2 id="synopsis"><a class="header" href="#synopsis">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
-int futex_wait(int* uaddr, int expected);
+int ForkSelf(void);
 </code></pre>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
-<p><code>futex_wait</code> vérifie atomiquement que la valeur à l’adresse <code>uaddr</code> est égale à <code>expected</code>, et si c’est le cas, met le thread appelant en sommeil jusqu’à ce qu’un autre thread appelle <code>futex_wake</code> sur la même adresse.</p>
-<h3 id="comportement"><a class="header" href="#comportement">Comportement</a></h3>
+<p><code>ForkSelf</code> retourne l’identifiant unique (PID) du processus appelant.</p>
+<p><strong>Numéro d’appel système</strong> : <code>SC_ForkSelf</code> (29)</p>
+<h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
 <ol>
-<li>Désactive les interruptions</li>
-<li>Lit la valeur à <code>uaddr</code></li>
-<li>Si la valeur diffère de <code>expected</code> : retourne immédiatement avec <code>E_AGAIN</code></li>
-<li>Sinon : ajoute le thread à la file d’attente du futex et l’endort</li>
-<li>Au réveil : retourne 0</li>
+<li>Récupère le processus courant via <code>currentThread-&gt;getProcess()</code></li>
+<li>Retourne le PID du processus</li>
 </ol>
-<div class="callout callout-note">
-    
-<div class="callout-title">Atomicité</div>
-
-    
-<div class="callout-content">
-        La vérification de la valeur et la mise en sommeil sont atomiques.
-    </div>
-
-</div>
-
 <h2 id="paramètres"><a class="header" href="#paramètres">Paramètres</a></h2>
-<h3 id="uaddr"><a class="header" href="#uaddr"><code>uaddr</code></a></h3>
-<p>Adresse de l’entier à surveiller (le futex).</p>
-<p><strong>Type</strong> : <code>int*</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> : Doit être une adresse utilisateur valide, alignée sur 4 octets</p>
-<h3 id="expected"><a class="header" href="#expected"><code>expected</code></a></h3>
-<p>Valeur attendue à l’adresse <code>uaddr</code>.</p>
-<p><strong>Type</strong> : <code>int</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$5</code></p>
+<p>Aucun paramètre.</p>
 <h2 id="valeur-de-retour"><a class="header" href="#valeur-de-retour">Valeur de retour</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <div class="table-wrapper">
@@ -222,83 +204,73 @@ int futex_wait(int* uaddr, int expected);
 <tr><th>Valeur</th><th>Signification</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0</code></td><td>Succès (thread a été réveillé)</td></tr>
-<tr><td><code>-1</code></td><td>Erreur (consulter <code>errno</code>)</td></tr>
+<tr><td><code>&gt;= 0</code></td><td>PID du processus courant</td></tr>
 </tbody>
 </table>
 </div>
-<h2 id="exemples"><a class="header" href="#exemples">Exemples</a></h2>
-<h3 id="exemple-1--attente-simple"><a class="header" href="#exemple-1--attente-simple">Exemple 1 : Attente simple</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-int flag = 0;
-
-void waiter(int arg) {
-    PutString("Attente du signal...\n", 21);
-    
-    // Attendre que flag devienne != 0
-    while (atomic_load(&amp;flag) == 0) {
-        futex_wait(&amp;flag, 0);
-    }
-    
-    PutString("Signal recu!\n", 13);
-    thread_exit();
-}
-
-void signaler(int arg) {
-    // Simuler du travail
-    for (volatile int i = 0; i &lt; 10000; i++);
-    
-    // Signaler
-    atomic_store(&amp;flag, 1);
-    futex_wake(&amp;flag, 1);
-    
-    thread_exit();
-}
-</code></pre>
-<h3 id="exemple-2--gestion-du-spurious-wakeup"><a class="header" href="#exemple-2--gestion-du-spurious-wakeup">Exemple 2 : Gestion du spurious wakeup</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-int ready = 0;
-
-void consumer(int arg) {
-    // Boucle pour gérer les réveils intempestifs
-    while (atomic_load(&amp;ready) == 0) {
-        int ret = futex_wait(&amp;ready, 0);
-        
-        if (ret == -1 &amp;&amp; errno == E_AGAIN) {
-            // La valeur a changé, re-vérifier
-            continue;
-        }
-    }
-    
-    PutString("Donnee prete\n", 13);
-    thread_exit();
-}
-</code></pre>
-<h2 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h2>
-<p>L’appel est thread-safe. La vérification et la mise en sommeil sont atomiques grâce à la désactivation des interruptions.</p>
-<h2 id="voir-aussi"><a class="header" href="#voir-aussi">Voir aussi</a></h2>
+<h2 id="implémentation"><a class="header" href="#implémentation">Implémentation</a></h2>
+<h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
 <ul>
-<li><a href="./futex_wake.html">futex_wake</a> - Réveiller des threads</li>
-<li><a href="./atomic_cmpxchg.html">atomic_cmpxchg</a> - Compare-and-swap atomique</li>
-<li><a href="./atomic_load.html">atomic_load</a> - Lecture atomique</li>
-<li><a href="./Threads.html">Threads Overview</a> - Vue d’ensemble</li>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/userprocess.cc:handle_SC_ForkSelf()</code></li>
 </ul>
+<h3 id="flux-dexécution"><a class="header" href="#flux-dexécution">Flux d’exécution</a></h3>
+<pre><code>ForkSelf()
+        │
+        ▼
+    start.S: ForkSelf
+        │
+        ▼
+    syscall SC_ForkSelf
+        │
+        ▼
+    handle_SC_ForkSelf()
+        │ └─ currentThread-&gt;getProcess()-&gt;getPId()
+        ▼
+    [retourne PID dans $2]
+</code></pre>
+<h2 id="exemples"><a class="header" href="#exemples">Exemples</a></h2>
+<h3 id="exemple-1--afficher-son-propre-pid"><a class="header" href="#exemple-1--afficher-son-propre-pid">Exemple 1 : Afficher son propre PID</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int myPid = ForkSelf();
+    PutString("Mon PID est: ", 13);
+    PutInt(myPid);
+    PutChar('\n');
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-2--distinguer-parent-et-enfant"><a class="header" href="#exemple-2--distinguer-parent-et-enfant">Exemple 2 : Distinguer parent et enfant</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int parentPid = ForkSelf();
+    int childPid = ForkExec("./child_program");
+
+    PutString("Je suis le processus ", 22);
+    PutInt(parentPid);
+    PutString(", j'ai lance le processus ", 28);
+    PutInt(childPid);
+    PutChar('\n');
+
+    return 0;
+}
+</code></pre>
 <h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
-<p>Antoine</p>
+<p>Alioune Badara DIENE, 21 Jan 2026</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
-<p>18 Jan 2026</p>
+<p>21 Jan 2026</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../syscalls/threads/thread_yield.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../syscalls/process/ForkJoin.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../syscalls/threads/futex_wake.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../network/SUMMARY.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -308,11 +280,11 @@ void consumer(int arg) {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../syscalls/threads/thread_yield.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../syscalls/process/ForkJoin.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../syscalls/threads/futex_wake.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../network/SUMMARY.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

@@ -38,10 +38,10 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-5f6d642c.js";
+            window.path_to_searchindex_js = "searchindex-34666685.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-e514a7e0.js"></script>
+        <script src="toc-ccf7ee74.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -243,6 +243,7 @@
 <li><a href="#appels-système-de-gestion-des-processus">Process Overview</a></li>
 <li><a href="#forkexec-1">ForkExec</a></li>
 <li><a href="#forkjoin">ForkJoin</a></li>
+<li><a href="#forkself">ForkSelf</a></li>
 </ul>
 </li>
 <li><a href="#bibliothèques-utilisateur-1">Vue d’ensemble des lib user</a>
@@ -323,6 +324,7 @@
 <li><a href="#appels-système-de-gestion-des-processus">Process Overview</a></li>
 <li><a href="#forkexec-1">ForkExec</a></li>
 <li><a href="#forkjoin">ForkJoin</a></li>
+<li><a href="#forkself">ForkSelf</a></li>
 </ul>
 </li>
 </ul>
@@ -6074,6 +6076,7 @@ Tommy, 05 Jan 2026</p>
 <ul>
 <li><a href="#forkexec-1">ForkExec</a></li>
 <li><a href="#forkjoin">ForkJoin</a></li>
+<li><a href="#forkself">ForkSelf</a></li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="appels-système-de-gestion-des-processus"><a class="header" href="#appels-système-de-gestion-des-processus">Appels Système de Gestion des Processus</a></h1>
@@ -6685,6 +6688,89 @@ int main(){
 <h2 id="dernière-révision-33"><a class="header" href="#dernière-révision-33">Dernière révision</a></h2>
 <p>8 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="forkself"><a class="header" href="#forkself">ForkSelf</a></h1>
+<p><code>ForkSelf</code> - Obtient le PID du processus courant</p>
+<h2 id="synopsis-27"><a class="header" href="#synopsis-27">Synopsis</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+int ForkSelf(void);
+</code></pre>
+<h2 id="description-27"><a class="header" href="#description-27">Description</a></h2>
+<p><code>ForkSelf</code> retourne l’identifiant unique (PID) du processus appelant.</p>
+<p><strong>Numéro d’appel système</strong> : <code>SC_ForkSelf</code> (29)</p>
+<h3 id="comportement-nominal-18"><a class="header" href="#comportement-nominal-18">Comportement nominal</a></h3>
+<ol>
+<li>Récupère le processus courant via <code>currentThread-&gt;getProcess()</code></li>
+<li>Retourne le PID du processus</li>
+</ol>
+<h2 id="paramètres-27"><a class="header" href="#paramètres-27">Paramètres</a></h2>
+<p>Aucun paramètre.</p>
+<h2 id="valeur-de-retour-27"><a class="header" href="#valeur-de-retour-27">Valeur de retour</a></h2>
+<p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Valeur</th><th>Signification</th></tr>
+</thead>
+<tbody>
+<tr><td><code>&gt;= 0</code></td><td>PID du processus courant</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="implémentation-17"><a class="header" href="#implémentation-17">Implémentation</a></h2>
+<h3 id="localisation-du-code-12"><a class="header" href="#localisation-du-code-12">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/userprocess.cc:handle_SC_ForkSelf()</code></li>
+</ul>
+<h3 id="flux-dexécution-8"><a class="header" href="#flux-dexécution-8">Flux d’exécution</a></h3>
+<pre><code>ForkSelf()
+        │
+        ▼
+    start.S: ForkSelf
+        │
+        ▼
+    syscall SC_ForkSelf
+        │
+        ▼
+    handle_SC_ForkSelf()
+        │ └─ currentThread-&gt;getProcess()-&gt;getPId()
+        ▼
+    [retourne PID dans $2]
+</code></pre>
+<h2 id="exemples-25"><a class="header" href="#exemples-25">Exemples</a></h2>
+<h3 id="exemple-1--afficher-son-propre-pid"><a class="header" href="#exemple-1--afficher-son-propre-pid">Exemple 1 : Afficher son propre PID</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int myPid = ForkSelf();
+    PutString("Mon PID est: ", 13);
+    PutInt(myPid);
+    PutChar('\n');
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-2--distinguer-parent-et-enfant"><a class="header" href="#exemple-2--distinguer-parent-et-enfant">Exemple 2 : Distinguer parent et enfant</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    int parentPid = ForkSelf();
+    int childPid = ForkExec("./child_program");
+
+    PutString("Je suis le processus ", 22);
+    PutInt(parentPid);
+    PutString(", j'ai lance le processus ", 28);
+    PutInt(childPid);
+    PutChar('\n');
+
+    return 0;
+}
+</code></pre>
+<h2 id="auteurs-34"><a class="header" href="#auteurs-34">Auteurs</a></h2>
+<p>Alioune Badara DIENE, 21 Jan 2026</p>
+<h2 id="dernière-révision-34"><a class="header" href="#dernière-révision-34">Dernière révision</a></h2>
+<p>21 Jan 2026</p>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="network-1"><a class="header" href="#network-1">Network</a></h1>
 <p>Cette section documente l’implémentation de la couche réseau fiable de NachOS.</p>
 <ul>
@@ -6773,7 +6859,7 @@ int main(){
 <h1 id="sendreliable--receivereliable"><a class="header" href="#sendreliable--receivereliable">SendReliable / ReceiveReliable</a></h1>
 <p><code>SendReliable</code> - Envoie un message avec garantie de livraison
 <code>ReceiveReliable</code> - Reçoit un message et envoie un acquittement</p>
-<h2 id="synopsis-27"><a class="header" href="#synopsis-27">SYNOPSIS</a></h2>
+<h2 id="synopsis-28"><a class="header" href="#synopsis-28">SYNOPSIS</a></h2>
 <pre><code class="language-cpp">#include "reliablepost.h"
 
 // Envoi
@@ -6782,7 +6868,7 @@ unsigned int SendReliable(PacketHeader pktHdr, MailHeader mailHdr, const char *d
 // Réception
 void ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data);
 </code></pre>
-<h2 id="description-27"><a class="header" href="#description-27">DESCRIPTION</a></h2>
+<h2 id="description-28"><a class="header" href="#description-28">DESCRIPTION</a></h2>
 <h3 id="sendreliable"><a class="header" href="#sendreliable">SendReliable</a></h3>
 <p><code>SendReliable</code> envoie un message vers la machine distante avec garantie de livraison. Le message est placé dans une file d’attente et retransmis automatiquement jusqu’à réception d’un acquittement (ACK).</p>
 <p><strong>Comportement :</strong></p>
@@ -6798,7 +6884,7 @@ void ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *d
 <li>Bloquant : attend qu’un message soit disponible</li>
 <li>ACK envoyé automatiquement</li>
 </ul>
-<h2 id="paramètres-27"><a class="header" href="#paramètres-27">PARAMÈTRES</a></h2>
+<h2 id="paramètres-28"><a class="header" href="#paramètres-28">PARAMÈTRES</a></h2>
 <h3 id="sendreliable-1"><a class="header" href="#sendreliable-1">SendReliable</a></h3>
 <div class="table-wrapper">
 <table>
@@ -6826,7 +6912,7 @@ void ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *d
 </tbody>
 </table>
 </div>
-<h2 id="valeur-de-retour-27"><a class="header" href="#valeur-de-retour-27">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-28"><a class="header" href="#valeur-de-retour-28">VALEUR DE RETOUR</a></h2>
 <h3 id="sendreliable-2"><a class="header" href="#sendreliable-2">SendReliable</a></h3>
 <ul>
 <li><strong>Succès</strong> : Numéro de séquence attribué au message (&gt; 0)</li>
@@ -6852,14 +6938,14 @@ void ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *d
 <p><code>Connect</code> - Établit une connexion avec la machine distante
 <code>IsConnected</code> - Vérifie si la connexion est active
 <code>Close</code> - Ferme la connexion proprement</p>
-<h2 id="synopsis-28"><a class="header" href="#synopsis-28">SYNOPSIS</a></h2>
+<h2 id="synopsis-29"><a class="header" href="#synopsis-29">SYNOPSIS</a></h2>
 <pre><code class="language-cpp">#include "reliablepost.h"
 
 bool Connect();
 bool IsConnected();
 void Close();
 </code></pre>
-<h2 id="description-28"><a class="header" href="#description-28">DESCRIPTION</a></h2>
+<h2 id="description-29"><a class="header" href="#description-29">DESCRIPTION</a></h2>
 <h3 id="connect"><a class="header" href="#connect">Connect</a></h3>
 <p><code>Connect</code> établit une connexion avec la machine distante configurée lors de la création du <code>ReliablePost</code>. Utilise un handshake de type TCP (SYN/SYN-ACK).</p>
 <p><strong>Comportement :</strong></p>
@@ -6883,7 +6969,7 @@ void Close();
 <li>Envoie CLOSE, attend CLOSE-ACK</li>
 <li>Gère la fermeture simultanée des deux côtés</li>
 </ul>
-<h2 id="valeur-de-retour-28"><a class="header" href="#valeur-de-retour-28">VALEUR DE RETOUR</a></h2>
+<h2 id="valeur-de-retour-29"><a class="header" href="#valeur-de-retour-29">VALEUR DE RETOUR</a></h2>
 <h3 id="connect-1"><a class="header" href="#connect-1">Connect</a></h3>
 <ul>
 <li><strong><code>true</code></strong> : Connexion établie avec succès</li>
@@ -6985,9 +7071,9 @@ void Close();
 <li><a href="#errno---gestion-des-erreurs">errno</a> - Gestion des erreurs</li>
 <li><a href="#vue-densemble-des-appels-système">Appels système</a> - API bas niveau</li>
 </ul>
-<h2 id="auteurs-34"><a class="header" href="#auteurs-34">Auteurs</a></h2>
+<h2 id="auteurs-35"><a class="header" href="#auteurs-35">Auteurs</a></h2>
 <p>Antoine</p>
-<h2 id="dernière-révision-34"><a class="header" href="#dernière-révision-34">Dernière révision</a></h2>
+<h2 id="dernière-révision-35"><a class="header" href="#dernière-révision-35">Dernière révision</a></h2>
 <p>18 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="errno---gestion-des-erreurs"><a class="header" href="#errno---gestion-des-erreurs">errno - Gestion des erreurs</a></h1>
@@ -7110,9 +7196,9 @@ static inline void __clear_errno();
 <li><a href="#threads---appels-système">Threads</a> - Gestion des threads</li>
 <li><a href="libs/tls.html">TLS</a> - Thread-Local Storage</li>
 </ul>
-<h2 id="auteurs-35"><a class="header" href="#auteurs-35">Auteurs</a></h2>
+<h2 id="auteurs-36"><a class="header" href="#auteurs-36">Auteurs</a></h2>
 <p>Antoine</p>
-<h2 id="dernière-révision-35"><a class="header" href="#dernière-révision-35">Dernière révision</a></h2>
+<h2 id="dernière-révision-36"><a class="header" href="#dernière-révision-36">Dernière révision</a></h2>
 <p>18 Jan 2026</p>
 
                     </main>
