@@ -37,7 +37,7 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-b225a31c.js";
+            window.path_to_searchindex_js = "../../searchindex-c0fc530f.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc-9eac4714.js"></script>
@@ -188,6 +188,16 @@ int listen(int port);
 </code></pre>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <p><code>Listen</code> permet de définir le port donné en argument comme port d’écoute</p>
+<h2 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h2>
+<ul>
+<li>vérifie que le port soit valide</li>
+<li>trouve la connection par le port local</li>
+<li>alloue le listener</li>
+</ul>
+<h2 id="cas-particuliers"><a class="header" href="#cas-particuliers">Cas particuliers</a></h2>
+<ul>
+<li><strong>port &lt;= 0 || port &gt; 65535</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
+</ul>
 <h2 id="paramètres"><a class="header" href="#paramètres">Paramètres</a></h2>
 <h3 id="port"><a class="header" href="#port"><code>port</code></a></h3>
 <p>Numéro de port à écouter</p>
@@ -212,7 +222,7 @@ int listen(int port);
 <tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
 </thead>
 <tbody>
-<tr><td>1</td><td><code>E_INVAL</code></td><td></td></tr>
+<tr><td>1</td><td><code>E_INVAL</code></td><td>Paramètre invalide</td></tr>
 <tr><td>102</td><td><code>E_ADDRINUSE</code></td><td>Port déjà utilisé</td></tr>
 </tbody>
 </table>
@@ -225,46 +235,38 @@ int listen(int port);
 <li><strong>Implémentation</strong> : <code>code/network/connectionmanager.cc:Listen(...)</code></li>
 </ul>
 <h3 id="flux-dexécution"><a class="header" href="#flux-dexécution">Flux d’exécution</a></h3>
-<pre><code>connect(remoteAddr, remotePort, localPort)
+<pre><code>listen(remoteAddr, remotePort, localPort)
         │
         ▼
-    start.S: ForkJoin
+    start.S: listen
         │ charge $4 = remoteAddr
         │ charge $5 = remotePort
         │ charge $6 = localPort
         ▼
-    syscall SC_connect
+    syscall SC_listen
         │
         ▼
-    handle_SC_connect()
+    handle_SC_listen()
         │ ├─ lit $4
-        │ ├─ lit $5
-        │ ├─ lit $6
-        │ ├─ valide le PID
-        │ └─ currentThread-&gt;getProcess()-&gt;WaitForChild(child)
+        │ └─ GetConnectionManager()
         ▼
-    WaitForChild(child, addr_result)
-        │ ├─ valide le PID
-        │ ├─ Attend le process 
-        │ ├─ Met l'exitcode dans la mémoire 
-        │ └─ Détruit le process finit
+    Listen(port)
+        │ ├─ FindConnectionByLocalPort(port)
+        │ └─ AllocateListener(port)
         ▼
 </code></pre>
-<h2 id="exemples"><a class="header" href="#exemples">Exemples</a></h2>
-<h3 id="exemple--ecoute-dun-serveur"><a class="header" href="#exemple--ecoute-dun-serveur">Exemple : Ecoute d’un serveur</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-int main(){
-    ...
-    int listenerId = listen(SERVER_PORT);
-    if (listenerId &lt; 0) {
-        printf("[Server] ERROR: listen() failed with %d\n", listenerId);
-        return 1;
-    }
-    printf("[Server] Listening on port %d (listenerId=%d)\n", SERVER_PORT, listenerId);
-    ...
-}
-</code></pre>
+<h2 id="failles-et-vulnérabilités"><a class="header" href="#failles-et-vulnérabilités">FAILLES ET VULNÉRABILITÉS</a></h2>
+<p>Aucune faille de sécurité connue.</p>
+<h2 id="bugs-connus"><a class="header" href="#bugs-connus">BUGS CONNUS</a></h2>
+<p>Aucun bug connu à ce jour.</p>
+<h2 id="voir-aussi"><a class="header" href="#voir-aussi">VOIR AUSSI</a></h2>
+<ul>
+<li><a href="./Accept.html">Accept</a> - Accepter une connexion</li>
+<li><a href="./Close.html">Close</a> - Fermer une connexion</li>
+<li><a href="./Connect.html">Connect</a> - Connexion à une autre machine</li>
+<li><a href="./Send.html">sendto</a> - Envoyer des données</li>
+<li><a href="./Recv.html">recvfrom</a> - Recevoir des données</li>
+</ul>
 <h2 id="limitations"><a class="header" href="#limitations">Limitations</a></h2>
 <h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
 <p>Victor, 21 Jan 2026</p>

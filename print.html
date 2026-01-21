@@ -38,7 +38,7 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-b225a31c.js";
+            window.path_to_searchindex_js = "searchindex-c0fc530f.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-9eac4714.js"></script>
@@ -8201,6 +8201,16 @@ int listen(int port);
 </code></pre>
 <h2 id="description-38"><a class="header" href="#description-38">Description</a></h2>
 <p><code>Listen</code> permet de définir le port donné en argument comme port d’écoute</p>
+<h2 id="comportement-nominal-26"><a class="header" href="#comportement-nominal-26">Comportement nominal</a></h2>
+<ul>
+<li>vérifie que le port soit valide</li>
+<li>trouve la connection par le port local</li>
+<li>alloue le listener</li>
+</ul>
+<h2 id="cas-particuliers-11"><a class="header" href="#cas-particuliers-11">Cas particuliers</a></h2>
+<ul>
+<li><strong>port &lt;= 0 || port &gt; 65535</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
+</ul>
 <h2 id="paramètres-38"><a class="header" href="#paramètres-38">Paramètres</a></h2>
 <h3 id="port"><a class="header" href="#port"><code>port</code></a></h3>
 <p>Numéro de port à écouter</p>
@@ -8225,7 +8235,7 @@ int listen(int port);
 <tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
 </thead>
 <tbody>
-<tr><td>1</td><td><code>E_INVAL</code></td><td></td></tr>
+<tr><td>1</td><td><code>E_INVAL</code></td><td>Paramètre invalide</td></tr>
 <tr><td>102</td><td><code>E_ADDRINUSE</code></td><td>Port déjà utilisé</td></tr>
 </tbody>
 </table>
@@ -8238,46 +8248,38 @@ int listen(int port);
 <li><strong>Implémentation</strong> : <code>code/network/connectionmanager.cc:Listen(...)</code></li>
 </ul>
 <h3 id="flux-dexécution-11"><a class="header" href="#flux-dexécution-11">Flux d’exécution</a></h3>
-<pre><code>connect(remoteAddr, remotePort, localPort)
+<pre><code>listen(remoteAddr, remotePort, localPort)
         │
         ▼
-    start.S: ForkJoin
+    start.S: listen
         │ charge $4 = remoteAddr
         │ charge $5 = remotePort
         │ charge $6 = localPort
         ▼
-    syscall SC_connect
+    syscall SC_listen
         │
         ▼
-    handle_SC_connect()
+    handle_SC_listen()
         │ ├─ lit $4
-        │ ├─ lit $5
-        │ ├─ lit $6
-        │ ├─ valide le PID
-        │ └─ currentThread-&gt;getProcess()-&gt;WaitForChild(child)
+        │ └─ GetConnectionManager()
         ▼
-    WaitForChild(child, addr_result)
-        │ ├─ valide le PID
-        │ ├─ Attend le process 
-        │ ├─ Met l'exitcode dans la mémoire 
-        │ └─ Détruit le process finit
+    Listen(port)
+        │ ├─ FindConnectionByLocalPort(port)
+        │ └─ AllocateListener(port)
         ▼
 </code></pre>
-<h2 id="exemples-28"><a class="header" href="#exemples-28">Exemples</a></h2>
-<h3 id="exemple--ecoute-dun-serveur"><a class="header" href="#exemple--ecoute-dun-serveur">Exemple : Ecoute d’un serveur</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-int main(){
-    ...
-    int listenerId = listen(SERVER_PORT);
-    if (listenerId &lt; 0) {
-        printf("[Server] ERROR: listen() failed with %d\n", listenerId);
-        return 1;
-    }
-    printf("[Server] Listening on port %d (listenerId=%d)\n", SERVER_PORT, listenerId);
-    ...
-}
-</code></pre>
+<h2 id="failles-et-vulnérabilités-11"><a class="header" href="#failles-et-vulnérabilités-11">FAILLES ET VULNÉRABILITÉS</a></h2>
+<p>Aucune faille de sécurité connue.</p>
+<h2 id="bugs-connus-11"><a class="header" href="#bugs-connus-11">BUGS CONNUS</a></h2>
+<p>Aucun bug connu à ce jour.</p>
+<h2 id="voir-aussi-43"><a class="header" href="#voir-aussi-43">VOIR AUSSI</a></h2>
+<ul>
+<li><a href="#accept">Accept</a> - Accepter une connexion</li>
+<li><a href="#close-1">Close</a> - Fermer une connexion</li>
+<li><a href="#connect">Connect</a> - Connexion à une autre machine</li>
+<li><a href="#sendto">sendto</a> - Envoyer des données</li>
+<li><a href="#recvfrom">recvfrom</a> - Recevoir des données</li>
+</ul>
 <h2 id="limitations-6"><a class="header" href="#limitations-6">Limitations</a></h2>
 <h2 id="auteurs-46"><a class="header" href="#auteurs-46">Auteurs</a></h2>
 <p>Victor, 21 Jan 2026</p>
@@ -8293,8 +8295,17 @@ int accept(int listenerId, int timeoutMs);
 </code></pre>
 <h2 id="description-39"><a class="header" href="#description-39">Description</a></h2>
 <p><code>accept</code> permet d’accepter une connexion sur un port d’écoute</p>
-<h2 id="comportement-nominal-26"><a class="header" href="#comportement-nominal-26">Comportement nominal</a></h2>
-<h2 id="cas-particuliers-11"><a class="header" href="#cas-particuliers-11">Cas particuliers</a></h2>
+<h2 id="comportement-nominal-27"><a class="header" href="#comportement-nominal-27">Comportement nominal</a></h2>
+<ul>
+<li>récupère le listener</li>
+<li>vérifie que le timeout n’est pas dépassé</li>
+<li>vérifie que la connexion est acceptée</li>
+</ul>
+<h2 id="cas-particuliers-12"><a class="header" href="#cas-particuliers-12">Cas particuliers</a></h2>
+<ul>
+<li><strong>listenerId &lt; 0</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
+<li><strong>mgrr == nullptr</strong> : Retourne -1, <code>errno = E_NOSYS</code></li>
+</ul>
 <h2 id="paramètres-39"><a class="header" href="#paramètres-39">Paramètres</a></h2>
 <h3 id="listenerid"><a class="header" href="#listenerid"><code>listenerId</code></a></h3>
 <p>Identifiant renvoyé par listen</p>
@@ -8322,37 +8333,45 @@ int accept(int listenerId, int timeoutMs);
 <tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
 </thead>
 <tbody>
-<tr><td>1</td><td><code>E_INVAL</code></td><td></td></tr>
+<tr><td>1</td><td><code>E_INVAL</code></td><td>Paramètre invalide</td></tr>
 </tbody>
 </table>
 </div>
 <h2 id="implémentation-21"><a class="header" href="#implémentation-21">Implémentation</a></h2>
 <h3 id="flux-dexécution-12"><a class="header" href="#flux-dexécution-12">Flux d’exécution</a></h3>
-<pre><code>connect(remoteAddr, remotePort, localPort)
+<pre><code>accept(listenerId, timeoutMS)
         │
         ▼
-    start.S: ForkJoin
-        │ charge $4 = remoteAddr
-        │ charge $5 = remotePort
-        │ charge $6 = localPort
+    start.S: ForkJacceptoin
+        │ charge $4 = listenerId
+        │ charge $5 = timeoutMS
         ▼
-    syscall SC_connect
+    syscall SC_accept
         │
         ▼
-    handle_SC_connect()
+    handle_SC_accept()
         │ ├─ lit $4
         │ ├─ lit $5
-        │ ├─ lit $6
-        │ ├─ valide le PID
-        │ └─ currentThread-&gt;getProcess()-&gt;WaitForChild(child)
+        │ └─ GetConnectionManager()
         ▼
-    WaitForChild(child, addr_result)
-        │ ├─ valide le PID
-        │ ├─ Attend le process 
-        │ ├─ Met l'exitcode dans la mémoire 
-        │ └─ Détruit le process finit
+    Accept(listenerId, timeoutMS)
+        │ ├─ GetListener()
+        │ ├─ Wait()
+        │ └─ FreeConnection()
         ▼
 </code></pre>
+<h2 id="failles-et-vulnérabilités-12"><a class="header" href="#failles-et-vulnérabilités-12">FAILLES ET VULNÉRABILITÉS</a></h2>
+<p>Aucune faille de sécurité connue.</p>
+<h2 id="bugs-connus-12"><a class="header" href="#bugs-connus-12">BUGS CONNUS</a></h2>
+<p>Aucun bug connu à ce jour.</p>
+<h2 id="voir-aussi-44"><a class="header" href="#voir-aussi-44">VOIR AUSSI</a></h2>
+<ul>
+<li><a href="#close-1">Close</a> - Fermer une connexion</li>
+<li><a href="#connect">Connect</a> - Connexion à une autre machine</li>
+<li><a href="#listen">Listen</a> - Ecouter les demandes de connexions</li>
+<li><a href="#sendto">sendto</a> - Envoyer des données</li>
+<li><a href="#recvfrom">recvfrom</a> - Recevoir des données</li>
+</ul>
 <h2 id="auteurs-47"><a class="header" href="#auteurs-47">Auteurs</a></h2>
 <p>Victor, 21 Jan 2026</p>
 <h2 id="dernière-révision-47"><a class="header" href="#dernière-révision-47">Dernière révision</a></h2>
@@ -8367,6 +8386,23 @@ int ConnectionManager::Connect(int remoteAddr, int remotePort, int localPort);
 </code></pre>
 <h2 id="description-40"><a class="header" href="#description-40">Description</a></h2>
 <p><code>connect</code> permet d’établir une connexion à un serveur distant</p>
+<h2 id="comportement-nominal-28"><a class="header" href="#comportement-nominal-28">Comportement nominal</a></h2>
+<ul>
+<li>vérifie si les ports sont valides ou déjà utilisés</li>
+<li>alloue une connexion</li>
+<li>récupère la connexion</li>
+<li>remplit la structure de connexion</li>
+<li>envoie un message de contrôle</li>
+<li>vérifie que la connexion soit établie</li>
+</ul>
+<h2 id="cas-particuliers-13"><a class="header" href="#cas-particuliers-13">Cas particuliers</a></h2>
+<ul>
+<li><strong>remoteAddr &lt; 0 || remoteAddr &gt; 9</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
+<li><strong>remotePort &lt;= 0 || remotePort &gt; 65535</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
+<li><strong>localPort &lt;= 0 || localPort &gt; 65535</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
+<li><strong>mgrr == nullptr</strong> : Retourne -1, <code>errno = E_NOSYS</code></li>
+<li><strong>mgr-&gt;IsValidConnection(result) == false</strong> : Retourne -1, <code>errno = E_NOTCONN</code></li>
+</ul>
 <h2 id="paramètres-40"><a class="header" href="#paramètres-40">Paramètres</a></h2>
 <h3 id="remoteaddr"><a class="header" href="#remoteaddr"><code>remoteAddr</code></a></h3>
 <p><strong>Type</strong> : <code>int</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> : L’adresse doit exister et être accessible.</p>
@@ -8396,7 +8432,7 @@ int ConnectionManager::Connect(int remoteAddr, int remotePort, int localPort);
 <tbody>
 <tr><td>105</td><td><code>E_TIMEOUT</code></td><td>Temps écoulé</td></tr>
 <tr><td>100</td><td><code>E_REFUSED</code></td><td>Connexion refusée</td></tr>
-<tr><td>1</td><td><code>E_INVAL</code></td><td></td></tr>
+<tr><td>1</td><td><code>E_INVAL</code></td><td>Paramètre invalide</td></tr>
 <tr><td>107</td><td><code>E_NOPORT</code></td><td>Port non défini</td></tr>
 <tr><td>101</td><td><code>E_NOTCONN</code></td><td>Echec de connexion</td></tr>
 <tr><td>102</td><td><code>E_ADDRINUSE</code></td><td>Port déjà utilisé</td></tr>
@@ -8426,32 +8462,28 @@ int ConnectionManager::Connect(int remoteAddr, int remotePort, int localPort);
         │ ├─ lit $4
         │ ├─ lit $5
         │ ├─ lit $6
-        │ ├─ valide le PID
-        │ └─ currentThread-&gt;getProcess()-&gt;WaitForChild(child)
+        │ └─ GetConnectionManager()
         ▼
-    WaitForChild(child, addr_result)
-        │ ├─ valide le PID
-        │ ├─ Attend le process 
-        │ ├─ Met l'exitcode dans la mémoire 
-        │ └─ Détruit le process finit
+    Connect(remoteAddr, remotePort, localPort)
+        │ ├─ AllocateEphemeralPort()
+        │ ├─ connId = AllocateConnection()
+        │ ├─ GetConnection(connId)
+        │ └─ SendControlMessage(MSG_SYN,              initialSeqNum, 0)
+        | └─ FreeConnection(connId) 
         ▼
 </code></pre>
-<h2 id="exemples-29"><a class="header" href="#exemples-29">Exemples</a></h2>
-<h3 id="exemple--connexion-dun-client"><a class="header" href="#exemple--connexion-dun-client">Exemple : Connexion d’un client</a></h3>
-<pre><code class="language-c">#include "syscall.h"
-
-int main() {
-    ...
-    int connId = connect(SERVER_ADDR, SERVER_PORT, 0);
-    if (connId &lt; 0) {
-        printf("[Client] ERROR: connect() failed with %d\n", connId);
-        return 1;
-    }
-    printf("[Client] Connected! (connId=%d)\n", connId);
-    ...
-}
-</code></pre>
-<h2 id="limitations-7"><a class="header" href="#limitations-7">Limitations</a></h2>
+<h2 id="failles-et-vulnérabilités-13"><a class="header" href="#failles-et-vulnérabilités-13">FAILLES ET VULNÉRABILITÉS</a></h2>
+<p>Aucune faille de sécurité connue.</p>
+<h2 id="bugs-connus-13"><a class="header" href="#bugs-connus-13">BUGS CONNUS</a></h2>
+<p>Aucun bug connu à ce jour.</p>
+<h2 id="voir-aussi-45"><a class="header" href="#voir-aussi-45">VOIR AUSSI</a></h2>
+<ul>
+<li><a href="#accept">Accept</a> - Accepter une connexion</li>
+<li><a href="#close-1">Close</a> - Fermer une connexion</li>
+<li><a href="#listen">Listen</a> - Ecouter les demandes de connexions</li>
+<li><a href="#sendto">sendto</a> - Envoyer des données</li>
+<li><a href="#recvfrom">recvfrom</a> - Recevoir des données</li>
+</ul>
 <h2 id="auteurs-48"><a class="header" href="#auteurs-48">Auteurs</a></h2>
 <p>Victor, 21 Jan 2026</p>
 <h2 id="dernière-révision-48"><a class="header" href="#dernière-révision-48">Dernière révision</a></h2>
@@ -8466,7 +8498,7 @@ int sendto(int connId, char* data, int size);
 </code></pre>
 <h2 id="description-41"><a class="header" href="#description-41">DESCRIPTION</a></h2>
 <p><code>sendto</code> envoie des données à une machine connectée à la nôtre.</p>
-<h3 id="comportement-nominal-27"><a class="header" href="#comportement-nominal-27">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-29"><a class="header" href="#comportement-nominal-29">Comportement nominal</a></h3>
 <ul>
 <li>Regarde si l’id de connexion et la taille sont valides</li>
 <li>Récupère le gestionnaire le de connexion</li>
@@ -8474,7 +8506,7 @@ int sendto(int connId, char* data, int size);
 <li>Crée un buffer interne et stock les données dedans</li>
 <li>Envoie le buffer interne à l’autre machine</li>
 </ul>
-<h3 id="cas-particuliers-12"><a class="header" href="#cas-particuliers-12">Cas particuliers</a></h3>
+<h3 id="cas-particuliers-14"><a class="header" href="#cas-particuliers-14">Cas particuliers</a></h3>
 <ul>
 <li><strong>connId &lt; 0</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
 <li><strong>size &lt;= 0</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
@@ -8561,11 +8593,11 @@ int sendto(int connId, char* data, int size);
 </tbody>
 </table>
 </div>
-<h2 id="failles-et-vulnérabilités-11"><a class="header" href="#failles-et-vulnérabilités-11">FAILLES ET VULNÉRABILITÉS</a></h2>
+<h2 id="failles-et-vulnérabilités-14"><a class="header" href="#failles-et-vulnérabilités-14">FAILLES ET VULNÉRABILITÉS</a></h2>
 <p>Aucune faille de sécurité connue.</p>
-<h2 id="bugs-connus-11"><a class="header" href="#bugs-connus-11">BUGS CONNUS</a></h2>
+<h2 id="bugs-connus-14"><a class="header" href="#bugs-connus-14">BUGS CONNUS</a></h2>
 <p>Aucun bug connu à ce jour.</p>
-<h2 id="voir-aussi-43"><a class="header" href="#voir-aussi-43">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-46"><a class="header" href="#voir-aussi-46">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#accept">Accept</a> - Accépter une connexion</li>
 <li><a href="#close-1">Close</a> - Fermer une connexion</li>
@@ -8587,7 +8619,7 @@ int recvfrom(int connId, char* buffer, int size);
 </code></pre>
 <h2 id="description-42"><a class="header" href="#description-42">DESCRIPTION</a></h2>
 <p><code>recvfrom</code> reçoit les données envoyées par une machine connectée à la nôtre.</p>
-<h3 id="comportement-nominal-28"><a class="header" href="#comportement-nominal-28">Comportement nominal</a></h3>
+<h3 id="comportement-nominal-30"><a class="header" href="#comportement-nominal-30">Comportement nominal</a></h3>
 <ul>
 <li>Regarde si l’id de connexion et la taille sont valides</li>
 <li>Récupère le gestionnaire le de connexion</li>
@@ -8595,7 +8627,7 @@ int recvfrom(int connId, char* buffer, int size);
 <li>Crée un buffer interne et stock les données dedans</li>
 <li>Copie le buffer interne vers le buffer de l’utilisateur</li>
 </ul>
-<h3 id="cas-particuliers-13"><a class="header" href="#cas-particuliers-13">Cas particuliers</a></h3>
+<h3 id="cas-particuliers-15"><a class="header" href="#cas-particuliers-15">Cas particuliers</a></h3>
 <ul>
 <li><strong>connId &lt; 0</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
 <li><strong>size &lt;= 0</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
@@ -8668,11 +8700,11 @@ int recvfrom(int connId, char* buffer, int size);
 </tbody>
 </table>
 </div>
-<h2 id="failles-et-vulnérabilités-12"><a class="header" href="#failles-et-vulnérabilités-12">FAILLES ET VULNÉRABILITÉS</a></h2>
+<h2 id="failles-et-vulnérabilités-15"><a class="header" href="#failles-et-vulnérabilités-15">FAILLES ET VULNÉRABILITÉS</a></h2>
 <p>Aucune faille de sécurité connue.</p>
-<h2 id="bugs-connus-12"><a class="header" href="#bugs-connus-12">BUGS CONNUS</a></h2>
+<h2 id="bugs-connus-15"><a class="header" href="#bugs-connus-15">BUGS CONNUS</a></h2>
 <p>Aucun bug connu à ce jour.</p>
-<h2 id="voir-aussi-44"><a class="header" href="#voir-aussi-44">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-47"><a class="header" href="#voir-aussi-47">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#accept">Accept</a> - Accépter une connexion</li>
 <li><a href="#close-1">Close</a> - Fermer une connexion</li>
@@ -8694,6 +8726,17 @@ int close(int id);
 </code></pre>
 <h2 id="description-43"><a class="header" href="#description-43">Description</a></h2>
 <p><code>close</code> permet de terminer une connexion ou stopper un listener</p>
+<h2 id="comportement-nominal-31"><a class="header" href="#comportement-nominal-31">Comportement nominal</a></h2>
+<ul>
+<li>récupère la connexion</li>
+<li>commence à fermer la connexion</li>
+<li>la libère</li>
+</ul>
+<h2 id="cas-particuliers-16"><a class="header" href="#cas-particuliers-16">Cas particuliers</a></h2>
+<ul>
+<li><strong>id &lt; 0</strong> : Retourne -1, <code>errno = E_INVAL</code></li>
+<li><strong>mgrr == nullptr</strong> : Retourne -1, <code>errno = E_NOSYS</code></li>
+</ul>
 <h2 id="paramètres-43"><a class="header" href="#paramètres-43">Paramètres</a></h2>
 <h3 id="id-2"><a class="header" href="#id-2"><code>id</code></a></h3>
 <p>Identifiant de la connexion ou du listener</p>
@@ -8718,7 +8761,7 @@ int close(int id);
 <tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
 </thead>
 <tbody>
-<tr><td>1</td><td><code>E_INVAL</code></td><td></td></tr>
+<tr><td>1</td><td><code>E_INVAL</code></td><td>Paramètre invalide</td></tr>
 </tbody>
 </table>
 </div>
@@ -8730,32 +8773,28 @@ int close(int id);
 <li><strong>Implémentation</strong> : <code>code/network/connectionmanager.cc:Close(...)</code></li>
 </ul>
 <h3 id="flux-dexécution-14"><a class="header" href="#flux-dexécution-14">Flux d’exécution</a></h3>
-<pre><code>connect(remoteAddr, remotePort, localPort)
+<pre><code>close(id)
         │
         ▼
-    start.S: ForkJoin
-        │ charge $4 = remoteAddr
-        │ charge $5 = remotePort
-        │ charge $6 = localPort
+    start.S: close
+        │ charge $4 = id
         ▼
-    syscall SC_connect
+    syscall SC_close
         │
         ▼
-    handle_SC_connect()
+    handle_SC_close()
         │ ├─ lit $4
-        │ ├─ lit $5
-        │ ├─ lit $6
-        │ ├─ valide le PID
-        │ └─ currentThread-&gt;getProcess()-&gt;WaitForChild(child)
+        │ ├─ GetConnectionManager()
+        │ └─ CloseListener(id)
         ▼
-    WaitForChild(child, addr_result)
-        │ ├─ valide le PID
-        │ ├─ Attend le process 
-        │ ├─ Met l'exitcode dans la mémoire 
-        │ └─ Détruit le process finit
+    Close(id)
+        │ ├─ GetConnection(id)
+        │ ├─ InitiateClose()
+        │ ├─ SetState(CONN_TERMINATED)
+        │ └─ FreeConnection(id)
         ▼
 </code></pre>
-<h2 id="exemples-30"><a class="header" href="#exemples-30">Exemples</a></h2>
+<h2 id="exemples-28"><a class="header" href="#exemples-28">Exemples</a></h2>
 <h3 id="exemple--fermeture-simple-dune-connexion"><a class="header" href="#exemple--fermeture-simple-dune-connexion">Exemple : Fermeture simple d’une connexion</a></h3>
 <pre><code class="language-c">#include "syscall.h"
 
@@ -8764,7 +8803,18 @@ int main(){
     close(connId);
 }
 </code></pre>
-<h2 id="limitations-8"><a class="header" href="#limitations-8">Limitations</a></h2>
+<h2 id="failles-et-vulnérabilités-16"><a class="header" href="#failles-et-vulnérabilités-16">FAILLES ET VULNÉRABILITÉS</a></h2>
+<p>Aucune faille de sécurité connue.</p>
+<h2 id="bugs-connus-16"><a class="header" href="#bugs-connus-16">BUGS CONNUS</a></h2>
+<p>Aucun bug connu à ce jour.</p>
+<h2 id="voir-aussi-48"><a class="header" href="#voir-aussi-48">VOIR AUSSI</a></h2>
+<ul>
+<li><a href="#accept">Accept</a> - Accepter une connexion</li>
+<li><a href="#connect">Connect</a> - Connexion à une autre machine</li>
+<li><a href="#listen">Listen</a> - Ecouter les demandes de connexions</li>
+<li><a href="#sendto">sendto</a> - Envoyer des données</li>
+<li><a href="#recvfrom">recvfrom</a> - Recevoir des données</li>
+</ul>
 <h2 id="auteurs-51"><a class="header" href="#auteurs-51">Auteurs</a></h2>
 <p>Victor, 21 Jan 2026</p>
 <h2 id="dernière-révision-51"><a class="header" href="#dernière-révision-51">Dernière révision</a></h2>
@@ -8849,7 +8899,7 @@ int main(){
 #define MAXREEMISSIONS 100    // Tentatives max avant abandon
 #define MAX_PENDING_MSGS 10   // Messages en attente d'ACK max
 </code></pre>
-<h2 id="voir-aussi-45"><a class="header" href="#voir-aussi-45">Voir aussi</a></h2>
+<h2 id="voir-aussi-49"><a class="header" href="#voir-aussi-49">Voir aussi</a></h2>
 <ul>
 <li><a href="#sendreliable--receivereliable">Transmission fiable</a> - API SendReliable/ReceiveReliable</li>
 <li><a href="#connect--isconnected--close">Gestion de connexion</a> - API Connect/Close</li>
@@ -8927,7 +8977,7 @@ void ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *d
 <li><strong>Ordre</strong> : Les messages sont délivrés dans l’ordre d’envoi</li>
 <li><strong>Fiabilité</strong> : Fonctionne même avec <code>-l 0.5</code> (50% de perte)</li>
 </ul>
-<h2 id="voir-aussi-46"><a class="header" href="#voir-aussi-46">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-50"><a class="header" href="#voir-aussi-50">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#vue-densemble-du-réseau">Vue d’ensemble</a> - Introduction au réseau</li>
 <li><a href="#connect--isconnected--close">Gestion de connexion</a> - Connect/Close</li>
@@ -9040,7 +9090,7 @@ void Close();
 <li><strong>Délai</strong> : Prévoir ~2 secondes pour lancer la seconde machine</li>
 <li><strong>Robustesse</strong> : Fonctionne même avec perte de paquets (<code>-l 0.5</code>)</li>
 </ul>
-<h2 id="voir-aussi-47"><a class="header" href="#voir-aussi-47">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-51"><a class="header" href="#voir-aussi-51">VOIR AUSSI</a></h2>
 <ul>
 <li><a href="#vue-densemble-du-réseau">Vue d’ensemble</a> - Introduction au réseau</li>
 <li><a href="#sendreliable--receivereliable">Transmission fiable</a> - SendReliable/ReceiveReliable</li>
@@ -9082,7 +9132,7 @@ void Close();
 <h2 id="types-typesh"><a class="header" href="#types-typesh">Types (<code>types.h</code>)</a></h2>
 <p>Types de base pour l’espace utilisateur 32-bit : <code>uint8_t</code> à <code>uint64_t</code>, <code>size_t</code>, <code>ssize_t</code>, <code>ptrdiff_t</code>, <code>uintptr_t</code>. Macros utilitaires : <code>PACKED</code>, <code>ALIGNED</code>, <code>NORETURN</code>, <code>LIKELY</code>/<code>UNLIKELY</code>.</p>
 <hr>
-<h2 id="voir-aussi-48"><a class="header" href="#voir-aussi-48">Voir aussi</a></h2>
+<h2 id="voir-aussi-52"><a class="header" href="#voir-aussi-52">Voir aussi</a></h2>
 <ul>
 <li><a href="#errno---gestion-des-erreurs">errno</a> - Gestion des erreurs</li>
 <li><a href="#vue-densemble-des-appels-système">Appels système</a> - API bas niveau</li>
@@ -9207,7 +9257,7 @@ static inline void __clear_errno();
 
 </div>
 
-<h2 id="voir-aussi-49"><a class="header" href="#voir-aussi-49">Voir aussi</a></h2>
+<h2 id="voir-aussi-53"><a class="header" href="#voir-aussi-53">Voir aussi</a></h2>
 <ul>
 <li><a href="#vue-densemble-des-appels-système">Appels système</a> - Liste des syscalls</li>
 <li><a href="#threads---appels-système">Threads</a> - Gestion des threads</li>
