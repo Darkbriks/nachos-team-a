@@ -1,6 +1,6 @@
-# Connect
+# connect
 
-`Connect` - Etablit une connexion
+`connect` - Etablit une connexion
 
 
 ## Synopsis
@@ -8,51 +8,35 @@
 ```c
 #include "syscall.h"
 
-int ConnectionManager::Connect(NetworkAddress remoteAddr, uint16_t remotePort, uint16_t localPort)
+int ConnectionManager::Connect(int remoteAddr, int remotePort, int localPort);
 ```
 
 ## Description
 
-`Connect` crée un nouveau process qui va éxècuter l'éxècutable dont le nom est donné en paramètre
-
-**Numéro d'appel système** : `SC_connect` (31)
-
-### Comportement nominal
-
-1. Allocation d'un PID unique via `processs_bitmap`
-2. Création d'un objet `Process` noyau
-3. Création de son `AddrSpace`
-4. Création du thread principal du `Process` avec l'éxècutable donné comme paramétre
-5. Retour immédiat (le nouveau process s'exécute de manière asynchrone)
+`connect` permet d'établir une connexion à un serveur distant
 
 ## Paramètres
 
 ### `remoteAddr`
 
-Argument passé à `start_routine`.
-
-**Type** : `char *`  
+**Type** : `int`  
 **Direction** : IN  
 **Registre** : `$4`  
-**Contraintes** : Le fichier doit exister et être éxècutable.
+**Contraintes** : L'adresse doit exister et être accessible.
 
 ### `remotePort`
 
-Argument passé à `start_routine`.
-
-**Type** : `char *`  
+**Type** : `int`  
 **Direction** : IN  
-**Registre** : `$4`  
-**Contraintes** : Le fichier doit exister et être éxècutable.
+**Registre** : `$5`  
+**Contraintes** : Le port doit exister et être accessible.
 
 ### `localPort`
 
-Argument passé à `start_routine`.
-
-**Type** : `char *`  
+**Type** : `int`  
 **Direction** : IN  
-**Registre** : `$4`  
-**Contraintes** : Le fichier doit exister et être éxècutable.
+**Registre** : `$6`  
+**Contraintes** : Le port doit exister et être accessible.
 
 ## Valeur de retour
 
@@ -60,19 +44,19 @@ Argument passé à `start_routine`.
 
 | Valeur | Signification |
 |--------|---------------|
-| `0` | Succès |
+| `connId` | Identifiant de connexion |
 | `-1` | Erreur (consulter `errno`) |
 
 ## Codes d'erreur
 
 | errno | Constante | Condition |
 |-------|-----------|-----------|
-| 1 | `E_TIMEOUT` | `file_name` invalide ou Fichier pas trouvé |
-| 7 | `E_REFUSED` | Plus de PID disponibles (limite atteinte) |
-| 7 | `E_INVAL` | Plus de PID disponibles (limite atteinte) |
-| 7 | `E_NOPORT` | Plus de PID disponibles (limite atteinte) |
-| 7 | `E_NOTCONN` | Plus de PID disponibles (limite atteinte) |
-| 7 | `E_ADDRINUSE` | Plus de PID disponibles (limite atteinte) |
+| 105 | `E_TIMEOUT` | Temps écoulé |
+| 100 | `E_REFUSED` | Connexion refusée |
+| 1 | `E_INVAL` |  |
+| 107 | `E_NOPORT` | Port non défini |
+| 101 | `E_NOTCONN` | Echec de connexion |
+| 102 | `E_ADDRINUSE` | Port déjà utilisé |
 
 ## Implémentation
 
@@ -80,69 +64,63 @@ Argument passé à `start_routine`.
 
 - **Stub utilisateur** : `code/test/start.S`
 - **Handler noyau** : `code/userprog/usernetwork.cc:handle_SC_connect()`
-- **Implémentation** : `code/network/connectionmanager.cc:Connect()`
-- **Démarrage process** : `code/userprog/userprocess.cc:StartProcess()`
+- **Implémentation** : `code/network/connectionmanager.cc:Connect(...)`
 
 ### Flux d'exécution
 
 ```
-ForkExec(&tid, attr, func, arg)
+connect(remoteAddr, remotePort, localPort)
         │
         ▼
-    start.S: ForkExec
-        │ charge $8 = PprocessExit_wrapper
+    start.S: ForkJoin
+        │ charge $4 = remoteAddr
+        │ charge $5 = remotePort
+        │ charge $6 = localPort
         ▼
-    syscall SC_ForkExec
+    syscall SC_connect
         │
         ▼
-    handle_SC_ForkExec()
-        │ lit $4, $5, $6, $7, $8
+    handle_SC_connect()
+        │ ├─ lit $4
+        │ ├─ lit $5
+        │ ├─ lit $6
+        │ ├─ valide le PID
+        │ └─ currentThread->getProcess()->WaitForChild(child)
         ▼
-    do_ForkExec()
-        │ ├─ valide le fichier (éxècutable)
-        │ ├─ crée Process via Process::createProcess(éxècutable)
-        │ ├─ lit/initialise contexte d'éxècution
-        │ └─ mainThread->Fork(StartProcess, newProcess)
+    WaitForChild(child, addr_result)
+        │ ├─ valide le PID
+        │ ├─ Attend le process 
+        │ ├─ Met l'exitcode dans la mémoire 
+        │ └─ Détruit le process finit
         ▼
-    [scheduler active le nouveau process]
-        │
-        ▼
-    StartProcess(param)
-        │ ├─ initialilse registres et adresses virtuelles
-        │ └─ machine->Run()
-        ▼
-    [exécution de main()]
 ```
 
 ## Exemples
 
-### Exemple 1 : Création simple de deux processus
+### Exemple : Connexion d'un client
 
 ```c
 #include "syscall.h"
 
-int main(){
-    ForkExec("./userpages0");
-    ForkExec("./userpages1");
-    PutString("All processes launched.\n", 26);
-    return 0;
+int main() {
+    ...
+    int connId = connect(SERVER_ADDR, SERVER_PORT, 0);
+    if (connId < 0) {
+        printf("[Client] ERROR: connect() failed with %d\n", connId);
+        return 1;
+    }
+    printf("[Client] Connected! (connId=%d)\n", connId);
+    ...
 }
 ```
 
-
 ## Limitations
 
-<div class="callout callout-limitation">
-    <div class="callout-title">Limite de processs</div>
-    <div class="callout-content">
-        Maximum <code>MAX_PROCESS</code> processs en même temps vivant sur la machine. Au-delà, <code>E_NOMEM</code> est retourné.
-    </div>
-</div>
 
 ## Auteurs
 
-Tommy, 7 Jan 2026
+Victor, 21 Jan 2026
 
 ## Dernière révision
 
-8 Jan 2026
+21 Jan 2026
