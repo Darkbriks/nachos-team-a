@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>errno - NachOS Manual</title>
+        <title>time - NachOS Manual</title>
 
 
         <!-- Custom HTML head -->
@@ -12,35 +12,35 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="../favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="../favicon-8114d1fc.png">
-        <link rel="stylesheet" href="../css/variables-8adf115d.css">
-        <link rel="stylesheet" href="../css/general-2459343d.css">
-        <link rel="stylesheet" href="../css/chrome-ae938929.css">
-        <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
+        <link rel="icon" href="../../favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="../../favicon-8114d1fc.png">
+        <link rel="stylesheet" href="../../css/variables-8adf115d.css">
+        <link rel="stylesheet" href="../../css/general-2459343d.css">
+        <link rel="stylesheet" href="../../css/chrome-ae938929.css">
+        <link rel="stylesheet" href="../../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="../fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="../../fonts/fonts-9644e21d.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="mdbook-highlight-css" href="../highlight-493f70e1.css">
-        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../tomorrow-night-4c0ae647.css">
-        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
+        <link rel="stylesheet" id="mdbook-highlight-css" href="../../highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../../tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="../theme/custom-c9a1a890.css">
-        <link rel="stylesheet" href="../theme/callouts-599be5a1.css">
+        <link rel="stylesheet" href="../../theme/custom-c9a1a890.css">
+        <link rel="stylesheet" href="../../theme/callouts-599be5a1.css">
 
 
         <!-- Provide site root and default themes to javascript -->
         <script>
-            const path_to_root = "../";
+            const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-1321f905.js";
+            window.path_to_searchindex_js = "../../searchindex-1321f905.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-476449c7.js"></script>
+        <script src="../../toc-476449c7.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -107,7 +107,7 @@
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
-                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
             </noscript>
             <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -142,7 +142,7 @@
                     <h1 class="menu-title">NachOS Manual</h1>
 
                     <div class="right-buttons">
-                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
                             <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
                         </a>
                         <a href="https://gricad-gitlab.univ-grenoble-alpes.fr/systeme/nachos-etu/2025-2026/team-a" title="Git repository" aria-label="Git repository">
@@ -179,139 +179,235 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="errno---gestion-des-erreurs"><a class="header" href="#errno---gestion-des-erreurs">errno - Gestion des erreurs</a></h1>
-<p>Cette page documente le mécanisme de gestion des erreurs dans NachOS via la variable <code>errno</code> et les codes d’erreur associés.</p>
-<h2 id="vue-densemble"><a class="header" href="#vue-densemble">Vue d’ensemble</a></h2>
-<p>NachOS utilise une convention de gestion d’erreurs inspirée de POSIX :</p>
-<ul>
-<li>Les appels système qui peuvent échouer retournent <code>-1</code> en cas d’erreur</li>
-<li>Le code d’erreur spécifique est stocké dans <code>errno</code></li>
-<li>En cas de succès, <code>errno</code> est mis à <code>0</code></li>
-</ul>
+                        <h1 id="time"><a class="header" href="#time">time</a></h1>
+<p><code>time</code> - Obtient le temps calendaire actuel (wall clock)</p>
+<h2 id="synopsis"><a class="header" href="#synopsis">Synopsis</a></h2>
+<pre><code class="language-c">#include "syscall.h"
+
+int time(time_t *loc);
+</code></pre>
+<h2 id="description"><a class="header" href="#description">Description</a></h2>
+<p><code>time</code> retourne le temps calendaire actuel (wall clock time) en secondes depuis l’époque Unix (1er janvier 1970, 00:00:00 UTC). Contrairement à <code>GetCurrentTick</code> qui retourne des ticks système internes, <code>time</code> fournit le temps réel du monde extérieur.</p>
+<p><strong>Numéro d’appel système</strong> : <code>SC_time</code> (42)</p>
+<h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
+<ol>
+<li>Validation de l’adresse <code>loc</code></li>
+<li>Appel de la fonction système <code>time(NULL)</code> côté noyau</li>
+<li>Écriture de la valeur 64 bits dans la mémoire utilisateur</li>
+<li>Retour de 0 en cas de succès</li>
+</ol>
 <div class="callout callout-note">
     
-<div class="callout-title">Thread-safety</div>
+<div class="callout-title">Temps réel vs Ticks</div>
 
     
 <div class="callout-content">
-        <code>errno</code> est thread-safe. Chaque thread possède sa propre copie via 
-        Thread-Local Storage (TLS). Un fallback sur une variable globale est utilisé 
-        avant l'initialisation du TLS (thread principal avant création de threads).
+        <code>time</code> retourne le temps réel en secondes, tandis que <code>GetCurrentTick</code>
+        retourne des ticks système internes. Utilisez <code>time</code> pour mesurer des durées
+        en secondes/minutes/heures réelles.
     </div>
 
 </div>
 
-<h2 id="utilisation"><a class="header" href="#utilisation">Utilisation</a></h2>
-<h3 id="header"><a class="header" href="#header">Header</a></h3>
-<pre><code class="language-c">#include "nos_errno.h"
+<h2 id="paramètres"><a class="header" href="#paramètres">Paramètres</a></h2>
+<h3 id="loc"><a class="header" href="#loc"><code>loc</code></a></h3>
+<p>Pointeur vers une variable où stocker le temps actuel.</p>
+<p><strong>Type</strong> : <code>time_t *</code> (équivalent à <code>long long *</code>)
+<strong>Direction</strong> : OUT
+<strong>Registre</strong> : <code>$4</code>
+<strong>Contraintes</strong> : Doit pointer vers une zone mémoire valide de 8 octets minimum</p>
+<h2 id="valeur-de-retour"><a class="header" href="#valeur-de-retour">Valeur de retour</a></h2>
+<p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Valeur</th><th>Signification</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0</code></td><td>Succès, le temps a été écrit dans <code>loc</code></td></tr>
+<tr><td><code>-1</code></td><td>Erreur (consulter <code>errno</code>)</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="codes-derreur"><a class="header" href="#codes-derreur">Codes d’erreur</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
+</thead>
+<tbody>
+<tr><td>14</td><td><code>E_FAULT</code></td><td><code>loc</code> pointe vers une adresse invalide</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="implémentation"><a class="header" href="#implémentation">Implémentation</a></h2>
+<h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
+<ul>
+<li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
+<li><strong>Handler noyau</strong> : <code>code/userprog/userIO.cc:handle_SC_time()</code></li>
+</ul>
+<h3 id="flux-dexécution"><a class="header" href="#flux-dexécution">Flux d’exécution</a></h3>
+<pre><code>time(loc)
+        │
+        ▼
+    start.S: time
+        │ charge $4 = loc
+        │ charge $2 = SC_time (42)
+        ▼
+    syscall SC_time
+        │
+        ▼
+    handle_SC_time()
+        │ ├─ lit adresse depuis $4
+        │ ├─ valide l'adresse utilisateur
+        │ ├─ appelle time(NULL) côté noyau
+        │ ├─ écrit les 32 bits bas à loc
+        │ └─ écrit les 32 bits hauts à loc+4
+        ▼
+    [retourne 0 dans $2]
 </code></pre>
-<h3 id="convention-de-retour"><a class="header" href="#convention-de-retour">Convention de retour</a></h3>
-<pre><code class="language-c">int result = SomeSystemCall(...);
+<h3 id="détails-techniques"><a class="header" href="#détails-techniques">Détails techniques</a></h3>
+<p>La valeur <code>time_t</code> est stockée sur 64 bits en mémoire utilisateur :</p>
+<ul>
+<li>Les 32 bits de poids faible sont écrits à l’adresse <code>loc</code></li>
+<li>Les 32 bits de poids fort sont écrits à l’adresse <code>loc + 4</code></li>
+</ul>
+<p>Cela permet de supporter des timestamps au-delà de l’année 2038 (qui sait…).</p>
+<h2 id="exemples"><a class="header" href="#exemples">Exemples</a></h2>
+<h3 id="exemple-1--afficher-le-temps-actuel"><a class="header" href="#exemple-1--afficher-le-temps-actuel">Exemple 1 : Afficher le temps actuel</a></h3>
+<pre><code class="language-c">#include "syscall.h"
 
-if (result == -1) {
-    int err = errno;  // Lire le code d'erreur
-    // Gérer l'erreur
-} else {
-    // Succès (errno == 0)
+int main() {
+    time_t now;
+
+    if (time(&amp;now) == 0) {
+        PutString("Temps actuel (secondes depuis epoch): ", 38);
+        PutInt((int)now);
+        PutChar('\n');
+    } else {
+        PutString("Erreur lors de la lecture du temps\n", 35);
+    }
+
+    return 0;
 }
 </code></pre>
-<h3 id="macro-errno"><a class="header" href="#macro-errno">Macro errno</a></h3>
-<p>La macro <code>errno</code> donne accès à la variable d’erreur du thread courant :</p>
-<pre><code class="language-c">#define errno (*__errno_location())
-</code></pre>
-<h2 id="api"><a class="header" href="#api">API</a></h2>
-<h3 id="fonctions"><a class="header" href="#fonctions">Fonctions</a></h3>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Fonction</th><th>Description</th></tr>
-</thead>
-<tbody>
-<tr><td><code>__errno_location()</code></td><td>Retourne un pointeur vers errno du thread courant</td></tr>
-<tr><td><code>__set_errno(value)</code></td><td>Définit errno à la valeur spécifiée</td></tr>
-<tr><td><code>__get_errno()</code></td><td>Retourne la valeur actuelle d’errno</td></tr>
-<tr><td><code>__clear_errno()</code></td><td>Remet errno à 0</td></tr>
-</tbody>
-</table>
-</div>
-<h3 id="signatures"><a class="header" href="#signatures">Signatures</a></h3>
-<pre><code class="language-c">static inline int* __errno_location();
-static inline void __set_errno(int value);
-static inline int  __get_errno();
-static inline void __clear_errno();
-</code></pre>
-<h2 id="codes-derreur"><a class="header" href="#codes-derreur">Codes d’erreur</a></h2>
-<h3 id="tableau-récapitulatif"><a class="header" href="#tableau-récapitulatif">Tableau récapitulatif</a></h3>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Code</th><th>Constante</th><th>Description</th></tr>
-</thead>
-<tbody>
-<tr><td>0</td><td><code>E_SUCCESS</code></td><td>Aucune erreur</td></tr>
-<tr><td>1</td><td><code>E_INVAL</code></td><td>Argument invalide</td></tr>
-<tr><td>2</td><td><code>E_FAULT</code></td><td>Adresse mémoire invalide</td></tr>
-<tr><td>3</td><td><code>E_OVERFLOW</code></td><td>Dépassement arithmétique</td></tr>
-<tr><td>4</td><td><code>E_IO</code></td><td>Erreur d’entrée/sortie</td></tr>
-<tr><td>5</td><td><code>E_FORMAT</code></td><td>Format invalide</td></tr>
-<tr><td>6</td><td><code>E_EOF</code></td><td>Fin de fichier</td></tr>
-<tr><td>7</td><td><code>E_NOMEM</code></td><td>Mémoire insuffisante</td></tr>
-<tr><td>8</td><td><code>E_RANGE</code></td><td>Résultat hors limites</td></tr>
-<tr><td>9</td><td><code>E_NOSPC</code></td><td>Aucun processus correspondant</td></tr>
-<tr><td>10</td><td><code>E_FTABLE</code></td><td>Table d’allocation pleine</td></tr>
-<tr><td>11</td><td><code>E_NOENT</code></td><td>Entrée inexistante</td></tr>
-<tr><td>12</td><td><code>E_NOCPC</code></td><td>Pas un processus enfant</td></tr>
-<tr><td>13</td><td><code>E_THREAD_LIMIT</code></td><td>Limite de threads atteinte</td></tr>
-<tr><td>14</td><td><code>E_STACK_ADDR</code></td><td>Adresse de pile invalide</td></tr>
-<tr><td>15</td><td><code>E_BUSY</code></td><td>Ressource occupée</td></tr>
-<tr><td>16</td><td><code>E_AGAIN</code></td><td>Ressource temporairement indisponible</td></tr>
-<tr><td>17</td><td><code>E_DOM</code></td><td>Argument mathématique hors domaine</td></tr>
-<tr><td>18</td><td><code>E_ILSEQ</code></td><td>Séquence d’octets illégale</td></tr>
-<tr><td>19</td><td><code>E_PERM</code></td><td>Opération non permise</td></tr>
-<tr><td>20</td><td><code>E_ACCES</code></td><td>Permission refusée</td></tr>
-<tr><td>21</td><td><code>E_EXIST</code></td><td>Le fichier existe déjà</td></tr>
-<tr><td>22</td><td><code>E_NOSYS</code></td><td>Fonction non implémentée</td></tr>
-<tr><td>23</td><td><code>E_NOTDIR</code></td><td>N’est pas un répertoire</td></tr>
-<tr><td>24</td><td><code>E_ISDIR</code></td><td>Est un répertoire</td></tr>
-<tr><td>25</td><td><code>E_BADF</code></td><td>Mauvais descripteur de fichier</td></tr>
-<tr><td>26</td><td><code>E_DEADLK</code></td><td>Deadlock détecté</td></tr>
-</tbody>
-</table>
-</div>
-<h2 id="bonnes-pratiques"><a class="header" href="#bonnes-pratiques">Bonnes pratiques</a></h2>
-<div class="callout callout-warning">
-    
-<div class="callout-title">Vérifier errno immédiatement</div>
+<h3 id="exemple-2--mesurer-le-temps-dexécution"><a class="header" href="#exemple-2--mesurer-le-temps-dexécution">Exemple 2 : Mesurer le temps d’exécution</a></h3>
+<pre><code class="language-c">#include "syscall.h"
 
+int main() {
+    time_t start, end;
+    int elapsed;
+
+    time(&amp;start);
+
+    // Opération à mesurer
+    int i;
+    for (i = 0; i &lt; 1000; i++) {
+        PutChar('.');
+    }
+    PutChar('\n');
+
+    time(&amp;end);
+
+    elapsed = (int)(end - start);
+    PutString("Temps ecoule: ", 14);
+    PutInt(elapsed);
+    PutString(" secondes\n", 10);
+
+    return 0;
+}
+</code></pre>
+<h3 id="exemple-3--afficher-le-temps-en-format-lisible"><a class="header" href="#exemple-3--afficher-le-temps-en-format-lisible">Exemple 3 : Afficher le temps en format lisible</a></h3>
+<pre><code class="language-c">#include "syscall.h"
+
+int main() {
+    time_t now;
+    int seconds, minutes, hours;
+
+    time(&amp;now);
+
+    // Calcul des heures/minutes/secondes du jour (UTC)
+    seconds = (int)(now % 60);
+    minutes = (int)((now / 60) % 60);
+    hours = (int)((now / 3600) % 24);
+
+    PutString("Heure UTC: ", 11);
+    PutInt(hours);
+    PutChar(':');
+    PutInt(minutes);
+    PutChar(':');
+    PutInt(seconds);
+    PutChar('\n');
+
+    return 0;
+}
+</code></pre>
+<h2 id="cas-dusage"><a class="header" href="#cas-dusage">Cas d’usage</a></h2>
+<h3 id="mesure-de-performances"><a class="header" href="#mesure-de-performances">Mesure de performances</a></h3>
+<p><code>time</code> est utilisé pour :</p>
+<ul>
+<li>Mesurer le temps d’exécution de transferts de fichiers</li>
+<li>Calculer le débit (throughput) en octets/seconde</li>
+<li>Comparer les performances de différentes implémentations</li>
+</ul>
+<h3 id="horodatage"><a class="header" href="#horodatage">Horodatage</a></h3>
+<p><code>time</code> permet de :</p>
+<ul>
+<li>Horodater des événements dans les logs</li>
+<li>Enregistrer des timestamps dans des fichiers</li>
+<li>Calculer des délais d’expiration</li>
+</ul>
+<h2 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h2>
+<p><code>time</code> est thread-safe. Chaque thread peut appeler <code>time</code> indépendamment.</p>
+<h2 id="différences-avec-posix"><a class="header" href="#différences-avec-posix">Différences avec POSIX</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Aspect</th><th>POSIX time()</th><th>Nachos time()</th></tr>
+</thead>
+<tbody>
+<tr><td>Signature</td><td><code>time_t time(time_t *tloc)</code></td><td><code>int time(time_t *loc)</code></td></tr>
+<tr><td>Retour sur succès</td><td>Retourne aussi le temps</td><td>Retourne 0</td></tr>
+<tr><td>Retour sur erreur</td><td><code>(time_t)-1</code></td><td><code>-1</code> (int)</td></tr>
+<tr><td>Paramètre NULL</td><td>Accepté</td><td>Non supporté</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="voir-aussi"><a class="header" href="#voir-aussi">Voir aussi</a></h2>
+<div class="callout callout-see-also">
     
 <div class="callout-content">
-        
-<p>Lire <code>errno</code> immédiatement après l'appel système qui a échoué.
-        Un appel ultérieur pourrait l'écraser.</p>
-
-    </div>
-
+<ul>
+<li>
+<p><a href="./GetCurrentTick.html">GetCurrentTick</a> - Obtenir le tick système courant</p>
+</li>
+<li>
+<p><a href="./Sleep.html">Sleep</a> - Dormir pendant un nombre de ticks</p>
+</li>
+<li>
+<p><a href="./SleepUntil.html">SleepUntil</a> - Dormir jusqu’à un instant précis</p>
+  
+</li>
+</ul>
 </div>
 
-<h2 id="voir-aussi"><a class="header" href="#voir-aussi">Voir aussi</a></h2>
-<ul>
-<li><a href="../syscalls/Syscalls.html">Appels système</a> - Liste des syscalls</li>
-<li><a href="../syscalls/threads/Threads.html">Threads</a> - Gestion des threads</li>
-<li><a href="./tls.html">TLS</a> - Thread-Local Storage</li>
-</ul>
 <h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
-<p>Antoine</p>
+<p>Alioune Badara DIENE, 21 Jan 2026</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
-<p>18 Jan 2026</p>
+<p>21 Jan 2026</p>
+</div>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../libs/Libs.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../syscalls/time/GetCurrentTick.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
+                            <a rel="next prefetch" href="../../syscalls/sync/SUMMARY.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -319,10 +415,13 @@ static inline void __clear_errno();
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../libs/Libs.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../syscalls/time/GetCurrentTick.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
+                    <a rel="next prefetch" href="../../syscalls/sync/SUMMARY.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
             </nav>
 
         </div>
@@ -340,16 +439,16 @@ static inline void __clear_errno();
         </script>
 
 
-        <script src="../elasticlunr-ef4e11c1.min.js"></script>
-        <script src="../mark-09e88c2c.min.js"></script>
-        <script src="../searcher-c2a407aa.js"></script>
+        <script src="../../elasticlunr-ef4e11c1.min.js"></script>
+        <script src="../../mark-09e88c2c.min.js"></script>
+        <script src="../../searcher-c2a407aa.js"></script>
 
-        <script src="../clipboard-1626706a.min.js"></script>
-        <script src="../highlight-abc7f01d.js"></script>
-        <script src="../book-a0b12cfe.js"></script>
+        <script src="../../clipboard-1626706a.min.js"></script>
+        <script src="../../highlight-abc7f01d.js"></script>
+        <script src="../../book-a0b12cfe.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../theme/custom-da2ff7a9.js"></script>
+        <script src="../../theme/custom-da2ff7a9.js"></script>
 
 
 
