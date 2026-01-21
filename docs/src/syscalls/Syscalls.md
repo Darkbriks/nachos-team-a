@@ -83,16 +83,6 @@ PutString("BBBB", 4);
 
 **Solution** : Protéger les séquences d'I/O avec des sémaphores si nécessaire.
 
-### errno global
-
-⚠️ **Non thread-safe** : `errno` est une variable globale partagée.
-
-**Problème** : Plusieurs threads peuvent écraser mutuellement leur `errno`.
-
-**Correction prévue** : Thread-local errno sera implémenté prochainement.
-
-Voir : [Gestion des erreurs](./errors.md#failles-et-vulnérabilités)
-
 ## Architecture d'un appel système
 
 ### Flux d'exécution
@@ -138,9 +128,9 @@ Programme utilisateur
 
 ## Auteurs
 
-Antoine, 07 Jan 2026
+Antoine, 21 Jan 2026
 Tommy, 08 Jan 2026
 
 ## Dernière révision
 
-08 Jan 2026
+21 Jan 2026
