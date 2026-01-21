@@ -522,6 +522,13 @@ bool FileSystem::_Remove(const char *name) {
     return true;
 }
 
+void FileSystem::Seek(inode_t inode, unsigned int seek_pos){
+    OpenFile* file = inodes.GetFile(inode);
+    if (file){
+        file->Seek(seek_pos);
+    }
+}
+
 bool FileSystem::_Close(const char* name){
     DEBUG('f', "Try to close file %s\n", name);
 

@@ -13,12 +13,12 @@ int main(){
     }
     buffer[10] = 0;
 
-    close(fd);
+    close_file(fd);
     fd = open("a", 0);
     write(fd, buffer, 10);
-    close(fd);
+    close_file(fd);
     fd = open("a", 0);
     read(fd, buffer, 200);
-    close(fd);
+    close_file(fd);
     printf("on lit %s \n", buffer);
 }
