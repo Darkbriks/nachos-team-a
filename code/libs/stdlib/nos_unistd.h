@@ -8,7 +8,7 @@
 
    This function is a cancellation point and therefore not marked with
    __THROW.  */
-bool close (int __fd);
+bool close_file(int __fd);
 
 /* Read NBYTES into BUF from FD.  Return the
    number read, -1 for errors or 0 for EOF.

@@ -15,12 +15,12 @@ void do_Test(){
     fd = open("z", O_CREATE);
     ASSERT_EQ(0, fd, "Opend with create fail\n");
     ASSERT_EQ(40, write(fd, buffer, strlen(buffer)), "Don't write enought data\n");
-    ASSERT_EQ(true, close(fd), "Can't close\n");
+    ASSERT_EQ(true, close_file(fd), "Can't close\n");
     fd = open("z", 0);
     ASSERT_EQ(0, fd, "Don't reuse file descriptor\n");
     buffer[0] = 0;
     ASSERT_EQ(40, read(fd, buffer, 41), "Don't read enought data\n");
-    ASSERT_EQ(true, close(fd), "Can't close\n");
+    ASSERT_EQ(true, close_file(fd), "Can't close\n");
     ASSERT_STREQ(buffer, "coucou la mif, en directu du fileSystem\n", "Don't read good data\n");
     TEST_PASS();
 
