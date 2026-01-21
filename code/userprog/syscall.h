@@ -38,6 +38,7 @@
 #define SC_Sleep          7
 #define SC_SleepUntil     8
 #define SC_GetCurrentTick 9
+#define SC_time           44
 
 /* --- Semaphores --- */
 /* DEPRECATED, use userspace threads
@@ -81,17 +82,14 @@
 #define SC_close    36
 
 /* --- File System --- */
-#define SC_Create 37
-#define SC_Open   38
-#define SC_Read   39
-#define SC_Write  40
-#define SC_Close  41
-#define SC_FileLen 43
-#define SC_Seek 44
+#define SC_Create  37
+#define SC_Open    38
+#define SC_Read    39
+#define SC_Write   40
+#define SC_Close   41
+#define SC_FileLen 42
+#define SC_Seek    43
 
-
-
-#define SC_time 42
 #ifdef IN_USER_MODE
 
 // LB: This part is read only on compiling the test/*.c files.
