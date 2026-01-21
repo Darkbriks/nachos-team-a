@@ -6,7 +6,7 @@
  *	calls.
  */
 
-#include "tls.h"
+#include "nos_tls.h"
 #include "syscall.h"
 .include "syscall_macros.S"
 

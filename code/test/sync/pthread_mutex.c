@@ -1,8 +1,8 @@
-#include "pthread_mutex.h"
+#include "nos_pthread_mutex.h"
 #include "syscall.h"
 #include "nos_stddef.h"
 #include "nos_threads.h"
-#include "pthread.h"
+#include "nos_pthread.h"
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 int shared_counter = 0;

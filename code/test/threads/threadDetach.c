@@ -1,5 +1,5 @@
 #include "syscall.h"
-#include "pthread.h"
+#include "nos_pthread.h"
 
 int detached_executed = 0;
 

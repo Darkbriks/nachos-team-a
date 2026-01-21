@@ -35,7 +35,7 @@
 #include "userprocess.h"
 #include "userSleep.h"
 #include "userSem.h"
-#include "kernelpanic.h"
+#include "userFile.h"
 
 #define CASE_HANDLER(syscall_name)                      \
     case SC_##syscall_name:                             \
@@ -202,6 +202,12 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(sendto);
         CASE_HANDLER(recvfrom);
         CASE_HANDLER(close);
+
+        CASE_HANDLER(Open);
+        CASE_HANDLER(Read);
+        CASE_HANDLER(Write);
+        CASE_HANDLER(Close);
+        CASE_HANDLER(Create);
 
         default:
             Process * process = currentThread->getProcess();

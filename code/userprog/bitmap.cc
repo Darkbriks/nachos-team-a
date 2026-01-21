@@ -174,5 +174,4 @@ void BitMap::UpdateSize(const int newSize) {
 
     delete[] oldMap;
 
-    DEBUG('f', "BitMap::UpdateSize: Update complete\n");
 }

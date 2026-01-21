@@ -2,7 +2,7 @@
 
 #include "addrspace.h"
 #include "nos_errno.h"
-#include "tls.h"
+#include "nos_tls.h"
 #include "../machine/machine.h"
 #include "../threads/synch.h"
 #include "../threads/utility.h"

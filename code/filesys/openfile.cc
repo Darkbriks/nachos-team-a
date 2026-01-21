@@ -26,8 +26,9 @@
 //	"sector" -- the location on disk of the file header for this file
 //----------------------------------------------------------------------
 
-OpenFile::OpenFile(int sector){
+OpenFile::OpenFile(int s) {
     hdr = new FileHeader;
+    sector = s;
     hdr->FetchFrom(sector);
     seekPosition = 0;
 }
@@ -37,7 +38,7 @@ OpenFile::OpenFile(int sector){
 // 	Close a Nachos file, de-allocating any in-memory data structures.
 //----------------------------------------------------------------------
 
-OpenFile::~OpenFile(){
+OpenFile::~OpenFile() {
     delete hdr;
 }
 
@@ -49,7 +50,7 @@ OpenFile::~OpenFile(){
 //	"position" -- the location within the file for the next Read/Write
 //----------------------------------------------------------------------
 
-void OpenFile::Seek(int position){
+void OpenFile::Seek(const int position) {
     seekPosition = position;
 }	
 
@@ -66,14 +67,14 @@ void OpenFile::Seek(int position){
 //	"numBytes" -- the number of bytes to transfer
 //----------------------------------------------------------------------
 
-int OpenFile::Read(char *into, int numBytes){
-    int result = ReadAt(into, numBytes, seekPosition);
+int OpenFile::Read(char *into, const int numBytes) {
+    const int result = ReadAt(into, numBytes, seekPosition);
     seekPosition += result;
     return result;
 }
 
-int OpenFile::Write(const char *into, int numBytes){
-    int result = WriteAt(into, numBytes, seekPosition);
+int OpenFile::Write(const char *from, const int numBytes) {
+    const int result = WriteAt(from, numBytes, seekPosition);
     seekPosition += result;
     return result;
 }
@@ -104,12 +105,13 @@ int OpenFile::Write(const char *into, int numBytes){
 //			read/written
 //----------------------------------------------------------------------
 
-int OpenFile::ReadAt(char *into, int numBytes, int position){
-    int fileLength = hdr->FileLength();
+int OpenFile::ReadAt(char *into, int numBytes, int position) const {
+    const int fileLength = hdr->FileLength();
     int i, firstSector, lastSector, numSectors;
     char *buf;
+    DEBUG('f', "Try Reading %d bytes\n", numBytes); 	
 
-    if ((numBytes <= 0) || (position >= fileLength)){
+    if ((numBytes <= 0) || (position >= fileLength)) {
         return 0; 				// check request
     }
     if ((position + numBytes) > fileLength)		{
@@ -135,16 +137,24 @@ int OpenFile::ReadAt(char *into, int numBytes, int position){
     return numBytes;
 }
 
-int OpenFile::WriteAt(const char *from, int numBytes, int position){
+bool OpenFile::Reallocate(BitMap* freeSector, int numBytes){
+    bool result = hdr->Allocate(freeSector, numBytes);
+    if (result){
+        hdr->WriteBack(sector);
+    }
+    return result;
+}
+
+int OpenFile::WriteAt(const char *from, int numBytes, int position) const {
     int fileLength = hdr->FileLength();
     int i, firstSector, lastSector, numSectors;
     bool firstAligned, lastAligned;
     char *buf;
 
-    if ((numBytes <= 0) || (position >= fileLength)){
+    if ((numBytes <= 0) || (position >= fileLength)) {
         return 0;				// check request
     }
-    if ((position + numBytes) > fileLength){
+    if ((position + numBytes) > fileLength) {
         numBytes = fileLength - position;
     }
     DEBUG('f', "Writing %d bytes at %d, from file of length %d.\n", 	
@@ -160,10 +170,10 @@ int OpenFile::WriteAt(const char *from, int numBytes, int position){
     lastAligned = ((position + numBytes) == ((lastSector + 1) * SectorSize));
 
     // read in first and last sector, if they are to be partially modified
-    if (!firstAligned){
+    if (!firstAligned) {
         ReadAt(buf, SectorSize, firstSector * SectorSize);	
     }
-    if (!lastAligned && ((firstSector != lastSector) || firstAligned)){
+    if (!lastAligned && ((firstSector != lastSector) || firstAligned)) {
         ReadAt(&buf[(lastSector - firstSector) * SectorSize], 
                 SectorSize, lastSector * SectorSize);	
     }
@@ -185,6 +195,6 @@ int OpenFile::WriteAt(const char *from, int numBytes, int position){
 // 	Return the number of bytes in the file.
 //----------------------------------------------------------------------
 
-int OpenFile::Length() {
+int OpenFile::Length() const {
     return hdr->FileLength(); 
 }

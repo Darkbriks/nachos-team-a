@@ -10,7 +10,7 @@
 //
 // Usage: nachos -d <debugflags> -rs <random seed #>
 //              -s -x <nachos file> -c <consoleIn> <consoleOut>
-//              -f -cp <unix file> <nachos file>
+//              -cp <unix file> <nachos file>
 //              -p <nachos file> -r <nachos file> -l -D -t
 //              -n <network reliability> -m <machine id>
 //              -o <other machine id>
@@ -26,7 +26,7 @@
 //    -c tests the console
 //
 //  FILESYS
-//    -f causes the physical disk to be formatted
+//    -f causes the physical disk to be formatted // TODO
 //    -cp copies a file from UNIX to Nachos
 //    -p prints a Nachos file to stdout
 //    -r removes a Nachos file from the file system
@@ -53,12 +53,14 @@
 #include "system.h"
 #include "utility.h"
 #include "thread.h"
+#include "fileconst.h"
+#include "filesysshell.h"
 
 // External functions used by this file
 
 extern void ThreadTest(void);
 extern void Copy(const char *unixFile, const char *nachosFile);
-extern void Print(char *file), PerformanceTest(void);
+extern void Print(const char *file), PerformanceTest(void);
 extern void StartProcess(char *file), ConsoleTest(char *in, char *out), SynchConsoleTest(char *in, char *out);
 extern void MailTest(int networkID);
 extern void RingTest(int myAddr, int numMachines);
@@ -115,24 +117,16 @@ int main(int argc, char **argv) {
         }
 #endif // USER_PROGRAM
 #ifdef FILESYS
-        if (!strcmp(*argv, "-cp")) { // copy from UNIX to Nachos
-            ASSERT(argc > 2);
+        if (!strcmp(*argv, "-cp")) {
             Copy(*(argv + 1), *(argv + 2));
-            argCount = 3;
-        } else if (!strcmp(*argv, "-p")) { // print a Nachos file
-            ASSERT(argc > 1);
-            Print(*(argv + 1));
-            argCount = 2;
-        } else if (!strcmp(*argv, "-r")) { // remove Nachos file
-            ASSERT(argc > 1);
+        }
+        if (!strcmp(*argv, "-rm")) {
             fileSystem->Remove(*(argv + 1));
-            argCount = 2;
-        } else if (!strcmp(*argv, "-l")) { // list Nachos directory
-            fileSystem->List();
-        } else if (!strcmp(*argv, "-D")) { // print entire filesystem
-            fileSystem->Print();
-        } else if (!strcmp(*argv, "-t")) { // performance test
-            PerformanceTest();
+        }
+        if (!strcmp(*argv, "-shell")) {
+            FileSysShell shell(fileSystem);
+            shell.registerCommands();
+            shell.run();
         }
 #endif // FILESYS
 #ifdef NETWORK

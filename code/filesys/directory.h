@@ -12,31 +12,15 @@
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
-#include "copyright.h"
-
 #ifndef DIRECTORY_H
 #define DIRECTORY_H
 
-#include "openfile.h"
+#include "copyright.h"
+#include "fileconst.h"
+#include "filetype.h"
 
-#define FileNameMaxLen 		9	// for simplicity, we assume 
-					// file names are <= 9 characters long
-
-// The following class defines a "directory entry", representing a file
-// in the directory.  Each entry gives the name of the file, and where
-// the file's header is to be found on disk.
-//
-// Internal data structures kept public so that Directory operations can
-// access them directly.
-
-class DirectoryEntry {
-  public:
-    bool inUse;				// Is this directory entry in use?
-    int sector;				// Location on disk to find the 
-					//   FileHeader for this file 
-    char name[FileNameMaxLen + 1];	// Text name for file, with +1 for 
-					// the trailing '\0'
-};
+class DirectoryEntry;
+class OpenFile;
 
 // The following class defines a UNIX-like "directory".  Each entry in
 // the directory describes a file, and where to find it on disk.
@@ -49,35 +33,34 @@ class DirectoryEntry {
 // from/to disk. 
 
 class Directory {
-  public:
-    Directory(int size); 		// Initialize an empty directory
-					// with space for "size" files
-    ~Directory();			// De-allocate the directory
+public:
+    explicit Directory(int size); // Initialize an empty directory with space for "size" files
+    ~Directory(); // De-allocate the directory
 
-    void FetchFrom(OpenFile *file);  	// Init directory contents from disk
-    void WriteBack(OpenFile *file);	// Write modifications to 
-					// directory contents back to disk
+    void FetchFrom(OpenFile *file) const; // Init directory contents from disk
+    void WriteBack(OpenFile *file) const; // Write modifications to directory contents back to disk
 
-    int Find(const char *name);		// Find the sector number of the 
-					// FileHeader for file: "name"
+    sector_t Find(const char *name) const; // Find the sector number of the FileHeader for file: "name"
+    bool Add(const char *name, int newSector, File_Type type) const;  // Add a file name into the directory
+    bool Remove(const char *name) const;	// Remove a file from the directory
 
-    bool Add(const char *name, int newSector);  // Add a file name into the directory
+    [[nodiscard]] unsigned int NbEntry() const;
+    File_Type GetType(const char* name) const;
+    [[nodiscard]] char* GetName(int index) const;
+    [[nodiscard]] File_Type GetType(int index) const;
+    [[nodiscard]] int GetSector(int index) const;
 
-    bool Remove(const char *name);	// Remove a file from the directory
+    void Tree(unsigned int tabulation = 3) const;
+    void List() const; // Print the names of all the files in the directory
+    void Print() const; // Verbose print of the contents of the directory -- all the file names and their contents.
 
-    void List();			// Print the names of all the files
-					//  in the directory
-    void Print();			// Verbose print of the contents
-					//  of the directory -- all the file
-					//  names and their contents.
+    static Directory* getDirectory(int sector);
 
-  private:
-    int tableSize;			// Number of directory entries
-    DirectoryEntry *table;		// Table of pairs: 
-					// <file name, file header location> 
+private:
+    int tableSize; // Number of directory entries
+    DirectoryEntry *table; // Table of pairs: <file name, file header location>
 
-    int FindIndex(const char *name);	// Find the index into the directory 
-					//  table corresponding to "name"
+    int FindIndex(const char *name)const; // Find the index into the directory table corresponding to "name"
 };
 
 #endif // DIRECTORY_H

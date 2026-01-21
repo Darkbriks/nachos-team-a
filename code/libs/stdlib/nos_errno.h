@@ -1,7 +1,7 @@
 #ifndef NOS_ERRNO_H
 #define NOS_ERRNO_H
 
-#include "tls.h"
+#include "nos_tls.h"
 
 /* ============================================================
  * ERROR CODES
@@ -36,6 +36,7 @@
 #define E_ISDIR         24  /* Is a directory */
 #define E_BADF          25  /* Bad file descriptor */
 #define E_DEADLK        26  /* Resource deadlock would occur */
+#define E_FULL_DISK     26  /* Bad file descriptor */
 
 #define E_REFUSED      100   // Connection refused
 #define E_NOTCONN      101   // Not connected

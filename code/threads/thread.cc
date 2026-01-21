@@ -20,7 +20,7 @@
 #include "switch.h"
 #include "sysdep.h"
 #include "system.h"
-#include "tls.h"
+#include "nos_tls.h"
 #include "kernelpanic.h"
 
 #define STACK_FENCEPOST                                                        \
@@ -45,6 +45,10 @@ Thread::Thread(const tid_t t, Process* p, const ptr_32 tlsBase)
     // user threads.
     for (int r = NumGPRegs; r < NumTotalRegs; r++) {
         userRegisters[r] = 0;
+    }
+    for (int i = 0; i < MAX_FILE_OPEN; i++){
+        openFiles[i].inode = INVALID_INODE;
+        openFiles[i].seek_position = -1;
     }
 #endif
 }
@@ -463,3 +467,48 @@ void Thread::RestoreUserState() const {
     }
 }
 #endif
+
+bool Thread::IsOpenFile(const thread_inode_t id) const {
+    if (id < 0 || id >= MAX_FILE_OPEN){
+        return false;
+    }
+    return openFiles[id].inode != INVALID_INODE;
+}
+
+thread_inode_t Thread::AddOpenFile(inode_t inode, unsigned int seek_pos){
+    if (const thread_inode_t index = CanOpenFile(); index != INVALID_ID) {
+        openFiles[index].inode = inode;
+        openFiles[index].seek_position = seek_pos;
+        return index;
+    }
+    return INVALID_ID;
+}
+
+inode_t Thread::GetOpenFile(const thread_inode_t id, unsigned int *seek_pos) const {
+    if (!IsOpenFile(id)) {
+        return INVALID_INODE;
+    }
+    if (seek_pos != nullptr){
+        *seek_pos = openFiles[id].seek_position;
+    }
+    return openFiles[id].inode;
+
+}
+
+bool Thread::RemoveOpenFile(const thread_inode_t id) {
+    if (!IsOpenFile(id)) {
+        return false;
+    }
+    openFiles[id].inode = INVALID_INODE;
+    return true;
+
+}
+
+thread_inode_t Thread::CanOpenFile() const {
+    for (int i = 0; i < MAX_FILE_OPEN; i++) {
+        if (openFiles[i].inode == INVALID_INODE) {
+            return i;
+        }
+    }
+    return INVALID_ID;
+}

@@ -36,14 +36,7 @@ void StartThread(int param){
 void handle_SC_thread_create() {
     const unsigned args_ptr = machine->ReadRegister(4);
 
-    Process *process = currentThread->getProcess();
-    VALIDATE_ARG(process != nullptr, E_FAULT);
-
-    const AddrSpace *space = process->getSpace();
-    VALIDATE_ARG(space != nullptr, E_FAULT);
-
-    StackManager *stackMgr = space->GetStackManager();
-    VALIDATE_ARG(stackMgr != nullptr, E_FAULT);
+    GET_PROCESS_ADDRSPACE_STACKMANAGER();
 
     // Copy user_thread_args from user space to kernel space to avoid TOCTOU issues
     user_thread_args kargs;

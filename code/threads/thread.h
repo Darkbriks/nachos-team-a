@@ -46,6 +46,7 @@
 #include "addrspace.h"
 #include "machine.h"
 #endif
+#include "syscall.h"
 
 // CPU register state to be saved on context switch.
 // The SPARC and MIPS only need 10 registers, but the Snake needs 18.
@@ -56,6 +57,10 @@
 // WATCH OUT IF THIS ISN'T BIG ENOUGH!!!!!
 #define StackSize (4 * 1024) // in words
 
+#define MAX_FILE_OPEN 10
+#define INVALID_ID -1
+
+typedef inode_t thread_inode_t;
 class Process;
 
 // Thread state
@@ -75,6 +80,17 @@ extern void ThreadPrint(int arg);
 //  Some threads also belong to a user address space; threads
 //  that only run in the kernel have a NULL address space.
 
+class thread_file {
+    friend class Thread;
+    private:
+        inode_t inode;
+        unsigned int seek_position;
+        thread_file(){
+            inode = INVALID_INODE;
+            seek_position = 0;
+        }
+};
+
 class Thread {
 
 friend Process;
@@ -86,6 +102,7 @@ private:
     int machineState[MachineStateSize] = {}; // all registers except for stackTop
 
     int* stack = nullptr; // Bottom of the stack. NULL if this is the main thread (If NULL, don't deallocate stack)
+    thread_file openFiles[MAX_FILE_OPEN];
 
 #ifdef USER_PROGRAM
     // A thread running a user program actually has *two* sets of CPU registers
@@ -152,6 +169,20 @@ public:
 #endif
 
     void Print() const { printf("%s, ", name); }
+
+    bool IsOpenFile(thread_inode_t id) const;
+    thread_inode_t AddOpenFile(inode_t id, unsigned int seek_pos);
+    thread_inode_t CanOpenFile() const;
+    inode_t GetOpenFile(thread_inode_t id, unsigned int *seek_pos) const;
+    bool RemoveOpenFile(thread_inode_t id);
+    void setSeek(inode_t inode, unsigned int seek_pos){
+        for (int i = 0; i < MAX_FILE_OPEN; i++){
+            if (openFiles[i].inode == inode){
+                openFiles[i].seek_position = seek_pos;
+                return;
+            }
+        }
+    }
 };
 
 // Magical machine-dependent routines, defined in switch.s

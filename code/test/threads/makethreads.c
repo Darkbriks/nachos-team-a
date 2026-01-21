@@ -1,6 +1,6 @@
 #include "syscall.h"
-#include "pthread.h"
-#include "pthread_mutex.h"
+#include "nos_pthread.h"
+#include "nos_pthread_mutex.h"
 
 pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
 

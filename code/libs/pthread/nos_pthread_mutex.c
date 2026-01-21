@@ -1,4 +1,4 @@
-#include "pthread_mutex.h"
+#include "nos_pthread_mutex.h"
 #include "nos_string.h"
 #include "syscall.h"
 

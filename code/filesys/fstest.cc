@@ -20,6 +20,7 @@
 #include "thread.h"
 #include "disk.h"
 #include "stats.h"
+#include "filetype.h"
 
 #define TransferSize 	10 	// make it small, just to be difficult
 
@@ -30,7 +31,7 @@
 
 void Copy(const char *from, const char *to){
     FILE *fp;
-    OpenFile* openFile;
+    inode_t inode;
     int amountRead, fileLength;
     char *buffer;
 
@@ -47,24 +48,29 @@ void Copy(const char *from, const char *to){
 
     // Create a Nachos file of the same length
     DEBUG('f', "Copying file %s, size %d, to file %s\n", from, fileLength, to);
-    if (!fileSystem->Create(to, fileLength)) {	 // Create Nachos file
+    if (!fileSystem->Create(to, fileLength, FILE_T)) {	 // Create Nachos file
         printf("Copy: couldn't create output file %s\n", to);
         fclose(fp);
         return;
     }
 
-    openFile = fileSystem->Open(to);
-    ASSERT(openFile != NULL);
+    inode = fileSystem->Open(to);
+    if (! inode) {
+        printf("Copy: File %s is created but we can't write into\n", to);
+        return; 
+    }
+
 
     // Copy the data in TransferSize chunks
     buffer = new char[TransferSize];
     while ((amountRead = fread(buffer, sizeof(char), TransferSize, fp)) > 0){
-        openFile->Write(buffer, amountRead);	
+        fileSystem->Write(inode, buffer, amountRead);	
     }
+    fileSystem->Close(to);
     delete [] buffer;
 
+
     // Close the UNIX and the Nachos files
-    delete openFile;
     fclose(fp);
 }
 
@@ -73,25 +79,25 @@ void Copy(const char *from, const char *to){
 // 	Print the contents of the Nachos file "name".
 //----------------------------------------------------------------------
 
-void Print(char *name){
-    OpenFile *openFile;    
+void Print(const char *name){
+    inode_t inode;    
     int i, amountRead;
     char *buffer;
 
-    if ((openFile = fileSystem->Open(name)) == NULL) {
+    if ((inode = fileSystem->Open(name)) == INVALID_INODE){
         printf("Print: unable to open file %s\n", name);
         return;
     }
 
     buffer = new char[TransferSize];
-    while ((amountRead = openFile->Read(buffer, TransferSize)) > 0){
+    while ((amountRead = fileSystem->Read(inode, buffer, TransferSize)) > 0){
         for (i = 0; i < amountRead; i++){
             printf("%c", buffer[i]);
         }
     }
+    fileSystem->Close(name);
     delete [] buffer;
 
-    delete openFile;		// close the Nachos file
     return;
 }
 
@@ -113,55 +119,55 @@ void Print(char *name){
 #define FileSize 	((int)(ContentSize * 5000))
 
 static void FileWrite(){
-    OpenFile *openFile;    
+    inode_t inode;    
     int i, numBytes;
 
     printf("Sequential write of %d byte file, in %zd byte chunks\n", 
             FileSize, ContentSize);
-    if (!fileSystem->Create(FileName, 0)) {
+    if (!fileSystem->Create(FileName, 0, FILE_T)) {
         printf("Perf test: can't create %s\n", FileName);
         return;
     }
-    openFile = fileSystem->Open(FileName);
-    if (openFile == NULL) {
+    inode = fileSystem->Open(FileName);
+    if (inode == INVALID_INODE) {
         printf("Perf test: unable to open %s\n", FileName);
         return;
     }
     for (i = 0; i < FileSize; i += ContentSize) {
-        numBytes = openFile->Write(Contents, ContentSize);
+        numBytes = fileSystem->Write(inode, (char*) Contents, ContentSize);
         if (numBytes < 10) {
             printf("Perf test: unable to write %s\n", FileName);
-            delete openFile;
+            fileSystem->Close(FileName);
             return;
         }
     }
-    delete openFile;	// close file
+    fileSystem->Close(FileName);
 }
 
 static void FileRead(){
-    OpenFile *openFile;    
+    inode_t inode;    
     char *buffer = new char[ContentSize];
     int i, numBytes;
 
     printf("Sequential read of %d byte file, in %zd byte chunks\n", 
             FileSize, ContentSize);
 
-    if ((openFile = fileSystem->Open(FileName)) == NULL) {
+    if ((inode = fileSystem->Open(FileName)) == INVALID_INODE) {
         printf("Perf test: unable to open file %s\n", FileName);
         delete [] buffer;
         return;
     }
     for (i = 0; i < FileSize; i += ContentSize) {
-        numBytes = openFile->Read(buffer, ContentSize);
+        numBytes = fileSystem->Read(inode, buffer, ContentSize);
         if ((numBytes < 10) || strncmp(buffer, Contents, ContentSize)) {
             printf("Perf test: unable to read %s\n", FileName);
-            delete openFile;
+            fileSystem->Close(FileName);
             delete [] buffer;
             return;
         }
     }
     delete [] buffer;
-    delete openFile;	// close file
+    fileSystem->Close(FileName);
 }
 
 void PerformanceTest(){

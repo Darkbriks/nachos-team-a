@@ -1,6 +1,6 @@
 #include "syscall.h"
 #include "nos_stddef.h"
-#include "pthread.h"
+#include "nos_pthread.h"
 
 int counter = 0;
 int mutex_id;

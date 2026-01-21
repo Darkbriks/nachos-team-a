@@ -3,7 +3,7 @@
 #include "nos_errno.h"
 #include "nos_stdio.h"
 #include "nos_stddef.h"
-#include "pthread.h"
+#include "nos_pthread.h"
 
 #define NUM_THREADS 20
 
