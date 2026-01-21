@@ -46,6 +46,7 @@
   - [Process Overview](./syscalls/process/Process.md)
   - [ForkExec](./syscalls/process/ForkExec.md)
   - [ForkJoin](./syscalls/process/ForkJoin.md)
+  - [ForkSelf](./syscalls/process/ForkSelf.md)
 
 # Network
 - [Network](./network/SUMMARY.md)
@@ -54,6 +55,5 @@
   - [Partie II - Gestion de connexion](./network/ConnectionManagement.md)
 
 # Bibliothèques utilisateur
-
 - [Vue d'ensemble](./libs/Libs.md)
 - [errno](./libs/errno.md)

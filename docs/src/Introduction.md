@@ -47,6 +47,7 @@ Documentation du noyau et des bibliothèques utilisateur de NachOS Team-A.
   - [Process Overview](./syscalls/process/Process.md)
   - [ForkExec](./syscalls/process/ForkExec.md)
   - [ForkJoin](./syscalls/process/ForkJoin.md)
+  - [ForkSelf](./syscalls/process/ForkSelf.md)
 - [Vue d'ensemble des lib user](./libs/Libs.md)
   - [errno](./libs/errno.md)
 - [Network](./network/SUMMARY.md)
