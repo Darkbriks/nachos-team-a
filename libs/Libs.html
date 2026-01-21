@@ -37,7 +37,7 @@
             const path_to_root = "../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-26415bef.js";
+            window.path_to_searchindex_js = "../searchindex-348becc1.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-7afa7285.js"></script>
@@ -194,10 +194,27 @@
 <tr><td>stdlib</td><td><code>nos_stdlib.h</code></td><td>Fonctions utilitaires standard</td></tr>
 <tr><td>stdio</td><td><code>nos_stdio.h</code></td><td>Entrées/sorties formatées</td></tr>
 <tr><td>string</td><td><code>nos_string.h</code></td><td>Manipulation de chaînes</td></tr>
-<tr><td>pthread</td><td><code>pthread.h</code></td><td>Threads POSIX-like (haut niveau)</td></tr>
+<tr><td>pthread</td><td><code>nos_pthread.h</code></td><td>Threads POSIX-like</td></tr>
+<tr><td>ftp</td><td><code>nos_client.h</code></td><td>Transfert de fichiers réseau</td></tr>
+<tr><td>types</td><td><code>types.h</code></td><td>Types de base et macros</td></tr>
 </tbody>
 </table>
 </div>
+<hr>
+<h2 id="ftp-nos_clienth-nos_fileserverh"><a class="header" href="#ftp-nos_clienth-nos_fileserverh">FTP (<code>nos_client.h</code>, <code>nos_fileserver.h</code>)</a></h2>
+<p>Bibliothèque de transfert de fichiers sur le réseau NachOS. Implémente un protocole simple avec commandes <code>GET</code>/<code>PUT</code>. Le client permet de télécharger et envoyer des fichiers avec mesure du débit. Le serveur gère les requêtes entrantes.</p>
+<hr>
+<h2 id="pthread-nos_pthreadh"><a class="header" href="#pthread-nos_pthreadh">Pthread (<code>nos_pthread.h</code>)</a></h2>
+<p>Implémentation POSIX-like des threads : <code>pthread_create</code>, <code>pthread_join</code>, <code>pthread_exit</code>, <code>pthread_detach</code>, <code>pthread_self</code>. Chaque thread possède sa propre pile et son TLS (Thread Local Storage).</p>
+<h3 id="tls-nos_tlsh"><a class="header" href="#tls-nos_tlsh">TLS (<code>nos_tls.h</code>)</a></h3>
+<p>Structure thread-local accessible via <code>$gp</code>. Contient : <code>errno</code> thread-safe, pointeur vers la structure pthread, et 32 slots de données spécifiques au thread (<code>tsd</code>).</p>
+<hr>
+<h2 id="stdlib-nos_stdlibh"><a class="header" href="#stdlib-nos_stdlibh">Stdlib (<code>nos_stdlib.h</code>)</a></h2>
+<p>Fonctions utilitaires standard : gestion mémoire (<code>malloc</code>, <code>free</code>, <code>calloc</code>, <code>realloc</code>), conversions (<code>atoi</code>, <code>itoa</code>, <code>strtol</code>), contrôle (<code>exit</code>, <code>abort</code>, <code>atexit</code>), math (<code>abs</code>, <code>rand</code>).</p>
+<hr>
+<h2 id="types-typesh"><a class="header" href="#types-typesh">Types (<code>types.h</code>)</a></h2>
+<p>Types de base pour l’espace utilisateur 32-bit : <code>uint8_t</code> à <code>uint64_t</code>, <code>size_t</code>, <code>ssize_t</code>, <code>ptrdiff_t</code>, <code>uintptr_t</code>. Macros utilitaires : <code>PACKED</code>, <code>ALIGNED</code>, <code>NORETURN</code>, <code>LIKELY</code>/<code>UNLIKELY</code>.</p>
+<hr>
 <h2 id="voir-aussi"><a class="header" href="#voir-aussi">Voir aussi</a></h2>
 <ul>
 <li><a href="./errno.html">errno</a> - Gestion des erreurs</li>
