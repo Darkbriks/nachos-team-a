@@ -7,3 +7,4 @@
 - [Sleep](Sleep.md)
 - [SleepUntil](SleepUntil.md)
 - [GetCurrentTick](GetCurrentTick.md)
+- [time](time.md)
