@@ -38,6 +38,7 @@ USERPROG_LIBS=start.S                               \
               ../libs/pthread/nos_pthread_mutex.c   \
               ../libs/ftp/nos_fileserver.c          \
               ../libs/ftp/nos_client.c	            \
+              ../libs/ftp/nos_common.c	            \
               ../libs/stdlib/nos_unistd.c       \
 
 AUTOLOAD_CPPFLAGS=-DCHANGED               \

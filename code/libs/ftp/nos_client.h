@@ -16,11 +16,9 @@
 #include "nos_stdio.h"
 #include "nos_errno.h"
 #include "nos_string.h"
+#include "nos_common.h"
 
 #define CLIENT_SERVER_ADDR 0
-#define CLIENT_SERVER_PORT 20  /* Must match SERVER_PORT in nos_fileserver.h */
-#define CLIENT_CHUNK_SIZE 20
-#define CLIENT_MAX_FILESIZE 4096
 
 /* Parse OK response to extract size */
 int clientParseOkResponse(char *response, int *size);

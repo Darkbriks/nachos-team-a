@@ -1,15 +1,18 @@
 #include "nos_fileserver.h"
 #include "nos_unistd.h"
+#include "test_utilities.h"
+
+
 int main() {
     int listenerId, connId;
     char buffer[128];
-    char cmd[16], filename[SERVER_MAX_FILENAME];
+    char cmd[16], filename[MAX_FILENAME];
     int size;
     int n;
     OpenFileId fd;
     char testData[] = "Hello from NachOS file server! This is a test file for network transfer.";
 
-    printf("=== NachOS File Server (Real FS) ===\n");
+    TEST_START("=== NachOS File Server (Real FS) ===\n");
 
     /* Create a test file in the filesystem */
     fd = open("test.txt", O_CREATE);
@@ -20,12 +23,12 @@ int main() {
     }
 
     /* Start listening */
-    listenerId = listen(SERVER_PORT);
+    listenerId = listen(PORT);
     if (listenerId < 0) {
-        printf("Failed to listen on port %d, errno: %d\n", SERVER_PORT, errno);
+        printf("Failed to listen on port %d, errno: %d\n", PORT, errno);
         return -1;
     }
-    printf("Listening on port %d...\n", SERVER_PORT);
+    printf("Listening on port %d...\n", PORT);
 
     /* Accept one connection (simple server) */
     connId = accept(listenerId, -1);
@@ -51,11 +54,11 @@ int main() {
         serverParseCommand(buffer, cmd, filename, &size);
 
         if (strcmp(cmd, "GET") == 0) {
-            if (serverHandleGet(connId, filename) < 0) {
+            if (networkPUT(connId, filename) < 0) {
                 break;
             }
         } else if (strcmp(cmd, "PUT") == 0) {
-            if (serverHandlePut(connId, filename, size) < 0) {
+            if (networkGET(connId, filename, size) < 0) {
                 break;
             }
         } else if (strcmp(cmd, "QUIT") == 0) {
@@ -75,5 +78,6 @@ int main() {
     close(listenerId);
     printf("Server shutdown\n");
 
+    TEST_PASS();
     return 0;
 }

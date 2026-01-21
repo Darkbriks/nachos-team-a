@@ -1,29 +1,9 @@
 #include "nos_client.h"
 #include "nos_unistd.h"
+#include "nos_bool.h"
+#include "nos_common.h"
+#include "test_utilities.h"
 
-/* Convert int to string (simple itoa) - static to avoid conflicts */
-static int intToStr(int num, char *buf) {
-    int i = 0, j;
-    char tmp[16];
-
-    if (num == 0) {
-        buf[0] = '0';
-        buf[1] = '\0';
-        return 1;
-    }
-
-    while (num > 0) {
-        tmp[i++] = '0' + (num % 10);
-        num /= 10;
-    }
-
-    /* Reverse */
-    for (j = 0; j < i; j++) {
-        buf[j] = tmp[i - 1 - j];
-    }
-    buf[i] = '\0';
-    return i;
-}
 /* Parse OK response to extract size (may be 0 if server doesn't know size) */
 int clientParseOkResponse(char *response, int *size) {
     int i = 0;
@@ -51,39 +31,16 @@ int clientParseOkResponse(char *response, int *size) {
 int clientGetFile(int connId, char *remoteFile, char *localFile, int maxSize,
                   int *receivedSize, time_t *startTime, time_t *endTime) {
     char cmd[80];
-    char buffer[CLIENT_CHUNK_SIZE + 1];
+    char buffer[CHUNK_SIZE + 1];
     OpenFileId fd;
     int received = 0;
     int n;
 
     /* Build GET command */
-    strcpy(cmd, "GET ");
-    strcat(cmd, remoteFile);
-
+    snprintf(cmd, 250, "GET %s", remoteFile);
+    connectRequest(connId, "GET", cmd);
     /* Record start time */
     time(startTime);
-
-    /* Send GET request */
-    printf("[CLIENT] Sending: %s\n", cmd);
-    if (sendto(connId, cmd, strlen(cmd) + 1) < 0) {
-        printf("[CLIENT] Failed to send GET command\n");
-        return -1;
-    }
-
-    /* Receive response */
-    n = recvfrom(connId, buffer, CLIENT_CHUNK_SIZE);
-    if (n <= 0) {
-        printf("[CLIENT] Failed to receive response\n");
-        return -1;
-    }
-    buffer[n] = '\0';
-    printf("[CLIENT] Response: %s\n", buffer);
-
-    /* Check for error */
-    if (buffer[0] == 'E') {
-        printf("[CLIENT] Server error: %s\n", buffer);
-        return -1;
-    }
 
     fd = open(localFile, O_CREATE);
     if (fd < 0) {
@@ -93,11 +50,11 @@ int clientGetFile(int connId, char *remoteFile, char *localFile, int maxSize,
 
     /* Receive and write file data */
     while (1) {
-        n = recvfrom(connId, buffer, CLIENT_CHUNK_SIZE);
+        n = recvfrom(connId, buffer, CHUNK_SIZE);
         if (n <= 0) break;
 
         /* Check for EOF marker */
-        if (n == 4 && strcmp(buffer, "EOF") == 0) {
+        if (n <= 4 && strcmp(buffer, "EOF") == 0) {
             printf("[CLIENT] Received EOF marker\n");
             break;
         }
@@ -115,92 +72,44 @@ int clientGetFile(int connId, char *remoteFile, char *localFile, int maxSize,
 
     *receivedSize = received;
     printf("[CLIENT] Download complete: %d bytes\n", received);
+    TEST_START("hey");
+    TEST_PASS();
     return 0;
 }
 
 /* PUT local file to server */
 int clientPutFile(int connId, char *localFile, char *remoteFile, int maxSize,
                   time_t *startTime, time_t *endTime) {
-    char cmd[80];
-    char buffer[CLIENT_CHUNK_SIZE];
     char response[32];
     OpenFileId fd;
     int sent = 0;
-    int fileSize = 0;
     int n;
-
-    /* Open local file */
-    fd = open(localFile, 0);
-    if (fd < 0) {
-        printf("[CLIENT] Cannot open local file: %s, fd = %d\n", localFile, fd);
+    char cmd[80];
+    unsigned int fileSize = 0;
+    if (! fileLen(localFile, &fileSize)){
+        TEST_FAIL("FILE NOT FOUND for put\n");
         return -1;
     }
-
-    /* Read file to get size (read and count) */
-    {
-        char tempBuf[CLIENT_CHUNK_SIZE];
-        printf("fd = %d sur name = %s\n", fd, localFile);
-        while ((n = read(fd, tempBuf, CLIENT_CHUNK_SIZE)) > 0) {
-            printf("hey\n");
-            fileSize += n;
-            if (fileSize >= maxSize) break;
-        }
-    }
-    close_file(fd);
-    printf("[CLIENT] Local file size: %d bytes\n", fileSize);
-
+    printf("Local file size: %d bytes\n", fileSize);
     /* Build PUT command: "PUT remoteFile size" */
-    strcpy(cmd, "PUT ");
-    strcat(cmd, remoteFile);
-    strcat(cmd, " ");
-    intToStr(fileSize, cmd + strlen(cmd));
+    snprintf(cmd, 200, "PUT %s %d", remoteFile, fileSize);
 
-    /* Record start time */
-    time(startTime);
-
-    /* Send PUT request */
-    printf("[CLIENT] Sending: %s\n", cmd);
-    if (sendto(connId, cmd, strlen(cmd) + 1) < 0) {
-        printf("[CLIENT] Failed to send PUT command, errno: %d\n", errno);
-        return -1;
-    }
-
-    /* Wait for OK */
-    n = recvfrom(connId, response, sizeof(response) - 1);
-    if (n <= 0) {
-        printf("[CLIENT] Failed to receive response\n");
-        return -1;
-    }
-    response[n] = '\0';
-    printf("[CLIENT] Response: %s\n", response);
-
-    if (response[0] != 'O') {
-        printf("[CLIENT] Server rejected PUT: %s\n", response);
+    if ( connectRequest(connId, "PUT", cmd) != 0){
+        printf("FAIL Server refuse connection\n");
         return -1;
     }
 
     /* Reopen file and send data */
+    /* Record start time */
+    time(startTime);
     fd = open(localFile, 0);
     if (fd < 0) {
         printf("[CLIENT] Cannot reopen local file\n");
         return -1;
     }
 
-    /* Send file data in chunks */
-    while ((n = read(fd, buffer, CLIENT_CHUNK_SIZE)) > 0) {
-        if (sendto(connId, buffer, n) < 0) {
-            printf("[CLIENT] Failed to send data chunk\n");
-            close_file(fd);
-            return -1;
-        }
-        sent += n;
-        printf("[CLIENT] Sent %d/%d bytes\n", sent, fileSize);
-    }
-
+    sendFile(fd, connId);
     close_file(fd);
-
-    /* Send EOF */
-    sendto(connId, "EOF", 4);
 
     /* Wait for final confirmation */
     n = recvfrom(connId, response, sizeof(response) - 1);

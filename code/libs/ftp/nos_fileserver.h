@@ -22,12 +22,9 @@
 #include "nos_stdio.h"
 #include "nos_errno.h"
 #include "nos_string.h"
+#include "nos_common.h"
 
-#define SERVER_PORT 20
 
-#define SERVER_CHUNK_SIZE 20  /* Safe size for data chunks */
-#define SERVER_MAX_FILENAME 64
-#define SERVER_MAX_FILESIZE 4096
 
 /* Parse command from received data */
 int serverParseCommand(char *data, char *cmd, char *arg1, int *arg2);
