@@ -38,10 +38,10 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1d10b05f.js";
+            window.path_to_searchindex_js = "searchindex-5f6d642c.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-57382a8e.js"></script>
+        <script src="toc-e514a7e0.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -245,8 +245,18 @@
 <li><a href="#forkjoin">ForkJoin</a></li>
 </ul>
 </li>
-<li><a href="#bibliothèques-utilisateur-1">Vue d’ensemble des lib user</a></li>
+<li><a href="#bibliothèques-utilisateur-1">Vue d’ensemble des lib user</a>
+<ul>
 <li><a href="#errno---gestion-des-erreurs">errno</a></li>
+</ul>
+</li>
+<li><a href="#network-1">Network</a>
+<ul>
+<li><a href="#vue-densemble-du-réseau">Vue d’ensemble</a></li>
+<li><a href="#sendreliable--receivereliable">Partie I - Transmission fiable</a></li>
+<li><a href="#connect--isconnected--close">Partie II - Gestion de connexion</a></li>
+</ul>
+</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="summary"><a class="header" href="#summary">Summary</a></h1>
@@ -313,6 +323,16 @@
 <li><a href="#appels-système-de-gestion-des-processus">Process Overview</a></li>
 <li><a href="#forkexec-1">ForkExec</a></li>
 <li><a href="#forkjoin">ForkJoin</a></li>
+</ul>
+</li>
+</ul>
+<h1 id="network"><a class="header" href="#network">Network</a></h1>
+<ul>
+<li><a href="#network-1">Network</a>
+<ul>
+<li><a href="#vue-densemble-du-réseau">Vue d’ensemble</a></li>
+<li><a href="#sendreliable--receivereliable">Partie I - Transmission fiable</a></li>
+<li><a href="#connect--isconnected--close">Partie II - Gestion de connexion</a></li>
 </ul>
 </li>
 </ul>
@@ -6665,6 +6685,282 @@ int main(){
 <h2 id="dernière-révision-33"><a class="header" href="#dernière-révision-33">Dernière révision</a></h2>
 <p>8 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
+<h1 id="network-1"><a class="header" href="#network-1">Network</a></h1>
+<p>Cette section documente l’implémentation de la couche réseau fiable de NachOS.</p>
+<ul>
+<li><a href="#vue-densemble-du-réseau">Vue d’ensemble</a></li>
+<li><a href="#sendreliable--receivereliable">Partie I - Transmission fiable</a></li>
+<li><a href="#connect--isconnected--close">Partie II - Gestion de connexion</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="vue-densemble-du-réseau"><a class="header" href="#vue-densemble-du-réseau">Vue d’ensemble du réseau</a></h1>
+<p>Cette page fournit une vue d’ensemble de la couche réseau fiable de NachOS.</p>
+<h2 id="introduction-1"><a class="header" href="#introduction-1">Introduction</a></h2>
+<p>NachOS fournit une couche réseau simulée permettant à plusieurs instances de communiquer entre elles. Par défaut, cette couche est <strong>non fiable</strong> : les paquets peuvent être perdus.</p>
+<p>La classe <code>ReliablePost</code> implémente une couche de transmission fiable au-dessus de ce réseau, inspirée de TCP/IP.</p>
+<h2 id="architecture-4"><a class="header" href="#architecture-4">Architecture</a></h2>
+<pre><code>┌─────────────────────────────────┐
+│     Programme utilisateur       │
+├─────────────────────────────────┤
+│         ReliablePost            │  ← Transmission fiable
+├─────────────────────────────────┤
+│          PostOffice             │  ← Boîtes aux lettres
+├─────────────────────────────────┤
+│           Network               │  ← Réseau non fiable
+└─────────────────────────────────┘
+</code></pre>
+<h2 id="démarrage-rapide"><a class="header" href="#démarrage-rapide">Démarrage rapide</a></h2>
+<h3 id="lancer-deux-machines"><a class="header" href="#lancer-deux-machines">Lancer deux machines</a></h3>
+<pre><code class="language-bash"># Terminal 1 - Machine 0
+./nachos-step6 -m 0 -l 1.0 -R 1
+
+# Terminal 2 - Machine 1
+./nachos-step6 -m 1 -l 1.0 -R 0
+</code></pre>
+<h3 id="options-de-la-ligne-de-commande"><a class="header" href="#options-de-la-ligne-de-commande">Options de la ligne de commande</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Option</th><th>Description</th><th>Exemple</th></tr>
+</thead>
+<tbody>
+<tr><td><code>-m N</code></td><td>Identifiant de la machine</td><td><code>-m 0</code></td></tr>
+<tr><td><code>-l P</code></td><td>Fiabilité du réseau (0.0 à 1.0)</td><td><code>-l 0.5</code> (50% de perte)</td></tr>
+<tr><td><code>-R N</code></td><td>Test de transmission fiable vers machine N</td><td><code>-R 1</code></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="fonctionnalités"><a class="header" href="#fonctionnalités">Fonctionnalités</a></h2>
+<h3 id="transmission-fiable"><a class="header" href="#transmission-fiable">Transmission fiable</a></h3>
+<ul>
+<li>Acquittements automatiques (ACK)</li>
+<li>Retransmission en cas de timeout</li>
+<li>Détection des duplicatas</li>
+<li>Numéros de séquence</li>
+</ul>
+<h3 id="gestion-de-connexion"><a class="header" href="#gestion-de-connexion">Gestion de connexion</a></h3>
+<ul>
+<li>Établissement de connexion (handshake)</li>
+<li>Fermeture gracieuse</li>
+<li>Détection de déconnexion</li>
+</ul>
+<h2 id="api-disponible"><a class="header" href="#api-disponible">API disponible</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Méthode</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Connect()</code></td><td>Établit une connexion avec la machine distante</td></tr>
+<tr><td><code>IsConnected()</code></td><td>Vérifie si la connexion est active</td></tr>
+<tr><td><code>Close()</code></td><td>Ferme la connexion proprement</td></tr>
+<tr><td><code>SendReliable()</code></td><td>Envoie un message avec garantie de livraison</td></tr>
+<tr><td><code>ReceiveReliable()</code></td><td>Reçoit un message</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="constantes-importantes"><a class="header" href="#constantes-importantes">Constantes importantes</a></h2>
+<pre><code class="language-c">#define TEMPO 10000           // Timeout retransmission (ticks)
+#define MAXREEMISSIONS 100    // Tentatives max avant abandon
+#define MAX_PENDING_MSGS 10   // Messages en attente d'ACK max
+</code></pre>
+<h2 id="voir-aussi-32"><a class="header" href="#voir-aussi-32">Voir aussi</a></h2>
+<ul>
+<li><a href="#sendreliable--receivereliable">Transmission fiable</a> - API SendReliable/ReceiveReliable</li>
+<li><a href="#connect--isconnected--close">Gestion de connexion</a> - API Connect/Close</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="sendreliable--receivereliable"><a class="header" href="#sendreliable--receivereliable">SendReliable / ReceiveReliable</a></h1>
+<p><code>SendReliable</code> - Envoie un message avec garantie de livraison
+<code>ReceiveReliable</code> - Reçoit un message et envoie un acquittement</p>
+<h2 id="synopsis-27"><a class="header" href="#synopsis-27">SYNOPSIS</a></h2>
+<pre><code class="language-cpp">#include "reliablepost.h"
+
+// Envoi
+unsigned int SendReliable(PacketHeader pktHdr, MailHeader mailHdr, const char *data);
+
+// Réception
+void ReceiveReliable(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char *data);
+</code></pre>
+<h2 id="description-27"><a class="header" href="#description-27">DESCRIPTION</a></h2>
+<h3 id="sendreliable"><a class="header" href="#sendreliable">SendReliable</a></h3>
+<p><code>SendReliable</code> envoie un message vers la machine distante avec garantie de livraison. Le message est placé dans une file d’attente et retransmis automatiquement jusqu’à réception d’un acquittement (ACK).</p>
+<p><strong>Comportement :</strong></p>
+<ul>
+<li>Non-bloquant : retourne immédiatement après mise en file</li>
+<li>Retransmission automatique après <code>TEMPO</code> ticks sans ACK</li>
+<li>Abandon après <code>MAXREEMISSIONS</code> tentatives</li>
+</ul>
+<h3 id="receivereliable"><a class="header" href="#receivereliable">ReceiveReliable</a></h3>
+<p><code>ReceiveReliable</code> reçoit un message de la boîte aux lettres spécifiée et envoie automatiquement un ACK à l’émetteur.</p>
+<p><strong>Comportement :</strong></p>
+<ul>
+<li>Bloquant : attend qu’un message soit disponible</li>
+<li>ACK envoyé automatiquement</li>
+</ul>
+<h2 id="paramètres-27"><a class="header" href="#paramètres-27">PARAMÈTRES</a></h2>
+<h3 id="sendreliable-1"><a class="header" href="#sendreliable-1">SendReliable</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Paramètre</th><th>Type</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>pktHdr</code></td><td><code>PacketHeader</code></td><td>En-tête réseau (contient <code>to</code> : machine destinataire)</td></tr>
+<tr><td><code>mailHdr</code></td><td><code>MailHeader</code></td><td>En-tête mail (contient <code>to</code>, <code>from</code> : boîtes aux lettres, <code>length</code>)</td></tr>
+<tr><td><code>data</code></td><td><code>const char*</code></td><td>Données à envoyer</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="receivereliable-1"><a class="header" href="#receivereliable-1">ReceiveReliable</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Paramètre</th><th>Type</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>box</code></td><td><code>int</code></td><td>Numéro de la boîte aux lettres à écouter</td></tr>
+<tr><td><code>pktHdr</code></td><td><code>PacketHeader*</code></td><td>[OUT] En-tête réseau du message reçu</td></tr>
+<tr><td><code>mailHdr</code></td><td><code>MailHeader*</code></td><td>[OUT] En-tête mail du message reçu</td></tr>
+<tr><td><code>data</code></td><td><code>char*</code></td><td>[OUT] Buffer pour les données reçues</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="valeur-de-retour-27"><a class="header" href="#valeur-de-retour-27">VALEUR DE RETOUR</a></h2>
+<h3 id="sendreliable-2"><a class="header" href="#sendreliable-2">SendReliable</a></h3>
+<ul>
+<li><strong>Succès</strong> : Numéro de séquence attribué au message (&gt; 0)</li>
+<li><strong>Échec</strong> : <code>0</code> si non connecté ou file pleine</li>
+</ul>
+<h3 id="receivereliable-2"><a class="header" href="#receivereliable-2">ReceiveReliable</a></h3>
+<p>Aucune valeur de retour. Les données sont écrites dans les paramètres de sortie.</p>
+<h2 id="diagramme-de-fonctionnement"><a class="header" href="#diagramme-de-fonctionnement">DIAGRAMME DE FONCTIONNEMENT</a></h2>
+<p><img src="network/reliable_transmission.png" alt="Transmission fiable"></p>
+<h2 id="notes-11"><a class="header" href="#notes-11">NOTES</a></h2>
+<ul>
+<li><strong>Thread-safety</strong> : Les appels sont protégés par un verrou interne</li>
+<li><strong>Ordre</strong> : Les messages sont délivrés dans l’ordre d’envoi</li>
+<li><strong>Fiabilité</strong> : Fonctionne même avec <code>-l 0.5</code> (50% de perte)</li>
+</ul>
+<h2 id="voir-aussi-33"><a class="header" href="#voir-aussi-33">VOIR AUSSI</a></h2>
+<ul>
+<li><a href="#vue-densemble-du-réseau">Vue d’ensemble</a> - Introduction au réseau</li>
+<li><a href="#connect--isconnected--close">Gestion de connexion</a> - Connect/Close</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="connect--isconnected--close"><a class="header" href="#connect--isconnected--close">Connect / IsConnected / Close</a></h1>
+<p><code>Connect</code> - Établit une connexion avec la machine distante
+<code>IsConnected</code> - Vérifie si la connexion est active
+<code>Close</code> - Ferme la connexion proprement</p>
+<h2 id="synopsis-28"><a class="header" href="#synopsis-28">SYNOPSIS</a></h2>
+<pre><code class="language-cpp">#include "reliablepost.h"
+
+bool Connect();
+bool IsConnected();
+void Close();
+</code></pre>
+<h2 id="description-28"><a class="header" href="#description-28">DESCRIPTION</a></h2>
+<h3 id="connect"><a class="header" href="#connect">Connect</a></h3>
+<p><code>Connect</code> établit une connexion avec la machine distante configurée lors de la création du <code>ReliablePost</code>. Utilise un handshake de type TCP (SYN/SYN-ACK).</p>
+<p><strong>Comportement :</strong></p>
+<ul>
+<li>Bloquant : attend que la connexion soit établie</li>
+<li>Retransmission automatique du SYN en cas de perte</li>
+<li>Timeout après <code>CONNECT_RETRIES</code> tentatives</li>
+</ul>
+<h3 id="isconnected"><a class="header" href="#isconnected">IsConnected</a></h3>
+<p><code>IsConnected</code> vérifie si la connexion est actuellement établie et utilisable pour l’envoi de données.</p>
+<p><strong>Comportement :</strong></p>
+<ul>
+<li>Non-bloquant</li>
+<li>Retourne <code>false</code> si le peer a initié la fermeture</li>
+</ul>
+<h3 id="close"><a class="header" href="#close">Close</a></h3>
+<p><code>Close</code> ferme la connexion de manière gracieuse. Attend que tous les messages en attente soient acquittés avant d’envoyer la demande de fermeture.</p>
+<p><strong>Comportement :</strong></p>
+<ul>
+<li>Bloquant : attend l’acquittement de fermeture</li>
+<li>Envoie CLOSE, attend CLOSE-ACK</li>
+<li>Gère la fermeture simultanée des deux côtés</li>
+</ul>
+<h2 id="valeur-de-retour-28"><a class="header" href="#valeur-de-retour-28">VALEUR DE RETOUR</a></h2>
+<h3 id="connect-1"><a class="header" href="#connect-1">Connect</a></h3>
+<ul>
+<li><strong><code>true</code></strong> : Connexion établie avec succès</li>
+<li><strong><code>false</code></strong> : Échec (timeout, machine distante non disponible)</li>
+</ul>
+<h3 id="isconnected-1"><a class="header" href="#isconnected-1">IsConnected</a></h3>
+<ul>
+<li><strong><code>true</code></strong> : Connexion active, envoi possible</li>
+<li><strong><code>false</code></strong> : Non connecté ou peer a fermé</li>
+</ul>
+<h3 id="close-1"><a class="header" href="#close-1">Close</a></h3>
+<p>Aucune valeur de retour.</p>
+<h2 id="machine-détats"><a class="header" href="#machine-détats">MACHINE D’ÉTATS</a></h2>
+<p><img src="network/connection_state_machine.png" alt="Machine d’états de connexion"></p>
+<h3 id="états"><a class="header" href="#états">États</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>État</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>CONN_CLOSED</code></td><td>Pas de connexion</td></tr>
+<tr><td><code>CONN_SYN_SENT</code></td><td>SYN envoyé, attente de réponse</td></tr>
+<tr><td><code>CONN_ESTABLISHED</code></td><td>Connexion active</td></tr>
+<tr><td><code>CONN_CLOSE_WAIT</code></td><td>Le peer veut fermer</td></tr>
+<tr><td><code>CONN_CLOSING</code></td><td>Fermeture en cours</td></tr>
+<tr><td><code>CONN_TERMINATED</code></td><td>Connexion fermée</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="protocole-de-connexion"><a class="header" href="#protocole-de-connexion">PROTOCOLE DE CONNEXION</a></h2>
+<h3 id="établissement-handshake"><a class="header" href="#établissement-handshake">Établissement (handshake)</a></h3>
+<pre><code>Machine A                    Machine B
+    |-------- SYN ------------&gt;|
+    |&lt;------- SYN-ACK ---------|
+    |      ESTABLISHED         |
+</code></pre>
+<h3 id="fermeture-gracieuse"><a class="header" href="#fermeture-gracieuse">Fermeture gracieuse</a></h3>
+<pre><code>Machine A                    Machine B
+    |-------- CLOSE ----------&gt;|
+    |&lt;------- CLOSE-ACK -------|
+    |      TERMINATED          |
+</code></pre>
+<h3 id="fermeture-simultanée"><a class="header" href="#fermeture-simultanée">Fermeture simultanée</a></h3>
+<p>Si les deux machines appellent <code>Close()</code> en même temps :</p>
+<pre><code>Machine A                    Machine B
+    |-------- CLOSE ----------&gt;|
+    |&lt;------- CLOSE -----------|
+    |-------- CLOSE-ACK ------&gt;|
+    |&lt;------- CLOSE-ACK -------|
+    |      TERMINATED          |
+</code></pre>
+<h2 id="timeouts"><a class="header" href="#timeouts">TIMEOUTS</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Paramètre</th><th>Valeur</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>CONNECT_TEMPO</code></td><td>500000 ticks</td><td>Délai entre retransmissions SYN</td></tr>
+<tr><td><code>CONNECT_RETRIES</code></td><td>1000</td><td>Nombre max de tentatives</td></tr>
+<tr><td><code>TEMPO</code></td><td>10000 ticks</td><td>Délai pour CLOSE</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="notes-12"><a class="header" href="#notes-12">NOTES</a></h2>
+<ul>
+<li><strong>Ordre de lancement</strong> : Les deux machines peuvent être lancées dans n’importe quel ordre grâce aux retransmissions</li>
+<li><strong>Délai</strong> : Prévoir ~2 secondes pour lancer la seconde machine</li>
+<li><strong>Robustesse</strong> : Fonctionne même avec perte de paquets (<code>-l 0.5</code>)</li>
+</ul>
+<h2 id="voir-aussi-34"><a class="header" href="#voir-aussi-34">VOIR AUSSI</a></h2>
+<ul>
+<li><a href="#vue-densemble-du-réseau">Vue d’ensemble</a> - Introduction au réseau</li>
+<li><a href="#sendreliable--receivereliable">Transmission fiable</a> - SendReliable/ReceiveReliable</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
 <h1 id="bibliothèques-utilisateur-1"><a class="header" href="#bibliothèques-utilisateur-1">Bibliothèques utilisateur</a></h1>
 <p>Cette section documente les bibliothèques disponibles en espace utilisateur pour les programmes NachOS.</p>
 <h2 id="vue-densemble-4"><a class="header" href="#vue-densemble-4">Vue d’ensemble</a></h2>
@@ -6684,7 +6980,7 @@ int main(){
 </tbody>
 </table>
 </div>
-<h2 id="voir-aussi-32"><a class="header" href="#voir-aussi-32">Voir aussi</a></h2>
+<h2 id="voir-aussi-35"><a class="header" href="#voir-aussi-35">Voir aussi</a></h2>
 <ul>
 <li><a href="#errno---gestion-des-erreurs">errno</a> - Gestion des erreurs</li>
 <li><a href="#vue-densemble-des-appels-système">Appels système</a> - API bas niveau</li>
@@ -6808,7 +7104,7 @@ static inline void __clear_errno();
 
 </div>
 
-<h2 id="voir-aussi-33"><a class="header" href="#voir-aussi-33">Voir aussi</a></h2>
+<h2 id="voir-aussi-36"><a class="header" href="#voir-aussi-36">Voir aussi</a></h2>
 <ul>
 <li><a href="#vue-densemble-des-appels-système">Appels système</a> - Liste des syscalls</li>
 <li><a href="#threads---appels-système">Threads</a> - Gestion des threads</li>

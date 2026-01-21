@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Threads - NachOS Manual</title>
+        <title>Vue d&#x27;ensemble - NachOS Manual</title>
 
 
         <!-- Custom HTML head -->
@@ -12,35 +12,35 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
-        <link rel="icon" href="../../favicon-de23e50b.svg">
-        <link rel="shortcut icon" href="../../favicon-8114d1fc.png">
-        <link rel="stylesheet" href="../../css/variables-8adf115d.css">
-        <link rel="stylesheet" href="../../css/general-2459343d.css">
-        <link rel="stylesheet" href="../../css/chrome-ae938929.css">
-        <link rel="stylesheet" href="../../css/print-9e4910d8.css" media="print">
+        <link rel="icon" href="../favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="../favicon-8114d1fc.png">
+        <link rel="stylesheet" href="../css/variables-8adf115d.css">
+        <link rel="stylesheet" href="../css/general-2459343d.css">
+        <link rel="stylesheet" href="../css/chrome-ae938929.css">
+        <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="../../fonts/fonts-9644e21d.css">
+        <link rel="stylesheet" href="../fonts/fonts-9644e21d.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" id="mdbook-highlight-css" href="../../highlight-493f70e1.css">
-        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../../tomorrow-night-4c0ae647.css">
-        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../../ayu-highlight-3fdfc3ac.css">
+        <link rel="stylesheet" id="mdbook-highlight-css" href="../highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="../tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="../ayu-highlight-3fdfc3ac.css">
 
         <!-- Custom theme stylesheets -->
-        <link rel="stylesheet" href="../../theme/custom-c9a1a890.css">
-        <link rel="stylesheet" href="../../theme/callouts-599be5a1.css">
+        <link rel="stylesheet" href="../theme/custom-c9a1a890.css">
+        <link rel="stylesheet" href="../theme/callouts-599be5a1.css">
 
 
         <!-- Provide site root and default themes to javascript -->
         <script>
-            const path_to_root = "../../";
+            const path_to_root = "../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-5f6d642c.js";
+            window.path_to_searchindex_js = "../searchindex-5f6d642c.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../../toc-e514a7e0.js"></script>
+        <script src="../toc-e514a7e0.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -107,7 +107,7 @@
             <!-- populated by js -->
             <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
             <noscript>
-                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
             </noscript>
             <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -142,7 +142,7 @@
                     <h1 class="menu-title">NachOS Manual</h1>
 
                     <div class="right-buttons">
-                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
                             <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
                         </a>
                         <a href="https://gricad-gitlab.univ-grenoble-alpes.fr/systeme/nachos-etu/2025-2026/team-a" title="Git repository" aria-label="Git repository">
@@ -179,38 +179,92 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="threads"><a class="header" href="#threads">Threads</a></h1>
+                        <h1 id="vue-densemble-du-réseau"><a class="header" href="#vue-densemble-du-réseau">Vue d’ensemble du réseau</a></h1>
+<p>Cette page fournit une vue d’ensemble de la couche réseau fiable de NachOS.</p>
+<h2 id="introduction"><a class="header" href="#introduction">Introduction</a></h2>
+<p>NachOS fournit une couche réseau simulée permettant à plusieurs instances de communiquer entre elles. Par défaut, cette couche est <strong>non fiable</strong> : les paquets peuvent être perdus.</p>
+<p>La classe <code>ReliablePost</code> implémente une couche de transmission fiable au-dessus de ce réseau, inspirée de TCP/IP.</p>
+<h2 id="architecture"><a class="header" href="#architecture">Architecture</a></h2>
+<pre><code>┌─────────────────────────────────┐
+│     Programme utilisateur       │
+├─────────────────────────────────┤
+│         ReliablePost            │  ← Transmission fiable
+├─────────────────────────────────┤
+│          PostOffice             │  ← Boîtes aux lettres
+├─────────────────────────────────┤
+│           Network               │  ← Réseau non fiable
+└─────────────────────────────────┘
+</code></pre>
+<h2 id="démarrage-rapide"><a class="header" href="#démarrage-rapide">Démarrage rapide</a></h2>
+<h3 id="lancer-deux-machines"><a class="header" href="#lancer-deux-machines">Lancer deux machines</a></h3>
+<pre><code class="language-bash"># Terminal 1 - Machine 0
+./nachos-step6 -m 0 -l 1.0 -R 1
+
+# Terminal 2 - Machine 1
+./nachos-step6 -m 1 -l 1.0 -R 0
+</code></pre>
+<h3 id="options-de-la-ligne-de-commande"><a class="header" href="#options-de-la-ligne-de-commande">Options de la ligne de commande</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Option</th><th>Description</th><th>Exemple</th></tr>
+</thead>
+<tbody>
+<tr><td><code>-m N</code></td><td>Identifiant de la machine</td><td><code>-m 0</code></td></tr>
+<tr><td><code>-l P</code></td><td>Fiabilité du réseau (0.0 à 1.0)</td><td><code>-l 0.5</code> (50% de perte)</td></tr>
+<tr><td><code>-R N</code></td><td>Test de transmission fiable vers machine N</td><td><code>-R 1</code></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="fonctionnalités"><a class="header" href="#fonctionnalités">Fonctionnalités</a></h2>
+<h3 id="transmission-fiable"><a class="header" href="#transmission-fiable">Transmission fiable</a></h3>
 <ul>
-<li><a href="Threads.html">Vue d’ensemble</a></li>
+<li>Acquittements automatiques (ACK)</li>
+<li>Retransmission en cas de timeout</li>
+<li>Détection des duplicatas</li>
+<li>Numéros de séquence</li>
 </ul>
-<h1 id="appels-système-threads"><a class="header" href="#appels-système-threads">Appels système Threads</a></h1>
+<h3 id="gestion-de-connexion"><a class="header" href="#gestion-de-connexion">Gestion de connexion</a></h3>
 <ul>
-<li><a href="thread_create.html">thread_create</a></li>
-<li><a href="thread_exit.html">thread_exit</a></li>
-<li><a href="thread_self.html">thread_self</a></li>
-<li><a href="thread_yield.html">thread_yield</a></li>
+<li>Établissement de connexion (handshake)</li>
+<li>Fermeture gracieuse</li>
+<li>Détection de déconnexion</li>
 </ul>
-<h1 id="primitives-de-synchronisation"><a class="header" href="#primitives-de-synchronisation">Primitives de synchronisation</a></h1>
+<h2 id="api-disponible"><a class="header" href="#api-disponible">API disponible</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Méthode</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Connect()</code></td><td>Établit une connexion avec la machine distante</td></tr>
+<tr><td><code>IsConnected()</code></td><td>Vérifie si la connexion est active</td></tr>
+<tr><td><code>Close()</code></td><td>Ferme la connexion proprement</td></tr>
+<tr><td><code>SendReliable()</code></td><td>Envoie un message avec garantie de livraison</td></tr>
+<tr><td><code>ReceiveReliable()</code></td><td>Reçoit un message</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="constantes-importantes"><a class="header" href="#constantes-importantes">Constantes importantes</a></h2>
+<pre><code class="language-c">#define TEMPO 10000           // Timeout retransmission (ticks)
+#define MAXREEMISSIONS 100    // Tentatives max avant abandon
+#define MAX_PENDING_MSGS 10   // Messages en attente d'ACK max
+</code></pre>
+<h2 id="voir-aussi"><a class="header" href="#voir-aussi">Voir aussi</a></h2>
 <ul>
-<li><a href="futex_wait.html">futex_wait</a></li>
-<li><a href="futex_wake.html">futex_wake</a></li>
-</ul>
-<h1 id="opérations-atomiques"><a class="header" href="#opérations-atomiques">Opérations atomiques</a></h1>
-<ul>
-<li><a href="atomic_cmpxchg.html">atomic_cmpxchg</a></li>
-<li><a href="atomic_store.html">atomic_store</a></li>
-<li><a href="atomic_load.html">atomic_load</a></li>
+<li><a href="./ReliableTransmission.html">Transmission fiable</a> - API SendReliable/ReceiveReliable</li>
+<li><a href="./ConnectionManagement.html">Gestion de connexion</a> - API Connect/Close</li>
 </ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../syscalls/console/GetInt.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../network/SUMMARY.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../syscalls/threads/Threads.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../network/ReliableTransmission.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -220,11 +274,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../syscalls/console/GetInt.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../network/SUMMARY.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../syscalls/threads/Threads.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../network/ReliableTransmission.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
@@ -244,16 +298,16 @@
         </script>
 
 
-        <script src="../../elasticlunr-ef4e11c1.min.js"></script>
-        <script src="../../mark-09e88c2c.min.js"></script>
-        <script src="../../searcher-c2a407aa.js"></script>
+        <script src="../elasticlunr-ef4e11c1.min.js"></script>
+        <script src="../mark-09e88c2c.min.js"></script>
+        <script src="../searcher-c2a407aa.js"></script>
 
-        <script src="../../clipboard-1626706a.min.js"></script>
-        <script src="../../highlight-abc7f01d.js"></script>
-        <script src="../../book-a0b12cfe.js"></script>
+        <script src="../clipboard-1626706a.min.js"></script>
+        <script src="../highlight-abc7f01d.js"></script>
+        <script src="../book-a0b12cfe.js"></script>
 
         <!-- Custom JS scripts -->
-        <script src="../../theme/custom-da2ff7a9.js"></script>
+        <script src="../theme/custom-da2ff7a9.js"></script>
 
 
 
