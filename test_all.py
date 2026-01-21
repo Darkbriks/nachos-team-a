@@ -61,7 +61,7 @@ def exec_nachos(prog : str, tmp_file : str) -> bool:
     # if "-x" in prog and CURRENT_STEP == 5:
     print(prog)
     print(f'{nachos} -f -cp {prog.split("-x")[1]} a')
-    s = subprocess.check_output(f"cd {BUILD_DIR} ; {nachos} -f -cp {prog.split("-x")[1]} a", shell=True, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL).decode("utf-8")
+    s = subprocess.check_output(f"cd {BUILD_DIR} ; {nachos} -f -cp {prog.split('-x')[1]} a", shell=True, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL).decode("utf-8")
     with open(tmp_file, "w+") as f:
         try:
             if "-x" in prog:
