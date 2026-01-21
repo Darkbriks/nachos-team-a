@@ -8,7 +8,7 @@
 int connectRequest(int connId, char* cmd_name, char* cmd){
     char response[80];
     int n;
-    printf("Sending commande for %s: %s\n",cmd_name, cmd);
+    printf("Sending command %s: %s\n",cmd_name, cmd);
     if (sendto(connId, cmd, strlen(cmd) + 1) < 0) {
         printf("Failed to send %s command, errno: %d\n",cmd_name, errno);
         return -1;

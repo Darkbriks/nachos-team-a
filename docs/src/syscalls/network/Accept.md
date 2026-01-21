@@ -17,9 +17,14 @@ int accept(int listenerId, int timeoutMs);
 
 ## Comportement nominal
 
-
+- récupère le listener
+- vérifie que le timeout n'est pas dépassé
+- vérifie que la connexion est acceptée
 
 ## Cas particuliers
+
+- **listenerId < 0** : Retourne -1, `errno = E_INVAL`
+- **mgrr == nullptr** : Retourne -1, `errno = E_NOSYS`
 
 ## Paramètres
 
@@ -54,38 +59,50 @@ Timeout en millisecondes
 
 | errno | Constante | Condition |
 |-------|-----------|-----------|
-| 1 | `E_INVAL` |  |
+| 1 | `E_INVAL` | Paramètre invalide |
 
 ## Implémentation
 
 ### Flux d'exécution
 
 ```
-connect(remoteAddr, remotePort, localPort)
+accept(listenerId, timeoutMS)
         │
         ▼
-    start.S: ForkJoin
-        │ charge $4 = remoteAddr
-        │ charge $5 = remotePort
-        │ charge $6 = localPort
+    start.S: ForkJacceptoin
+        │ charge $4 = listenerId
+        │ charge $5 = timeoutMS
         ▼
-    syscall SC_connect
+    syscall SC_accept
         │
         ▼
-    handle_SC_connect()
+    handle_SC_accept()
         │ ├─ lit $4
         │ ├─ lit $5
-        │ ├─ lit $6
-        │ ├─ valide le PID
-        │ └─ currentThread->getProcess()->WaitForChild(child)
+        │ └─ GetConnectionManager()
         ▼
-    WaitForChild(child, addr_result)
-        │ ├─ valide le PID
-        │ ├─ Attend le process 
-        │ ├─ Met l'exitcode dans la mémoire 
-        │ └─ Détruit le process finit
+    Accept(listenerId, timeoutMS)
+        │ ├─ GetListener()
+        │ ├─ Wait()
+        │ └─ FreeConnection()
         ▼
 ```
+## FAILLES ET VULNÉRABILITÉS
+
+Aucune faille de sécurité connue.
+
+## BUGS CONNUS
+
+Aucun bug connu à ce jour.
+
+## VOIR AUSSI
+
+- [Close](./Close.md) - Fermer une connexion
+- [Connect](./Connect.md) - Connexion à une autre machine
+- [Listen](./Listen.md) - Ecouter les demandes de connexions
+- [sendto](./Send.md) - Envoyer des données
+- [recvfrom](./Recv.md) - Recevoir des données
+
 ## Auteurs
 
 Victor, 21 Jan 2026

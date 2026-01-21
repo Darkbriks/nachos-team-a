@@ -68,7 +68,7 @@
   - [Connect](./syscalls/network/Connect.md)
   - [Send](./syscalls/network/Send.md)
   - [Recv](./syscalls/network/Recv.md)
-  - [CLose](./syscalls/network/Close.md)
+  - [Close](./syscalls/network/Close.md)
 
 # Network
 - [Network](./network/SUMMARY.md)

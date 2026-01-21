@@ -15,6 +15,17 @@ int close(int id);
 
 `close` permet de terminer une connexion ou stopper un listener
 
+## Comportement nominal
+
+- récupère la connexion
+- commence à fermer la connexion
+- la libère
+
+## Cas particuliers
+
+- **id < 0** : Retourne -1, `errno = E_INVAL`
+- **mgrr == nullptr** : Retourne -1, `errno = E_NOSYS`
+
 ## Paramètres
 
 ### `id`
@@ -39,7 +50,7 @@ Identifiant de la connexion ou du listener
 
 | errno | Constante | Condition |
 |-------|-----------|-----------|
-| 1 | `E_INVAL` |  |
+| 1 | `E_INVAL` | Paramètre invalide |
 
 ## Implémentation
 
@@ -52,29 +63,25 @@ Identifiant de la connexion ou du listener
 ### Flux d'exécution
 
 ```
-connect(remoteAddr, remotePort, localPort)
+close(id)
         │
         ▼
-    start.S: ForkJoin
-        │ charge $4 = remoteAddr
-        │ charge $5 = remotePort
-        │ charge $6 = localPort
+    start.S: close
+        │ charge $4 = id
         ▼
-    syscall SC_connect
+    syscall SC_close
         │
         ▼
-    handle_SC_connect()
+    handle_SC_close()
         │ ├─ lit $4
-        │ ├─ lit $5
-        │ ├─ lit $6
-        │ ├─ valide le PID
-        │ └─ currentThread->getProcess()->WaitForChild(child)
+        │ ├─ GetConnectionManager()
+        │ └─ CloseListener(id)
         ▼
-    WaitForChild(child, addr_result)
-        │ ├─ valide le PID
-        │ ├─ Attend le process 
-        │ ├─ Met l'exitcode dans la mémoire 
-        │ └─ Détruit le process finit
+    Close(id)
+        │ ├─ GetConnection(id)
+        │ ├─ InitiateClose()
+        │ ├─ SetState(CONN_TERMINATED)
+        │ └─ FreeConnection(id)
         ▼
 ```
 
@@ -90,9 +97,21 @@ int main(){
     close(connId);
 }
 ```
+## FAILLES ET VULNÉRABILITÉS
 
+Aucune faille de sécurité connue.
 
-## Limitations
+## BUGS CONNUS
+
+Aucun bug connu à ce jour.
+
+## VOIR AUSSI
+
+- [Accept](./Accept.md) - Accepter une connexion
+- [Connect](./Connect.md) - Connexion à une autre machine
+- [Listen](./Listen.md) - Ecouter les demandes de connexions
+- [sendto](./Send.md) - Envoyer des données
+- [recvfrom](./Recv.md) - Recevoir des données
 
 ## Auteurs
 

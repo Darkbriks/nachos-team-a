@@ -15,6 +15,16 @@ int listen(int port);
 
 `Listen` permet de définir le port donné en argument comme port d'écoute
 
+## Comportement nominal
+
+- vérifie que le port soit valide
+- trouve la connection par le port local
+- alloue le listener
+
+## Cas particuliers
+
+- **port <= 0 || port > 65535** : Retourne -1, `errno = E_INVAL`
+
 ## Paramètres
 
 ### `port`
@@ -39,7 +49,7 @@ Numéro de port à écouter
 
 | errno | Constante | Condition |
 |-------|-----------|-----------|
-| 1 | `E_INVAL` |  |
+| 1 | `E_INVAL` | Paramètre invalide |
 | 102 | `E_ADDRINUSE` | Port déjà utilisé |
 
 ## Implémentation
@@ -53,51 +63,42 @@ Numéro de port à écouter
 ### Flux d'exécution
 
 ```
-connect(remoteAddr, remotePort, localPort)
+listen(remoteAddr, remotePort, localPort)
         │
         ▼
-    start.S: ForkJoin
+    start.S: listen
         │ charge $4 = remoteAddr
         │ charge $5 = remotePort
         │ charge $6 = localPort
         ▼
-    syscall SC_connect
+    syscall SC_listen
         │
         ▼
-    handle_SC_connect()
+    handle_SC_listen()
         │ ├─ lit $4
-        │ ├─ lit $5
-        │ ├─ lit $6
-        │ ├─ valide le PID
-        │ └─ currentThread->getProcess()->WaitForChild(child)
+        │ └─ GetConnectionManager()
         ▼
-    WaitForChild(child, addr_result)
-        │ ├─ valide le PID
-        │ ├─ Attend le process 
-        │ ├─ Met l'exitcode dans la mémoire 
-        │ └─ Détruit le process finit
+    Listen(port)
+        │ ├─ FindConnectionByLocalPort(port)
+        │ └─ AllocateListener(port)
         ▼
 ```
 
-## Exemples
+## FAILLES ET VULNÉRABILITÉS
 
-### Exemple : Ecoute d'un serveur
+Aucune faille de sécurité connue.
 
-```c
-#include "syscall.h"
+## BUGS CONNUS
 
-int main(){
-    ...
-    int listenerId = listen(SERVER_PORT);
-    if (listenerId < 0) {
-        printf("[Server] ERROR: listen() failed with %d\n", listenerId);
-        return 1;
-    }
-    printf("[Server] Listening on port %d (listenerId=%d)\n", SERVER_PORT, listenerId);
-    ...
-}
-```
+Aucun bug connu à ce jour.
 
+## VOIR AUSSI
+
+- [Accept](./Accept.md) - Accepter une connexion
+- [Close](./Close.md) - Fermer une connexion
+- [Connect](./Connect.md) - Connexion à une autre machine
+- [sendto](./Send.md) - Envoyer des données
+- [recvfrom](./Recv.md) - Recevoir des données
 
 ## Limitations
 
