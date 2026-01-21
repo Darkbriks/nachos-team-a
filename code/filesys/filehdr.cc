@@ -155,6 +155,25 @@ void FileHeader::initializeSecondIndirection(BitMap* bitMap, int* nb_necessary, 
     // DEBUG('R', "file have sector %d saved for indirection 2 end of loop at index %d\n", file->getRedirect2(index_in_second), index_in_second);
 }
 
+int getSectorNecessary(int nb_necessary){
+    int result = 0;
+    if (nb_necessary > (int) NumDirect){
+        nb_necessary += NumDirect;
+    } else{
+        return nb_necessary;
+    }
+    nb_necessary -= result;
+    if (nb_necessary < MAX_INDIRECT_LEVEL_ONE){
+        return result + nb_necessary + 1; // 1 is for the redirection sector
+    } else {
+        result += MAX_INDIRECT_LEVEL_ONE + 1;
+    }
+    nb_necessary -= MAX_INDIRECT_LEVEL_ONE;
+    result += divRoundUp(nb_necessary, MAX_INDIRECT_LEVEL_ONE * MAX_INDIRECT_LEVEL_ONE) + divRoundUp(nb_necessary, MAX_INDIRECT_LEVEL_ONE) + 2;
+    result += nb_necessary;
+    return result;
+}
+
 //----------------------------------------------------------------------
 // FileHeader::Allocate
 // 	Initialize a fresh file header for a newly created file.
@@ -169,7 +188,7 @@ bool FileHeader::Allocate(BitMap *bitMap, const int fileSize) {
 
     int nb_necessary = MAX(divRoundUp(fileSize, SectorSize) - numSectors, 0);
     DEBUG('R', "Need %d sectors car filesize = %d\n", numSectors, fileSize);
-    if (bitMap->NumClear() < nb_necessary) { // TODO count sector for redirection 
+    if (bitMap->NumClear() < getSectorNecessary(nb_necessary)) { 
         DEBUG('N', "Need %d sectors but not enought space available\n", numSectors);
         return false; // not enough space
     }

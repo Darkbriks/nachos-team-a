@@ -278,8 +278,8 @@ void Connection::EnqueueReceivedData(const char* data, const int length, const u
 }
 
 uint32_t Connection::GenerateInitialSeqNum() {
-    // TODO: Find better
-    return static_cast<uint32_t>(stats->totalTicks & 0xFFFFFFFF) + connId * 1000;
+    // Stack Overflow code 
+    return stats->totalTicks * 2654435761 %  4294967296;
 }
 
 void Connection::HandleSYN(const ReliableHeader* hdr, NetworkAddress from) {
