@@ -60,13 +60,13 @@ def exec_nachos(prog : str, tmp_file : str) -> bool:
     # Si le test prend plus de 5 secondes, on le tue
     # if "-x" in prog and CURRENT_STEP == 5:
     print(prog)
-    print(f'{nachos} -f -cp {prog.split("-x")[1]} a')
+    #print(f'{nachos} -f -cp {prog.split("-x")[1]} a')
     s = subprocess.check_output(f"cd {BUILD_DIR} ; {nachos} -f -cp {prog.split('-x')[1]} a", shell=True, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL).decode("utf-8")
     with open(tmp_file, "w+") as f:
         try:
             if "-x" in prog:
                 prog = prog.split("-x")[0] + " -x a"
-            print(f"on éxècute {prog}")
+            #print(f"on éxècute {prog}")
             s = subprocess.check_output(f"cd {BUILD_DIR} ; timeout {TIMEOUT}s {prog}", shell=True, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL).decode("utf-8")
             f.write(s)
             if "Machine halting!" in s: # En cas d'arrêt brutal de la machine, par exemple un SEGV, la chaine "Machine halting!" n'est pas présente
@@ -142,107 +142,60 @@ if __name__ == "__main__":
     all_test.append(Test(
                          file_expect="test_halt.txt",
                          line_to_execute =f"{nachos} -x ./halt",
-                         name= "Test Halt" ,
+                         name= "Halt" ,
                          description = "Test du syscall Halt depuis un programme utilisateur."
                          )
                    )
 
     all_test.append(Test(
-                         file_expect="test_putchar_user_mode_result_expected.txt",
-                         line_to_execute =f"{nachos} -x ./io/putChar",
-                         name= "Test PutChar" ,
-                         description = "Test du syscall PutChar depuis un programme utilisateur dans un cas normal."
+                         file_expect = "test_io_output.txt",
+                         line_to_execute =f"{nachos} -x ./io/test_io_output",
+                         name = "Syscall PutChar, PutString, PutInt",
+                         description = "Test des syscalls PutChar, PutString et PutInt depuis un programme utilisateur."
                          )
                    )
-
-    all_test.append(Test(
-                         file_expect = "test_putString_user_mode_expect.txt",
-                         line_to_execute =f"{nachos} -x ./io/putString",
-                         name = "Test PutString",
-                         description = "Test du syscall PutString depuis un programme utilisateur dans un cas normal."
-                         )
-                   )
-
-    all_test.append(Test(
-                         file_expect = "test_putStringError_user_mode_expect.txt",
-                         line_to_execute =f"{nachos} -x ./io/putStringError",
-                         name = "Test PutString overflow buffer",
-                         description = "Test du syscall PutString depuis un programme utilisateur avec en entrée une chaîne de caractères plus longue que la taille du buffer."
-                         )
-                   )
-
-    all_test.append(Test(
-                         file_expect = "test_putStringTooManyChars_user_mode_expect.txt",
-                         line_to_execute =f"{nachos} -x ./io/putStringTooManyChars",
-                         name = "Test PutString number of characters greater than the maximum value",
-                         description = "Test du syscall PutString depuis un programme utilisateur avec en entrée une chaîne de caractères plus longue que le nombre de charactères maximum."
-                         )
-                   )
-
-    all_test.append(Test(
-                         file_expect = "test_putInt.txt",
-                         line_to_execute =f"{nachos} -x ./io/putInt",
-                         name = "Test PutInt",
-                         description = "Test du syscall PutInt depuis un programme utilisateur dans un cas normal."
-                         )
-                     )
 
     all_test.append(Test(
                          file_expect = "test_getChar.txt",
-                         line_to_execute =f'echo "a" | {nachos} -x ./io/getChar',
-                         name = "Test GetChar",
+                         line_to_execute =f'echo -e "a\n5\n@\n\n" | {nachos} -x ./io/getChar',
+                         name = "GetChar",
                          description = "Test du syscall GetChar depuis un programme utilisateur dans un cas normal."
                          )
                    )
 
     all_test.append(Test(
-                         file_expect = "test_getString_expected.txt",
-                         line_to_execute =f'echo "Bob" | {nachos} -x ./io/getString',
-                         name = "Test GetString avec EOF",
-                         description = "Test du syscall GetString depuis un programme utilisateur dans un cas normal avec EOF."
+                         file_expect = "test_getString.txt",
+                         line_to_execute =f'echo "Bob\n\nABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUV\n" | {nachos} -x ./io/getString',
+                         name = "GetString",
+                         description = "Test du syscall GetString depuis un programme utilisateur."
                          )
                    )
 
     all_test.append(Test(
-                         file_expect = "test_getInt_positive_integer_expected.txt",
-                         line_to_execute =f'echo "5" | {nachos} -x ./io/getInt',
-                         name = "Test GetInt entier positif",
-                         description = "Test du syscall GetInt depuis un programme utilisateur avec un entier positif."
+                         file_expect = "test_getStringErrors.txt",
+                         line_to_execute =f'echo -e "azerty\nazerty\nazerty\nazerty\n" | {nachos} -x ./io/getStringErrors',
+                         name = "GetString avec erreurs",
+                         description = "Test du syscall GetString depuis un programme utilisateur avec des tailles invalides."
                          )
                    )
 
     all_test.append(Test(
-                         file_expect = "test_getInt_negative_integer_expected.txt",
-                         line_to_execute =f'echo "-5" | {nachos} -x ./io/getInt',
-                         name = "Test GetInt entier négatif",
-                         description = "Test du syscall GetInt depuis un programme utilisateur avec un entier négatif."
-                         )
-                   )
+            file_expect = "test_getInt.txt",
+            line_to_execute =f'echo "42\n-123\n0\n2147483647\n-2147483648\n 42\n9999999999999\n-9999999999999\nabc\n12abc34\n" | {nachos} -x ./io/getInt',
+            name = "GetInt",
+            description = "Test du syscall GetInt depuis un programme utilisateur."
+        )
+    )
 
     all_test.append(Test(
-                         file_expect = "test_getInt_positive_integer_overflow_expected.txt",
-                         line_to_execute =f'echo "9999999999" | {nachos} -x ./io/getInt',
-                         name = "Test GetInt entier positif overflow",
-                         description = "Test du syscall GetInt depuis un programme utilisateur avec un entier positif dépassant la valeur maximale."
-                         )
-                   )
+            file_expect = "test_getIntErrors.txt",
+            line_to_execute =f'echo "42\n42\n" | {nachos} -x ./io/getIntErrors',
+            name = "GetIntErrors",
+            description = "Test du syscall GetInt depuis un programme utilisateur avec des entrées invalides."
+        )
+    )
 
-    all_test.append(Test(
-                         file_expect = "test_getInt_negative_integer_overflow_expected.txt",
-                         line_to_execute =f'echo "-9999999999" | {nachos} -x ./io/getInt',
-                         name = "Test GetInt entier négatif overflow",
-                         description = "Test du syscall GetInt depuis un programme utilisateur avec un entier négatif dépassant la valeur minimale."
-                         )
-                   )
-
-    all_test.append(Test(
-                         file_expect = "test_getInt_erno_not_integer_value_expected.txt",
-                         line_to_execute =f'echo "ab1c" | {nachos} -x ./io/getInt',
-                         name = "Test GetInt valeur non numérique",
-                         description = "Test du syscall GetInt depuis un programme utilisateur avec une chaîne de caractères non numérique."
-                         )
-                   )
-
+    # FLAG
     all_test.append(Test(
                          file_expect = "test_getString_erno_negative_size.txt",
                          line_to_execute =f"{nachos} -x ./system/getErrno",

@@ -36,12 +36,12 @@ void handle_SC_PutString(){
 
     while (offset < n) {
         if (!CopyStringFromUser(addr + offset, buffer, MAX_STRING_SIZE)) {
-            RETURN(-E_FAULT);
+            RETURN(offset);
         }
         if (const int res = synchConsole->SynchPutString(buffer, MAX_STRING_SIZE); res <= 0) { break; }
         else { offset += res; }
     }
-    RETURN(n);
+    RETURN(offset);
 }
 
 void handle_SC_GetChar(){

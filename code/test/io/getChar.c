@@ -2,12 +2,14 @@
 
 int main()
 {
-    char ch;
-
-    PutString("Type here: ", 11);
-    ch = GetChar();
-
-    PutString("You typed: ", 11);
+    char ch = GetChar();
     PutChar(ch);
+
+    ch = GetChar();
+    PutChar(ch);
+
+    ch = GetChar();
+    PutChar(ch);
+
     PutChar('\n');
 }
