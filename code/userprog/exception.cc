@@ -54,13 +54,11 @@
     process->KillAllThreads(false);   \
     printf(error_name);   \
     if (Process::isLastActiveProcess()) {   \
-        ASSERT_KP(false) /* To hit gdb */ \
         interrupt->Halt();   \
     }   \
     process->setExitCode(-error_code);   \
     process->AncestorSigChild();   \
     currentThread->Finish();  \
-    ASSERT_KP(false) /* To hit gdb */ \
     break;
 
 

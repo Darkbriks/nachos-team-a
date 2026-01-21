@@ -63,6 +63,7 @@ static inline pthread_lib* __pthread_self(){
 }
 
 static inline pthread_lib* get_thread_by_tid(pthread_t thread){
+    if (thread < 0 || thread >= MAX_THREAD) { return NULL; }
     return array_tid[ForkSelf()][thread];
 }
 

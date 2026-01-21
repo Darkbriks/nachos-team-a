@@ -2,7 +2,7 @@ cbThread woke up from very long sleep!
 Main thread finished.
 Machine halting!
 
-Ticks: total 41390, idle 6100, system 17230, user 18060
+Ticks: total 49218, idle 0, system 31140, user 18078
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 61
 Paging: faults 0

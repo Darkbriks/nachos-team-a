@@ -17,7 +17,7 @@ SUCCESS: All join error tests passed
 hread executing
 Machine halting!
 
-Ticks: total 111470, idle 53160, system 32620, user 25690
+Ticks: total 119739, idle 0, system 93930, user 25809
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 536
 Paging: faults 0

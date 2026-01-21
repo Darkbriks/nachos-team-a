@@ -3,7 +3,7 @@ Thread executing and terminating
 SUCCESS: Joined on terminated thread successfully
 Machine halting!
 
-Ticks: total 36554, idle 12200, system 19140, user 5214
+Ticks: total 44382, idle 0, system 39150, user 5232
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 122
 Paging: faults 0

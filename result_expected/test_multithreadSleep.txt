@@ -4,26 +4,26 @@
 ai3M2Mn: Created thread with ID 
 Thread : Starting sleep testain: CreT Woke up after 1000 tar4M3Mn: Created thread with ID 
 Thread : Starting sleep test
-hin: Created thTp after 2000 ticks
-Thread 1: Slept for 1130 ticks (expected ~1000)
-aread 1: Slept for 1130 ticks (expected ~1000)
+hin: Created tTup after 2000 ticks
+Thread 1: Slept for 1140 ticks (expected ~1000)
+aread 1: Slept for 1140 ticks (expected ~1000)
 sleep test
-aread 1: Slept for 11Tr 3000 thr5M4Mn: Created thread with ID 
-ThreaThread 2: Slept for 2201 ticks (expected ~2000)
-hread 2: Slept for 2201 ticks (expThread 3: Slept for 3119 ticks (expected ~3000)
-aread 3: Slept for 3119 ticks (expected ~3000)
-sleep test
-aread 3: Slept for 3119 ticT thr6M5Mn: Created thread with ID 
-ThreaThread 4: Slept for 4094 ticks (expected ~4000)
-aread 4: Slept for 4094 ticksareM thread finished.
-94 ticks (expected ~4000)
-sleep test
-ain thread finished.
-Thread 5: Woke up after 5000 ticks
-Thread 5: Slept for 5084 ticks (expected ~5000)
+hread 1: Slept for 11Tr 3000 ticks
+Thread 2: Slept for 2108 ticks (expected ~2000)
+aread 2: Slept for 2108 tickshr5M4Mn: Created thread with ID 
+ThreaThread 3: Slept for 3129 ticks (expected ~3000)
+aread 3: Slept for 3129 ticksar6M5Mn: Created thread with ID 
+Thread : Starting sleep test
+ain: Created thread with IDT tareM thread finished.
+r 4000 ticks
+d : Starting sleep test
+hin thread finished.
+r 4000 ticks
+TThread 4: Slept for 4097 ticks (expected ~4000)
+aread 4: Slept for 40hread 4: Slept for 4097 ticks (expThread 5: Slept for 5118 ticks (expected ~5000)
 Machine halting!
 
-Ticks: total 335392, idle 95667, system 45480, user 194245
+Ticks: total 342373, idle 0, system 148110, user 194263
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 969
 Paging: faults 0

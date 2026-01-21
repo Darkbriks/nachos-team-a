@@ -25,7 +25,7 @@ LLLLLLLLLLMMMMMMMMMMNNNNNNNNNNOOOOOOOOOOPPPPPPPPPPQQQQQQQQQQRRRRRRRRRRSSSSSSSSSS
 All processes launched.
 Machine halting!
 
-Ticks: total 1985109, idle 247200, system 497800, user 1240109
+Ticks: total 2205939, idle 0, system 961510, user 1244429
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 2472
 Paging: faults 0

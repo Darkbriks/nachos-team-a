@@ -1,14 +1,14 @@
 === Test SleepUntil syscall : simple sleep until ===
-Main: Woke up at tick 17789 (expected >= 10000)
+Main: Woke up at tick 17799 (expected >= 10000)
 === Test SleepUntil syscall : long sleep until ===
-Main: Woke up at tick 1000036 (expected >= 1000000)
+Main: Woke up at tick 1000028 (expected >= 1000000)
 === Test SleepUntil syscall : past time sleep until ===
-Main: Woke up at tick 1037208 (expected >= 14032)
+Main: Woke up at tick 1037200 (expected >= 21732)
 === Test SleepUntil syscall : invalid sleep until (negative time) ===
 Main: SleepUntil(-100) failed as expected with errno = 1
 Machine halting!
 
-Ticks: total 1111664, idle 991918, system 27240, user 92506
+Ticks: total 1119356, idle 0, system 1026850, user 92506
 Disk I/O: reads 0, writes 0
 Console I/O: reads 0, writes 437
 Paging: faults 0

@@ -2,7 +2,7 @@ user@nos-shell > user@nos-shell >
 session terminée
 Machine halting!
 
-Ticks: total 49398, idle 5686, system 29840, user 13872
+Ticks: total 64842, idle 0, system 50970, user 13872
 Disk I/O: reads 0, writes 0
 Console I/O: reads 10, writes 53
 Paging: faults 0
