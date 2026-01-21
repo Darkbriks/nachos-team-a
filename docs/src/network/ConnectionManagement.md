@@ -1,126 +1,86 @@
-# Connect / IsConnected / Close
+# Gestion de connexion - Protocole TCP-like
 
-`Connect` - Établit une connexion avec la machine distante
-`IsConnected` - Vérifie si la connexion est active
-`Close` - Ferme la connexion proprement
+Cette page documente la gestion de connexion dans NachOS ReliablePost, basée sur une machine à états de type TCP.
 
-## SYNOPSIS
+## Vue d'ensemble
 
-```cpp
-#include "reliablepost.h"
+Le protocole de connexion implémente une machine à états inspirée de TCP, avec établissement en 3-way handshake et fermeture en 4-way handshake. Il gère également les cas d'ouverture et fermeture simultanées.
 
-bool Connect();
-bool IsConnected();
-void Close();
-```
+## Machine à états complète
 
-## DESCRIPTION
+![Machine d'états TCP](./connection_state_machine.png)
 
-### Connect
+### États de connexion
 
-`Connect` établit une connexion avec la machine distante configurée lors de la création du `ReliablePost`. Utilise un handshake de type TCP (SYN/SYN-ACK).
+#### États initiaux
 
-**Comportement :**
-- Bloquant : attend que la connexion soit établie
-- Retransmission automatique du SYN en cas de perte
-- Timeout après `CONNECT_RETRIES` tentatives
+| État          | Description                              | Couleur    |
+|---------------|------------------------------------------|------------|
+| `CONN_CLOSED` | Aucune connexion n'existe                | Rouge      |
+| `CONN_LISTEN` | Serveur en attente de connexion entrante | Vert clair |
 
-### IsConnected
+#### Établissement de connexion
 
-`IsConnected` vérifie si la connexion est actuellement établie et utilisable pour l'envoi de données.
+| État                | Description                                       | Couleur |
+|---------------------|---------------------------------------------------|---------|
+| `CONN_SYN_SENT`     | SYN envoyé, attente de SYN-ACK (client)           | Jaune   |
+| `CONN_SYN_RECEIVED` | SYN reçu, SYN-ACK envoyé, attente d'ACK (serveur) | Jaune   |
 
-**Comportement :**
-- Non-bloquant
-- Retourne `false` si le peer a initié la fermeture
+#### Connexion établie
 
-### Close
+| État               | Description                                      | Couleur  |
+|--------------------|--------------------------------------------------|----------|
+| `CONN_ESTABLISHED` | Connexion établie, transfert de données possible | Vert     |
 
-`Close` ferme la connexion de manière gracieuse. Attend que tous les messages en attente soient acquittés avant d'envoyer la demande de fermeture.
+#### Fermeture de connexion
 
-**Comportement :**
-- Bloquant : attend l'acquittement de fermeture
-- Envoie CLOSE, attend CLOSE-ACK
-- Gère la fermeture simultanée des deux côtés
+| État              | Description                               | Couleur |
+|-------------------|-------------------------------------------|---------|
+| `CONN_FIN_WAIT_1` | FIN envoyé, attente d'ACK ou FIN          | Rose    |
+| `CONN_FIN_WAIT_2` | FIN acquitté, attente du FIN du peer      | Rose    |
+| `CONN_CLOSE_WAIT` | FIN reçu, attente de Close() local        | Orange  |
+| `CONN_CLOSING`    | FIN envoyé et reçu (fermeture simultanée) | Rose    |
+| `CONN_LAST_ACK`   | Attente du dernier ACK après envoi de FIN | Orange  |
+| `CONN_TIME_WAIT`  | Attente avant nettoyage final (2MSL)      | Violet  |
 
-## VALEUR DE RETOUR
+#### État terminal
 
-### Connect
+| État              | Description                                          | Couleur |
+|-------------------|------------------------------------------------------|---------|
+| `CONN_TERMINATED` | Connexion complètement fermée, ressources libérables | Gris    |
 
-- **`true`** : Connexion établie avec succès
-- **`false`** : Échec (timeout, machine distante non disponible)
+## Cas d'erreur : Reset (RST)
 
-### IsConnected
-
-- **`true`** : Connexion active, envoi possible
-- **`false`** : Non connecté ou peer a fermé
-
-### Close
-
-Aucune valeur de retour.
-
-## MACHINE D'ÉTATS
-
-![Machine d'états de connexion](./connection_state_machine.png)
-
-### États
-
-| État | Description |
-|------|-------------|
-| `CONN_CLOSED` | Pas de connexion |
-| `CONN_SYN_SENT` | SYN envoyé, attente de réponse |
-| `CONN_ESTABLISHED` | Connexion active |
-| `CONN_CLOSE_WAIT` | Le peer veut fermer |
-| `CONN_CLOSING` | Fermeture en cours |
-| `CONN_TERMINATED` | Connexion fermée |
-
-## PROTOCOLE DE CONNEXION
-
-### Établissement (handshake)
+Si un paquet est reçu pour une connexion inexistante, un `RST` est envoyé :
 
 ```
-Machine A                    Machine B
-    |-------- SYN ------------>|
-    |<------- SYN-ACK ---------|
-    |      ESTABLISHED         |
+Machine A                     Machine B
+    |                              |
+    |--- DATA (pour conn invalide) >|
+    |                              |
+    |<-- RST -----------------------|
+    | État: TERMINATED             |
 ```
 
-### Fermeture gracieuse
+Le `RST` force immédiatement la transition à `CONN_TERMINATED` sans handshake.
 
-```
-Machine A                    Machine B
-    |-------- CLOSE ---------->|
-    |<------- CLOSE-ACK -------|
-    |      TERMINATED          |
-```
+## Limitations
 
-### Fermeture simultanée
+- **Pas de véritable TIME_WAIT** : La durée 2MSL n'est pas implémentée, passage immédiat à `TERMINATED`
+- **Pas de buffer de réordonnancement** : Les paquets hors séquence sont ignorés
+- **Une seule connexion par ReliablePost** : Pas de multiplexage
 
-Si les deux machines appellent `Close()` en même temps :
+## Voir aussi
 
-```
-Machine A                    Machine B
-    |-------- CLOSE ---------->|
-    |<------- CLOSE -----------|
-    |-------- CLOSE-ACK ------>|
-    |<------- CLOSE-ACK -------|
-    |      TERMINATED          |
-```
-
-## TIMEOUTS
-
-| Paramètre | Valeur | Description |
-|-----------|--------|-------------|
-| `CONNECT_TEMPO` | 500000 ticks | Délai entre retransmissions SYN |
-| `CONNECT_RETRIES` | 1000 | Nombre max de tentatives |
-| `TEMPO` | 10000 ticks | Délai pour CLOSE |
-
-## NOTES
-
-- **Ordre de lancement** : Les deux machines peuvent être lancées dans n'importe quel ordre grâce aux retransmissions
-- **Délai** : Prévoir ~2 secondes pour lancer la seconde machine
-- **Robustesse** : Fonctionne même avec perte de paquets (`-l 0.5`)
-
-## VOIR AUSSI
-
+- [Transmission fiable](./ReliableTransmission.md) - Envoi/réception de données
 - [Vue d'ensemble](./Network.md) - Introduction au réseau
-- [Transmission fiable](./ReliableTransmission.md) - SendReliable/ReceiveReliable
+- [Diagrammes](./packet_ordering.png) - Gestion des paquets
+
+## Auteurs
+
+Alioune Badara DIENE
+Antoine
+
+## Dernière révision
+
+21 Jan 2026

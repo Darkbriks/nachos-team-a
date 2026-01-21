@@ -5,59 +5,92 @@ skinparam state {
     BorderColor #2C5282
 }
 
-title Machine d'etats de connexion - ReliablePost
+title Machine d'états de connexion - NachOS ReliablePost
 
 state "CONN_CLOSED" as CLOSED #FFE4E1
+state "CONN_LISTEN" as LISTEN #E0FFE0
 state "CONN_SYN_SENT" as SYN_SENT #FFFACD
 state "CONN_SYN_RECEIVED" as SYN_RECEIVED #FFFACD
 state "CONN_ESTABLISHED" as ESTABLISHED #90EE90
-state "CONN_CLOSE_WAIT" as CLOSE_WAIT #FFB6C1
+state "CONN_FIN_WAIT_1" as FIN_WAIT_1 #FFB6C1
+state "CONN_FIN_WAIT_2" as FIN_WAIT_2 #FFB6C1
+state "CONN_CLOSE_WAIT" as CLOSE_WAIT #FFD4B2
 state "CONN_CLOSING" as CLOSING #FFB6C1
+state "CONN_LAST_ACK" as LAST_ACK #FFD4B2
+state "CONN_TIME_WAIT" as TIME_WAIT #D8BFD8
 state "CONN_TERMINATED" as TERMINATED #D3D3D3
 
 [*] --> CLOSED
 
-CLOSED --> SYN_SENT : Connect()\n[envoie SYN]
+note right of CLOSED
+  État initial :
+  - Pas de connexion
+end note
 
-SYN_SENT --> ESTABLISHED : Recu SYN\n[envoie SYN-ACK]\n(ouverture simultanee)
+CLOSED --> SYN_SENT : Connect()\n[envoie SYN, seq=X]
+
+SYN_SENT --> ESTABLISHED : Reçu SYN-ACK\n[envoie ACK]
+SYN_SENT --> SYN_RECEIVED : Reçu SYN\n[envoie SYN-ACK]\n(ouverture simultanée)
 SYN_SENT --> SYN_SENT : Timeout\n[retransmit SYN]
-SYN_SENT --> CLOSED : Max retries atteint
+SYN_SENT --> CLOSED : Max retries\natteint
 
-SYN_RECEIVED --> ESTABLISHED : Recu SYN-ACK
+CLOSED --> LISTEN : Listen()
 
-CLOSED --> SYN_RECEIVED : Recu SYN\n[envoie SYN-ACK]
-SYN_SENT --> ESTABLISHED : Recu SYN-ACK\n[envoie SYN-ACK]
+LISTEN --> SYN_RECEIVED : Reçu SYN\n[envoie SYN-ACK,\nseq=Y, ack=X+1]
 
-ESTABLISHED --> CLOSE_WAIT : Recu CLOSE\n(peer initie fermeture)
-ESTABLISHED --> CLOSING : Close()\n[envoie CLOSE]\n(on initie fermeture)
+SYN_RECEIVED --> ESTABLISHED : Reçu ACK\n[ack=Y+1]
 
-CLOSE_WAIT --> TERMINATED : Close()\n[envoie CLOSE-ACK]
+note right of ESTABLISHED
+  Connexion établie :
+  - Envoi/réception DATA
+  - ACK automatiques
+  - Retransmission sur timeout
+end note
 
-CLOSING --> TERMINATED : Recu CLOSE-ACK
-CLOSING --> TERMINATED : Recu CLOSE\n[envoie CLOSE-ACK]\n(fermeture simultanee)
-CLOSING --> CLOSING : Timeout\n[retransmit CLOSE]
-CLOSING --> TERMINATED : Max retries atteint
+ESTABLISHED --> FIN_WAIT_1 : Close()\n[envoie FIN, seq=M]
+
+FIN_WAIT_1 --> FIN_WAIT_2 : Reçu ACK\n[ack=M+1]
+FIN_WAIT_1 --> CLOSING : Reçu FIN\n[envoie ACK]\n(fermeture simultanée)
+
+FIN_WAIT_2 --> TIME_WAIT : Reçu FIN\n[envoie ACK]
+
+CLOSING --> TIME_WAIT : Reçu ACK
+
+TIME_WAIT --> TERMINATED : Timer 2MSL\nexpiré
+
+note right of FIN_WAIT_1
+  FIN envoyé :
+  - Attend ACK du FIN
+  - Ou FIN du peer
+end note
+
+ESTABLISHED --> CLOSE_WAIT : Reçu FIN, seq=N\n[envoie ACK, ack=N+1]
+
+CLOSE_WAIT --> LAST_ACK : Close()\n[envoie FIN]
+
+LAST_ACK --> TERMINATED : Reçu ACK
+
+note right of CLOSE_WAIT
+  Peer a fermé :
+  - Peut encore envoyer DATA
+  - Close() pour terminer
+end note
 
 TERMINATED --> [*]
 
-note right of ESTABLISHED
-  Etat nominal :
-  - Envoi/reception de donnees
-  - ACK automatique
+note right of TERMINATED
+  Connexion fermée :
+  - Ressources libérées
+  - Slot réutilisable
 end note
 
-note right of SYN_SENT
-  Handshake TCP-like :
-  - Machine A envoie SYN
-  - Machine B repond SYN-ACK
-  - Connection etablie
-end note
-
-note bottom of CLOSE_WAIT
-  Fermeture gracieuse :
-  - Le peer a demande la fermeture
-  - On finit d envoyer nos donnees
-  - Puis on envoie CLOSE-ACK
-end note
+SYN_SENT --> TERMINATED : Reçu RST
+SYN_RECEIVED --> TERMINATED : Reçu RST
+ESTABLISHED --> TERMINATED : Reçu RST
+FIN_WAIT_1 --> TERMINATED : Reçu RST
+FIN_WAIT_2 --> TERMINATED : Reçu RST
+CLOSE_WAIT --> TERMINATED : Reçu RST
+CLOSING --> TERMINATED : Reçu RST
+LAST_ACK --> TERMINATED : Reçu RST
 
 @enduml

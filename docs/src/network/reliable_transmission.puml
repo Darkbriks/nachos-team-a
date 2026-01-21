@@ -6,57 +6,108 @@ skinparam sequence {
     ParticipantBackgroundColor #E8F4FD
 }
 
-title Transmission fiable avec ACK et retransmission
+title Transmission fiable avec ACK et retransmission - Protocole TCP-like
 
-participant "Machine A\n(Emetteur)" as A
+participant "Machine A\n(Client)" as A
 participant "Reseau\n(non fiable)" as NET
-participant "Machine B\n(Recepteur)" as B
+participant "Machine B\n(Serveur)" as B
 
-== Etablissement de connexion ==
+== Etablissement de connexion (3-way handshake) ==
 
-A -> NET : SYN
-NET -> B : SYN
-B -> NET : SYN-ACK
-NET -> A : SYN-ACK
-note over A,B : Connection ETABLIE
+note over B : État: LISTEN
+A -> NET : SYN (seq=100)
+note over A : État: SYN_SENT
+NET -> B : SYN (seq=100)
+note over B : État: SYN_RECEIVED
+B -> NET : SYN-ACK (seq=200, ack=101)
+NET -> A : SYN-ACK (seq=200, ack=101)
+A -> NET : ACK (ack=201)
+note over A : État: ESTABLISHED
+NET -> B : ACK (ack=201)
+note over B : État: ESTABLISHED
 
 == Transmission reussie ==
 
-A -> NET : DATA (seq=1)
-NET -> B : DATA (seq=1)
-B -> NET : ACK (seq=1)
-NET -> A : ACK (seq=1)
-note right of A : Message delivre
+A -> NET : DATA (seq=101, len=10)
+NET -> B : DATA (seq=101, len=10)
+B -> NET : ACK (ack=111)
+NET -> A : ACK (ack=111)
+note right of A : Message livré
 
-== Perte de paquet (DATA) ==
+== Perte de paquet DATA ==
 
-A -> NET : DATA (seq=2)
-NET ->x B : DATA perdu
-note over A : Timeout (TEMPO ticks)
-A -> NET : DATA (seq=2) [retransmission]
-NET -> B : DATA (seq=2)
-B -> NET : ACK (seq=2)
-NET -> A : ACK (seq=2)
+A -> NET : DATA (seq=111, len=8)
+NET ->x B : **Paquet perdu**
+note over A #FFFACD : Timeout (TEMPO ticks)\nsans ACK
+A -> NET : DATA (seq=111, len=8)\n**[Retransmission]**
+NET -> B : DATA (seq=111, len=8)
+B -> NET : ACK (ack=119)
+NET -> A : ACK (ack=119)
 
-== Perte d ACK ==
+== Perte d'ACK ==
 
-A -> NET : DATA (seq=3)
-NET -> B : DATA (seq=3)
-B -> NET : ACK (seq=3)
-NET ->x A : ACK perdu
-note over A : Timeout
-A -> NET : DATA (seq=3) [retransmission]
-NET -> B : DATA (seq=3) [duplicate]
-note right of B #FFB6C1 : Duplicate non detecte\nDonnees traitees 2 fois\nACK renvoye
-B -> NET : ACK (seq=3)
-NET -> A : ACK (seq=3)
+A -> NET : DATA (seq=119, len=5)
+NET -> B : DATA (seq=119, len=5)
+B -> NET : ACK (ack=124)
+NET ->x A : **ACK perdu**
+note over A #FFFACD : Timeout sans ACK
+A -> NET : DATA (seq=119, len=5)\n**[Retransmission]**
+NET -> B : DATA (seq=119, len=5)
+note right of B #FFE4B5 : **Duplicate détecté**\n(seq < recvSeqNum)\nACK renvoyé
+B -> NET : ACK (ack=124)
+NET -> A : ACK (ack=124)
 
-== Fermeture de connexion ==
+== Fermeture gracieuse (4-way handshake) ==
 
-A -> NET : CLOSE
-NET -> B : CLOSE
-B -> NET : CLOSE-ACK
-NET -> A : CLOSE-ACK
-note over A,B : Connection TERMINEE
+note over A : Close() appelé
+A -> NET : FIN (seq=124)
+note over A : État: FIN_WAIT_1
+NET -> B : FIN (seq=124)
+note over B : État: CLOSE_WAIT
+B -> NET : ACK (ack=125)
+NET -> A : ACK (ack=125)
+note over A : État: FIN_WAIT_2
+
+note over B : Close() appelé\n(après avoir fini\nd'envoyer)
+B -> NET : FIN (seq=224)
+note over B : État: LAST_ACK
+NET -> A : FIN (seq=224)
+note over A : État: TIME_WAIT
+A -> NET : ACK (ack=225)
+NET -> B : ACK (ack=225)
+note over B : État: TERMINATED
+
+note over A : État: TERMINATED
+note over A,B : **Connexion fermée**
+
+== Fermeture simultanée ==
+
+participant "Machine C" as C
+participant "Reseau 2" as NET2
+participant "Machine D" as D
+
+note over C,D : Les deux machines\nappellent Close()\nsimultanément
+
+C -> NET2 : FIN (seq=300)
+note over C : État: FIN_WAIT_1
+D -> NET2 : FIN (seq=400)
+note over D : État: FIN_WAIT_1
+
+NET2 -> D : FIN (seq=300)
+note over D : État: CLOSING
+D -> NET2 : ACK (ack=301)
+
+NET2 -> C : FIN (seq=400)
+note over C : État: CLOSING
+C -> NET2 : ACK (ack=401)
+
+NET2 -> C : ACK (ack=301)
+note over C : État: TIME_WAIT
+NET2 -> D : ACK (ack=401)
+note over D : État: TIME_WAIT
+
+note over C,D : Attente 2MSL
+note over C : État: TERMINATED
+note over D : État: TERMINATED
 
 @enduml

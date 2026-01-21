@@ -1,0 +1,114 @@
+@startuml packet_ordering
+skinparam backgroundColor white
+skinparam sequence {
+    ArrowColor #2C5282
+    ParticipantBorderColor #2C5282
+    ParticipantBackgroundColor #E8F4FD
+}
+
+title Gestion des duplicatas et séquençage
+
+participant "Émetteur" as A
+participant "Réseau" as NET
+participant "Récepteur" as B
+
+note over A,B : Connexion établie\nA.sendSeqNum = 100\nB.recvSeqNum = 100
+
+== Réception en ordre ==
+
+A -> NET : DATA (seq=100, len=10)
+note over A : sendSeqNum++\n= 101
+NET -> B : DATA (seq=100, len=10)
+note over B #90EE90 : seq == recvSeqNum\n**Accepté**\nrecvSeqNum = 110
+B -> NET : ACK (ack=110)
+NET -> A : ACK (ack=110)
+
+== Réception hors séquence (trop tôt) ==
+
+A -> NET : DATA (seq=110, len=5)
+NET ->x B : Perdu
+
+A -> NET : DATA (seq=115, len=8)
+NET -> B : DATA (seq=115, len=8)
+note over B #FFE4B5 : seq (115) > recvSeqNum (110)\n**Paquet futur**\nIgnoré (pas de buffer)
+note right of B : Pas d'ACK envoyé
+
+note over A : Timeout pour seq=110
+A -> NET : DATA (seq=110, len=5)\n[Retransmission]
+NET -> B : DATA (seq=110, len=5)
+note over B #90EE90 : seq == recvSeqNum\n**Accepté**\nrecvSeqNum = 115
+B -> NET : ACK (ack=115)
+NET -> A : ACK (ack=115)
+
+note over A : Timeout pour seq=115
+A -> NET : DATA (seq=115, len=8)\n[Retransmission]
+NET -> B : DATA (seq=115, len=8)
+note over B #90EE90 : seq == recvSeqNum\n**Accepté**\nrecvSeqNum = 123
+B -> NET : ACK (ack=123)
+NET -> A : ACK (ack=123)
+
+== Réception de duplicate (retransmission inutile) ==
+
+A -> NET : DATA (seq=123, len=7)
+NET -> B : DATA (seq=123, len=7)
+note over B #90EE90 : seq == recvSeqNum\n**Accepté**\nrecvSeqNum = 130
+B -> NET : ACK (ack=130)
+NET ->x A : ACK perdu
+
+note over A : Timeout\nRetransmission
+A -> NET : DATA (seq=123, len=7)\n[Retransmission]
+NET -> B : DATA (seq=123, len=7)
+note over B #FFA07A : seq (123) < recvSeqNum (130)\n**Duplicate détecté**\nDonnées ignorées\nACK renvoyé
+B -> NET : ACK (ack=130)
+NET -> A : ACK (ack=130)
+note over A : ACK reçu,\narrêt retransmissions
+
+== Multiple paquets en attente ==
+
+A -> NET : DATA (seq=130, len=10)
+note left of A : En attente:\nseq=130
+A -> NET : DATA (seq=140, len=10)
+note left of A : En attente:\nseq=130, 140
+A -> NET : DATA (seq=150, len=10)
+note left of A : En attente:\nseq=130, 140, 150
+
+NET -> B : DATA (seq=130, len=10)
+note over B : recvSeqNum = 140
+B -> NET : ACK (ack=140)
+
+NET -> B : DATA (seq=140, len=10)
+note over B : recvSeqNum = 150
+B -> NET : ACK (ack=150)
+
+NET -> A : ACK (ack=140)
+note left of A : Libère seq=130\nEn attente:\nseq=140, 150
+
+NET -> B : DATA (seq=150, len=10)
+note over B : recvSeqNum = 160
+B -> NET : ACK (ack=160)
+
+NET -> A : ACK (ack=150)
+note left of A : Libère seq=140\nEn attente:\nseq=150
+
+NET -> A : ACK (ack=160)
+note left of A : Libère seq=150\nFile vide
+
+== Fenêtre de pending remplie ==
+
+note over A : MAX_PENDING_MSGS = 10
+
+loop 10 fois
+    A -> NET : DATA
+    note left of A : pendingCount++
+end
+
+note over A #FFB6C1 : pendingCount == MAX_PENDING_MSGS\n**Envoi bloqué**\nAttente d'ACK
+
+NET -> B : DATA
+B -> NET : ACK
+NET -> A : ACK
+note over A #90EE90 : ACK reçu\npendingCount--\n**Envoi débloqué**
+
+A -> NET : DATA (nouveau)
+
+@enduml
