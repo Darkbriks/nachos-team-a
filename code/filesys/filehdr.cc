@@ -64,7 +64,6 @@ int FileHeader::getDirectInUse(){
 void FileHeader::initializeDirectData(BitMap *bitMap, int* nb_necessary){
     int inUse = getDirectInUse(); 
     int total_alloc = MIN(inUse + *nb_necessary, NumDirect);
-
     for (int i = inUse; i < total_alloc; i++) {
         dataSectors[i] = bitMap->Find();
         DEBUG('R', "On alloue le secteur %d à l'index %d\n", dataSectors[i], i);
@@ -220,9 +219,11 @@ void FileHeader::Deallocate(BitMap *bitMap) {
     }
     File * file = new File();
     file->FetchFrom(getRedirect());
+    bitMap->Clear(getRedirect());
     FirstIndirection * first = new FirstIndirection();
     first->FetchFrom(file->getFirstIndirection());
-    for (i = 0; i < first->getLastUse(); i++){
+    bitMap->Clear(file->getFirstIndirection());
+    for (i = 0; i < MAX_INDIRECT_LEVEL_ONE; i++){
         bitMap->Clear(first->getSector(i));
     }
     SecondIndirection* second = new SecondIndirection();
@@ -232,13 +233,13 @@ void FileHeader::Deallocate(BitMap *bitMap) {
             return;
         }
         second->FetchFrom(sector);
-        for (int j = 0; j < second->getLastUse(); j++){
+        for (int j = 0; j < MAX_INDIRECT_LEVEL_ONE; j++){
             sector = second->getSector(j);
             if (sector == INVALID_SECTOR){
                 break;
             }
             first->FetchFrom(sector);
-            for (int z = 0; z < first->getLastUse(); z++){
+            for (int z = 0; z < MAX_INDIRECT_LEVEL_ONE; z++){
                 sector = first->getSector(z);
                 if (sector != INVALID_SECTOR){
                     bitMap->Clear(sector);

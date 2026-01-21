@@ -24,10 +24,11 @@ class FirstIndirection {
         void setSector(int index, sector_t sector);
         sector_t getSector(int index);
         int getLastUse(){
+            int result = INVALID_SECTOR;
             for (int i = 0; i < MAX_INDIRECT_LEVEL_ONE; i++){
-                if (entries[i] != INVALID_SECTOR){return i;}
+                if (entries[i] != INVALID_SECTOR){result = i;}
             }
-            return INVALID_SECTOR;
+            return result;
         }
         bool InUse(int index);
         int getNumberFree();
