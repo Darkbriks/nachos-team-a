@@ -206,6 +206,70 @@ static inline void __test_newline(void) {
     } while(0)
 
 /**
+ * @brief Vérifie qu'une valeur est supérieure ou égale à une autre
+ * @param actual Valeur obtenue
+ * @param expected Valeur attendue
+ * @param msg Message en cas d'échec
+ */
+#define ASSERT_GE(actual, expected, msg) \
+    do { \
+        int __a = (int)(actual); \
+        int __e = (int)(expected); \
+        if (__a < __e) { \
+            TEST_FAIL_VALUES(msg, __e, __a); \
+            return; \
+        } \
+    } while(0)
+
+/**
+ * @brief Vérifie qu'une valeur est inférieure ou égale à une autre
+ * @param actual Valeur obtenue
+ * @param expected Valeur attendue
+ * @param msg Message en cas d'échec
+ */
+#define ASSERT_LE(actual, expected, msg) \
+    do { \
+        int __a = (int)(actual); \
+        int __e = (int)(expected); \
+        if (__a > __e) { \
+            TEST_FAIL_VALUES(msg, __e, __a); \
+            return; \
+        } \
+    } while(0)
+
+/**
+ * @brief Vérifie qu'une valeur est strictement supérieure à une autre
+ * @param actual Valeur obtenue
+ * @param expected Valeur attendue
+ * @param msg Message en cas d'échec
+ */
+#define ASSERT_GT(actual, expected, msg) \
+    do { \
+        int __a = (int)(actual); \
+        int __e = (int)(expected); \
+        if (__a <= __e) { \
+            TEST_FAIL_VALUES(msg, __e + 1, __a); \
+            return; \
+        } \
+    } while(0)
+
+/**
+ * @brief Vérifie qu'une valeur est strictement inférieure à une autre
+ * @param actual Valeur obtenue
+ * @param expected Valeur attendue
+ * @param msg Message en cas d'échec
+ */
+#define ASSERT_LT(actual, expected, msg) \
+    do { \
+        int __a = (int)(actual); \
+        int __e = (int)(expected); \
+        if (__a >= __e) { \
+            TEST_FAIL_VALUES(msg, __e - 1, __a); \
+            return; \
+        } \
+    } while(0)
+
+/**
  * @brief Vérifie qu'une condition est vraie
  * @param cond Condition à vérifier
  * @param msg Message en cas d'échec

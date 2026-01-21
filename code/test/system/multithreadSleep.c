@@ -2,6 +2,7 @@
 #include "nos_stddef.h"
 #include "nos_pthread.h"
 #include "nos_stdio.h"
+#include "test_utilities.h"
 
 void func2(void *arg) {
     long long before_sleep;
@@ -9,14 +10,11 @@ void func2(void *arg) {
 
     int thread_id = (int)(long)arg;
 
-    printf("Thread "); PutInt(thread_id); printf(": Starting sleep test\n");
-
     GetCurrentTick(&before_sleep);
     Sleep(1000 * thread_id);
     GetCurrentTick(&after_sleep);
 
-    printf("Thread %d: Woke up after %d ticks\n", thread_id, 1000 * thread_id);
-    printf("Thread %d: Slept for %d ticks (expected ~%d)\n", thread_id, (int)(after_sleep - before_sleep), 1000 * thread_id);
+    ASSERT_GE(after_sleep - before_sleep, 1000 * thread_id, "Thread sleep duration too short");
 
     pthread_exit(0);
 }
@@ -32,12 +30,13 @@ void func1(void *arg) {
 }
 
 int main() {
-    printf("=== Test Sleep syscall with multiple threads ===\n");
+    TEST_SUITE_START("Multithreaded Sleep Test");
+    TEST_START("multithreaded_sleep");
 
     int main_thread_id;
     pthread_create((pthread_t *)&main_thread_id, NULL, (void *(*)(void *))func1, NULL);
     pthread_join(main_thread_id, NULL);
 
-    printf("Main thread finished.\n");
-    return 0;
+    TEST_PASS();
+    TEST_SUITE_END();
 }

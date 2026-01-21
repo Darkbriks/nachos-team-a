@@ -1,31 +1,20 @@
-=== Test Sleep syscall with multiple threads ===
-21MMain: Created thread with ID Thread : Starting sleep test
-
-ai3M2Mn: Created thread with ID 
-Thread : Starting sleep testain: CreT Woke up after 1000 tar4M3Mn: Created thread with ID 
-Thread : Starting sleep test
-hin: Created tTup after 2000 ticks
-Thread 1: Slept for 1140 ticks (expected ~1000)
-aread 1: Slept for 1140 ticks (expected ~1000)
-sleep test
-hread 1: Slept for 11Tr 3000 ticks
-Thread 2: Slept for 2108 ticks (expected ~2000)
-aread 2: Slept for 2108 tickshr5M4Mn: Created thread with ID 
-ThreaThread 3: Slept for 3129 ticks (expected ~3000)
-aread 3: Slept for 3129 ticksar6M5Mn: Created thread with ID 
-Thread : Starting sleep test
-ain: Created thread with IDT tareM thread finished.
-r 4000 ticks
-d : Starting sleep test
-hin thread finished.
-r 4000 ticks
-TThread 4: Slept for 4097 ticks (expected ~4000)
-aread 4: Slept for 40hread 4: Slept for 4097 ticks (expThread 5: Slept for 5118 ticks (expected ~5000)
+========================================
+  SUITE: Multithreaded Sleep Test
+========================================
+[TEST] multithreaded_sleep ... 2Main: Created thread with ID 
+3Main: Created thread with ID 
+4Main: Created thread with ID 
+5Main: Created thread with ID 
+6Main: Created thread with ID 
+OK
+----------------------------------------
+  RESULTAT: 1/1 tests OK
+========================================
 Machine halting!
 
-Ticks: total 342373, idle 0, system 148110, user 194263
-Disk I/O: reads 0, writes 0
-Console I/O: reads 0, writes 969
+Ticks: total 313122, idle 3, system 257340, user 55779
+Disk I/O: reads 2227, writes 0
+Console I/O: reads 0, writes 412
 Paging: faults 0
 Network I/O: packets received 0, sent 0
 
