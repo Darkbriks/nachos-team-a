@@ -8,7 +8,6 @@
 
 void handle_SC_SemInit() {
     int initialValue = machine->ReadRegister(4);
-    if (initialValue < 0) { RETURN(-E_INVAL); }
     int handle = currentThread->getAddrSpace()->SemaphoreCreate(initialValue);
     RETURN(handle == -1 ? -E_FTABLE : handle);
 }
