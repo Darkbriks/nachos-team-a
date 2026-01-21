@@ -37,10 +37,10 @@
             const path_to_root = "../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-348becc1.js";
+            window.path_to_searchindex_js = "../searchindex-18f6c0ee.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-7afa7285.js"></script>
+        <script src="../toc-9a21d2df.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -192,42 +192,51 @@
 <h2 id="organisation-des-appels-système"><a class="header" href="#organisation-des-appels-système">Organisation des appels système</a></h2>
 <h3 id="par-numéro-sc_"><a class="header" href="#par-numéro-sc_">Par numéro (SC_*)</a></h3>
 <p>Les appels système sont identifiés par des numéros définis dans <code>syscall.h</code> :</p>
-<pre><code class="language-c">#define SC_Halt 0
-#define SC_Exit 1
-#define SC_Exec 2
-#define SC_Join 3
-#define SC_Create 4
-#define SC_Open 5
-#define SC_Read 6
-#define SC_Write 7
-#define SC_Close 8
-#define SC_Fork 9
-#define SC_Yield 10
-#define SC_PutChar 11
-#define SC_PutString 12
-#define SC_GetChar 13
-#define SC_GetString 14
-#define SC_PutInt 15
-#define SC_GetInt 16
-#define SC_PthreadCreate 17
-#define SC_PthreadExit 18
-#define SC_PthreadJoin 19
-#define SC_PthreadDetach 20
-#define SC_PthreadSelf 21
-#define SC_Pthread_attr_init 22
-#define SC_Pthread_attr_destroy 23
-#define SC_Pthread_attr_setdetachstate 24
-#define SC_Pthread_attr_getdetachstate 25
-#define SC_Sleep 26
-#define SC_SleepUntil 27
-#define SC_GetCurrentTick 28
-#define SC_SemInit 29
-#define SC_SemWait 30
-#define SC_SemPost 31
-#define SC_SemDestroy 32
-#define SC_SetMaxSemForProcess 33
-#define SC_ForkExec 34
-#define SC_ForkJoin 35
+<pre><code class="language-c">#define SC_Halt                 0
+#define SC_PutChar              1
+#define SC_PutString            2
+#define SC_GetChar              3
+#define SC_GetString            4
+#define SC_PutInt               5
+#define SC_GetInt               6
+#define SC_Sleep                7
+#define SC_SleepUntil           8
+#define SC_GetCurrentTick       9
+#define SC_time                44
+#define SC_SemInit             10
+#define SC_SemWait             11
+#define SC_SemPost             12
+#define SC_SemDestroy          13
+#define SC_SetMaxSemForProcess 14
+#define SC_futex_wait          15
+#define SC_futex_wake          16
+#define SC_atomic_cmpxchg      17
+#define SC_atomic_store        18
+#define SC_atomic_load         19
+#define SC_Sbrk                20
+#define SC_mmap                21
+#define SC_munmap              22
+#define SC_thread_create       23
+#define SC_thread_exit         24
+#define SC_thread_self         25
+#define SC_thread_yield        26
+#define SC_ForkExec            27
+#define SC_ForkJoin            28
+#define SC_ForkSelf            29
+#define SC_Exit                30
+#define SC_connect             31
+#define SC_listen              32
+#define SC_accept              33
+#define SC_sendto              34
+#define SC_recvfrom            35
+#define SC_close               36
+#define SC_Create              37
+#define SC_Open                38
+#define SC_Read                39
+#define SC_Write               40
+#define SC_Close               41
+#define SC_FileLen             42
+#define SC_Seek                43
 </code></pre>
 <h2 id="limitations-connues"><a class="header" href="#limitations-connues">Limitations connues</a></h2>
 <h3 id="thread-safety-partielle"><a class="header" href="#thread-safety-partielle">Thread-safety partielle</a></h3>
