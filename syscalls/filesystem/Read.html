@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>atomic_cmpxchg - NachOS Manual</title>
+        <title>Read - NachOS Manual</title>
 
 
         <!-- Custom HTML head -->
@@ -179,41 +179,39 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="atomic_cmpxchg"><a class="header" href="#atomic_cmpxchg">atomic_cmpxchg</a></h1>
-<p><code>atomic_cmpxchg</code> - Compare-and-swap atomique.</p>
+                        <h1 id="read"><a class="header" href="#read">Read</a></h1>
+<p><code>Read</code> - Lit des données depuis un fichier</p>
 <h2 id="synopsis"><a class="header" href="#synopsis">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
-int atomic_cmpxchg(int* uaddr, int expected, int desired);
+int Read(char *buffer, int size, OpenFileId id);
 </code></pre>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
-<p><code>atomic_cmpxchg</code> effectue une opération atomique de type “compare-and-swap” (CAS). Elle compare la valeur à l’adresse <code>uaddr</code> avec <code>expected</code>, et si elles sont égales, remplace la valeur par <code>desired</code>. L’opération retourne toujours la valeur originale.</p>
-<h3 id="comportement"><a class="header" href="#comportement">Comportement</a></h3>
-<p>L’opération est équivalente au pseudo-code suivant, mais exécutée de manière atomique :</p>
-<pre><code class="language-c">int atomic_cmpxchg(int* uaddr, int expected, int desired) {
-    int original = *uaddr;
-    if (original == expected) {
-        *uaddr = desired;
-    }
-    return original;
-}
-</code></pre>
-<h3 id="garanties-datomicité"><a class="header" href="#garanties-datomicité">Garanties d’atomicité</a></h3>
-<ul>
-<li>La lecture, comparaison et écriture conditionnelle sont indivisibles</li>
-<li>Aucun autre thread ne peut observer un état intermédiaire</li>
-<li>L’opération est sérialisée par rapport aux autres opérations atomiques</li>
-</ul>
+<p><code>Read</code> lit jusqu’à <code>size</code> octets depuis le fichier ouvert dans le buffer.</p>
+<p><strong>Numéro d’appel système</strong> : <code>SC_Read</code> (39)</p>
+<h3 id="comportement-nominal"><a class="header" href="#comportement-nominal">Comportement nominal</a></h3>
+<ol>
+<li>Validation du descripteur et du buffer</li>
+<li>Lecture depuis la position courante (seek)</li>
+<li>Mise à jour de la position de lecture</li>
+<li>Retour du nombre d’octets lus</li>
+</ol>
 <h2 id="paramètres"><a class="header" href="#paramètres">Paramètres</a></h2>
-<h3 id="uaddr"><a class="header" href="#uaddr"><code>uaddr</code></a></h3>
-<p>Adresse de l’entier sur lequel effectuer l’opération.</p>
-<p><strong>Type</strong> : <code>int*</code><br><strong>Direction</strong> : IN/OUT<br><strong>Registre</strong> : <code>$4</code><br><strong>Contraintes</strong> : Adresse utilisateur valide, alignée sur 4 octets</p>
-<h3 id="expected"><a class="header" href="#expected"><code>expected</code></a></h3>
-<p>Valeur attendue pour que l’échange ait lieu.</p>
-<p><strong>Type</strong> : <code>int</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$5</code></p>
-<h3 id="desired"><a class="header" href="#desired"><code>desired</code></a></h3>
-<p>Nouvelle valeur à écrire si la comparaison réussit.</p>
-<p><strong>Type</strong> : <code>int</code><br><strong>Direction</strong> : IN<br><strong>Registre</strong> : <code>$6</code></p>
+<h3 id="buffer"><a class="header" href="#buffer"><code>buffer</code></a></h3>
+<p>Buffer pour stocker les données lues.</p>
+<p><strong>Type</strong> : <code>char *</code>
+<strong>Direction</strong> : OUT
+<strong>Registre</strong> : <code>$4</code></p>
+<h3 id="size"><a class="header" href="#size"><code>size</code></a></h3>
+<p>Nombre maximum d’octets à lire.</p>
+<p><strong>Type</strong> : <code>int</code>
+<strong>Direction</strong> : IN
+<strong>Registre</strong> : <code>$5</code></p>
+<h3 id="id"><a class="header" href="#id"><code>id</code></a></h3>
+<p>Descripteur de fichier.</p>
+<p><strong>Type</strong> : <code>OpenFileId</code>
+<strong>Direction</strong> : IN
+<strong>Registre</strong> : <code>$6</code></p>
 <h2 id="valeur-de-retour"><a class="header" href="#valeur-de-retour">Valeur de retour</a></h2>
 <p><strong>Type</strong> : <code>int</code> (registre <code>$2</code>)</p>
 <div class="table-wrapper">
@@ -222,51 +220,63 @@ int atomic_cmpxchg(int* uaddr, int expected, int desired);
 <tr><th>Valeur</th><th>Signification</th></tr>
 </thead>
 <tbody>
-<tr><td><code>== expected</code></td><td>L’échange a eu lieu</td></tr>
-<tr><td><code>!= expected</code></td><td>L’échange n’a pas eu lieu (valeur actuelle retournée)</td></tr>
-<tr><td><code>-1</code> avec errno</td><td>Erreur</td></tr>
+<tr><td><code>&gt; 0</code></td><td>Nombre d’octets lus</td></tr>
+<tr><td><code>0</code></td><td>Fin de fichier (EOF)</td></tr>
+<tr><td><code>&lt; 0</code></td><td>Erreur</td></tr>
 </tbody>
 </table>
 </div>
-<h2 id="aba-problem"><a class="header" href="#aba-problem">ABA Problem</a></h2>
-<div class="callout callout-warning">
-    
-<div class="callout-title">Problème ABA</div>
-
-    
-<div class="callout-content">
-        
-<p>Le CAS peut souffrir du problème ABA : si la valeur passe de A à B puis revient à A,
-        le CAS ne détecte pas le changement intermédiaire.</p>
-
-    </div>
-
+<h2 id="codes-derreur"><a class="header" href="#codes-derreur">Codes d’erreur</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
+</thead>
+<tbody>
+<tr><td>9</td><td><code>E_BADF</code></td><td>Descripteur invalide</td></tr>
+<tr><td>14</td><td><code>E_FAULT</code></td><td>Buffer invalide</td></tr>
+<tr><td>1</td><td><code>E_INVAL</code></td><td>Taille négative</td></tr>
+<tr><td>3</td><td><code>E_OVERFLOW</code></td><td>Débordement d’adresse</td></tr>
+</tbody>
+</table>
 </div>
+<h2 id="exemple"><a class="header" href="#exemple">Exemple</a></h2>
+<pre><code class="language-c">#include "syscall.h"
 
-<h2 id="thread-safety"><a class="header" href="#thread-safety">Thread-safety</a></h2>
-<p>L’opération est atomique et thread-safe par conception. C’est la primitive de base pour construire des structures de données thread-safe.</p>
+int main() {
+    char buffer[100];
+    OpenFileId fd = Open("data.txt", 8);
+
+    int n = Read(buffer, 100, fd);
+    if (n &gt; 0) {
+        PutString("Lu: ", 4);
+        PutInt(n);
+        PutString(" octets\n", 8);
+    }
+
+    Close(fd);
+    return 0;
+}
+</code></pre>
 <h2 id="voir-aussi"><a class="header" href="#voir-aussi">Voir aussi</a></h2>
 <ul>
-<li><a href="./atomic_load.html">atomic_load</a> - Lecture atomique</li>
-<li><a href="./atomic_store.html">atomic_store</a> - Écriture atomique</li>
-<li><a href="./futex_wait.html">futex_wait</a> - Attente sur futex</li>
-<li><a href="./futex_wake.html">futex_wake</a> - Réveil de threads</li>
-<li><a href="./Threads.html">Threads Overview</a> - Vue d’ensemble</li>
+<li><a href="./Write.html">Write</a> - Écrire dans un fichier</li>
+<li><a href="./Seek.html">Seek</a> - Changer la position de lecture</li>
 </ul>
 <h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
-<p>Antoine</p>
+<p>Alioune Badara DIENE, 21 Jan 2026</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
-<p>18 Jan 2026</p>
+<p>21 Jan 2026</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../../syscalls/threads/futex_wake.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../../syscalls/filesystem/Close.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../../syscalls/threads/atomic_store.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../../syscalls/filesystem/Write.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -276,11 +286,11 @@ int atomic_cmpxchg(int* uaddr, int expected, int desired);
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../../syscalls/threads/futex_wake.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../../syscalls/filesystem/Close.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../../syscalls/threads/atomic_store.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../../syscalls/filesystem/Write.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
