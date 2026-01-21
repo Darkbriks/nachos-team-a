@@ -82,7 +82,6 @@ int clientPutFile(int connId, char *localFile, char *remoteFile, int maxSize,
                   time_t *startTime, time_t *endTime) {
     char response[32];
     OpenFileId fd;
-    int sent = 0;
     int n;
     char cmd[80];
     unsigned int fileSize = 0;
@@ -108,7 +107,7 @@ int clientPutFile(int connId, char *localFile, char *remoteFile, int maxSize,
         return -1;
     }
 
-    sendFile(fd, connId);
+    int sent = sendFile(fd, connId);
     close_file(fd);
 
     /* Wait for final confirmation */

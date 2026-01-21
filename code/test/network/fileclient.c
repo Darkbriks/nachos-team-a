@@ -62,7 +62,7 @@ void test_PUT(int connId){
     time_t startTime, endTime;
     printf("\n--- Test 2: PUT file ---\n");
     if ( clientPutFile(connId, "local.txt", "upload.txt", MAX_FILESIZE,
-                      &startTime, &endTime) <= 0) {
+                      &startTime, &endTime) < 0) {
         TEST_FAIL("Don't send the file to the server\n");
     }
     unsigned int sentSize;
