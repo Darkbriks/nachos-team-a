@@ -35,6 +35,7 @@
   - [Sleep](./syscalls/time/Sleep.md)
   - [SleepUntil](./syscalls/time/SleepUntil.md)
   - [GetCurrentTick](./syscalls/time/GetCurrentTick.md)
+  - [time](./syscalls/time/time.md)
 - [Sémaphores](./syscalls/sync/SUMMARY.md)
   - [Sémaphores Overview](./syscalls/sync/Sync.md)
   - [SemInit](./syscalls/sync/SemInit.md)
