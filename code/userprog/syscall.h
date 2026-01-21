@@ -86,6 +86,8 @@
 #define SC_Read   39
 #define SC_Write  40
 #define SC_Close  41
+#define SC_FileLen 43
+#define SC_Seek 44
 
 #define SC_time 42
 #ifdef IN_USER_MODE
@@ -169,7 +171,13 @@ int Write(char *buffer, int size, OpenFileId id);
 int Read(char *buffer, int size, OpenFileId id);
 
 /* Close the file, we're done reading and writing to it. */
-int Close(OpenFileId id);
+int Close(int fd);
+
+// return numbe rof bytes in the file
+unsigned int FileLen(int fd);
+
+// Return the new seek
+int Seek(int fd, int new_seek);
 /* -------------------------------------------------------------
  * CONSOLE I/O
  * <a href="https://darkbriks.github.io/nachos-team-a/syscalls/console/Console.html">Full documentation</a>

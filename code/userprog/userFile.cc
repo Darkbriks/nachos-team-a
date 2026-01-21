@@ -120,3 +120,26 @@ void handle_SC_Read() {
 
     }
 }
+
+void handle_SC_FileLen(){
+    thread_inode_t id = reinterpret_cast<thread_inode_t>(machine->ReadRegister(4));
+
+    GET_PROCESS_ADDRSPACE();
+    VALIDATE_ARG(currentThread->IsOpenFile(id), E_BADF);
+    inode_t inode = currentThread->GetOpenFile(id, nullptr);
+    RETURN(fileSystem->Len(inode));
+}
+
+void handle_SC_Seek(){
+    thread_inode_t id = reinterpret_cast<thread_inode_t>(machine->ReadRegister(4));
+    int pos_seek = reinterpret_cast<int>(machine->ReadRegister(5));
+
+    GET_PROCESS_ADDRSPACE();
+    VALIDATE_ARG(currentThread->IsOpenFile(id), E_BADF);
+    inode_t inode = currentThread->GetOpenFile(id, nullptr);
+    int result = fileSystem->Seek(inode, pos_seek);
+    if (result >= 0){
+        currentThread->setSeek(inode, result);
+    }
+    RETURN(result);
+}

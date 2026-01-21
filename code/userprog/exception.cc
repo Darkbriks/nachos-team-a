@@ -203,6 +203,8 @@ void ExceptionHandler(ExceptionType which) {
         CASE_HANDLER(Read);
         CASE_HANDLER(Write);
         CASE_HANDLER(Close);
+        CASE_HANDLER(FileLen);
+        CASE_HANDLER(Seek);
 
         CASE_HANDLER(connect);
         CASE_HANDLER(listen);

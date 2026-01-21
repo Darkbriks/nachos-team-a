@@ -26,4 +26,7 @@ ssize_t write (int __fd, const void *__buf, size_t __n) ;
 int open(char* name, int flags);
 
 bool create(char *name);
+
+bool fileLen(char* name, unsigned int* Filesize);
+
 #endif // NOS_UNISTD_H
