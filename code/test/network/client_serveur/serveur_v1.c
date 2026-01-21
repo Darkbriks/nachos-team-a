@@ -6,7 +6,7 @@
 
 #define SERVER_PORT 8080
 #define MAX_CLIENTS 5
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 16384
 
 typedef struct {
     int connId;
@@ -37,7 +37,7 @@ void* handle_client(void* arg) {
         msgCount++;
         totalMessages++;
 
-        printf("[Server] From client #%d: '%s' (msg #%d)\n", clientNum, buffer, msgCount);
+        printf("[Server] From client #%d: '%s' (msg #%d, len=%d)\n", clientNum, buffer, msgCount, n);
 
         if (strcmp(buffer, "BYE") == 0) {
             strcpy(response, "GOODBYE");
@@ -46,8 +46,12 @@ void* handle_client(void* arg) {
             break;
         }
 
+        printf("[Server] Sending ACK-%d to client #%d\n", msgCount, clientNum);
+
         snprintf(response, BUFFER_SIZE, "ACK-%d", msgCount);
         int sent = sendto(connId, response, strlen(response) + 1);
+
+        printf("[Server] Sent %d bytes to client #%d\n", sent, clientNum);
 
         if (sent < 0) {
             printf("[Server] Send error to client #%d\n", clientNum);

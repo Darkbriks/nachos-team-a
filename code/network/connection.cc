@@ -6,11 +6,12 @@
 
 #include <strings.h>
 
-ReceivedData::ReceivedData(const char* src, const int len, const MessageFlag msgFlags) {
+ReceivedData::ReceivedData(const char* src, const int len, const MessageFlag msgFlags, const MessageType messageType) {
     length = len;
     offset = 0;
     flags = msgFlags;
     data = new char[len];
+    type = messageType;
     bcopy(src, data, len);
 }
 
@@ -102,7 +103,7 @@ int Connection::QueueSend(const char* data, int length, const uint8_t flags) {
     return seqNum;
 }
 
-int Connection::Read(char* buffer, int maxLength, MessageFlag* outFlags) {
+int Connection::Read(char* buffer, int maxLength, MessageFlag* outFlags, MessageType* outType) {
     lock->Acquire();
 
     while (recvQueue->IsEmpty()) {
@@ -129,6 +130,10 @@ int Connection::Read(char* buffer, int maxLength, MessageFlag* outFlags) {
         *outFlags = rd->flags;
     }
 
+    if (outType != nullptr) {
+        *outType = rd->type;
+    }
+
     delete rd;
     return toCopy;
 }
@@ -147,6 +152,34 @@ void Connection::InitiateClose() {
         SetState(CONN_LAST_ACK);
         SendControlMessage(MessageType::MSG_FIN, sendSeqNum++, recvSeqNum);
     }
+
+    lock->Release();
+}
+
+void Connection::InitiateChunkTransmission(MessageType type) {
+    lock->Acquire();
+
+    if (state != CONN_ESTABLISHED && state != CONN_CLOSE_WAIT) { lock->Release(); return; }
+
+    PendingMessage* slot = nullptr;
+    while ((slot = GetFreePendingSlot()) == nullptr) {
+        sendCond->Wait(lock);
+        if (state != CONN_ESTABLISHED && state != CONN_CLOSE_WAIT) { lock->Release(); return; }
+    }
+
+    const uint32_t seqNum = sendSeqNum++;
+    slot->sentTime = 0;
+    slot->seqNum = seqNum;
+    slot->attempts = 0;
+    slot->dataLen = 0;
+    slot->type = type;
+    slot->flags |= FLAG_ACTIVE;
+    slot->flags &= ~FLAG_ACKED;
+    slot->pendingFlags = static_cast<uint8_t>(MessageFlag::FLAG_CONTROL);
+
+    pendingCount++;
+
+    TransmitPending(slot);
 
     lock->Release();
 }
@@ -234,8 +267,8 @@ void Connection::AcknowledgeMessage(uint32_t seqNum) {
     }
 }
 
-void Connection::EnqueueReceivedData(const char* data, const int length, const uint8_t flags) {
-    auto rd = new ReceivedData(data, length, static_cast<MessageFlag>(flags));
+void Connection::EnqueueReceivedData(const char* data, const int length, const uint8_t flags, MessageType type) {
+    auto rd = new ReceivedData(data, length, static_cast<MessageFlag>(flags), type);
 
     lock->Release();
     recvQueue->Append(rd);
@@ -336,7 +369,7 @@ void Connection::HandleACK(const ReliableHeader* hdr) {
 void Connection::HandleDATA(const ReliableHeader* hdr, const char* payload, const uint8_t flags) {
     lock->Acquire();
 
-    DEBUG('n', "[Conn %d] Received DATA seq=%u len=%u\n", connId, hdr->seqNum, hdr->dataLen);
+    DEBUG('n', "[Conn %d] Received DATA seq=%u len=%u type=%s\n", connId, hdr->seqNum, hdr->dataLen, MessageTypeToString(hdr->getType()));
 
     if (state != CONN_ESTABLISHED && state != CONN_FIN_WAIT_1 &&
         state != CONN_FIN_WAIT_2) {
@@ -346,7 +379,7 @@ void Connection::HandleDATA(const ReliableHeader* hdr, const char* payload, cons
 
     if (hdr->seqNum == recvSeqNum) {
         recvSeqNum++;
-        EnqueueReceivedData(payload, hdr->dataLen, flags);
+        EnqueueReceivedData(payload, hdr->dataLen, flags, hdr->getType());
         SendACK();
     } else if (hdr->seqNum < recvSeqNum) {
         SendACK();
@@ -414,6 +447,8 @@ void Connection::HandleRST(const ReliableHeader* hdr) {
     lock->Release();
 }
 
+
+
 void Connection::SendControlMessage(const MessageType type, uint32_t seqNum, uint32_t ackNum) {
     DEBUG('n', "[Conn %d] Sending %s seq=%u ack=%u to machine %d port %d\n",
           connId, MessageTypeToString(type), seqNum, ackNum, key.remoteAddr, key.remotePort);
@@ -429,6 +464,7 @@ void Connection::TransmitPending(PendingMessage* msg) {
         DEBUG('n', "[Conn %d] Message seq %u failed after %d attempts\n", connId, msg->seqNum, msg->attempts);
         msg->flags &= ~FLAG_ACTIVE;
         pendingCount--;
+        sendCond->Broadcast(lock);
         return;
     }
 
@@ -436,8 +472,13 @@ void Connection::TransmitPending(PendingMessage* msg) {
         DEBUG('n', "[Conn %d] Retransmitting seq %u (attempt %d)\n", connId, msg->seqNum, msg->attempts + 1);
     }
 
-    manager->SendPacket(key.remoteAddr, key.localPort, key.remotePort,
-                       MessageType::MSG_DATA, msg->seqNum, recvSeqNum, msg->data, msg->dataLen, msg->pendingFlags);
+    if (msg->type == MessageType::MSG_CHUNK_BEGIN || msg->type == MessageType::MSG_CHUNK_END) {
+        manager->SendPacket(key.remoteAddr, key.localPort, key.remotePort,
+                            msg->type, msg->seqNum, recvSeqNum, nullptr, 0, msg->pendingFlags);
+    } else {
+        manager->SendPacket(key.remoteAddr, key.localPort, key.remotePort,
+                            MessageType::MSG_DATA, msg->seqNum, recvSeqNum, msg->data, msg->dataLen, msg->pendingFlags);
+    }
 
     msg->attempts++;
     msg->sentTime = stats->totalTicks;

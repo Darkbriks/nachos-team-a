@@ -18,8 +18,9 @@ struct ReceivedData {
     int length;
     int offset;
     MessageFlag flags;
+    MessageType type;
 
-    ReceivedData(const char* src, int len, MessageFlag msgFlags);
+    ReceivedData(const char* src, int len, MessageFlag msgFlags, MessageType type);
     ~ReceivedData();
 };
 
@@ -37,7 +38,7 @@ public:
     bool CanReceive();
 
     int QueueSend(const char* data, int length, uint8_t flags);
-    int Read(char* buffer, int maxLength, MessageFlag* outFlags);
+    int Read(char* buffer, int maxLength, MessageFlag* outFlags, MessageType* messageType);
     bool HasDataAvailable();
 
 
@@ -83,7 +84,7 @@ private:
     PendingMessage* FindPending(uint32_t seqNum);
 
     void AcknowledgeMessage(uint32_t seqNum);
-    void EnqueueReceivedData(const char* data, int length, uint8_t flags);
+    void EnqueueReceivedData(const char* data, int length, uint8_t flags, MessageType type);
 
     uint32_t GenerateInitialSeqNum();
 
@@ -100,6 +101,8 @@ private:
     void SendACK();
 
     bool CheckTimeouts(long long currentTime);
+
+    void InitiateChunkTransmission(MessageType type);
 };
 
 #endif

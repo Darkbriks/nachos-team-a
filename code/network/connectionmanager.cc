@@ -233,6 +233,15 @@ int ConnectionManager::Send(const int connId, const char* data, int length) {
     if (conn == nullptr) { return E_INVAL; }
     if (!conn->CanSend()) { return E_NOTCONN; }
 
+    if (length == -1) {
+        conn->InitiateChunkTransmission(MessageType::MSG_CHUNK_BEGIN);
+        return 0;
+    } 
+    if (length == -2) {
+        conn->InitiateChunkTransmission(MessageType::MSG_CHUNK_END);
+        return 0;
+    }
+
     if (length > static_cast<int>(MAX_RELIABLE_DATA)) {
         if (length > MAX_PUT_STRING) { return E_INVAL; }
         DEBUG('n', "Send: Fragmenting message of length %d on connection %d\n", length, connId);
@@ -263,7 +272,7 @@ int ConnectionManager::Send(const int connId, const char* data, int length) {
 }
 
 // TODO: UDP like
-int ConnectionManager::Recv(const int connId, char* recv_buffer, const int maxLength) {
+int ConnectionManager::Recv(const int connId, char* recv_buffer, const int maxLength, MessageType* messageType) {
     if (!initialized) { return E_INVAL; }
     Connection* conn = GetConnection(connId);
     if (conn == nullptr) { return E_INVAL; }
@@ -274,12 +283,20 @@ int ConnectionManager::Recv(const int connId, char* recv_buffer, const int maxLe
     while (!endOfMessage && totalReceived < maxLength) {
         DEBUG('n', "Recv: Waiting for data on connection %d\n", connId);
         MessageFlag flags;
-        const int bytesRead = conn->Read(buffer, MAX_RELIABLE_DATA, &flags);
+        MessageType messageTypeLocal;
+        const int bytesRead = conn->Read(buffer, MAX_RELIABLE_DATA, &flags, &messageTypeLocal);
         if (bytesRead < 0) {
             DEBUG('n', "Recv: Error %d reading data on connection %d\n", bytesRead, connId);
             return bytesRead;
         }
-        DEBUG('n', "Recv: Received %d bytes on connection %d\n", bytesRead, connId);
+        DEBUG('n', "Recv: Received %d bytes, type=%d on connection %d\n", bytesRead, static_cast<int>(messageTypeLocal), connId);
+
+        if (messageType != nullptr) { *messageType = messageTypeLocal; }
+
+        if (messageTypeLocal == MessageType::MSG_CHUNK_BEGIN || messageTypeLocal == MessageType::MSG_CHUNK_END) {
+            DEBUG('n', "Recv: Received chunk marker type %d on connection %d\n", static_cast<int>(messageTypeLocal), connId);
+            return 0;
+        }
 
         const int bytesToCopy = MIN(bytesRead, maxLength - totalReceived);
         bcopy(buffer, recv_buffer + totalReceived, bytesToCopy);
@@ -638,6 +655,10 @@ void ConnectionManager::RouteToConnection(PacketHeader pktHdr, const ReliableHea
             break;
         case MessageType::MSG_RST:
             conn->HandleRST(relHdr);
+            break;
+        case MessageType::MSG_CHUNK_BEGIN:
+        case MessageType::MSG_CHUNK_END:
+            conn->HandleDATA(relHdr, payload, relHdr->getFlags());
             break;
         default:
             DEBUG('n', "Unknown message type: %d\n", relHdr->getType());

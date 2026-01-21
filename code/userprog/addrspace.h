@@ -18,11 +18,11 @@
 #include "machine.h"
 #include "translate.h"
 
-#define UserStackSize (8196*4) // increase this as necessary!
+#define UserStackSize (8192*8) // increase this as necessary!
 
 #define USER_STACK_MIN_SIZE (2 * PageSize)
-#define USER_STACK_DEFAULT_SIZE (8 * PageSize)
-#define USER_STACK_MAX_SIZE (64 * PageSize)
+#define USER_STACK_DEFAULT_SIZE (128 * PageSize)
+#define USER_STACK_MAX_SIZE (128 * PageSize)
 
 #define INITIAL_SEMAPHORE_TABLE_SIZE 16
 #define MAX_SEMAPHORES_PER_PROCESS 512 // Arbitrary limit, can be adjusted as needed
