@@ -195,220 +195,220 @@ if __name__ == "__main__":
         )
     )
 
+    all_test.append(Test(
+            file_expect = "test_sleep.txt",
+            line_to_execute =f'{nachos} -x ./system/sleep',
+            name = "Sleep",
+            description = "Test du syscall Sleep depuis un programme utilisateur."
+        )
+    )
+
+    all_test.append(Test(
+            file_expect = "test_sleepUntil.txt",
+            line_to_execute =f'{nachos} -x ./system/sleepUntil',
+            name = "SleepUntil",
+            description = "Test du syscall SleepUntil depuis un programme utilisateur."
+        )
+    )
+
+    all_test.append(Test(
+         file_expect = "test_multithreadSleep.txt",
+         line_to_execute =f"{nachos} -x ./system/multithreadSleep",
+         name = "Test Sleep concurrent",
+         description = "Test de la gestion concurrente des appels Sleep depuis plusieurs threads dans un programme utilisateur."
+         )
+   )
+
     # FLAG
-    all_test.append(Test(
-                         file_expect = "test_getString_erno_negative_size.txt",
-                         line_to_execute =f"{nachos} -x ./system/getErrno",
-                         name = "Test Errno en contexte global",
-                         description = "Test des fonctions de récupération d'errno dans un contexte a thread unique, sans tls."
-                         )
-                   )
-
-    all_test.append(Test(
-                         file_expect = "test_lot_of_thread_from_different_functions.txt",
-                         line_to_execute =f"{nachos} -x ./threads/makethreads",
-                         name = "Test création de plusieurs threads",
-                         description = "Test du lancement de plusieurs threads depuis un programme utilisateur, avec plusieurs niveaux de threads."
-                         )
-                   )
-
-    all_test.append(Test(
-                         file_expect = "test_one_thread_join_an_other_without_corner_case.txt",
-                         line_to_execute =f"{nachos} -x ./threads/testJoin",
-                         name = "Test ThreadJoin classique",
-                         description = "Test du syscall ThreadJoin dans un cas classique sans erreur depuis un programme utilisateur."
-                         )
-                   )
-
-    all_test.append(Test(
-                         file_expect = "simple_sleep.txt",
-                         line_to_execute =f"{nachos} -x ./system/simpleSleep",
-                         name = "Plusieurs tests du syscall sleep en monothread",
-                         description = "Quelques tests du syscall Sleep dans un contexte mono thread"
-                         )
-                   )
-
-    all_test.append(Test(
-                         file_expect = "simple_sleep_until.txt",
-                         line_to_execute =f"{nachos} -x ./system/simpleSleepUntil",
-                         name = "Plusieurs tests du syscall sleepUntil en monothread",
-                         description = "Quelques tests du syscall SleepUntil dans un contexte mono thread"
-                         )
-                   )
-
-    all_test.append(Test(
-                         file_expect = "test_multithreadSleep.txt",
-                         line_to_execute =f"{nachos} -x ./system/multithreadSleep",
-                         name = "Test Sleep concurrent",
-                         description = "Test de la gestion concurrente des appels Sleep depuis plusieurs threads dans un programme utilisateur."
-                         )
-                   )
-
-    all_test.append(Test(
-                         file_expect = "test_multiplethread_use_putString.txt",
-                         line_to_execute =f"{nachos} -x ./io/multi_thread_putString",
-                         name = "Test PutString concurrent",
-                         description = "Test de la gestion concurrente des appels PutString depuis plusieurs threads dans un programme utilisateur."
-                         )
-                   )
-
-    all_test.append(Test(
-                         file_expect = "test_autoexit.txt",
-                         line_to_execute =f"{nachos} -x ./threads/testAutoExit",
-                         name = "Test terminaison automatique des threads 1",
-                         description = "Test de la terminaison automatique des threads (pas d'appel explicite à ThreadExit) depuis un programme utilisateur."
-                         )
-                   )
-
-    all_test.append(Test(
-                         file_expect = "test_autoexit2.txt",
-                         line_to_execute =f"{nachos} -x ./threads/testAutoExit2",
-                         name = "Test terminaison automatique des threads 2",
-                         description = "Test de la terminaison automatique des threads (pas d'appel explicite à ThreadExit) depuis un programme utilisateur."
-                         )
-                   )
-
-    all_test.append(Test(
-                         file_expect = "test_Semaphore_value_1_user.txt",
-                         line_to_execute =f"{nachos} -x ./sync/testThreadSemaphore",
-                         name = "Test Sémaphore initialisée à 1 en mode user",
-                         description = "Test pour les sémaphores au niveau utilisateur. Vérifie que les sémaphores permettent à un thread d'en attendre un autre si la sémaphore est initialisée à 1"
-                         )
-                   )
-
-    all_test.append(Test(
-                        file_expect = "test_Semaphore_2.txt",
-                        line_to_execute = f"{nachos} -x ./sync/testThreadSemaphore2",
-                        name = "Test Augmentation automatique de la taille de la table des sémaphores",
-                        description = "Test pour vérifier que la table des sémaphores s'agrandit automatiquement lorsque le nombre de sémaphores créés dépasse la taille initiale."
-                        )
-                    )
-
-    all_test.append(Test(
-                        file_expect = "sem_validation.txt",
-                        line_to_execute = f"{nachos} -x ./sync/testSemValidation",
-                        name = "Vérification du comportement nominal des sémaphores dans un contexte d'utilisation normal",
-                        description = "Test pour vérifier le comportement nominal des sémaphores dans un contexte d'utilisation normal."
-                    )
-                )
-
-    all_test.append(Test(
-                        file_expect = "test_thread_basicThreadCreate.txt",
-                        line_to_execute = f"{nachos} -x ./threads/basicThreadsCreate",
-                        name = "Test basicThreadCreate",
-                        description = "Test pour vérifier la création de threads basique."
-                    )
-                )
-
-    all_test.append(Test(
-                        file_expect ="test_thread_exitRetVal.txt",
-                        line_to_execute = f"{nachos} -x ./threads/exitRetVal",
-                        name = "Test exitRetVal",
-                        description = "Test pour vérifier la valeur de retour des threads à leur sortie."
-                    )
-                )
-
-    all_test.append(Test(
-                        file_expect ="test_thread_joinOnTerminated.txt",
-                        line_to_execute = f"{nachos} -x ./threads/joinOnTerminated",
-                        name = "Test joinOnTerminated",
-                        description = "Test pour vérifier le comportement de join sur un thread déjà terminé."
-                    )
-                )
-
-    all_test.append(Test(
-                        file_expect ="test_thread_threadAttr.txt",
-                        line_to_execute = f"{nachos} -x ./threads/threadAttr",
-                        name = "Test threadAttr",
-                        description = "Test pour vérifier les attributs des threads."
-                    )
-                )
-
-    all_test.append(Test(
-                        file_expect ="test_thread_threadDetach.txt",
-                        line_to_execute = f"{nachos} -x ./threads/threadDetach",
-                        name = "Test threadDetach",
-                        description = "Test pour vérifier le détachement des threads."
-                    )
-                )
-
-    all_test.append(Test(
-                        file_expect ="test_thread_threadJoinErrors.txt",
-                        line_to_execute = f"{nachos} -x ./threads/threadJoinErrors",
-                        name = "Test threadJoinErrors",
-                        description = "Test pour vérifier la gestion des erreurs lors de l'appel à threadJoin."
-                    )
-                )
-    all_test.append(Test(
-                        file_expect ="test_producteurs_consommateurs.txt",
-                        line_to_execute = f"{nachos} -x ./sync/producteur_consommateur",
-                        name = "Test Producteur consommateur ",
-                        description = "Test pour vérifier cohérence dans le cas d'un producteur/consommateur sur une liste partagée"
-                    )
-                )
-    all_test.append(Test(
-                        file_expect ="test_ForkExec.txt",
-                        line_to_execute = f"{nachos} -x ./testForkExec",
-                        name = "Test ForkExec avec trois process",
-                        description = "Lance un premier process qui va en créer deux autres. Les trois doivent finir de s'éxècuter"
-                    )
-                )
-    all_test.append(Test(
-                        file_expect ="test_HierarchiThread.txt",
-                        line_to_execute = f"{nachos} -x ./threads/firstThreadCanFinishFirst",
-                        name = "Test main thread call PthreadExit and others threads can finish",
-                        description = "Lance un thread depuis main puis appelle PthreadExit. Le thread crée par main doit devenir le principal"
-                    )
-                )
-    all_test.append(Test(
-                        file_expect ="test_exitCode.txt",
-                        line_to_execute = f'echo "exitCode1" | {nachos} -x ./our_shell',
-                        name = "Test main thread create a process and check his exitCode",
-                        description = "Lance le shell pour lui faire exexuter un processus puis verifie son exitCode" 
-                    )
-                )
-
-    all_test.append(Test(
-                        file_expect ="test_ExceptionCatch.txt",
-                        line_to_execute = f'echo -e "./system/testCorruptionCode\n./system/testStackOverflow\n./system/testCorruptionMemoire\nexit" | {nachos} -x ./our_shell',
-                        name = "Test main thread create a process and the new one try to write on code section, then create a stack overflow and last try to go after the stack in memory",
-                        description = "Lance le shell pour lui faire exexuter un processus. Celui ci va faire une erreur que le kernel attrape pour renvoyer une exception et prévenir le shell que son processus fils à mal fini, test 3 exception sur la mémoire" 
-                    )
-                )
-
-
-
-    all_test.append(Test(
-                        file_expect ="test_malloc.txt",
-                        line_to_execute = f"{nachos} -x ./memory_allocator/testMalloc",
-                        name = "Test malloc and free",
-                        description = "Test pour vérifier l'allocation et la libération de mémoire dynamique via malloc et free."
-                    )
-                )
-
-    all_test.append(Test(
-                        file_expect ="test_realloc.txt",
-                        line_to_execute = f"{nachos} -x ./memory_allocator/testRealloc",
-                        name = "Test realloc",
-                        description = "Test pour vérifier le comportement de la fonction realloc pour la réallocation de mémoire dynamique."
-                    )
-                )
-
-    all_test.append(Test(
-                        file_expect ="test_corruption_fonction.txt",
-                        line_to_execute = f"{nachos} -x ./memory_allocator/testCorruptionFonction",
-                        name = "Test détection de corruption mémoire",
-                        description = "Test pour vérifier la détection de corruption de la fonction de recherche de bloc mémoire."
-                    )
-                )
-
-    all_test.append(Test(
-                        file_expect ="test_errno_multithread.txt",
-                        line_to_execute = f"{nachos} -x ./system/errno_multithread",
-                        name = "Test errno en contexte multithread avec TLS",
-                        description = "Test pour vérifier le comportement de errno dans un contexte multithread avec Thread Local Storage (TLS)."
-                    )
-                )
+    # all_test.append(Test(
+    #                      file_expect = "test_getString_erno_negative_size.txt",
+    #                      line_to_execute =f"{nachos} -x ./system/getErrno",
+    #                      name = "Test Errno en contexte global",
+    #                      description = "Test des fonctions de récupération d'errno dans un contexte a thread unique, sans tls."
+    #                      )
+    #                )
+    #
+    # all_test.append(Test(
+    #                      file_expect = "test_lot_of_thread_from_different_functions.txt",
+    #                      line_to_execute =f"{nachos} -x ./threads/makethreads",
+    #                      name = "Test création de plusieurs threads",
+    #                      description = "Test du lancement de plusieurs threads depuis un programme utilisateur, avec plusieurs niveaux de threads."
+    #                      )
+    #                )
+    #
+    # all_test.append(Test(
+    #                      file_expect = "test_one_thread_join_an_other_without_corner_case.txt",
+    #                      line_to_execute =f"{nachos} -x ./threads/testJoin",
+    #                      name = "Test ThreadJoin classique",
+    #                      description = "Test du syscall ThreadJoin dans un cas classique sans erreur depuis un programme utilisateur."
+    #                      )
+    #                )
+    #
+    # all_test.append(Test(
+    #                      file_expect = "test_multiplethread_use_putString.txt",
+    #                      line_to_execute =f"{nachos} -x ./io/multi_thread_putString",
+    #                      name = "Test PutString concurrent",
+    #                      description = "Test de la gestion concurrente des appels PutString depuis plusieurs threads dans un programme utilisateur."
+    #                      )
+    #                )
+    #
+    # all_test.append(Test(
+    #                      file_expect = "test_autoexit.txt",
+    #                      line_to_execute =f"{nachos} -x ./threads/testAutoExit",
+    #                      name = "Test terminaison automatique des threads 1",
+    #                      description = "Test de la terminaison automatique des threads (pas d'appel explicite à ThreadExit) depuis un programme utilisateur."
+    #                      )
+    #                )
+    #
+    # all_test.append(Test(
+    #                      file_expect = "test_autoexit2.txt",
+    #                      line_to_execute =f"{nachos} -x ./threads/testAutoExit2",
+    #                      name = "Test terminaison automatique des threads 2",
+    #                      description = "Test de la terminaison automatique des threads (pas d'appel explicite à ThreadExit) depuis un programme utilisateur."
+    #                      )
+    #                )
+    #
+    # all_test.append(Test(
+    #                      file_expect = "test_Semaphore_value_1_user.txt",
+    #                      line_to_execute =f"{nachos} -x ./sync/testThreadSemaphore",
+    #                      name = "Test Sémaphore initialisée à 1 en mode user",
+    #                      description = "Test pour les sémaphores au niveau utilisateur. Vérifie que les sémaphores permettent à un thread d'en attendre un autre si la sémaphore est initialisée à 1"
+    #                      )
+    #                )
+    #
+    # all_test.append(Test(
+    #                     file_expect = "test_Semaphore_2.txt",
+    #                     line_to_execute = f"{nachos} -x ./sync/testThreadSemaphore2",
+    #                     name = "Test Augmentation automatique de la taille de la table des sémaphores",
+    #                     description = "Test pour vérifier que la table des sémaphores s'agrandit automatiquement lorsque le nombre de sémaphores créés dépasse la taille initiale."
+    #                     )
+    #                 )
+    #
+    # all_test.append(Test(
+    #                     file_expect = "sem_validation.txt",
+    #                     line_to_execute = f"{nachos} -x ./sync/testSemValidation",
+    #                     name = "Vérification du comportement nominal des sémaphores dans un contexte d'utilisation normal",
+    #                     description = "Test pour vérifier le comportement nominal des sémaphores dans un contexte d'utilisation normal."
+    #                 )
+    #             )
+    #
+    # all_test.append(Test(
+    #                     file_expect = "test_thread_basicThreadCreate.txt",
+    #                     line_to_execute = f"{nachos} -x ./threads/basicThreadsCreate",
+    #                     name = "Test basicThreadCreate",
+    #                     description = "Test pour vérifier la création de threads basique."
+    #                 )
+    #             )
+    #
+    # all_test.append(Test(
+    #                     file_expect ="test_thread_exitRetVal.txt",
+    #                     line_to_execute = f"{nachos} -x ./threads/exitRetVal",
+    #                     name = "Test exitRetVal",
+    #                     description = "Test pour vérifier la valeur de retour des threads à leur sortie."
+    #                 )
+    #             )
+    #
+    # all_test.append(Test(
+    #                     file_expect ="test_thread_joinOnTerminated.txt",
+    #                     line_to_execute = f"{nachos} -x ./threads/joinOnTerminated",
+    #                     name = "Test joinOnTerminated",
+    #                     description = "Test pour vérifier le comportement de join sur un thread déjà terminé."
+    #                 )
+    #             )
+    #
+    # all_test.append(Test(
+    #                     file_expect ="test_thread_threadAttr.txt",
+    #                     line_to_execute = f"{nachos} -x ./threads/threadAttr",
+    #                     name = "Test threadAttr",
+    #                     description = "Test pour vérifier les attributs des threads."
+    #                 )
+    #             )
+    #
+    # all_test.append(Test(
+    #                     file_expect ="test_thread_threadDetach.txt",
+    #                     line_to_execute = f"{nachos} -x ./threads/threadDetach",
+    #                     name = "Test threadDetach",
+    #                     description = "Test pour vérifier le détachement des threads."
+    #                 )
+    #             )
+    #
+    # all_test.append(Test(
+    #                     file_expect ="test_thread_threadJoinErrors.txt",
+    #                     line_to_execute = f"{nachos} -x ./threads/threadJoinErrors",
+    #                     name = "Test threadJoinErrors",
+    #                     description = "Test pour vérifier la gestion des erreurs lors de l'appel à threadJoin."
+    #                 )
+    #             )
+    # all_test.append(Test(
+    #                     file_expect ="test_producteurs_consommateurs.txt",
+    #                     line_to_execute = f"{nachos} -x ./sync/producteur_consommateur",
+    #                     name = "Test Producteur consommateur ",
+    #                     description = "Test pour vérifier cohérence dans le cas d'un producteur/consommateur sur une liste partagée"
+    #                 )
+    #             )
+    # all_test.append(Test(
+    #                     file_expect ="test_ForkExec.txt",
+    #                     line_to_execute = f"{nachos} -x ./testForkExec",
+    #                     name = "Test ForkExec avec trois process",
+    #                     description = "Lance un premier process qui va en créer deux autres. Les trois doivent finir de s'éxècuter"
+    #                 )
+    #             )
+    # all_test.append(Test(
+    #                     file_expect ="test_HierarchiThread.txt",
+    #                     line_to_execute = f"{nachos} -x ./threads/firstThreadCanFinishFirst",
+    #                     name = "Test main thread call PthreadExit and others threads can finish",
+    #                     description = "Lance un thread depuis main puis appelle PthreadExit. Le thread crée par main doit devenir le principal"
+    #                 )
+    #             )
+    # all_test.append(Test(
+    #                     file_expect ="test_exitCode.txt",
+    #                     line_to_execute = f'echo "exitCode1" | {nachos} -x ./our_shell',
+    #                     name = "Test main thread create a process and check his exitCode",
+    #                     description = "Lance le shell pour lui faire exexuter un processus puis verifie son exitCode"
+    #                 )
+    #             )
+    #
+    # all_test.append(Test(
+    #                     file_expect ="test_ExceptionCatch.txt",
+    #                     line_to_execute = f'echo -e "./system/testCorruptionCode\n./system/testStackOverflow\n./system/testCorruptionMemoire\nexit" | {nachos} -x ./our_shell',
+    #                     name = "Test main thread create a process and the new one try to write on code section, then create a stack overflow and last try to go after the stack in memory",
+    #                     description = "Lance le shell pour lui faire exexuter un processus. Celui ci va faire une erreur que le kernel attrape pour renvoyer une exception et prévenir le shell que son processus fils à mal fini, test 3 exception sur la mémoire"
+    #                 )
+    #             )
+    #
+    #
+    #
+    # all_test.append(Test(
+    #                     file_expect ="test_malloc.txt",
+    #                     line_to_execute = f"{nachos} -x ./memory_allocator/testMalloc",
+    #                     name = "Test malloc and free",
+    #                     description = "Test pour vérifier l'allocation et la libération de mémoire dynamique via malloc et free."
+    #                 )
+    #             )
+    #
+    # all_test.append(Test(
+    #                     file_expect ="test_realloc.txt",
+    #                     line_to_execute = f"{nachos} -x ./memory_allocator/testRealloc",
+    #                     name = "Test realloc",
+    #                     description = "Test pour vérifier le comportement de la fonction realloc pour la réallocation de mémoire dynamique."
+    #                 )
+    #             )
+    #
+    # all_test.append(Test(
+    #                     file_expect ="test_corruption_fonction.txt",
+    #                     line_to_execute = f"{nachos} -x ./memory_allocator/testCorruptionFonction",
+    #                     name = "Test détection de corruption mémoire",
+    #                     description = "Test pour vérifier la détection de corruption de la fonction de recherche de bloc mémoire."
+    #                 )
+    #             )
+    #
+    # all_test.append(Test(
+    #                     file_expect ="test_errno_multithread.txt",
+    #                     line_to_execute = f"{nachos} -x ./system/errno_multithread",
+    #                     name = "Test errno en contexte multithread avec TLS",
+    #                     description = "Test pour vérifier le comportement de errno dans un contexte multithread avec Thread Local Storage (TLS)."
+    #                 )
+    #             )
 
 
     total : int = 0
