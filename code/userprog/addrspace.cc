@@ -409,7 +409,7 @@ int AddrSpace::AllocateSemaphoreTable(const unsigned int maxSem) {
 }
 
 bool AddrSpace::IsUserAddress(const unsigned int addr) const {
-    return addr < numPages * PageSize;
+    return addr > 0 && addr < numPages * PageSize;
 }
 
 bool AddrSpace::IsValidUserRange(const unsigned int addr, const unsigned int size) const {

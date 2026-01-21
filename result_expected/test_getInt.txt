@@ -1,0 +1,18 @@
+42
+-123
+0
+2147483647
+-2147483648
+42
+2147483647
+99
+-2147483648
+Machine halting!
+
+Ticks: total 210402, idle 3, system 209840, user 559
+Disk I/O: reads 2172, writes 0
+Console I/O: reads 63, writes 62
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

@@ -1,0 +1,19 @@
+========================================
+  SUITE: GetString Error Tests
+========================================
+[TEST] getstring_n_zero ... OK
+[TEST] getstring_n_negatif ... OK
+[TEST] getstring_null_pointer ... OK
+[TEST] getstring_adresse_invalide ... OK
+----------------------------------------
+  RESULTAT: 4/4 tests OK
+========================================
+Machine halting!
+
+Ticks: total 23513212, idle 1980, system 23503380, user 7852
+Disk I/O: reads 2297, writes 0
+Console I/O: reads 1, writes 363
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

@@ -1,0 +1,16 @@
+========================================
+  SUITE: Thread Semaphore Extended Limit Test
+========================================
+[TEST] extend_semaphore_limit_test ... OK
+----------------------------------------
+  RESULTAT: 1/1 tests OK
+========================================
+Machine halting!
+
+Ticks: total 300225, idle 3, system 249650, user 50572
+Disk I/O: reads 2252, writes 0
+Console I/O: reads 0, writes 277
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

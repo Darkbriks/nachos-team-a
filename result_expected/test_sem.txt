@@ -1,0 +1,26 @@
+========================================
+  SUITE: Semaphore Syscall Tests
+========================================
+[TEST] sem_init_valid_value ... OK
+[TEST] sem_init_negative_value ... OK
+[TEST] sem_wait_valid_id ... OK
+[TEST] sem_wait_invalid_id ... OK
+[TEST] sem_post_valid_id ... OK
+[TEST] sem_post_invalid_id ... OK
+[TEST] sem_destroy_valid_id ... OK
+[TEST] sem_destroy_invalid_id ... OK
+[TEST] set_max_sem_for_process ... OK
+[TEST] sem_wait_after_destroy ... OK
+[TEST] sem_post_after_destroy ... OK
+----------------------------------------
+  RESULTAT: 11/11 tests OK
+========================================
+Machine halting!
+
+Ticks: total 322940, idle 3, system 308360, user 14577
+Disk I/O: reads 2552, writes 0
+Console I/O: reads 0, writes 613
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

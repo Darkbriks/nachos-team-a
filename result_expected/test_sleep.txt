@@ -1,0 +1,19 @@
+========================================
+  SUITE: Sleep Syscall Tests
+========================================
+[TEST] sleep_positive_time ... OK
+[TEST] sleep_zero_time ... OK
+[TEST] sleep_negative_time ... OK
+[TEST] sleep_large_time ... OK
+----------------------------------------
+  RESULTAT: 4/4 tests OK
+========================================
+Machine halting!
+
+Ticks: total 67369037, idle 3, system 67361470, user 7564
+Disk I/O: reads 2302, writes 0
+Console I/O: reads 0, writes 347
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

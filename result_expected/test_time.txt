@@ -1,0 +1,21 @@
+========================================
+  SUITE: Time Syscall Tests
+========================================
+[TEST] getcurrenttick_valid_address ... OK
+[TEST] getcurrenttick_null_pointer ... OK
+[TEST] getcurrenttick_invalid_address ... OK
+[TEST] time_valid_address ... OK
+[TEST] time_null_pointer ... OK
+[TEST] time_invalid_address ... OK
+----------------------------------------
+  RESULTAT: 6/6 tests OK
+========================================
+Machine halting!
+
+Ticks: total 278726, idle 3, system 268830, user 9893
+Disk I/O: reads 2342, writes 0
+Console I/O: reads 0, writes 447
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

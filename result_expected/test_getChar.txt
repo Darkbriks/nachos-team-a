@@ -1,9 +1,10 @@
-Type here: You typed: a
+a
+5
 Machine halting!
 
-Ticks: total 24881, idle 0, system 24810, user 71
-Disk I/O: reads 0, writes 0
-Console I/O: reads 2, writes 24
+Ticks: total 21797303, idle 1980, system 21795250, user 73
+Disk I/O: reads 2167, writes 0
+Console I/O: reads 4, writes 4
 Paging: faults 0
 Network I/O: packets received 0, sent 0
 

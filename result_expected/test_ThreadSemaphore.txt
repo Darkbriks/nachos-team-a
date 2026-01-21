@@ -1,20 +1,15 @@
 ========================================
-  SUITE: Multithreaded Sleep Test
+  SUITE: Thread Semaphore Synchronization Test
 ========================================
-[TEST] multithreaded_sleep ... 2Main: Created thread with ID 
-3Main: Created thread with ID 
-4Main: Created thread with ID 
-5Main: Created thread with ID 
-6Main: Created thread with ID 
-OK
+[TEST] check_final_counter ... OK
 ----------------------------------------
   RESULTAT: 1/1 tests OK
 ========================================
 Machine halting!
 
-Ticks: total 313122, idle 3, system 257340, user 55779
+Ticks: total 395378, idle 3, system 277880, user 117495
 Disk I/O: reads 2227, writes 0
-Console I/O: reads 0, writes 412
+Console I/O: reads 0, writes 270
 Paging: faults 0
 Network I/O: packets received 0, sent 0
 

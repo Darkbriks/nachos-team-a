@@ -1,0 +1,12 @@
+Bob
+
+ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU
+Machine halting!
+
+Ticks: total 21820495, idle 1980, system 21818400, user 115
+Disk I/O: reads 2167, writes 0
+Console I/O: reads 105, writes 105
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

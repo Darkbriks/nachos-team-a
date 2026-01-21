@@ -1,0 +1,17 @@
+========================================
+  SUITE: GetInt Error Tests
+========================================
+[TEST] getint_null_pointer ... OK
+[TEST] getint_adresse_invalide ... OK
+----------------------------------------
+  RESULTAT: 2/2 tests OK
+========================================
+Machine halting!
+
+Ticks: total 246681, idle 3, system 240710, user 5968
+Disk I/O: reads 2252, writes 0
+Console I/O: reads 1, writes 289
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...

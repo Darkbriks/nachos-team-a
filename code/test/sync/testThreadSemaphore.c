@@ -1,6 +1,7 @@
 #include "syscall.h"
 #include "nos_stddef.h"
 #include "nos_pthread.h"
+#include "test_utilities.h"
 
 int counter = 0;
 int mutex_id;
@@ -14,7 +15,15 @@ void increment_thread(void *arg) {
     pthread_exit(0);
 }
 
+void check_final_counter() {
+    TEST_START("check_final_counter");
+    ASSERT_EQ(counter, 2000, "Final counter value should be 2000");
+    TEST_PASS();
+}
+
 int main() {
+    TEST_SUITE_START("Thread Semaphore Synchronization Test");
+
     mutex_id = SemInit(1);
     if (mutex_id < 0) {
         PutString("Erreur création mutex\n", 23);
@@ -28,11 +37,9 @@ int main() {
     pthread_join(tid1, NULL);
     pthread_join(tid2, NULL);
 
-    PutString("Counter final: ", 15);
-    PutInt(counter);  // Devrait être 2000
-    PutChar('\n');
+    check_final_counter();
 
     SemDestroy(mutex_id);
 
-    return 0;
+    TEST_SUITE_END();
 }

@@ -1,6 +1,6 @@
 #include "nos_fileserver.h"
 #include "nos_unistd.h"
-#include "test_utilities.h"
+//#include "test_utilities.h"
 
 
 int main() {
@@ -12,7 +12,7 @@ int main() {
     OpenFileId fd;
     char testData[] = "Hello from NachOS file server! This is a test file for network transfer.";
 
-    TEST_START("=== NachOS File Server (Real FS) ===\n");
+    //TEST_START("=== NachOS File Server (Real FS) ===\n");
 
     /* Create a test file in the filesystem */
     fd = open("test.txt", O_CREATE);
@@ -78,6 +78,6 @@ int main() {
     close(listenerId);
     printf("Server shutdown\n");
 
-    TEST_PASS();
+    //TEST_PASS();
     return 0;
 }
