@@ -80,6 +80,17 @@ extern void ThreadPrint(int arg);
 //  Some threads also belong to a user address space; threads
 //  that only run in the kernel have a NULL address space.
 
+class thread_file {
+    friend class Thread;
+    private:
+        inode_t inode;
+        unsigned int seek_position;
+        thread_file(){
+            inode = INVALID_INODE;
+            seek_position = 0;
+        }
+};
+
 class Thread {
 
 friend Process;
@@ -91,7 +102,7 @@ private:
     int machineState[MachineStateSize] = {}; // all registers except for stackTop
 
     int* stack = nullptr; // Bottom of the stack. NULL if this is the main thread (If NULL, don't deallocate stack)
-    inode_t openFiles[MAX_FILE_OPEN];
+    thread_file openFiles[MAX_FILE_OPEN];
 
 #ifdef USER_PROGRAM
     // A thread running a user program actually has *two* sets of CPU registers
@@ -160,10 +171,18 @@ public:
     void Print() const { printf("%s, ", name); }
 
     bool IsOpenFile(thread_inode_t id) const;
-    thread_inode_t AddOpenFile(inode_t id);
+    thread_inode_t AddOpenFile(inode_t id, unsigned int seek_pos);
     thread_inode_t CanOpenFile() const;
-    inode_t GetOpenFile(thread_inode_t id) const;
+    inode_t GetOpenFile(thread_inode_t id, unsigned int *seek_pos) const;
     bool RemoveOpenFile(thread_inode_t id);
+    void setSeek(inode_t inode, unsigned int seek_pos){
+        for (int i = 0; i < MAX_FILE_OPEN; i++){
+            if (openFiles[i].inode == inode){
+                openFiles[i].seek_position = seek_pos;
+                return;
+            }
+        }
+    }
 };
 
 // Magical machine-dependent routines, defined in switch.s

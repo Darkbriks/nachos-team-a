@@ -39,7 +39,8 @@ void handle_SC_Open() {
     inode_t inode = fileSystem->Open(name);
     VALIDATE_ARG(inode != INVALID_INODE, E_NOENT);
 
-    const thread_inode_t result = currentThread->AddOpenFile(inode);
+    // 0 is because for the moment the file is at the begin
+    const thread_inode_t result = currentThread->AddOpenFile(inode, 0);
     RETURN(result);
 }
 
@@ -47,7 +48,7 @@ void handle_SC_Open() {
 void handle_SC_Close() {
     thread_inode_t id = reinterpret_cast<thread_inode_t>(machine->ReadRegister(4));
     VALIDATE_ARG(currentThread->IsOpenFile(id), E_BADF);
-    inode_t inode = currentThread->GetOpenFile(id);
+    inode_t inode = currentThread->GetOpenFile(id, nullptr);
     VALIDATE_ARG(fileSystem->Close(inode), E_FAULT);
     VALIDATE_ARG(currentThread->RemoveOpenFile(id), E_FAULT);
     RETURN(0);
@@ -77,12 +78,17 @@ void handle_SC_Write() {
     int offset = 0;
     char buffer[MAX_STRING_SIZE];
 
-    inode_t inode = currentThread->GetOpenFile(id);
+    unsigned int seek_pos;
+    inode_t inode = currentThread->GetOpenFile(id, &seek_pos);
+    fileSystem->Seek(inode, seek_pos);
     while (offset < n) {
-        VALIDATE_ARG(CopyStringFromUser(addr + offset, buffer, MAX_STRING_SIZE), E_FAULT);
+        VALIDATE_ARG(CopyFromUserRaw(buffer, addr + offset, MIN(MAX_STRING_SIZE, n - offset)), E_FAULT);
         DEBUG('a', "Write got string: %s\n", buffer);
         if (const int res = fileSystem->Write(inode, buffer, MIN(MAX_STRING_SIZE, n - offset)); res <= 0) { break; }
-        else { offset += res; }
+        else { 
+            offset += res; 
+            currentThread->setSeek(inode, seek_pos + res);
+        }
     }
     RETURN(offset);
 }
@@ -100,12 +106,17 @@ void handle_SC_Read() {
     VALIDATE_ARG(n != 0, 0);
     VALIDATE_ARG(addr <= INT_MAX - n, E_OVERFLOW); // Prevent overflow
 
-    inode_t inode = currentThread->GetOpenFile(id);
+    unsigned int seek_pos;
+    inode_t inode = currentThread->GetOpenFile(id, &seek_pos);
+    fileSystem->Seek(inode, seek_pos);
     if (n > MAX_STRING_SIZE) { n = MAX_STRING_SIZE; }
     {
         char buffer[n];
         int res = fileSystem->Read(inode, buffer, n);
-        VALIDATE_ARG(CopyStringToUser(buffer, addr, n), E_FAULT);
+        currentThread->setSeek(inode, seek_pos + res);
+        VALIDATE_ARG(CopyToUserRaw(addr, buffer, res), E_FAULT);
+
         RETURN(res);
+
     }
 }
