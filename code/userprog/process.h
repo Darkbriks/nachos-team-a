@@ -7,10 +7,9 @@
 #include "thread.h"
 #include "synch.h"
 
-#define MAX_THREAD 30 // TODO check for user's max process
+#define MAX_THREAD 30 
 #define MAX_PROCESS 15
 
-// TODO: One day, create User class for multiUser OS
 //       Put MAX_PROCESS, all_process, all_process_lock, activeProcessCount, processCountLock in User class
 //       And add a User* owner in Process class
 

@@ -63,7 +63,6 @@ enum class MessageFlag : uint8_t {
     FLAG_MORE_FRAGMENTS         = 1,
     FLAG_END_OF_MESSAGE         = 2,
     FLAG_CONTROL                = 4,
-    FLAG_BIG_MESSAGE_FRAGMENTS  = 6,
 };
 
 enum ConnectionState {
