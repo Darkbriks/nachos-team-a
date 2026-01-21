@@ -38,7 +38,7 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-18f6c0ee.js";
+            window.path_to_searchindex_js = "searchindex-6e8e8b0a.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-9a21d2df.js"></script>
@@ -534,11 +534,6 @@ PutString("BBBB", 4);
 // Résultat possible: "AABBAABB" au lieu de "AAAABBBB"
 </code></pre>
 <p><strong>Solution</strong> : Protéger les séquences d’I/O avec des sémaphores si nécessaire.</p>
-<h3 id="errno-global"><a class="header" href="#errno-global">errno global</a></h3>
-<p>⚠️ <strong>Non thread-safe</strong> : <code>errno</code> est une variable globale partagée.</p>
-<p><strong>Problème</strong> : Plusieurs threads peuvent écraser mutuellement leur <code>errno</code>.</p>
-<p><strong>Correction prévue</strong> : Thread-local errno sera implémenté prochainement.</p>
-<p>Voir : <a href="syscalls/errors.html#failles-et-vulnérabilités">Gestion des erreurs</a></p>
 <h2 id="architecture-dun-appel-système"><a class="header" href="#architecture-dun-appel-système">Architecture d’un appel système</a></h2>
 <h3 id="flux-dexécution"><a class="header" href="#flux-dexécution">Flux d’exécution</a></h3>
 <p>Le flux d’un appel système est complexe, et demande un changement de contexte du processeur. A ce titre, il est fortement conseillé de limiter le nombre d’appels système dans le code utilisateur pour minimiser la surcharge associée.</p>
@@ -578,10 +573,10 @@ Programme utilisateur
 <li><a href="syscalls/errno.html">Liste des codes errno</a> - Tous les codes d’erreur</li>
 </ul>
 <h2 id="auteurs-1"><a class="header" href="#auteurs-1">Auteurs</a></h2>
-<p>Antoine, 07 Jan 2026
+<p>Antoine, 21 Jan 2026
 Tommy, 08 Jan 2026</p>
 <h2 id="dernière-révision-1"><a class="header" href="#dernière-révision-1">Dernière révision</a></h2>
-<p>08 Jan 2026</p>
+<p>21 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="system-control"><a class="header" href="#system-control">System Control</a></h1>
 <ul>
