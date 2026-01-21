@@ -23,16 +23,24 @@
 # Threads
 
 - [Threads](./threads/SUMMARY.md)
-  - [Threads Overview](./syscalls/threads/Threads.md)
-  - [thread_create](./syscalls/threads/thread_create.md)
-  - [thread_exit](./syscalls/threads/thread_exit.md)
-  - [thread_self](./syscalls/threads/thread_self.md)
-  - [thread_yield](./syscalls/threads/thread_yield.md)
-  - [futex_wait](./syscalls/threads/futex_wait.md)
-  - [futex_wake](./syscalls/threads/futex_wake.md)
-  - [atomic_cmpxchg](./syscalls/threads/atomic_cmpxchg.md)
-  - [atomic_store](./syscalls/threads/atomic_store.md)
-  - [atomic_load](./syscalls/threads/atomic_load.md)
+  - [Threads Overview](./threads/Threads.md)
+  - [thread_create](./threads/thread_create.md)
+  - [thread_exit](./threads/thread_exit.md)
+  - [thread_self](./threads/thread_self.md)
+  - [thread_yield](./threads/thread_yield.md)
+  - [futex_wait](./threads/futex_wait.md)
+  - [futex_wake](./threads/futex_wake.md)
+  - [atomic_cmpxchg](./threads/atomic_cmpxchg.md)
+  - [atomic_store](./threads/atomic_store.md)
+  - [atomic_load](./threads/atomic_load.md)
+
+# Gestion mémoire
+
+- [Gestion mémoire](./memory/SUMMARY.md)
+  - [Memory Overview](./memory/Memory.md)
+  - [Sbrk](./memory/Sbrk.md)
+  - [mmap](./memory/mmap.md)
+  - [munmap](./memory/munmap.md)
 
 # Opérations temporelles
 
@@ -41,6 +49,7 @@
   - [Sleep](./time/Sleep.md)
   - [SleepUntil](./time/SleepUntil.md)
   - [GetCurrentTick](./time/GetCurrentTick.md)
+  - [time](./time/time.md)
 
 # Sémaphores
 
@@ -64,4 +73,19 @@
 
 - [Système de fichiers](./filesystem/SUMMARY.md)
   - [Create](./filesystem/Create.md)
+  - [Open](./filesystem/Open.md)
+  - [Close](./filesystem/Close.md)
+  - [Read](./filesystem/Read.md)
+  - [Write](./filesystem/Write.md)
+  - [Seek](./filesystem/Seek.md)
+  - [FileLen](./filesystem/FileLen.md)
 
+# Network
+- [Network](./network/SUMMARY.md)
+  - [Vue d'ensemble](./network/Network.md)
+  - [Listen](./network/Listen.md)
+  - [Accept](./network/Accept.md)
+  - [Connect](./network/Connect.md)
+  - [Send](./network/Send.md)
+  - [Recv](./network/Recv.md)
+  - [Close](./network/Close.md)
