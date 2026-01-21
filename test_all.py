@@ -140,44 +140,44 @@ if __name__ == "__main__":
     all_test : list[Test] = []
     nachos = f"./nachos-{CURRENT_STEP} {RS} "
     all_test.append(Test(
-                         file_expect="test_halt.txt",
-                         line_to_execute =f"{nachos} -x ./halt",
-                         name= "Halt" ,
-                         description = "Test du syscall Halt depuis un programme utilisateur."
-                         )
-                   )
+            file_expect="test_halt.txt",
+            line_to_execute =f"{nachos} -x ./halt",
+            name= "Halt" ,
+            description = "Test du syscall Halt depuis un programme utilisateur."
+        )
+    )
 
     all_test.append(Test(
-                         file_expect = "test_io_output.txt",
-                         line_to_execute =f"{nachos} -x ./io/test_io_output",
-                         name = "Syscall PutChar, PutString, PutInt",
-                         description = "Test des syscalls PutChar, PutString et PutInt depuis un programme utilisateur."
-                         )
-                   )
+            file_expect = "test_io_output.txt",
+            line_to_execute =f"{nachos} -x ./io/test_io_output",
+            name = "Syscall PutChar, PutString, PutInt",
+            description = "Test des syscalls PutChar, PutString et PutInt depuis un programme utilisateur."
+        )
+    )
 
     all_test.append(Test(
-                         file_expect = "test_getChar.txt",
-                         line_to_execute =f'echo -e "a\n5\n@\n\n" | {nachos} -x ./io/getChar',
-                         name = "GetChar",
-                         description = "Test du syscall GetChar depuis un programme utilisateur dans un cas normal."
-                         )
-                   )
+            file_expect = "test_getChar.txt",
+            line_to_execute =f'echo -e "a\n5\n@\n\n" | {nachos} -x ./io/getChar',
+            name = "GetChar",
+            description = "Test du syscall GetChar depuis un programme utilisateur dans un cas normal."
+        )
+    )
 
     all_test.append(Test(
-                         file_expect = "test_getString.txt",
-                         line_to_execute =f'echo "Bob\n\nABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUV\n" | {nachos} -x ./io/getString',
-                         name = "GetString",
-                         description = "Test du syscall GetString depuis un programme utilisateur."
-                         )
-                   )
+            file_expect = "test_getString.txt",
+            line_to_execute =f'echo "Bob\n\nABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUV\n" | {nachos} -x ./io/getString',
+            name = "GetString",
+            description = "Test du syscall GetString depuis un programme utilisateur."
+        )
+    )
 
     all_test.append(Test(
-                         file_expect = "test_getStringErrors.txt",
-                         line_to_execute =f'echo -e "azerty\nazerty\nazerty\nazerty\n" | {nachos} -x ./io/getStringErrors',
-                         name = "GetString avec erreurs",
-                         description = "Test du syscall GetString depuis un programme utilisateur avec des tailles invalides."
-                         )
-                   )
+            file_expect = "test_getStringErrors.txt",
+            line_to_execute =f'echo -e "azerty\nazerty\nazerty\nazerty\n" | {nachos} -x ./io/getStringErrors',
+            name = "GetString avec erreurs",
+            description = "Test du syscall GetString depuis un programme utilisateur avec des tailles invalides."
+        )
+    )
 
     all_test.append(Test(
             file_expect = "test_getInt.txt",
@@ -212,12 +212,45 @@ if __name__ == "__main__":
     )
 
     all_test.append(Test(
-         file_expect = "test_multithreadSleep.txt",
-         line_to_execute =f"{nachos} -x ./system/multithreadSleep",
-         name = "Test Sleep concurrent",
-         description = "Test de la gestion concurrente des appels Sleep depuis plusieurs threads dans un programme utilisateur."
+             file_expect = "test_multithreadSleep.txt",
+             line_to_execute =f"{nachos} -x ./system/multithreadSleep",
+             name = "Test Sleep concurrent",
+             description = "Test de la gestion concurrente des appels Sleep depuis plusieurs threads dans un programme utilisateur."
          )
    )
+
+    all_test.append(Test(
+            file_expect = "test_time.txt",
+            line_to_execute =f'{nachos} -x ./system/time',
+            name = "Time",
+            description = "Test du syscall Time et GetCurrentTicks depuis un programme utilisateur."
+        )
+    )
+
+    all_test.append(Test(
+            file_expect = "test_sem.txt",
+            line_to_execute = f"{nachos} -x ./sync/sem",
+            name = "Vérification du comportement des syscall Semaphore",
+            description = "Test pour vérifier le comportement des syscall Semaphore (Create, P, V, Destroy) au niveau utilisateur."
+        )
+    )
+
+    all_test.append(Test(
+            file_expect = "test_ThreadSemaphore.txt",
+            line_to_execute =f"{nachos} -x ./sync/testThreadSemaphore",
+            name = "Test des sémaphores avec plusieurs threads",
+            description = "Test pour vérifier le comportement des sémaphores avec plusieurs threads au niveau utilisateur."
+        )
+    )
+
+    all_test.append(Test(
+            file_expect = "test_ThreadSemaphore2.txt",
+            line_to_execute = f"{nachos} -x ./sync/testThreadSemaphore2",
+            name = "Test Augmentation automatique de la taille de la table des sémaphores",
+            description = "Test pour vérifier l'augmentation automatique de la taille de la table des sémaphores lorsque le nombre de sémaphores dépasse la capacité initiale."
+        )
+    )
+
 
     # FLAG
     # all_test.append(Test(
@@ -268,29 +301,6 @@ if __name__ == "__main__":
     #                      )
     #                )
     #
-    # all_test.append(Test(
-    #                      file_expect = "test_Semaphore_value_1_user.txt",
-    #                      line_to_execute =f"{nachos} -x ./sync/testThreadSemaphore",
-    #                      name = "Test Sémaphore initialisée à 1 en mode user",
-    #                      description = "Test pour les sémaphores au niveau utilisateur. Vérifie que les sémaphores permettent à un thread d'en attendre un autre si la sémaphore est initialisée à 1"
-    #                      )
-    #                )
-    #
-    # all_test.append(Test(
-    #                     file_expect = "test_Semaphore_2.txt",
-    #                     line_to_execute = f"{nachos} -x ./sync/testThreadSemaphore2",
-    #                     name = "Test Augmentation automatique de la taille de la table des sémaphores",
-    #                     description = "Test pour vérifier que la table des sémaphores s'agrandit automatiquement lorsque le nombre de sémaphores créés dépasse la taille initiale."
-    #                     )
-    #                 )
-    #
-    # all_test.append(Test(
-    #                     file_expect = "sem_validation.txt",
-    #                     line_to_execute = f"{nachos} -x ./sync/testSemValidation",
-    #                     name = "Vérification du comportement nominal des sémaphores dans un contexte d'utilisation normal",
-    #                     description = "Test pour vérifier le comportement nominal des sémaphores dans un contexte d'utilisation normal."
-    #                 )
-    #             )
     #
     # all_test.append(Test(
     #                     file_expect = "test_thread_basicThreadCreate.txt",
