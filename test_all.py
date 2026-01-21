@@ -112,7 +112,7 @@ def generate(args : list[str]) -> int:
     exec_nachos(arguments, file_expect)
 
 def compile() -> None:
-    s = subprocess.check_output(f"make -C {PROJECT_ROOT}/code FORCE_COMPILATION=1 &>/dev/null", shell=True).decode("utf-8")
+    s = subprocess.check_output(f"make -C {PROJECT_ROOT}/code FORCE_COMPILATION=1 -j 200 &>/dev/null", shell=True).decode("utf-8")
     
 
 def usage():

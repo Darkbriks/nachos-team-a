@@ -35,7 +35,7 @@ private:
         [[nodiscard]] bool has_waiters() const { return !waiters.IsEmpty(); }
     };
 
-    std::unordered_map<int, FutexWaiter*> futex_map; // TODO: Don't use std::map
+    std::unordered_map<int, FutexWaiter*> futex_map;
 };
 
 void handle_SC_futex_wait();
