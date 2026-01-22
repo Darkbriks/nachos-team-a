@@ -49,14 +49,19 @@ static void SwapHeader(NoffHeader* noffH) {
 }
 
 static void ReadAtVirtual(OpenFile* executable, const int virtualaddr, const int numBytes, const int position, TranslationEntry* pageTable, const unsigned int numPages) {
-    // Don't remove these lines
-    machine->pageTable = pageTable;
-    machine->pageTableSize = numPages;
     const auto tmp = new char[numBytes + 1];
-    const int maxSize = executable->ReadAt(tmp, numBytes,  position);
-    for (int i = 0; i < maxSize; i++){ 
-        machine->WriteMem(virtualaddr + i , 1, tmp[i]);
+    const int maxSize = executable->ReadAt(tmp, numBytes, position);
+
+    for (int i = 0; i < maxSize; i++) {
+        const unsigned int vpn = (virtualaddr + i) / PageSize;
+        const unsigned int offset = (virtualaddr + i) % PageSize;
+
+        if (vpn < numPages && pageTable[vpn].valid) {
+            const unsigned int physAddr = pageTable[vpn].physicalPage * PageSize + offset;
+            machine->mainMemory[physAddr] = tmp[i];
+        }
     }
+
     delete[] tmp;
 }
 
@@ -124,6 +129,13 @@ AddrSpace::AddrSpace(inode_t inode) {
         }
         pageTable[i].physicalPage = physPage;
         pageTable[i].valid = TRUE;
+    }
+
+    // Dans AddrSpace::AddrSpace, juste avant ReadAtVirtual:
+    DEBUG('a', "AVANT ReadAtVirtual: machine->pageTable=%p, this->pageTable=%p\n",
+          machine->pageTable, pageTable);
+    if (machine->pageTable != nullptr && machine->pageTableSize > 0) {
+        DEBUG('a', "machine->pageTable[0].readOnly=%d\n", machine->pageTable[0].readOnly);
     }
 
     // Allocate frames for stack pages
