@@ -52,8 +52,6 @@ Identifiant de la connexion ou du listener
 |-------|-----------|-----------|
 | 1 | `E_INVAL` | Paramètre invalide |
 
-## Implémentation
-
 ### Localisation du code
 
 - **Stub utilisateur** : `code/test/start.S`

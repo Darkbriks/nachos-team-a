@@ -8,7 +8,7 @@
 ```c
 #include "syscall.h"
 
-int ConnectionManager::Connect(int remoteAddr, int remotePort, int localPort);
+int connect(int remoteAddr, int remotePort, int localPort);
 ```
 
 ## Description
@@ -75,8 +75,6 @@ int ConnectionManager::Connect(int remoteAddr, int remotePort, int localPort);
 | 101 | `E_NOTCONN` | Echec de connexion |
 | 102 | `E_ADDRINUSE` | Port déjà utilisé |
 
-## Implémentation
-
 ### Localisation du code
 
 - **Stub utilisateur** : `code/test/start.S`
@@ -107,7 +105,8 @@ connect(remoteAddr, remotePort, localPort)
         │ ├─ AllocateEphemeralPort()
         │ ├─ connId = AllocateConnection()
         │ ├─ GetConnection(connId)
-        │ └─ SendControlMessage(MSG_SYN,              initialSeqNum, 0)
+        │ └─ SendControlMessage(MSG_SYN,        
+        |                       initialSeqNum, 0)
         | └─ FreeConnection(connId) 
         ▼
 ```
@@ -135,4 +134,4 @@ Victor, 21 Jan 2026
 
 ## Dernière révision
 
-21 Jan 2026
+22 Jan 2026
