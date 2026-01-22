@@ -38,7 +38,7 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-a73492bf.js";
+            window.path_to_searchindex_js = "searchindex-71a727a8.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-9eac4714.js"></script>
@@ -265,13 +265,13 @@
 </li>
 <li><a href="#network-management">Network</a>
 <ul>
-<li><a href="#network-overview">Network Overview</a></li>
-<li><a href="#listen">Listen</a></li>
-<li><a href="#accept">Accept</a></li>
-<li><a href="#connect">Connect</a></li>
-<li><a href="#sendto">Send</a></li>
-<li><a href="#recvfrom">Recv</a></li>
-<li><a href="#close-1">Close</a></li>
+<li><a href="#appels-système-pour-le-réseau">Network Overview</a></li>
+<li><a href="#listen-1">Listen</a></li>
+<li><a href="#accept-1">Accept</a></li>
+<li><a href="#connect-1">Connect</a></li>
+<li><a href="#sendto-1">Send</a></li>
+<li><a href="#recvfrom-1">Recv</a></li>
+<li><a href="#close-2">Close</a></li>
 </ul>
 </li>
 </ul>
@@ -365,13 +365,13 @@
 </li>
 <li><a href="#network-management">Network</a>
 <ul>
-<li><a href="#network-overview">Network Overview</a></li>
-<li><a href="#listen">Listen</a></li>
-<li><a href="#accept">Accept</a></li>
-<li><a href="#connect">Connect</a></li>
-<li><a href="#sendto">Send</a></li>
-<li><a href="#recvfrom">Recv</a></li>
-<li><a href="#close-1">Close</a></li>
+<li><a href="#appels-système-pour-le-réseau">Network Overview</a></li>
+<li><a href="#listen-1">Listen</a></li>
+<li><a href="#accept-1">Accept</a></li>
+<li><a href="#connect-1">Connect</a></li>
+<li><a href="#sendto-1">Send</a></li>
+<li><a href="#recvfrom-1">Recv</a></li>
+<li><a href="#close-2">Close</a></li>
 </ul>
 </li>
 </ul>
@@ -8178,21 +8178,101 @@ int main() {
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="network-management"><a class="header" href="#network-management">Network Management</a></h1>
 <ul>
-<li><a href="#network-overview">Vue d’ensemble</a></li>
+<li><a href="#appels-système-pour-le-réseau">Vue d’ensemble</a></li>
 </ul>
 <h1 id="appels-système-sur-les-processus-1"><a class="header" href="#appels-système-sur-les-processus-1">Appels système sur les processus</a></h1>
 <ul>
-<li><a href="#connect">Connect</a></li>
-<li><a href="#listen">Listen</a></li>
-<li><a href="#accept">Accept</a></li>
-<li><a href="#sendto">Send</a></li>
-<li><a href="#recvfrom">Recv</a></li>
-<li><a href="#close-1">Close</a></li>
+<li><a href="#connect-1">connect</a></li>
+<li><a href="#listen-1">listen</a></li>
+<li><a href="#accept-1">accept</a></li>
+<li><a href="#sendto-1">sendto</a></li>
+<li><a href="#recvfrom-1">recvfrom</a></li>
+<li><a href="#close-2">close</a></li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="network-overview"><a href="#network-overview" class="header">Network Overview</a></h1>
+<h1 id="appels-système-pour-le-réseau"><a class="header" href="#appels-système-pour-le-réseau">Appels système pour le réseau</a></h1>
+<p>Cette section documente les appels système liés au réseau dans NachOS, permettant d’établir une connexion, inspirée du protocole TCP/IP.</p>
+<h2 id="vue-densemble-5"><a class="header" href="#vue-densemble-5">Vue d’ensemble</a></h2>
+<p>Les appels système pour le réseau permettent de :</p>
+<ul>
+<li>Etablir une connexion</li>
+<li>Définir un port d’écoute</li>
+<li>Accepter une connexion sur un port d’écoute</li>
+<li>Envoyer et/ou recevoir des données</li>
+<li>Terminer une connexion</li>
+</ul>
+<h2 id="concepts-fondamentaux-2"><a class="header" href="#concepts-fondamentaux-2">Concepts fondamentaux</a></h2>
+<h3 id="transmission-fiable"><a class="header" href="#transmission-fiable">Transmission fiable</a></h3>
+<p>Dans NachOS, les transmissions de messages suivent un certain protocole afin d’éviter le plus possible la perte de messages : un timeout est défini à 10000 dans RELIABLE_TIMEOUT (cf. netprotocol.h). Chaque message doit recevoir un ACK afin d’assurer qu’il a bien été reçu par l’autre machine.</p>
+<p>Si un message n’est pas reçu (autrement dit que l’émetteur du message n’a pas reçu de ACK confirmant le succès de l’envoi du message) après que le timeout soit écoulé, alors le message est réémis. Un nombre de tentatives de réémission est défini à 10 dans la macro MAX_RETRANSMISSIONS (cf. netprotocol.h).</p>
+<p>Au-delà de ce nombre de tentatives, l’envoi échouera. Cependant, le timeout et le nombre de tentatives baissent drastiquement la probabilité de perte d’un message.</p>
+<h3 id="transmission-de-messages-de-longueur-variable"><a class="header" href="#transmission-de-messages-de-longueur-variable">Transmission de messages de longueur variable</a></h3>
+<p>Afin de ne pas avoir de limite pour la taille d’un message, nous définissons un principe de découpage de messages : si un message est trop long, alors on l’envoie en plusieurs paquets. Tous les messages qui doivent être envoyés sont ajoutés à une file. Un thread kernel s’exécute périodiquement (comme un démon linux) pour envoyer les messages de la file, et vérifier les ACK. Quand un ACK est reçu, le message correspondant est supprimé de la file. Si le ACK n’est pas reçu au bout d’un certain temps, le démon se charge de retransmettre le paquet. Le nombre de retransmissions est limité pour ne pas saturer le réseau.</p>
+<p>Une fois les différents paquets du message reçus, le message complet est reconstitué en un seul message avant d’être transmis au noyau.</p>
+<p>A la réception des données, elles sont insérés dans une file et un ACK est envoyé. Si les messages ont été découpés en amont, ils sont reconstitués avant d’être transmis au noyau, dans une limite (cf. MAX_PUT_STRING). Si le message initial est supérieur à cette valeur, le message est reconstitué par l’appel système dans le buffer transmis par l’utilisateur.</p>
+<h2 id="liste-des-appels-système-3"><a class="header" href="#liste-des-appels-système-3">Liste des appels système</a></h2>
+<h3 id="connect"><a class="header" href="#connect"><a href="#connect-1">connect</a></a></h3>
+<p>Etablit une connexion à un serveur distant</p>
+<p><strong>Utilisation</strong> :</p>
+<pre><code class="language-c">int connect(int remoteAddr, int remotePort, int localPort);
+</code></pre>
+<h3 id="listen"><a class="header" href="#listen"><a href="#listen-1">listen</a></a></h3>
+<p>Définit le port donné en argument comme port d’écoute</p>
+<p><strong>Utilisation</strong> :</p>
+<pre><code class="language-c">int listen(int port);
+</code></pre>
+<h3 id="accept"><a class="header" href="#accept"><a href="syscalls/Accept.html">accept</a></a></h3>
+<p>Accepte une connexion sur un port d’écoute</p>
+<p><strong>Utilisation</strong> :</p>
+<pre><code class="language-c">int accept(int listenerId, int timeoutMs);
+</code></pre>
+<h3 id="sendto"><a class="header" href="#sendto"><a href="syscalls/Send.html">sendto</a></a></h3>
+<p>Envoie des données à une machine connectée à la nôtre.</p>
+<p><strong>Utilisation</strong> :</p>
+<pre><code class="language-c">int sendto(int connId, char* data, int size);
+</code></pre>
+<h3 id="recvfrom"><a class="header" href="#recvfrom"><a href="syscalls/Recv.html">recvfrom</a></a></h3>
+<p>Reçoit les données envoyées par une machine connectée à la nôtre.</p>
+<p><strong>Utilisation</strong> :</p>
+<pre><code class="language-c">int recvfrom(int connId, char* buffer, int size);
+</code></pre>
+<h3 id="close-1"><a class="header" href="#close-1"><a href="syscalls/Close.html">close</a></a></h3>
+<p>Termine une connexion ou stoppe un listener.</p>
+<p><strong>Utilisation</strong> :</p>
+<pre><code class="language-c">int close(int id);
+</code></pre>
+<h2 id="limitations-et-contraintes-1"><a class="header" href="#limitations-et-contraintes-1">Limitations et contraintes</a></h2>
+<h2 id="codes-derreur-courants-1"><a class="header" href="#codes-derreur-courants-1">Codes d’erreur courants</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
+</thead>
+<tbody>
+<tr><td>105</td><td><code>E_TIMEOUT</code></td><td>Temps écoulé</td></tr>
+<tr><td>100</td><td><code>E_REFUSED</code></td><td>Connexion refusée</td></tr>
+<tr><td>1</td><td><code>E_INVAL</code></td><td>Paramètre invalide</td></tr>
+<tr><td>107</td><td><code>E_NOPORT</code></td><td>Port non défini</td></tr>
+<tr><td>101</td><td><code>E_NOTCONN</code></td><td>Echec de connexion</td></tr>
+<tr><td>102</td><td><code>E_ADDRINUSE</code></td><td>Port déjà utilisé</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="voir-aussi-43"><a class="header" href="#voir-aussi-43">Voir aussi</a></h2>
+<ul>
+<li><a href="#connect-1">connect</a> - Etablit une connexion</li>
+<li><a href="#listen-1">listen</a> - Définit un port d’écoute</li>
+<li><a href="#accept-1">accept</a> - Accepte une connexion</li>
+<li><a href="#sendto-1">sendto</a> - Envoyer des données</li>
+<li><a href="#recvfrom-1">recvfrom</a> - Recevoir des données</li>
+<li><a href="#close-2">close</a> - Termine une connexion</li>
+</ul>
+<h2 id="auteurs-46"><a class="header" href="#auteurs-46">Auteurs</a></h2>
+<p>Victor, 22 Jan 2026</p>
+<h2 id="dernière-révision-46"><a class="header" href="#dernière-révision-46">Dernière révision</a></h2>
+<p>22 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="listen"><a class="header" href="#listen">Listen</a></h1>
+<h1 id="listen-1"><a class="header" href="#listen-1">Listen</a></h1>
 <p><code>Listen</code> - Définit un port d’écoute</p>
 <h2 id="synopsis-38"><a class="header" href="#synopsis-38">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
@@ -8240,7 +8320,6 @@ int listen(int port);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-20"><a class="header" href="#implémentation-20">Implémentation</a></h2>
 <h3 id="localisation-du-code-15"><a class="header" href="#localisation-du-code-15">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
@@ -8272,21 +8351,21 @@ int listen(int port);
 <p>Aucune faille de sécurité connue.</p>
 <h2 id="bugs-connus-11"><a class="header" href="#bugs-connus-11">BUGS CONNUS</a></h2>
 <p>Aucun bug connu à ce jour.</p>
-<h2 id="voir-aussi-43"><a class="header" href="#voir-aussi-43">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-44"><a class="header" href="#voir-aussi-44">VOIR AUSSI</a></h2>
 <ul>
-<li><a href="#accept">Accept</a> - Accepter une connexion</li>
-<li><a href="#close-1">Close</a> - Fermer une connexion</li>
-<li><a href="#connect">Connect</a> - Connexion à une autre machine</li>
-<li><a href="#sendto">sendto</a> - Envoyer des données</li>
-<li><a href="#recvfrom">recvfrom</a> - Recevoir des données</li>
+<li><a href="#accept-1">Accept</a> - Accepter une connexion</li>
+<li><a href="#close-2">Close</a> - Fermer une connexion</li>
+<li><a href="#connect-1">Connect</a> - Connexion à une autre machine</li>
+<li><a href="#sendto-1">sendto</a> - Envoyer des données</li>
+<li><a href="#recvfrom-1">recvfrom</a> - Recevoir des données</li>
 </ul>
 <h2 id="limitations-6"><a class="header" href="#limitations-6">Limitations</a></h2>
-<h2 id="auteurs-46"><a class="header" href="#auteurs-46">Auteurs</a></h2>
+<h2 id="auteurs-47"><a class="header" href="#auteurs-47">Auteurs</a></h2>
 <p>Victor, 21 Jan 2026</p>
-<h2 id="dernière-révision-46"><a class="header" href="#dernière-révision-46">Dernière révision</a></h2>
+<h2 id="dernière-révision-47"><a class="header" href="#dernière-révision-47">Dernière révision</a></h2>
 <p>21 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="accept"><a class="header" href="#accept">accept</a></h1>
+<h1 id="accept-1"><a class="header" href="#accept-1">accept</a></h1>
 <p><code>accept</code> - Accepte une connexion</p>
 <h2 id="synopsis-39"><a class="header" href="#synopsis-39">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
@@ -8337,7 +8416,6 @@ int accept(int listenerId, int timeoutMs);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-21"><a class="header" href="#implémentation-21">Implémentation</a></h2>
 <h3 id="flux-dexécution-12"><a class="header" href="#flux-dexécution-12">Flux d’exécution</a></h3>
 <pre><code>accept(listenerId, timeoutMS)
         │
@@ -8364,25 +8442,25 @@ int accept(int listenerId, int timeoutMs);
 <p>Aucune faille de sécurité connue.</p>
 <h2 id="bugs-connus-12"><a class="header" href="#bugs-connus-12">BUGS CONNUS</a></h2>
 <p>Aucun bug connu à ce jour.</p>
-<h2 id="voir-aussi-44"><a class="header" href="#voir-aussi-44">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-45"><a class="header" href="#voir-aussi-45">VOIR AUSSI</a></h2>
 <ul>
-<li><a href="#close-1">Close</a> - Fermer une connexion</li>
-<li><a href="#connect">Connect</a> - Connexion à une autre machine</li>
-<li><a href="#listen">Listen</a> - Ecouter les demandes de connexions</li>
-<li><a href="#sendto">sendto</a> - Envoyer des données</li>
-<li><a href="#recvfrom">recvfrom</a> - Recevoir des données</li>
+<li><a href="#close-2">Close</a> - Fermer une connexion</li>
+<li><a href="#connect-1">Connect</a> - Connexion à une autre machine</li>
+<li><a href="#listen-1">Listen</a> - Ecouter les demandes de connexions</li>
+<li><a href="#sendto-1">sendto</a> - Envoyer des données</li>
+<li><a href="#recvfrom-1">recvfrom</a> - Recevoir des données</li>
 </ul>
-<h2 id="auteurs-47"><a class="header" href="#auteurs-47">Auteurs</a></h2>
+<h2 id="auteurs-48"><a class="header" href="#auteurs-48">Auteurs</a></h2>
 <p>Victor, 21 Jan 2026</p>
-<h2 id="dernière-révision-47"><a class="header" href="#dernière-révision-47">Dernière révision</a></h2>
+<h2 id="dernière-révision-48"><a class="header" href="#dernière-révision-48">Dernière révision</a></h2>
 <p>21 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="connect"><a class="header" href="#connect">connect</a></h1>
+<h1 id="connect-1"><a class="header" href="#connect-1">connect</a></h1>
 <p><code>connect</code> - Etablit une connexion</p>
 <h2 id="synopsis-40"><a class="header" href="#synopsis-40">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
-int ConnectionManager::Connect(int remoteAddr, int remotePort, int localPort);
+int connect(int remoteAddr, int remotePort, int localPort);
 </code></pre>
 <h2 id="description-40"><a class="header" href="#description-40">Description</a></h2>
 <p><code>connect</code> permet d’établir une connexion à un serveur distant</p>
@@ -8439,7 +8517,6 @@ int ConnectionManager::Connect(int remoteAddr, int remotePort, int localPort);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-22"><a class="header" href="#implémentation-22">Implémentation</a></h2>
 <h3 id="localisation-du-code-16"><a class="header" href="#localisation-du-code-16">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
@@ -8468,7 +8545,8 @@ int ConnectionManager::Connect(int remoteAddr, int remotePort, int localPort);
         │ ├─ AllocateEphemeralPort()
         │ ├─ connId = AllocateConnection()
         │ ├─ GetConnection(connId)
-        │ └─ SendControlMessage(MSG_SYN,              initialSeqNum, 0)
+        │ └─ SendControlMessage(MSG_SYN,        
+        |                       initialSeqNum, 0)
         | └─ FreeConnection(connId) 
         ▼
 </code></pre>
@@ -8476,20 +8554,20 @@ int ConnectionManager::Connect(int remoteAddr, int remotePort, int localPort);
 <p>Aucune faille de sécurité connue.</p>
 <h2 id="bugs-connus-13"><a class="header" href="#bugs-connus-13">BUGS CONNUS</a></h2>
 <p>Aucun bug connu à ce jour.</p>
-<h2 id="voir-aussi-45"><a class="header" href="#voir-aussi-45">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-46"><a class="header" href="#voir-aussi-46">VOIR AUSSI</a></h2>
 <ul>
-<li><a href="#accept">Accept</a> - Accepter une connexion</li>
-<li><a href="#close-1">Close</a> - Fermer une connexion</li>
-<li><a href="#listen">Listen</a> - Ecouter les demandes de connexions</li>
-<li><a href="#sendto">sendto</a> - Envoyer des données</li>
-<li><a href="#recvfrom">recvfrom</a> - Recevoir des données</li>
+<li><a href="#accept-1">Accept</a> - Accepter une connexion</li>
+<li><a href="#close-2">Close</a> - Fermer une connexion</li>
+<li><a href="#listen-1">Listen</a> - Ecouter les demandes de connexions</li>
+<li><a href="#sendto-1">sendto</a> - Envoyer des données</li>
+<li><a href="#recvfrom-1">recvfrom</a> - Recevoir des données</li>
 </ul>
-<h2 id="auteurs-48"><a class="header" href="#auteurs-48">Auteurs</a></h2>
+<h2 id="auteurs-49"><a class="header" href="#auteurs-49">Auteurs</a></h2>
 <p>Victor, 21 Jan 2026</p>
-<h2 id="dernière-révision-48"><a class="header" href="#dernière-révision-48">Dernière révision</a></h2>
-<p>21 Jan 2026</p>
+<h2 id="dernière-révision-49"><a class="header" href="#dernière-révision-49">Dernière révision</a></h2>
+<p>22 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="sendto"><a class="header" href="#sendto">sendto</a></h1>
+<h1 id="sendto-1"><a class="header" href="#sendto-1">sendto</a></h1>
 <p><code>sendto</code> - Envoyer des données.</p>
 <h2 id="synopsis-41"><a class="header" href="#synopsis-41">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
@@ -8597,20 +8675,20 @@ int sendto(int connId, char* data, int size);
 <p>Aucune faille de sécurité connue.</p>
 <h2 id="bugs-connus-14"><a class="header" href="#bugs-connus-14">BUGS CONNUS</a></h2>
 <p>Aucun bug connu à ce jour.</p>
-<h2 id="voir-aussi-46"><a class="header" href="#voir-aussi-46">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-47"><a class="header" href="#voir-aussi-47">VOIR AUSSI</a></h2>
 <ul>
-<li><a href="#accept">Accept</a> - Accépter une connexion</li>
-<li><a href="#close-1">Close</a> - Fermer une connexion</li>
-<li><a href="#connect">Connect</a> - Connexion à une autre machine</li>
-<li><a href="#listen">Listen</a> - Ecouter les demandes de connexions</li>
-<li><a href="#recvfrom">recvfrom</a> - Recevoir des données</li>
+<li><a href="#accept-1">Accept</a> - Accépter une connexion</li>
+<li><a href="#close-2">Close</a> - Fermer une connexion</li>
+<li><a href="#connect-1">Connect</a> - Connexion à une autre machine</li>
+<li><a href="#listen-1">Listen</a> - Ecouter les demandes de connexions</li>
+<li><a href="#recvfrom-1">recvfrom</a> - Recevoir des données</li>
 </ul>
-<h2 id="auteurs-49"><a class="header" href="#auteurs-49">AUTEURS</a></h2>
+<h2 id="auteurs-50"><a class="header" href="#auteurs-50">AUTEURS</a></h2>
 <p>Noa, 21 Jan 2026</p>
-<h2 id="dernière-révision-49"><a class="header" href="#dernière-révision-49">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-50"><a class="header" href="#dernière-révision-50">DERNIÈRE RÉVISION</a></h2>
 <p>21 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="recvfrom"><a class="header" href="#recvfrom">recvfrom</a></h1>
+<h1 id="recvfrom-1"><a class="header" href="#recvfrom-1">recvfrom</a></h1>
 <p><code>recvfrom</code> - Recevoir des données.</p>
 <h2 id="synopsis-42"><a class="header" href="#synopsis-42">SYNOPSIS</a></h2>
 <pre><code class="language-c">#include "syscall.h"
@@ -8704,20 +8782,20 @@ int recvfrom(int connId, char* buffer, int size);
 <p>Aucune faille de sécurité connue.</p>
 <h2 id="bugs-connus-15"><a class="header" href="#bugs-connus-15">BUGS CONNUS</a></h2>
 <p>Aucun bug connu à ce jour.</p>
-<h2 id="voir-aussi-47"><a class="header" href="#voir-aussi-47">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-48"><a class="header" href="#voir-aussi-48">VOIR AUSSI</a></h2>
 <ul>
-<li><a href="#accept">Accept</a> - Accépter une connexion</li>
-<li><a href="#close-1">Close</a> - Fermer une connexion</li>
-<li><a href="#connect">Connect</a> - Connexion à une autre machine</li>
-<li><a href="#listen">Listen</a> - Ecouter les demandes de connexions</li>
-<li><a href="#sendto">sendto</a> - Envoyer des données</li>
+<li><a href="#accept-1">Accept</a> - Accépter une connexion</li>
+<li><a href="#close-2">Close</a> - Fermer une connexion</li>
+<li><a href="#connect-1">Connect</a> - Connexion à une autre machine</li>
+<li><a href="#listen-1">Listen</a> - Ecouter les demandes de connexions</li>
+<li><a href="#sendto-1">sendto</a> - Envoyer des données</li>
 </ul>
-<h2 id="auteurs-50"><a class="header" href="#auteurs-50">AUTEURS</a></h2>
+<h2 id="auteurs-51"><a class="header" href="#auteurs-51">AUTEURS</a></h2>
 <p>Noa, 21 Jan 2026</p>
-<h2 id="dernière-révision-50"><a class="header" href="#dernière-révision-50">DERNIÈRE RÉVISION</a></h2>
+<h2 id="dernière-révision-51"><a class="header" href="#dernière-révision-51">DERNIÈRE RÉVISION</a></h2>
 <p>21 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="close-1"><a class="header" href="#close-1">close</a></h1>
+<h1 id="close-2"><a class="header" href="#close-2">close</a></h1>
 <p><code>close</code> - Termine une connexion</p>
 <h2 id="synopsis-43"><a class="header" href="#synopsis-43">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
@@ -8765,7 +8843,6 @@ int close(int id);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation-23"><a class="header" href="#implémentation-23">Implémentation</a></h2>
 <h3 id="localisation-du-code-17"><a class="header" href="#localisation-du-code-17">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
@@ -8807,17 +8884,17 @@ int main(){
 <p>Aucune faille de sécurité connue.</p>
 <h2 id="bugs-connus-16"><a class="header" href="#bugs-connus-16">BUGS CONNUS</a></h2>
 <p>Aucun bug connu à ce jour.</p>
-<h2 id="voir-aussi-48"><a class="header" href="#voir-aussi-48">VOIR AUSSI</a></h2>
+<h2 id="voir-aussi-49"><a class="header" href="#voir-aussi-49">VOIR AUSSI</a></h2>
 <ul>
-<li><a href="#accept">Accept</a> - Accepter une connexion</li>
-<li><a href="#connect">Connect</a> - Connexion à une autre machine</li>
-<li><a href="#listen">Listen</a> - Ecouter les demandes de connexions</li>
-<li><a href="#sendto">sendto</a> - Envoyer des données</li>
-<li><a href="#recvfrom">recvfrom</a> - Recevoir des données</li>
+<li><a href="#accept-1">Accept</a> - Accepter une connexion</li>
+<li><a href="#connect-1">Connect</a> - Connexion à une autre machine</li>
+<li><a href="#listen-1">Listen</a> - Ecouter les demandes de connexions</li>
+<li><a href="#sendto-1">sendto</a> - Envoyer des données</li>
+<li><a href="#recvfrom-1">recvfrom</a> - Recevoir des données</li>
 </ul>
-<h2 id="auteurs-51"><a class="header" href="#auteurs-51">Auteurs</a></h2>
+<h2 id="auteurs-52"><a class="header" href="#auteurs-52">Auteurs</a></h2>
 <p>Victor, 21 Jan 2026</p>
-<h2 id="dernière-révision-51"><a class="header" href="#dernière-révision-51">Dernière révision</a></h2>
+<h2 id="dernière-révision-52"><a class="header" href="#dernière-révision-52">Dernière révision</a></h2>
 <p>21 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="network-1"><a class="header" href="#network-1">Network</a></h1>
@@ -8866,7 +8943,7 @@ int main(){
 </table>
 </div>
 <h2 id="fonctionnalités"><a class="header" href="#fonctionnalités">Fonctionnalités</a></h2>
-<h3 id="transmission-fiable"><a class="header" href="#transmission-fiable">Transmission fiable</a></h3>
+<h3 id="transmission-fiable-1"><a class="header" href="#transmission-fiable-1">Transmission fiable</a></h3>
 <ul>
 <li>Acquittements automatiques (ACK)</li>
 <li>Retransmission en cas de timeout</li>
@@ -8899,7 +8976,7 @@ int main(){
 #define MAXREEMISSIONS 100    // Tentatives max avant abandon
 #define MAX_PENDING_MSGS 10   // Messages en attente d'ACK max
 </code></pre>
-<h2 id="voir-aussi-49"><a class="header" href="#voir-aussi-49">Voir aussi</a></h2>
+<h2 id="voir-aussi-50"><a class="header" href="#voir-aussi-50">Voir aussi</a></h2>
 <ul>
 <li><a href="#transmission-fiable---sendreliable--receivereliable">Transmission fiable</a> - API SendReliable/ReceiveReliable</li>
 <li><a href="#gestion-de-connexion---protocole-tcp-like">Gestion de connexion</a> - API Connect/Close</li>
@@ -8907,7 +8984,7 @@ int main(){
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="transmission-fiable---sendreliable--receivereliable"><a class="header" href="#transmission-fiable---sendreliable--receivereliable">Transmission fiable - SendReliable / ReceiveReliable</a></h1>
 <p>Cette page documente les mécanismes de transmission fiable implémentés dans NachOS ReliablePost.</p>
-<h2 id="vue-densemble-5"><a class="header" href="#vue-densemble-5">Vue d’ensemble</a></h2>
+<h2 id="vue-densemble-6"><a class="header" href="#vue-densemble-6">Vue d’ensemble</a></h2>
 <p>La transmission fiable garantit que les messages envoyés arrivent à destination malgré les pertes de paquets du réseau. Le protocole utilise :</p>
 <ul>
 <li><strong>Numéros de séquence</strong> : Identification unique de chaque paquet</li>
@@ -9094,21 +9171,21 @@ int pendingCount;                          // Nombre de messages en attente
 </tbody>
 </table>
 </div>
-<h2 id="voir-aussi-50"><a class="header" href="#voir-aussi-50">Voir aussi</a></h2>
+<h2 id="voir-aussi-51"><a class="header" href="#voir-aussi-51">Voir aussi</a></h2>
 <ul>
 <li><a href="#gestion-de-connexion---protocole-tcp-like">Gestion de connexion</a> - Connect/Close</li>
 <li><a href="#vue-densemble-du-réseau">Vue d’ensemble</a> - Introduction au réseau</li>
 <li><a href="network/connection_state_machine.png">Machine à états</a> - États de connexion</li>
 </ul>
-<h2 id="auteurs-52"><a class="header" href="#auteurs-52">Auteurs</a></h2>
+<h2 id="auteurs-53"><a class="header" href="#auteurs-53">Auteurs</a></h2>
 <p>Alioune Badara DIENE
 Antoine</p>
-<h2 id="dernière-révision-52"><a class="header" href="#dernière-révision-52">Dernière révision</a></h2>
+<h2 id="dernière-révision-53"><a class="header" href="#dernière-révision-53">Dernière révision</a></h2>
 <p>21 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="gestion-de-connexion---protocole-tcp-like"><a class="header" href="#gestion-de-connexion---protocole-tcp-like">Gestion de connexion - Protocole TCP-like</a></h1>
 <p>Cette page documente la gestion de connexion dans NachOS ReliablePost, basée sur une machine à états de type TCP.</p>
-<h2 id="vue-densemble-6"><a class="header" href="#vue-densemble-6">Vue d’ensemble</a></h2>
+<h2 id="vue-densemble-7"><a class="header" href="#vue-densemble-7">Vue d’ensemble</a></h2>
 <p>Le protocole de connexion implémente une machine à états inspirée de TCP, avec établissement en 3-way handshake et fermeture en 4-way handshake. Il gère également les cas d’ouverture et fermeture simultanées.</p>
 <h2 id="machine-à-états-complète"><a class="header" href="#machine-à-états-complète">Machine à états complète</a></h2>
 <p><img src="network/connection_state_machine.png" alt="Machine d’états TCP"></p>
@@ -9191,21 +9268,21 @@ Antoine</p>
 <li><strong>Pas de buffer de réordonnancement</strong> : Les paquets hors séquence sont ignorés</li>
 <li><strong>Une seule connexion par ReliablePost</strong> : Pas de multiplexage</li>
 </ul>
-<h2 id="voir-aussi-51"><a class="header" href="#voir-aussi-51">Voir aussi</a></h2>
+<h2 id="voir-aussi-52"><a class="header" href="#voir-aussi-52">Voir aussi</a></h2>
 <ul>
 <li><a href="#transmission-fiable---sendreliable--receivereliable">Transmission fiable</a> - Envoi/réception de données</li>
 <li><a href="#vue-densemble-du-réseau">Vue d’ensemble</a> - Introduction au réseau</li>
 <li><a href="network/packet_ordering.png">Diagrammes</a> - Gestion des paquets</li>
 </ul>
-<h2 id="auteurs-53"><a class="header" href="#auteurs-53">Auteurs</a></h2>
+<h2 id="auteurs-54"><a class="header" href="#auteurs-54">Auteurs</a></h2>
 <p>Alioune Badara DIENE
 Antoine</p>
-<h2 id="dernière-révision-53"><a class="header" href="#dernière-révision-53">Dernière révision</a></h2>
+<h2 id="dernière-révision-54"><a class="header" href="#dernière-révision-54">Dernière révision</a></h2>
 <p>21 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="bibliothèques-utilisateur-1"><a class="header" href="#bibliothèques-utilisateur-1">Bibliothèques utilisateur</a></h1>
 <p>Cette section documente les bibliothèques disponibles en espace utilisateur pour les programmes NachOS.</p>
-<h2 id="vue-densemble-7"><a class="header" href="#vue-densemble-7">Vue d’ensemble</a></h2>
+<h2 id="vue-densemble-8"><a class="header" href="#vue-densemble-8">Vue d’ensemble</a></h2>
 <p>Les bibliothèques utilisateur fournissent une couche d’abstraction au-dessus des appels système bruts, offrant une API plus simple et des fonctionnalités supplémentaires.</p>
 <h2 id="bibliothèques-disponibles"><a class="header" href="#bibliothèques-disponibles">Bibliothèques disponibles</a></h2>
 <div class="table-wrapper">
@@ -9239,20 +9316,20 @@ Antoine</p>
 <h2 id="types-typesh"><a class="header" href="#types-typesh">Types (<code>types.h</code>)</a></h2>
 <p>Types de base pour l’espace utilisateur 32-bit : <code>uint8_t</code> à <code>uint64_t</code>, <code>size_t</code>, <code>ssize_t</code>, <code>ptrdiff_t</code>, <code>uintptr_t</code>. Macros utilitaires : <code>PACKED</code>, <code>ALIGNED</code>, <code>NORETURN</code>, <code>LIKELY</code>/<code>UNLIKELY</code>.</p>
 <hr>
-<h2 id="voir-aussi-52"><a class="header" href="#voir-aussi-52">Voir aussi</a></h2>
+<h2 id="voir-aussi-53"><a class="header" href="#voir-aussi-53">Voir aussi</a></h2>
 <ul>
 <li><a href="#errno---gestion-des-erreurs">errno</a> - Gestion des erreurs</li>
 <li><a href="#vue-densemble-des-appels-système">Appels système</a> - API bas niveau</li>
 </ul>
-<h2 id="auteurs-54"><a class="header" href="#auteurs-54">Auteurs</a></h2>
+<h2 id="auteurs-55"><a class="header" href="#auteurs-55">Auteurs</a></h2>
 <p>Antoine PATRON
 Alioune Badara DIENE</p>
-<h2 id="dernière-révision-54"><a class="header" href="#dernière-révision-54">Dernière révision</a></h2>
+<h2 id="dernière-révision-55"><a class="header" href="#dernière-révision-55">Dernière révision</a></h2>
 <p>21 Jan 2026</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="errno---gestion-des-erreurs"><a class="header" href="#errno---gestion-des-erreurs">errno - Gestion des erreurs</a></h1>
 <p>Cette page documente le mécanisme de gestion des erreurs dans NachOS via la variable <code>errno</code> et les codes d’erreur associés.</p>
-<h2 id="vue-densemble-8"><a class="header" href="#vue-densemble-8">Vue d’ensemble</a></h2>
+<h2 id="vue-densemble-9"><a class="header" href="#vue-densemble-9">Vue d’ensemble</a></h2>
 <p>NachOS utilise une convention de gestion d’erreurs inspirée de POSIX :</p>
 <ul>
 <li>Les appels système qui peuvent échouer retournent <code>-1</code> en cas d’erreur</li>
@@ -9364,15 +9441,15 @@ static inline void __clear_errno();
 
 </div>
 
-<h2 id="voir-aussi-53"><a class="header" href="#voir-aussi-53">Voir aussi</a></h2>
+<h2 id="voir-aussi-54"><a class="header" href="#voir-aussi-54">Voir aussi</a></h2>
 <ul>
 <li><a href="#vue-densemble-des-appels-système">Appels système</a> - Liste des syscalls</li>
 <li><a href="#threads---appels-système">Threads</a> - Gestion des threads</li>
 <li><a href="libs/tls.html">TLS</a> - Thread-Local Storage</li>
 </ul>
-<h2 id="auteurs-55"><a class="header" href="#auteurs-55">Auteurs</a></h2>
+<h2 id="auteurs-56"><a class="header" href="#auteurs-56">Auteurs</a></h2>
 <p>Antoine</p>
-<h2 id="dernière-révision-55"><a class="header" href="#dernière-révision-55">Dernière révision</a></h2>
+<h2 id="dernière-révision-56"><a class="header" href="#dernière-révision-56">Dernière révision</a></h2>
 <p>18 Jan 2026</p>
 
                     </main>

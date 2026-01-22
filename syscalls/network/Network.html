@@ -37,7 +37,7 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-a73492bf.js";
+            window.path_to_searchindex_js = "../../searchindex-71a727a8.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc-9eac4714.js"></script>
@@ -179,7 +179,88 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        
+                        <h1 id="appels-système-pour-le-réseau"><a class="header" href="#appels-système-pour-le-réseau">Appels système pour le réseau</a></h1>
+<p>Cette section documente les appels système liés au réseau dans NachOS, permettant d’établir une connexion, inspirée du protocole TCP/IP.</p>
+<h2 id="vue-densemble"><a class="header" href="#vue-densemble">Vue d’ensemble</a></h2>
+<p>Les appels système pour le réseau permettent de :</p>
+<ul>
+<li>Etablir une connexion</li>
+<li>Définir un port d’écoute</li>
+<li>Accepter une connexion sur un port d’écoute</li>
+<li>Envoyer et/ou recevoir des données</li>
+<li>Terminer une connexion</li>
+</ul>
+<h2 id="concepts-fondamentaux"><a class="header" href="#concepts-fondamentaux">Concepts fondamentaux</a></h2>
+<h3 id="transmission-fiable"><a class="header" href="#transmission-fiable">Transmission fiable</a></h3>
+<p>Dans NachOS, les transmissions de messages suivent un certain protocole afin d’éviter le plus possible la perte de messages : un timeout est défini à 10000 dans RELIABLE_TIMEOUT (cf. netprotocol.h). Chaque message doit recevoir un ACK afin d’assurer qu’il a bien été reçu par l’autre machine.</p>
+<p>Si un message n’est pas reçu (autrement dit que l’émetteur du message n’a pas reçu de ACK confirmant le succès de l’envoi du message) après que le timeout soit écoulé, alors le message est réémis. Un nombre de tentatives de réémission est défini à 10 dans la macro MAX_RETRANSMISSIONS (cf. netprotocol.h).</p>
+<p>Au-delà de ce nombre de tentatives, l’envoi échouera. Cependant, le timeout et le nombre de tentatives baissent drastiquement la probabilité de perte d’un message.</p>
+<h3 id="transmission-de-messages-de-longueur-variable"><a class="header" href="#transmission-de-messages-de-longueur-variable">Transmission de messages de longueur variable</a></h3>
+<p>Afin de ne pas avoir de limite pour la taille d’un message, nous définissons un principe de découpage de messages : si un message est trop long, alors on l’envoie en plusieurs paquets. Tous les messages qui doivent être envoyés sont ajoutés à une file. Un thread kernel s’exécute périodiquement (comme un démon linux) pour envoyer les messages de la file, et vérifier les ACK. Quand un ACK est reçu, le message correspondant est supprimé de la file. Si le ACK n’est pas reçu au bout d’un certain temps, le démon se charge de retransmettre le paquet. Le nombre de retransmissions est limité pour ne pas saturer le réseau.</p>
+<p>Une fois les différents paquets du message reçus, le message complet est reconstitué en un seul message avant d’être transmis au noyau.</p>
+<p>A la réception des données, elles sont insérés dans une file et un ACK est envoyé. Si les messages ont été découpés en amont, ils sont reconstitués avant d’être transmis au noyau, dans une limite (cf. MAX_PUT_STRING). Si le message initial est supérieur à cette valeur, le message est reconstitué par l’appel système dans le buffer transmis par l’utilisateur.</p>
+<h2 id="liste-des-appels-système"><a class="header" href="#liste-des-appels-système">Liste des appels système</a></h2>
+<h3 id="connect"><a class="header" href="#connect"><a href="./Connect.html">connect</a></a></h3>
+<p>Etablit une connexion à un serveur distant</p>
+<p><strong>Utilisation</strong> :</p>
+<pre><code class="language-c">int connect(int remoteAddr, int remotePort, int localPort);
+</code></pre>
+<h3 id="listen"><a class="header" href="#listen"><a href="./Listen.html">listen</a></a></h3>
+<p>Définit le port donné en argument comme port d’écoute</p>
+<p><strong>Utilisation</strong> :</p>
+<pre><code class="language-c">int listen(int port);
+</code></pre>
+<h3 id="accept"><a class="header" href="#accept"><a href="../Accept.html">accept</a></a></h3>
+<p>Accepte une connexion sur un port d’écoute</p>
+<p><strong>Utilisation</strong> :</p>
+<pre><code class="language-c">int accept(int listenerId, int timeoutMs);
+</code></pre>
+<h3 id="sendto"><a class="header" href="#sendto"><a href="../Send.html">sendto</a></a></h3>
+<p>Envoie des données à une machine connectée à la nôtre.</p>
+<p><strong>Utilisation</strong> :</p>
+<pre><code class="language-c">int sendto(int connId, char* data, int size);
+</code></pre>
+<h3 id="recvfrom"><a class="header" href="#recvfrom"><a href="../Recv.html">recvfrom</a></a></h3>
+<p>Reçoit les données envoyées par une machine connectée à la nôtre.</p>
+<p><strong>Utilisation</strong> :</p>
+<pre><code class="language-c">int recvfrom(int connId, char* buffer, int size);
+</code></pre>
+<h3 id="close"><a class="header" href="#close"><a href="../Close.html">close</a></a></h3>
+<p>Termine une connexion ou stoppe un listener.</p>
+<p><strong>Utilisation</strong> :</p>
+<pre><code class="language-c">int close(int id);
+</code></pre>
+<h2 id="limitations-et-contraintes"><a class="header" href="#limitations-et-contraintes">Limitations et contraintes</a></h2>
+<h2 id="codes-derreur-courants"><a class="header" href="#codes-derreur-courants">Codes d’erreur courants</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>errno</th><th>Constante</th><th>Condition</th></tr>
+</thead>
+<tbody>
+<tr><td>105</td><td><code>E_TIMEOUT</code></td><td>Temps écoulé</td></tr>
+<tr><td>100</td><td><code>E_REFUSED</code></td><td>Connexion refusée</td></tr>
+<tr><td>1</td><td><code>E_INVAL</code></td><td>Paramètre invalide</td></tr>
+<tr><td>107</td><td><code>E_NOPORT</code></td><td>Port non défini</td></tr>
+<tr><td>101</td><td><code>E_NOTCONN</code></td><td>Echec de connexion</td></tr>
+<tr><td>102</td><td><code>E_ADDRINUSE</code></td><td>Port déjà utilisé</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="voir-aussi"><a class="header" href="#voir-aussi">Voir aussi</a></h2>
+<ul>
+<li><a href="./Connect.html">connect</a> - Etablit une connexion</li>
+<li><a href="./Listen.html">listen</a> - Définit un port d’écoute</li>
+<li><a href="./Accept.html">accept</a> - Accepte une connexion</li>
+<li><a href="./Send.html">sendto</a> - Envoyer des données</li>
+<li><a href="./Recv.html">recvfrom</a> - Recevoir des données</li>
+<li><a href="./Close.html">close</a> - Termine une connexion</li>
+</ul>
+<h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
+<p>Victor, 22 Jan 2026</p>
+<h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
+<p>22 Jan 2026</p>
+
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">

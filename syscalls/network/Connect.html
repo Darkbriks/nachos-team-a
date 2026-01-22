@@ -37,7 +37,7 @@
             const path_to_root = "../../";
             const default_light_theme = "rust";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../../searchindex-a73492bf.js";
+            window.path_to_searchindex_js = "../../searchindex-71a727a8.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../../toc-9eac4714.js"></script>
@@ -184,7 +184,7 @@
 <h2 id="synopsis"><a class="header" href="#synopsis">Synopsis</a></h2>
 <pre><code class="language-c">#include "syscall.h"
 
-int ConnectionManager::Connect(int remoteAddr, int remotePort, int localPort);
+int connect(int remoteAddr, int remotePort, int localPort);
 </code></pre>
 <h2 id="description"><a class="header" href="#description">Description</a></h2>
 <p><code>connect</code> permet d’établir une connexion à un serveur distant</p>
@@ -241,7 +241,6 @@ int ConnectionManager::Connect(int remoteAddr, int remotePort, int localPort);
 </tbody>
 </table>
 </div>
-<h2 id="implémentation"><a class="header" href="#implémentation">Implémentation</a></h2>
 <h3 id="localisation-du-code"><a class="header" href="#localisation-du-code">Localisation du code</a></h3>
 <ul>
 <li><strong>Stub utilisateur</strong> : <code>code/test/start.S</code></li>
@@ -270,7 +269,8 @@ int ConnectionManager::Connect(int remoteAddr, int remotePort, int localPort);
         │ ├─ AllocateEphemeralPort()
         │ ├─ connId = AllocateConnection()
         │ ├─ GetConnection(connId)
-        │ └─ SendControlMessage(MSG_SYN,              initialSeqNum, 0)
+        │ └─ SendControlMessage(MSG_SYN,        
+        |                       initialSeqNum, 0)
         | └─ FreeConnection(connId) 
         ▼
 </code></pre>
@@ -289,7 +289,7 @@ int ConnectionManager::Connect(int remoteAddr, int remotePort, int localPort);
 <h2 id="auteurs"><a class="header" href="#auteurs">Auteurs</a></h2>
 <p>Victor, 21 Jan 2026</p>
 <h2 id="dernière-révision"><a class="header" href="#dernière-révision">Dernière révision</a></h2>
-<p>21 Jan 2026</p>
+<p>22 Jan 2026</p>
 
                     </main>
 
