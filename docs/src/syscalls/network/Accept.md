@@ -61,8 +61,6 @@ Timeout en millisecondes
 |-------|-----------|-----------|
 | 1 | `E_INVAL` | Paramètre invalide |
 
-## Implémentation
-
 ### Flux d'exécution
 
 ```

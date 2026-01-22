@@ -52,8 +52,6 @@ Numéro de port à écouter
 | 1 | `E_INVAL` | Paramètre invalide |
 | 102 | `E_ADDRINUSE` | Port déjà utilisé |
 
-## Implémentation
-
 ### Localisation du code
 
 - **Stub utilisateur** : `code/test/start.S`
